@@ -25,7 +25,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useSimulations } from '@/hooks/use-simulations';
 import { SimulationData, SimulationConfig } from '@/lib/supabase';
-import { Save, Trash2, FolderOpen } from 'lucide-react';
+import { Save, Trash2, FolderOpen, Download } from 'lucide-react';
+import { calculateSimulationResults } from './process-flow/SimulationConfig';
+import { toast } from '@/hooks/use-toast';
 
 interface SimulationManagerProps {
   currentConfig: SimulationConfig;
@@ -66,16 +68,14 @@ const SimulationManager: React.FC<SimulationManagerProps> = ({
   });
 
   const handleSaveSimulation = (values: SimulationFormValues) => {
+    // Calculate simulation results locally using our client-side function
+    const results = calculateSimulationResults(currentConfig);
+    
     const simulationData: Omit<SimulationData, 'id' | 'created_at' | 'updated_at'> = {
       name: values.name,
       description: values.description || '',
       config: currentConfig,
-      results: {
-        componentA: 78,
-        componentB: 45,
-        efficiency: 92,
-        timestamp: new Date().toISOString()
-      }
+      results
     };
 
     saveSimulation.mutate(simulationData);
@@ -93,6 +93,34 @@ const SimulationManager: React.FC<SimulationManagerProps> = ({
     if (confirm('Are you sure you want to delete this simulation?')) {
       deleteSimulation.mutate(id);
     }
+  };
+  
+  const handleExportConfig = () => {
+    // Calculate current results
+    const results = calculateSimulationResults(currentConfig);
+    
+    // Create the export data
+    const exportData = {
+      config: currentConfig,
+      results,
+      exportedAt: new Date().toISOString()
+    };
+    
+    // Convert to JSON and create download link
+    const dataStr = JSON.stringify(exportData, null, 2);
+    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+    
+    const exportFileDefaultName = `chemflow-simulation-${new Date().toISOString().slice(0,10)}.json`;
+    
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
+    
+    toast({
+      title: "Export Successful",
+      description: "Your simulation configuration has been exported",
+    });
   };
 
   return (
@@ -114,6 +142,16 @@ const SimulationManager: React.FC<SimulationManagerProps> = ({
       >
         <FolderOpen size={16} />
         Load Simulation
+      </Button>
+      
+      <Button 
+        variant="outline" 
+        onClick={handleExportConfig}
+        className="gap-2"
+        disabled={!isRunning}
+      >
+        <Download size={16} />
+        Export Config
       </Button>
       
       {/* Save Simulation Dialog */}
