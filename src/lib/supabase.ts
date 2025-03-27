@@ -1,18 +1,19 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-// Initialize Supabase client
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+// Initialize Supabase client with mock data when env variables are missing
+// In production, these would be set in your deployment environment
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mock-url-for-development.supabase.co';
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'mock-key-for-development';
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('Supabase credentials missing. Please check your environment variables.');
+// Create a mockable version of the Supabase client
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+// Log if we're in mock mode
+if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
+  console.warn('Supabase is running in mock mode. Data operations will fail in production.');
+  console.warn('Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY environment variables to connect to your Supabase instance.');
 }
-
-export const supabase = createClient(
-  supabaseUrl || '',
-  supabaseAnonKey || ''
-);
 
 // Type definitions for our simulation data
 export interface SimulationData {
@@ -40,6 +41,9 @@ export interface SimulationConfig {
     feedRate: number;
     reboilerDuty: number;
     condenserDuty: number;
+    feedComposition: { componentA: number; componentB: number };
+    operatingPressure: number;
+    controlMode: "manual" | "automatic";
   };
 }
 
