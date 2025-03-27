@@ -12,7 +12,7 @@ import {
   Play, 
   Settings2, 
   Share2, 
-  Stop
+  Square
 } from "lucide-react";
 
 interface ProcessFlowProps {
@@ -46,7 +46,7 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className }) => {
             >
               {isRunning ? (
                 <>
-                  <Stop className="mr-2 h-4 w-4" />
+                  <Square className="mr-2 h-4 w-4" />
                   Stop Simulation
                 </>
               ) : (
