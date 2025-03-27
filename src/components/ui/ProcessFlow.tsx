@@ -1,8 +1,9 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import EquipmentCard from "./EquipmentCard";
 import GlassPanel from "./GlassPanel";
+import SimulationManager from "./SimulationManager";
 import { 
   ArrowRight, 
   Columns,
@@ -14,16 +15,111 @@ import {
   Share2, 
   Square
 } from "lucide-react";
+import { SimulationConfig, EquipmentState } from "@/lib/supabase";
+import { toast } from "@/hooks/use-toast";
 
 interface ProcessFlowProps {
   className?: string;
 }
 
+const defaultConfig: SimulationConfig = {
+  equipmentStates: {
+    feedTank: {
+      status: "stopped",
+      metrics: { level: 75, temperature: 25 }
+    },
+    feedPump: {
+      status: "stopped",
+      metrics: { flow: 120 }
+    },
+    preheater: {
+      status: "stopped",
+      metrics: { temperature: 25 }
+    },
+    distillationColumn: {
+      status: "stopped",
+      metrics: { pressure: 150, temperature: 30 }
+    },
+    productTank: {
+      status: "stopped",
+      metrics: { level: 10, temperature: 25 }
+    },
+    condenser: {
+      status: "stopped",
+      metrics: { temperature: 25 }
+    }
+  },
+  parameters: {
+    refluxRatio: 3.5,
+    feedRate: 120,
+    reboilerDuty: 850,
+    condenserDuty: -780
+  }
+};
+
+const runningConfig: SimulationConfig = {
+  equipmentStates: {
+    feedTank: {
+      status: "running",
+      metrics: { level: 75, temperature: 25 }
+    },
+    feedPump: {
+      status: "running",
+      metrics: { flow: 120 }
+    },
+    preheater: {
+      status: "running",
+      metrics: { temperature: 85 }
+    },
+    distillationColumn: {
+      status: "running",
+      metrics: { pressure: 150, temperature: 95 }
+    },
+    productTank: {
+      status: "running",
+      metrics: { level: 45, temperature: 60 }
+    },
+    condenser: {
+      status: "running",
+      metrics: { temperature: 40 }
+    }
+  },
+  parameters: {
+    refluxRatio: 3.5,
+    feedRate: 120,
+    reboilerDuty: 850,
+    condenserDuty: -780
+  }
+};
+
 const ProcessFlow: React.FC<ProcessFlowProps> = ({ className }) => {
   const [isRunning, setIsRunning] = useState(false);
+  const [config, setConfig] = useState<SimulationConfig>(defaultConfig);
   
   const toggleSimulation = () => {
     setIsRunning(!isRunning);
+  };
+
+  // Update config when running state changes
+  useEffect(() => {
+    setConfig(isRunning ? runningConfig : defaultConfig);
+  }, [isRunning]);
+
+  // Load a saved simulation
+  const handleLoadSimulation = (loadedConfig: SimulationConfig) => {
+    setConfig(loadedConfig);
+    
+    // If the loaded config has running states, turn on the simulation
+    const hasRunningEquipment = Object.values(loadedConfig.equipmentStates).some(
+      equipment => equipment.status === "running"
+    );
+    
+    setIsRunning(hasRunningEquipment);
+    
+    toast({
+      title: "Simulation Loaded",
+      description: "The saved simulation has been loaded successfully.",
+    });
   };
 
   return (
@@ -56,6 +152,13 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className }) => {
                 </>
               )}
             </button>
+            
+            <SimulationManager 
+              currentConfig={config}
+              isRunning={isRunning}
+              onLoadSimulation={handleLoadSimulation}
+            />
+            
             <button className="p-2 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors">
               <Settings2 className="h-5 w-5" />
             </button>
@@ -75,8 +178,8 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className }) => {
                 <EquipmentCard 
                   type="tank" 
                   name="Feed Tank" 
-                  status={isRunning ? "running" : "stopped"} 
-                  metrics={{ level: 75, temperature: 25 }}
+                  status={config.equipmentStates.feedTank.status} 
+                  metrics={config.equipmentStates.feedTank.metrics}
                 />
                 <div className="flex items-center justify-center">
                   <div className="h-0.5 w-full bg-gradient-to-r from-flow-blue to-flow-cyan"></div>
@@ -85,8 +188,8 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className }) => {
                 <EquipmentCard 
                   type="pump" 
                   name="Feed Pump" 
-                  status={isRunning ? "running" : "stopped"} 
-                  metrics={{ flow: 120 }}
+                  status={config.equipmentStates.feedPump.status} 
+                  metrics={config.equipmentStates.feedPump.metrics}
                 />
               </div>
               
@@ -104,8 +207,8 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className }) => {
                 <EquipmentCard 
                   type="heater" 
                   name="Preheater" 
-                  status={isRunning ? "running" : "stopped"} 
-                  metrics={{ temperature: isRunning ? 85 : 25 }}
+                  status={config.equipmentStates.preheater.status} 
+                  metrics={config.equipmentStates.preheater.metrics}
                 />
                 <div className="flex items-center justify-center">
                   <div className="h-0.5 w-full bg-gradient-to-r from-flow-blue to-flow-cyan"></div>
@@ -114,8 +217,8 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className }) => {
                 <EquipmentCard 
                   type="column" 
                   name="Distillation Column" 
-                  status={isRunning ? "running" : "stopped"} 
-                  metrics={{ pressure: 150, temperature: isRunning ? 95 : 30 }}
+                  status={config.equipmentStates.distillationColumn.status} 
+                  metrics={config.equipmentStates.distillationColumn.metrics}
                 />
               </div>
               
@@ -133,8 +236,8 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className }) => {
                 <EquipmentCard 
                   type="tank" 
                   name="Product Tank" 
-                  status={isRunning ? "running" : "stopped"} 
-                  metrics={{ level: isRunning ? 45 : 10, temperature: isRunning ? 60 : 25 }}
+                  status={config.equipmentStates.productTank.status} 
+                  metrics={config.equipmentStates.productTank.metrics}
                 />
                 <div className="flex items-center justify-center">
                   <div className="h-0.5 w-full bg-gradient-to-r from-flow-blue to-flow-cyan"></div>
@@ -143,8 +246,8 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className }) => {
                 <EquipmentCard 
                   type="condenser" 
                   name="Condenser" 
-                  status={isRunning ? "running" : "stopped"} 
-                  metrics={{ temperature: isRunning ? 40 : 25 }}
+                  status={config.equipmentStates.condenser.status} 
+                  metrics={config.equipmentStates.condenser.metrics}
                 />
               </div>
             </div>
@@ -212,19 +315,19 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className }) => {
                     <div className="space-y-2">
                       <div className="flex justify-between py-1.5 border-b border-gray-100">
                         <span className="text-sm text-gray-500">Reflux Ratio</span>
-                        <span className="text-sm font-medium">3.5</span>
+                        <span className="text-sm font-medium">{config.parameters.refluxRatio}</span>
                       </div>
                       <div className="flex justify-between py-1.5 border-b border-gray-100">
                         <span className="text-sm text-gray-500">Feed Rate</span>
-                        <span className="text-sm font-medium">120 kg/h</span>
+                        <span className="text-sm font-medium">{config.parameters.feedRate} kg/h</span>
                       </div>
                       <div className="flex justify-between py-1.5 border-b border-gray-100">
                         <span className="text-sm text-gray-500">Reboiler Duty</span>
-                        <span className="text-sm font-medium">850 kW</span>
+                        <span className="text-sm font-medium">{config.parameters.reboilerDuty} kW</span>
                       </div>
                       <div className="flex justify-between py-1.5 border-b border-gray-100">
                         <span className="text-sm text-gray-500">Condenser Duty</span>
-                        <span className="text-sm font-medium">-780 kW</span>
+                        <span className="text-sm font-medium">{config.parameters.condenserDuty} kW</span>
                       </div>
                     </div>
                   </div>
