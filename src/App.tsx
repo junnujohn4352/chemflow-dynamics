@@ -11,6 +11,7 @@ import Components from "./pages/Components";
 import Analysis from "./pages/Analysis";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
+import CreateSimulation from "./pages/CreateSimulation";
 
 // Create a client
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const App: React.FC = () => {
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/simulations" element={<Simulations />} />
+              <Route path="/create-simulation" element={<CreateSimulation />} />
               <Route path="/components" element={<Components />} />
               <Route path="/analysis" element={<Analysis />} />
               <Route path="/settings" element={<Settings />} />
