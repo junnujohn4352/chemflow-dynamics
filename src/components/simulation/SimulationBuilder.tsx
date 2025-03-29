@@ -1,8 +1,9 @@
 
 import React, { useState, useRef, useEffect } from "react";
-import { Plus, Thermometer, Droplets, Settings2, Container, FlaskConical, Columns, Gauge, Save, Trash2, X } from "lucide-react";
+import { Plus, Thermometer, Droplets, Settings2, Container, FlaskConical, Columns, Gauge, Save, Trash2, X, Sliders } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
+import EquipmentSettings from "./EquipmentSettings";
 
 interface SimulationBuilderProps {
   selectedComponents: string[];
@@ -42,6 +43,7 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
   const [showSettings, setShowSettings] = useState(false);
   const [zoom, setZoom] = useState(100);
   const [isDragging, setIsDragging] = useState(false);
+  const [editingEquipment, setEditingEquipment] = useState<Equipment | null>(null);
   
   const equipmentList = [
     { id: "feed", name: "Feed Stream", icon: <Droplets className="h-5 w-5" /> },
@@ -53,6 +55,9 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     { id: "column", name: "Distillation Column", icon: <FlaskConical className="h-5 w-5" /> },
     { id: "pump", name: "Pump", icon: <Gauge className="h-5 w-5" /> },
     { id: "reactor", name: "Reactor", icon: <FlaskConical className="h-5 w-5" /> },
+    { id: "heatex", name: "Heat Exchanger", icon: <Thermometer className="h-5 w-5" /> },
+    { id: "compressor", name: "Compressor", icon: <Gauge className="h-5 w-5" /> },
+    { id: "valve", name: "Valve", icon: <Sliders className="h-5 w-5" /> },
   ];
   
   const handleCanvasClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -71,7 +76,7 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
         name: activeEquipmentInfo.name,
         position: { x, y },
         connections: [],
-        settings: {}
+        settings: getDefaultSettings(activeEquipment)
       };
       
       setEquipment(prev => [...prev, newEquipment]);
@@ -82,6 +87,91 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
       
       // Reset active equipment after placing
       setActiveEquipment(null);
+    }
+  };
+
+  const getDefaultSettings = (type: string): Record<string, any> => {
+    switch(type) {
+      case "feed":
+        return { 
+          temperature: 25,
+          pressure: 101.3,
+          flowRate: 100,
+          composition: selectedComponents.reduce((acc, id) => {
+            acc[id] = 100 / selectedComponents.length;
+            return acc;
+          }, {} as Record<string, number>)
+        };
+      case "heater":
+        return { 
+          targetTemperature: 80,
+          pressure: 101.3,
+          heatDuty: 500 
+        };
+      case "cooler":
+        return { 
+          targetTemperature: 15,
+          pressure: 101.3,
+          coolingDuty: 500 
+        };
+      case "flash":
+        return { 
+          temperature: 60,
+          pressure: 80,
+          vaporFraction: 0.5
+        };
+      case "column":
+        return { 
+          numberOfStages: 20,
+          feedStage: 10,
+          refluxRatio: 1.5,
+          reboilerDuty: 1000,
+          condenserDuty: -900,
+          topPressure: 101.3,
+          bottomPressure: 110
+        };
+      case "pump":
+        return { 
+          pressureIncrease: 200,
+          efficiency: 0.75
+        };
+      case "reactor":
+        return { 
+          temperature: 120,
+          pressure: 150,
+          conversion: 0.8,
+          reactionType: "CSTR"
+        };
+      case "mixer":
+        return { 
+          pressure: 101.3
+        };
+      case "splitter":
+        return { 
+          splitRatio: 0.5,
+          pressure: 101.3
+        };
+      case "heatex":
+        return {
+          hotInletTemp: 120,
+          hotOutletTemp: 80,
+          coldInletTemp: 25,
+          coldOutletTemp: 60,
+          heatTransferCoeff: 800,
+          pressure: 101.3
+        };
+      case "compressor":
+        return {
+          pressureRatio: 3,
+          efficiency: 0.75
+        };
+      case "valve":
+        return {
+          outletPressure: 101.3,
+          valveType: "linear"
+        };
+      default:
+        return {};
     }
   };
   
@@ -164,7 +254,9 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
   };
   
   const saveFlowsheet = () => {
-    // In a real app, you would save to backend here
+    localStorage.setItem('chemflow-equipment', JSON.stringify(equipment));
+    localStorage.setItem('chemflow-streams', JSON.stringify(streams));
+    
     toast({
       title: "Flowsheet Saved",
       description: "Your process design has been saved successfully"
@@ -190,6 +282,9 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
       return;
     }
     
+    // Save the current simulation state
+    saveFlowsheet();
+    
     toast({
       title: "Running Simulation",
       description: "Calculating process flows and conditions..."
@@ -197,6 +292,27 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     
     // Call the parent callback to run simulation
     onRunSimulation();
+  };
+
+  const openEquipmentSettings = (equipment: Equipment) => {
+    setEditingEquipment(equipment);
+  };
+
+  const updateEquipmentSettings = (equipmentId: string, newSettings: Record<string, any>) => {
+    setEquipment(prev => 
+      prev.map(eq => {
+        if (eq.id === equipmentId) {
+          return {...eq, settings: newSettings};
+        }
+        return eq;
+      })
+    );
+    
+    setEditingEquipment(null);
+    toast({
+      title: "Settings Updated",
+      description: "Equipment parameters have been updated"
+    });
   };
   
   const renderEquipment = (item: Equipment) => {
@@ -227,6 +343,15 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
           <span className="text-xs mt-1 whitespace-nowrap">{item.name}</span>
           {isSelected && (
             <div className="absolute -top-2 -right-2 flex space-x-1">
+              <button 
+                className="p-1 rounded-full bg-green-500 text-white hover:bg-green-600"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openEquipmentSettings(item);
+                }}
+              >
+                <Settings2 className="h-3 w-3" />
+              </button>
               <button 
                 className="p-1 rounded-full bg-blue-500 text-white hover:bg-blue-600"
                 onClick={(e) => {
@@ -310,7 +435,7 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
         <div className="col-span-1">
           <div className="bg-gray-50 rounded-lg border border-gray-200 p-4">
             <h3 className="font-medium mb-3">Equipment</h3>
-            <div className="space-y-2">
+            <div className="space-y-2 max-h-[400px] overflow-y-auto">
               {equipmentList.map((equipment) => (
                 <div
                   key={equipment.id}
@@ -466,6 +591,16 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Equipment settings modal */}
+      {editingEquipment && (
+        <EquipmentSettings
+          equipment={editingEquipment}
+          onClose={() => setEditingEquipment(null)}
+          onSave={updateEquipmentSettings}
+          equipmentTypes={equipmentList}
+        />
+      )}
     </div>
   );
 };

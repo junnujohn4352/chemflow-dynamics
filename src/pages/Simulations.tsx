@@ -18,42 +18,8 @@ interface SimulationCard {
 
 const Simulations = () => {
   const { toast } = useToast();
-  // Mock data - in a real app, this would come from a database
-  const [simulations, setSimulations] = useState<SimulationCard[]>([
-    {
-      id: "sim-1",
-      name: "Ethanol Distillation",
-      description: "Separating ethanol from water using fractional distillation",
-      lastUpdated: "2025-03-28",
-      efficiency: 92,
-      components: [
-        { name: "Ethanol", percentage: 78 },
-        { name: "Water", percentage: 22 },
-      ],
-    },
-    {
-      id: "sim-2",
-      name: "Methane Reforming",
-      description: "Hydrogen production from methane using steam reforming",
-      lastUpdated: "2025-03-27",
-      efficiency: 85,
-      components: [
-        { name: "Hydrogen", percentage: 75 },
-        { name: "Carbon Dioxide", percentage: 25 },
-      ],
-    },
-    {
-      id: "sim-3",
-      name: "Ammonia Synthesis",
-      description: "Haber process for ammonia production",
-      lastUpdated: "2025-03-26",
-      efficiency: 88,
-      components: [
-        { name: "Nitrogen", percentage: 45 },
-        { name: "Hydrogen", percentage: 55 },
-      ],
-    },
-  ]);
+  // Empty simulations array - user will create their own
+  const [simulations, setSimulations] = useState<SimulationCard[]>([]);
 
   const handleDeleteSimulation = (id: string) => {
     setSimulations(simulations.filter(sim => sim.id !== id));
