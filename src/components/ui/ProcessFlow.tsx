@@ -10,9 +10,9 @@ import {
   Download, 
   LineChart, 
   Play, 
+  Square, // Changed from Stop to Square
   Settings2, 
-  Share2, 
-  Stop
+  Share2
 } from "lucide-react";
 
 interface ProcessFlowProps {
@@ -46,7 +46,7 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className }) => {
             >
               {isRunning ? (
                 <>
-                  <Stop className="mr-2 h-4 w-4" />
+                  <Square className="mr-2 h-4 w-4" /> {/* Changed from Stop to Square */}
                   Stop Simulation
                 </>
               ) : (
