@@ -6,12 +6,13 @@ import Footer from "@/components/layout/Footer";
 import GlassPanel from "@/components/ui/GlassPanel";
 import { 
   Save, ArrowLeft, Layers, Database, Settings2, 
-  Thermometer, GitBranch, Play
+  Thermometer, GitBranch, Play, Check
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import SimulationBuilder from "@/components/simulation/SimulationBuilder";
 import ComponentSelector from "@/components/simulation/ComponentSelector";
 import ThermodynamicsSelector from "@/components/simulation/ThermodynamicsSelector";
+import { Button } from "@/components/ui/button";
 
 const CreateSimulation = () => {
   const navigate = useNavigate();
@@ -20,6 +21,12 @@ const CreateSimulation = () => {
   const [simulationName, setSimulationName] = useState('Untitled Simulation');
   const [selectedComponents, setSelectedComponents] = useState<string[]>([]);
   const [selectedModel, setSelectedModel] = useState('Peng-Robinson');
+  const [isSimulationComplete, setIsSimulationComplete] = useState(false);
+  const [isSimulationRunning, setIsSimulationRunning] = useState(false);
+  
+  // Validation checks
+  const componentsValid = selectedComponents.length > 0;
+  const allStepsValid = componentsValid && selectedModel !== '';
   
   // Handle save simulation
   const handleSaveSimulation = () => {
@@ -50,6 +57,53 @@ const CreateSimulation = () => {
     
     navigate("/simulations");
   };
+
+  // Handle run simulation
+  const handleRunSimulation = () => {
+    if (!allStepsValid) {
+      toast({
+        title: "Incomplete setup",
+        description: "Please complete all simulation setup steps first",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSimulationRunning(true);
+    
+    // Simulate a processing delay
+    setTimeout(() => {
+      setIsSimulationRunning(false);
+      setIsSimulationComplete(true);
+      
+      toast({
+        title: "Simulation complete",
+        description: "Process simulation finished successfully!",
+      });
+    }, 3000);
+  };
+  
+  // Proceed to next tab automatically when component selection is done
+  const handleComponentSelectionDone = () => {
+    if (componentsValid && activeTab === 'components') {
+      toast({
+        title: "Components selected",
+        description: "Now choose a thermodynamic model for your simulation"
+      });
+      setActiveTab('thermodynamics');
+    }
+  };
+  
+  // Proceed to builder when thermodynamic model is selected
+  const handleModelSelectionDone = () => {
+    if (activeTab === 'thermodynamics') {
+      toast({
+        title: "Thermodynamic model selected",
+        description: "Now build your process flowsheet"
+      });
+      setActiveTab('builder');
+    }
+  };
   
   return (
     <div className="min-h-screen flex flex-col">
@@ -78,19 +132,46 @@ const CreateSimulation = () => {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <button 
-                className="inline-flex items-center px-4 py-2 rounded-lg bg-white border border-gray-200 text-gray-700 font-medium shadow-sm hover:bg-gray-50 transition-colors"
+              <Button 
+                variant="outline"
                 onClick={() => navigate("/simulations")}
               >
                 Cancel
-              </button>
-              <button 
-                className="inline-flex items-center px-4 py-2 rounded-lg bg-flow-blue text-white font-medium shadow-sm hover:bg-flow-blue/90 transition-colors"
+              </Button>
+              <Button 
+                variant="default"
                 onClick={handleSaveSimulation}
               >
                 <Save className="mr-2 h-4 w-4" />
                 Save Simulation
-              </button>
+              </Button>
+            </div>
+          </div>
+          
+          {/* Progress indicator */}
+          <div className="mb-6">
+            <div className="flex items-center">
+              <div className={`rounded-full h-8 w-8 flex items-center justify-center ${
+                componentsValid ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-500'
+              }`}>
+                {componentsValid ? <Check className="h-4 w-4" /> : '1'}
+              </div>
+              <div className={`h-1 w-12 ${
+                componentsValid ? 'bg-green-500' : 'bg-gray-200'
+              }`}></div>
+              <div className={`rounded-full h-8 w-8 flex items-center justify-center ${
+                selectedModel ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-500'
+              }`}>
+                {selectedModel ? <Check className="h-4 w-4" /> : '2'}
+              </div>
+              <div className={`h-1 w-12 ${
+                selectedModel ? 'bg-green-500' : 'bg-gray-200'
+              }`}></div>
+              <div className={`rounded-full h-8 w-8 flex items-center justify-center ${
+                isSimulationComplete ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-500'
+              }`}>
+                {isSimulationComplete ? <Check className="h-4 w-4" /> : '3'}
+              </div>
             </div>
           </div>
           
@@ -107,6 +188,7 @@ const CreateSimulation = () => {
               >
                 <Database className="mr-2 h-4 w-4" />
                 Components
+                {componentsValid && <Check className="ml-2 h-3 w-3 text-green-500" />}
               </button>
               <button
                 className={`py-3 px-4 flex items-center border-b-2 font-medium text-sm transition-colors ${
@@ -118,6 +200,7 @@ const CreateSimulation = () => {
               >
                 <Thermometer className="mr-2 h-4 w-4" />
                 Thermodynamics
+                {selectedModel && <Check className="ml-2 h-3 w-3 text-green-500" />}
               </button>
               <button
                 className={`py-3 px-4 flex items-center border-b-2 font-medium text-sm transition-colors ${
@@ -129,6 +212,7 @@ const CreateSimulation = () => {
               >
                 <Layers className="mr-2 h-4 w-4" />
                 Flowsheet Builder
+                {isSimulationComplete && <Check className="ml-2 h-3 w-3 text-green-500" />}
               </button>
             </div>
           </div>
@@ -136,23 +220,50 @@ const CreateSimulation = () => {
           {/* Tab content */}
           <GlassPanel className="p-6">
             {activeTab === 'components' && (
-              <ComponentSelector 
-                selectedComponents={selectedComponents}
-                setSelectedComponents={setSelectedComponents}
-              />
+              <div className="flex flex-col">
+                <ComponentSelector 
+                  selectedComponents={selectedComponents}
+                  setSelectedComponents={setSelectedComponents}
+                />
+                <div className="mt-6 flex justify-end">
+                  <Button 
+                    onClick={handleComponentSelectionDone}
+                    disabled={!componentsValid}
+                  >
+                    Continue to Thermodynamics
+                  </Button>
+                </div>
+              </div>
             )}
             
             {activeTab === 'thermodynamics' && (
-              <ThermodynamicsSelector 
-                selectedModel={selectedModel}
-                setSelectedModel={setSelectedModel}
-              />
+              <div className="flex flex-col">
+                <ThermodynamicsSelector 
+                  selectedModel={selectedModel}
+                  setSelectedModel={setSelectedModel}
+                />
+                <div className="mt-6 flex justify-between">
+                  <Button 
+                    variant="outline"
+                    onClick={() => setActiveTab('components')}
+                  >
+                    Back to Components
+                  </Button>
+                  <Button 
+                    onClick={handleModelSelectionDone}
+                    disabled={!selectedModel}
+                  >
+                    Continue to Flowsheet Builder
+                  </Button>
+                </div>
+              </div>
             )}
             
             {activeTab === 'builder' && (
               <SimulationBuilder 
                 selectedComponents={selectedComponents}
                 thermodynamicModel={selectedModel}
+                onRunSimulation={handleRunSimulation}
               />
             )}
           </GlassPanel>
@@ -160,19 +271,23 @@ const CreateSimulation = () => {
           {/* Footer actions */}
           <div className="mt-6 flex justify-between">
             <div className="flex items-center gap-3">
-              <button className="inline-flex items-center px-4 py-2 rounded-lg bg-gray-50 text-gray-700 font-medium hover:bg-gray-100 transition-colors">
+              <Button variant="outline" size="sm">
                 <Settings2 className="mr-2 h-4 w-4" />
                 Settings
-              </button>
-              <button className="inline-flex items-center px-4 py-2 rounded-lg bg-gray-50 text-gray-700 font-medium hover:bg-gray-100 transition-colors">
+              </Button>
+              <Button variant="outline" size="sm">
                 <GitBranch className="mr-2 h-4 w-4" />
                 Version History
-              </button>
+              </Button>
             </div>
-            <button className="inline-flex items-center px-4 py-2 rounded-lg bg-green-50 text-green-600 font-medium hover:bg-green-100 transition-colors">
+            <Button 
+              className={`${isSimulationRunning ? 'bg-amber-500 hover:bg-amber-600' : 'bg-green-600 hover:bg-green-700'}`}
+              disabled={!allStepsValid || isSimulationRunning}
+              onClick={handleRunSimulation}
+            >
               <Play className="mr-2 h-4 w-4" />
-              Run Simulation
-            </button>
+              {isSimulationRunning ? 'Running Simulation...' : 'Run Simulation'}
+            </Button>
           </div>
         </div>
       </main>

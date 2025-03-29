@@ -13,31 +13,36 @@ import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import CreateSimulation from "./pages/CreateSimulation";
 
-// Create a client
-const queryClient = new QueryClient();
+// Create a query client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60 * 1000, // 1 minute
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const App: React.FC = () => {
   return (
-    <React.StrictMode>
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/simulations" element={<Simulations />} />
-              <Route path="/create-simulation" element={<CreateSimulation />} />
-              <Route path="/components" element={<Components />} />
-              <Route path="/analysis" element={<Analysis />} />
-              <Route path="/settings" element={<Settings />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
-      </QueryClientProvider>
-    </React.StrictMode>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/simulations" element={<Simulations />} />
+            <Route path="/create-simulation" element={<CreateSimulation />} />
+            <Route path="/components" element={<Components />} />
+            <Route path="/analysis" element={<Analysis />} />
+            <Route path="/settings" element={<Settings />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
   );
 };
 

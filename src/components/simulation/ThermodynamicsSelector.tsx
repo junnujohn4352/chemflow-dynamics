@@ -1,7 +1,8 @@
 
-import React from "react";
-import { Check, Info, Thermometer, ChevronRight, AlertCircle } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Check, Info, Thermometer, ChevronRight, AlertCircle, X, BarChart } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useToast } from "@/hooks/use-toast";
 
 // Thermodynamic models
 const THERMODYNAMIC_MODELS = [
@@ -12,7 +13,8 @@ const THERMODYNAMIC_MODELS = [
     suitable: ["Hydrocarbons", "Light gases", "Natural gas", "Petroleum systems"],
     unsuitable: ["Highly polar compounds", "Hydrogen bonding", "Electrolytes", "Polymers"],
     temperature: "Low to high temperatures",
-    pressure: "Medium to high pressures"
+    pressure: "Medium to high pressures",
+    accuracy: 85
   },
   { 
     id: "srk", 
@@ -21,7 +23,8 @@ const THERMODYNAMIC_MODELS = [
     suitable: ["Hydrocarbons", "Light gases", "Petrochemical systems"],
     unsuitable: ["Strong polar compounds", "Electrolytes", "Polymers"],
     temperature: "Medium to high temperatures",
-    pressure: "Medium to high pressures"
+    pressure: "Medium to high pressures",
+    accuracy: 80
   },
   { 
     id: "nrtl", 
@@ -30,7 +33,8 @@ const THERMODYNAMIC_MODELS = [
     suitable: ["Polar compounds", "Alcohols", "Azeotropic systems", "Immiscible liquids"],
     unsuitable: ["Supercritical fluids", "High pressure systems", "Gas-phase calculations"],
     temperature: "Low to medium temperatures",
-    pressure: "Low to medium pressures"
+    pressure: "Low to medium pressures",
+    accuracy: 90
   },
   { 
     id: "uniquac", 
@@ -39,7 +43,8 @@ const THERMODYNAMIC_MODELS = [
     suitable: ["Polar mixtures", "Alcohol-water systems", "Partially miscible systems"],
     unsuitable: ["Supercritical fluids", "High pressure systems", "Gas-phase calculations"],
     temperature: "Low to medium temperatures",
-    pressure: "Low pressures"
+    pressure: "Low pressures",
+    accuracy: 88
   },
   { 
     id: "wilson", 
@@ -48,7 +53,8 @@ const THERMODYNAMIC_MODELS = [
     suitable: ["Polar mixtures", "Alcohol-hydrocarbon systems", "Binary mixtures"],
     unsuitable: ["Partially miscible liquids", "Electrolytes", "Polymers"],
     temperature: "Low to medium temperatures",
-    pressure: "Low pressures"
+    pressure: "Low pressures",
+    accuracy: 86
   },
   { 
     id: "saft", 
@@ -57,7 +63,8 @@ const THERMODYNAMIC_MODELS = [
     suitable: ["Associating fluids", "Hydrogen-bonding systems", "Polymers", "Complex mixtures"],
     unsuitable: ["Simple systems where cubic EoS is sufficient"],
     temperature: "Wide temperature range",
-    pressure: "Wide pressure range"
+    pressure: "Wide pressure range",
+    accuracy: 95
   },
 ];
 
@@ -70,10 +77,34 @@ const ThermodynamicsSelector: React.FC<ThermodynamicsSelectorProps> = ({
   selectedModel,
   setSelectedModel 
 }) => {
+  const { toast } = useToast();
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [modelFilter, setModelFilter] = useState<string | null>(null);
+  
   // Find the currently selected model details
   const currentModel = THERMODYNAMIC_MODELS.find(model => 
-    model.name.toLowerCase() === selectedModel.toLowerCase()
+    model.name === selectedModel || model.id === selectedModel.toLowerCase().replace(' ', '-')
   );
+  
+  const handleModelSelect = (modelName: string) => {
+    setSelectedModel(modelName);
+    
+    toast({
+      title: "Model Selected",
+      description: `${modelName} has been set as your thermodynamic model`
+    });
+  };
+  
+  const modelCategories = [
+    { id: "eos", name: "Equations of State", models: ["Peng-Robinson", "Soave-Redlich-Kwong", "SAFT"] },
+    { id: "activity", name: "Activity Coefficient", models: ["NRTL", "UNIQUAC", "Wilson"] },
+  ];
+  
+  const filteredModels = modelFilter 
+    ? THERMODYNAMIC_MODELS.filter(model => 
+        modelCategories.find(cat => cat.id === modelFilter)?.models.includes(model.name)
+      )
+    : THERMODYNAMIC_MODELS;
   
   return (
     <div className="flex flex-col h-full">
@@ -83,10 +114,33 @@ const ThermodynamicsSelector: React.FC<ThermodynamicsSelectorProps> = ({
         significantly affects calculation accuracy.
       </p>
       
+      {/* Model type filter */}
+      <div className="mb-6 flex gap-3">
+        <button
+          className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
+            modelFilter === null ? 'bg-flow-blue text-white border-flow-blue' : 'bg-white border-gray-200 hover:bg-gray-50'
+          }`}
+          onClick={() => setModelFilter(null)}
+        >
+          All Models
+        </button>
+        {modelCategories.map(category => (
+          <button
+            key={category.id}
+            className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
+              modelFilter === category.id ? 'bg-flow-blue text-white border-flow-blue' : 'bg-white border-gray-200 hover:bg-gray-50'
+            }`}
+            onClick={() => setModelFilter(category.id)}
+          >
+            {category.name}
+          </button>
+        ))}
+      </div>
+      
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         <div className="col-span-1 lg:col-span-2">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {THERMODYNAMIC_MODELS.map(model => (
+            {filteredModels.map(model => (
               <div 
                 key={model.id}
                 className={`p-4 rounded-lg border cursor-pointer transition-all ${
@@ -94,12 +148,23 @@ const ThermodynamicsSelector: React.FC<ThermodynamicsSelectorProps> = ({
                     ? 'border-flow-blue bg-blue-50 shadow-sm'
                     : 'border-gray-200 hover:border-gray-300 bg-white'
                 }`}
-                onClick={() => setSelectedModel(model.name)}
+                onClick={() => handleModelSelect(model.name)}
               >
                 <div className="flex items-start justify-between">
                   <div>
                     <h3 className="font-medium">{model.name}</h3>
                     <p className="text-sm text-gray-600 mt-1">{model.description}</p>
+                    
+                    <div className="mt-3 flex items-center text-sm">
+                      <span className="text-gray-500 mr-2">Accuracy:</span>
+                      <div className="bg-gray-200 h-2 rounded-full w-24 overflow-hidden">
+                        <div 
+                          className="h-full bg-flow-blue rounded-full"
+                          style={{ width: `${model.accuracy}%` }}
+                        ></div>
+                      </div>
+                      <span className="ml-2 font-medium">{model.accuracy}%</span>
+                    </div>
                   </div>
                   <div className={`h-5 w-5 flex items-center justify-center rounded-full ${
                     model.name === selectedModel
@@ -159,20 +224,33 @@ const ThermodynamicsSelector: React.FC<ThermodynamicsSelectorProps> = ({
             </div>
             
             <div className="mt-4 pt-4 border-t border-gray-200">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button className="text-sm text-flow-blue hover:text-flow-blue/80 flex items-center">
-                      <Info className="h-4 w-4 mr-1.5" />
-                      Advanced Parameters
-                      <ChevronRight className="h-4 w-4 ml-1" />
+              <button 
+                className="text-sm text-flow-blue hover:text-flow-blue/80 flex items-center"
+                onClick={() => setShowAdvanced(!showAdvanced)}
+              >
+                <Info className="h-4 w-4 mr-1.5" />
+                Advanced Parameters
+                <ChevronRight className={`h-4 w-4 ml-1 transition-transform ${showAdvanced ? 'rotate-90' : ''}`} />
+              </button>
+              
+              {showAdvanced && (
+                <div className="mt-3 space-y-3 text-sm bg-white p-3 rounded-lg border border-gray-100">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Binary Interaction Parameters:</span>
+                    <button className="text-flow-blue hover:underline">
+                      Edit
                     </button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Binary interaction parameters and model settings</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Reference State:</span>
+                    <span>Ideal Gas</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Mixing Rule:</span>
+                    <span>van der Waals</span>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -187,6 +265,13 @@ const ThermodynamicsSelector: React.FC<ThermodynamicsSelectorProps> = ({
               Based on your selected components, we recommend using the Peng-Robinson
               equation of state for better accuracy with hydrocarbon systems.
             </p>
+            <button 
+              className="mt-2 text-sm bg-amber-100 hover:bg-amber-200 text-amber-800 px-3 py-1 rounded-md inline-flex items-center"
+              onClick={() => handleModelSelect("Peng-Robinson")}
+            >
+              <BarChart className="h-3.5 w-3.5 mr-1.5" />
+              Apply Recommendation
+            </button>
           </div>
         </div>
       </div>
