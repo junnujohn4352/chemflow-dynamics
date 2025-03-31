@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -11,11 +10,24 @@ import {
   Database, 
   Save,
   Download,
-  CloudUpload
+  CloudUpload,
+  Key,
+  Lock,
+  FileText,
+  AlertTriangle,
+  Trash2,
+  MailCheck
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Alert,
+  AlertTitle,
+  AlertDescription
+} from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Slider } from "@/components/ui/slider";
 
 const Settings = () => {
   const { toast } = useToast();
@@ -38,7 +50,21 @@ const Settings = () => {
     highPrecision: true,
     experimentalFeatures: false,
     dataSync: true,
-    telemetry: true
+    telemetry: true,
+    twoFactorAuth: false,
+    passwordResetRequired: false,
+    dataRetentionDays: 90,
+    anonymizeData: false,
+    encryptSensitiveData: true,
+    secureLogin: true,
+    loginNotifications: true,
+    shareUsageStats: true,
+    showSecurityNotifications: true,
+    emailNotificationsLevel: 2,
+    pushNotificationsEnabled: false,
+    automaticBackups: true,
+    backupFrequency: 7,
+    logRetentionPeriod: 30
   });
 
   const handleProfileUpdate = (e: React.FormEvent) => {
@@ -148,7 +174,7 @@ const Settings = () => {
       </GlassPanel>
     </div>
   );
-  
+
   const renderAppSettingsTab = () => (
     <div className="space-y-6">
       <GlassPanel className="p-6">
@@ -256,6 +282,373 @@ const Settings = () => {
     </div>
   );
 
+  const renderSecurityTab = () => (
+    <div className="space-y-6">
+      <GlassPanel className="p-6">
+        <h3 className="text-lg font-medium mb-6">Account Security</h3>
+        <div className="space-y-4">
+          <Alert className="mb-6">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>Security Status</AlertTitle>
+            <AlertDescription>
+              Your account security is good. Last login: 2 days ago from United States.
+            </AlertDescription>
+          </Alert>
+          
+          <div className="flex items-center justify-between p-4 border border-gray-100 rounded-lg">
+            <div>
+              <h4 className="font-medium">Two-Factor Authentication</h4>
+              <p className="text-sm text-gray-600">Add an extra layer of security to your account</p>
+            </div>
+            <Switch 
+              checked={settings.twoFactorAuth}
+              onCheckedChange={(checked) => handleSettingChange('twoFactorAuth', checked)}
+            />
+          </div>
+          
+          <div className="flex items-center justify-between p-4 border border-gray-100 rounded-lg">
+            <div>
+              <h4 className="font-medium">Login Notifications</h4>
+              <p className="text-sm text-gray-600">Get notified of new logins to your account</p>
+            </div>
+            <Switch 
+              checked={settings.loginNotifications}
+              onCheckedChange={(checked) => handleSettingChange('loginNotifications', checked)}
+            />
+          </div>
+          
+          <div className="flex items-center justify-between p-4 border border-gray-100 rounded-lg">
+            <div>
+              <h4 className="font-medium">Secure Login Sessions</h4>
+              <p className="text-sm text-gray-600">Enforce secure connection for all login sessions</p>
+            </div>
+            <Switch 
+              checked={settings.secureLogin}
+              onCheckedChange={(checked) => handleSettingChange('secureLogin', checked)}
+            />
+          </div>
+          
+          <div className="mt-6">
+            <Button 
+              variant="outline" 
+              className="mr-2"
+              onClick={() => {
+                toast({
+                  title: "Password Reset Email Sent",
+                  description: "Check your inbox for instructions to reset your password."
+                });
+              }}
+            >
+              <Lock className="mr-2 h-4 w-4" />
+              Change Password
+            </Button>
+            
+            <Button 
+              variant="outline"
+              onClick={() => {
+                toast({
+                  title: "Recovery Codes Downloaded",
+                  description: "Keep these codes in a safe place to recover your account if needed."
+                });
+              }}
+            >
+              <Key className="mr-2 h-4 w-4" />
+              Download Recovery Codes
+            </Button>
+          </div>
+        </div>
+      </GlassPanel>
+      
+      <GlassPanel className="p-6">
+        <h3 className="text-lg font-medium mb-6">Login Sessions</h3>
+        <div className="space-y-4">
+          <div className="p-4 border border-gray-100 rounded-lg">
+            <div className="flex justify-between">
+              <div>
+                <h4 className="font-medium">Current Session</h4>
+                <p className="text-sm text-gray-600">Chrome on Windows • United States</p>
+              </div>
+              <div className="text-sm text-gray-500">Active now</div>
+            </div>
+          </div>
+          
+          <div className="p-4 border border-gray-100 rounded-lg">
+            <div className="flex justify-between">
+              <div>
+                <h4 className="font-medium">Mobile App</h4>
+                <p className="text-sm text-gray-600">iPhone 13 • California, United States</p>
+              </div>
+              <div className="text-sm text-gray-500">2 days ago</div>
+            </div>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="mt-2"
+              onClick={() => {
+                toast({
+                  title: "Session Terminated",
+                  description: "The selected session has been logged out."
+                });
+              }}
+            >
+              End Session
+            </Button>
+          </div>
+        </div>
+      </GlassPanel>
+    </div>
+  );
+
+  const renderNotificationsTab = () => (
+    <div className="space-y-6">
+      <GlassPanel className="p-6">
+        <h3 className="text-lg font-medium mb-6">Notification Preferences</h3>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between p-4 border border-gray-100 rounded-lg">
+            <div>
+              <h4 className="font-medium">Email Notifications</h4>
+              <p className="text-sm text-gray-600">Receive notifications via email</p>
+            </div>
+            <Switch 
+              checked={settings.emailAlerts}
+              onCheckedChange={(checked) => handleSettingChange('emailAlerts', checked)}
+            />
+          </div>
+          
+          {settings.emailAlerts && (
+            <div className="p-4 border border-gray-100 rounded-lg">
+              <h4 className="font-medium mb-2">Email Frequency</h4>
+              <p className="text-sm text-gray-600 mb-4">Choose how many emails you receive</p>
+              <div className="px-4">
+                <Slider
+                  defaultValue={[settings.emailNotificationsLevel]}
+                  max={3}
+                  min={1}
+                  step={1}
+                  onValueChange={([value]) => handleSettingChange('emailNotificationsLevel', value)}
+                  className="mb-6"
+                />
+                <div className="flex justify-between text-sm text-gray-600">
+                  <span>Minimal</span>
+                  <span>Important</span>
+                  <span>All Updates</span>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          <div className="flex items-center justify-between p-4 border border-gray-100 rounded-lg">
+            <div>
+              <h4 className="font-medium">Push Notifications</h4>
+              <p className="text-sm text-gray-600">Receive notifications in browser</p>
+            </div>
+            <Switch 
+              checked={settings.pushNotificationsEnabled}
+              onCheckedChange={(checked) => handleSettingChange('pushNotificationsEnabled', checked)}
+            />
+          </div>
+          
+          <div className="flex items-center justify-between p-4 border border-gray-100 rounded-lg">
+            <div>
+              <h4 className="font-medium">Security Alerts</h4>
+              <p className="text-sm text-gray-600">Get notified about security events</p>
+            </div>
+            <Switch 
+              checked={settings.showSecurityNotifications}
+              onCheckedChange={(checked) => handleSettingChange('showSecurityNotifications', checked)}
+            />
+          </div>
+        </div>
+      </GlassPanel>
+      
+      <GlassPanel className="p-6">
+        <h3 className="text-lg font-medium mb-6">Notification Categories</h3>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between p-4 border border-gray-100 rounded-lg">
+            <div>
+              <h4 className="font-medium">Simulation Results</h4>
+              <p className="text-sm text-gray-600">When simulations complete or encounter errors</p>
+            </div>
+            <Switch defaultChecked />
+          </div>
+          
+          <div className="flex items-center justify-between p-4 border border-gray-100 rounded-lg">
+            <div>
+              <h4 className="font-medium">System Updates</h4>
+              <p className="text-sm text-gray-600">New features and system improvements</p>
+            </div>
+            <Switch defaultChecked />
+          </div>
+          
+          <div className="flex items-center justify-between p-4 border border-gray-100 rounded-lg">
+            <div>
+              <h4 className="font-medium">Account Activity</h4>
+              <p className="text-sm text-gray-600">Login attempts and account changes</p>
+            </div>
+            <Switch defaultChecked />
+          </div>
+        </div>
+        
+        <div className="mt-6">
+          <Button 
+            variant="outline" 
+            className="w-full"
+            onClick={() => {
+              toast({
+                title: "Test Notification Sent",
+                description: "A test notification has been sent to verify your settings."
+              });
+            }}
+          >
+            <MailCheck className="mr-2 h-4 w-4" />
+            Send Test Notification
+          </Button>
+        </div>
+      </GlassPanel>
+    </div>
+  );
+
+  const renderDataPrivacyTab = () => (
+    <div className="space-y-6">
+      <GlassPanel className="p-6">
+        <h3 className="text-lg font-medium mb-6">Data Privacy Settings</h3>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between p-4 border border-gray-100 rounded-lg">
+            <div>
+              <h4 className="font-medium">Encrypt Sensitive Data</h4>
+              <p className="text-sm text-gray-600">Use enhanced encryption for sensitive information</p>
+            </div>
+            <Switch 
+              checked={settings.encryptSensitiveData}
+              onCheckedChange={(checked) => handleSettingChange('encryptSensitiveData', checked)}
+            />
+          </div>
+          
+          <div className="flex items-center justify-between p-4 border border-gray-100 rounded-lg">
+            <div>
+              <h4 className="font-medium">Anonymize Usage Data</h4>
+              <p className="text-sm text-gray-600">Remove personal identifiers from analytics</p>
+            </div>
+            <Switch 
+              checked={settings.anonymizeData}
+              onCheckedChange={(checked) => handleSettingChange('anonymizeData', checked)}
+            />
+          </div>
+          
+          <div className="flex items-center justify-between p-4 border border-gray-100 rounded-lg">
+            <div>
+              <h4 className="font-medium">Share Usage Statistics</h4>
+              <p className="text-sm text-gray-600">Help improve ChemFlow by sharing anonymous usage data</p>
+            </div>
+            <Switch 
+              checked={settings.shareUsageStats}
+              onCheckedChange={(checked) => handleSettingChange('shareUsageStats', checked)}
+            />
+          </div>
+          
+          <div className="p-4 border border-gray-100 rounded-lg">
+            <h4 className="font-medium mb-2">Data Retention Period</h4>
+            <p className="text-sm text-gray-600 mb-4">How long we store your simulation data</p>
+            <div className="px-4">
+              <Slider
+                defaultValue={[settings.dataRetentionDays]}
+                max={365}
+                min={30}
+                step={30}
+                onValueChange={([value]) => handleSettingChange('dataRetentionDays', value)}
+                className="mb-6"
+              />
+              <div className="flex justify-between text-sm text-gray-600">
+                <span>30 days</span>
+                <span>6 months</span>
+                <span>1 year</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </GlassPanel>
+      
+      <GlassPanel className="p-6">
+        <h3 className="text-lg font-medium mb-6">Data Management</h3>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between p-4 border border-gray-100 rounded-lg">
+            <div>
+              <h4 className="font-medium">Automatic Backups</h4>
+              <p className="text-sm text-gray-600">Regularly back up your simulations and settings</p>
+            </div>
+            <Switch 
+              checked={settings.automaticBackups}
+              onCheckedChange={(checked) => handleSettingChange('automaticBackups', checked)}
+            />
+          </div>
+          
+          <div className="flex items-center justify-between p-4 border border-gray-100 rounded-lg">
+            <div>
+              <h4 className="font-medium">Backup Frequency</h4>
+              <p className="text-sm text-gray-600">Every {settings.backupFrequency} days</p>
+            </div>
+            <div className="w-32">
+              <Slider
+                defaultValue={[settings.backupFrequency]}
+                max={30}
+                min={1}
+                step={1}
+                onValueChange={([value]) => handleSettingChange('backupFrequency', value)}
+              />
+            </div>
+          </div>
+        </div>
+        
+        <div className="mt-6 space-x-2">
+          <Button 
+            variant="outline"
+            onClick={() => {
+              toast({
+                title: "Data Exported",
+                description: "Your data has been exported successfully."
+              });
+            }}
+          >
+            <Download className="mr-2 h-4 w-4" />
+            Export All Data
+          </Button>
+          
+          <Button 
+            variant="outline" 
+            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+            onClick={() => {
+              toast({
+                title: "Request Submitted",
+                description: "Your data deletion request has been submitted and will be processed."
+              });
+            }}
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            Request Data Deletion
+          </Button>
+        </div>
+      </GlassPanel>
+      
+      <GlassPanel className="p-6">
+        <h3 className="text-lg font-medium mb-3">Legal Documents</h3>
+        <div className="space-y-2">
+          <a href="#" className="flex items-center p-3 text-gray-700 hover:bg-gray-50 rounded-lg">
+            <FileText className="mr-3 h-5 w-5 text-gray-500" />
+            <span>Privacy Policy</span>
+          </a>
+          <a href="#" className="flex items-center p-3 text-gray-700 hover:bg-gray-50 rounded-lg">
+            <FileText className="mr-3 h-5 w-5 text-gray-500" />
+            <span>Terms of Service</span>
+          </a>
+          <a href="#" className="flex items-center p-3 text-gray-700 hover:bg-gray-50 rounded-lg">
+            <FileText className="mr-3 h-5 w-5 text-gray-500" />
+            <span>Data Processing Agreement</span>
+          </a>
+        </div>
+      </GlassPanel>
+    </div>
+  );
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -339,18 +732,9 @@ const Settings = () => {
             <div className="md:w-3/4">
               {activeTab === "profile" && renderProfileTab()}
               {activeTab === "app" && renderAppSettingsTab()}
-              {(activeTab === "notifications" || activeTab === "security" || activeTab === "data") && (
-                <GlassPanel className="p-10 text-center">
-                  <h3 className="text-xl font-medium mb-2">Coming Soon</h3>
-                  <p className="text-gray-600 mb-4">This section is currently being developed</p>
-                  <button 
-                    onClick={() => setActiveTab("profile")}
-                    className="inline-flex items-center px-4 py-2 rounded-lg bg-flow-blue text-white hover:bg-flow-blue/90 transition-colors"
-                  >
-                    Return to Profile
-                  </button>
-                </GlassPanel>
-              )}
+              {activeTab === "notifications" && renderNotificationsTab()}
+              {activeTab === "security" && renderSecurityTab()}
+              {activeTab === "data" && renderDataPrivacyTab()}
             </div>
           </div>
         </div>

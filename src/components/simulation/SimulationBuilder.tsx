@@ -1,6 +1,5 @@
-
 import React, { useState, useRef, useEffect } from "react";
-import { Plus, Thermometer, Droplets, Settings2, Container, FlaskConical, Columns, Gauge, Save, Trash2, X, Sliders } from "lucide-react";
+import { Plus, Minus, Thermometer, Droplets, Settings2, Container, FlaskConical, Columns, Gauge, Save, Trash2, X, Sliders } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import EquipmentSettings from "./EquipmentSettings";
@@ -67,7 +66,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
     
-    // Add new equipment
     const activeEquipmentInfo = equipmentList.find(item => item.id === activeEquipment);
     if (activeEquipmentInfo) {
       const newEquipment: Equipment = {
@@ -85,7 +83,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
         description: `${activeEquipmentInfo.name} has been added to the flowsheet`
       });
       
-      // Reset active equipment after placing
       setActiveEquipment(null);
     }
   };
@@ -179,7 +176,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     e.stopPropagation();
     
     if (isConnecting) {
-      // Complete a connection
       if (isConnecting !== equipmentId) {
         const newStream: Stream = {
           id: `stream-${Date.now()}`,
@@ -191,7 +187,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
         
         setStreams(prev => [...prev, newStream]);
         
-        // Update the connections array for both equipment
         setEquipment(prev => 
           prev.map(eq => {
             if (eq.id === isConnecting) {
@@ -211,7 +206,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
         });
       }
     } else {
-      // Select equipment
       setSelectedElement(equipmentId);
     }
   };
@@ -227,10 +221,7 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
   const deleteSelected = () => {
     if (!selectedElement) return;
     
-    // Remove the selected equipment
     setEquipment(prev => prev.filter(eq => eq.id !== selectedElement));
-    
-    // Remove any streams connected to this equipment
     setStreams(prev => prev.filter(
       stream => stream.from !== selectedElement && stream.to !== selectedElement
     ));
@@ -282,7 +273,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
       return;
     }
     
-    // Save the current simulation state
     saveFlowsheet();
     
     toast({
@@ -290,7 +280,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
       description: "Calculating process flows and conditions..."
     });
     
-    // Call the parent callback to run simulation
     onRunSimulation();
   };
 
@@ -388,14 +377,11 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     const endX = toEquipment.position.x;
     const endY = toEquipment.position.y;
     
-    // Calculate line length for arrow placement
     const lineLength = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
     
-    // Calculate direction vector
     const dirX = (endX - startX) / lineLength;
     const dirY = (endY - startY) / lineLength;
     
-    // Calculate arrow points (80% along the line)
     const arrowX = startX + dirX * lineLength * 0.8;
     const arrowY = startY + dirY * lineLength * 0.8;
     
@@ -414,13 +400,26 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
           strokeWidth="2"
           strokeDasharray={stream.type === "energy" ? "5,5" : ""}
         />
-        {/* Arrow head */}
         <polygon 
           points={`${arrowX},${arrowY} ${arrowX-5*dirY-5*dirX},${arrowY+5*dirX-5*dirY} ${arrowX+5*dirY-5*dirX},${arrowY-5*dirX-5*dirY}`}
           fill="#3B82F6"
         />
       </svg>
     );
+  };
+  
+  const handleZoomIn = () => {
+    setZoom(prev => Math.min(prev + 10, 200));
+    toast({
+      description: `Zoom level: ${Math.min(zoom + 10, 200)}%`
+    });
+  };
+  
+  const handleZoomOut = () => {
+    setZoom(prev => Math.max(prev - 10, 50));
+    toast({
+      description: `Zoom level: ${Math.max(zoom - 10, 50)}%`
+    });
   };
   
   return (
@@ -431,7 +430,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
       </p>
       
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        {/* Equipment palette */}
         <div className="col-span-1">
           <div className="bg-gray-50 rounded-lg border border-gray-200 p-4">
             <h3 className="font-medium mb-3">Equipment</h3>
@@ -500,17 +498,23 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
           </div>
         </div>
         
-        {/* Flowsheet canvas */}
         <div className="col-span-1 md:col-span-3">
           <div className="bg-white rounded-lg border border-gray-200 h-[500px] flex flex-col relative">
-            {/* Canvas toolbar */}
             <div className="p-3 border-b border-gray-200 flex justify-between items-center">
               <div className="flex items-center space-x-2">
                 <button 
                   className="p-1.5 rounded hover:bg-gray-100 transition-colors"
-                  onClick={() => setZoom(prev => Math.min(prev + 10, 200))}
+                  onClick={handleZoomIn}
+                  aria-label="Zoom in"
                 >
                   <Plus className="h-4 w-4 text-gray-600" />
+                </button>
+                <button 
+                  className="p-1.5 rounded hover:bg-gray-100 transition-colors"
+                  onClick={handleZoomOut}
+                  aria-label="Zoom out"
+                >
+                  <Minus className="h-4 w-4 text-gray-600" />
                 </button>
                 <div className="text-gray-600 text-sm">Zoom: {zoom}%</div>
               </div>
@@ -522,7 +526,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
               </button>
             </div>
             
-            {/* Canvas with equipment and streams */}
             <div 
               ref={canvasRef}
               className="flex-1 relative overflow-hidden"
@@ -584,7 +587,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
                 </div>
               )}
               
-              {/* Render equipment and streams */}
               {streams.map(renderStream)}
               {equipment.map(renderEquipment)}
             </div>
@@ -592,7 +594,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
         </div>
       </div>
 
-      {/* Equipment settings modal */}
       {editingEquipment && (
         <EquipmentSettings
           equipment={editingEquipment}
