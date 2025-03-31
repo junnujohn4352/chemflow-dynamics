@@ -56,6 +56,20 @@ interface ComponentSelectorProps {
   setSelectedComponents: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
+// Define a type for chemical components to ensure consistency
+type ChemicalComponent = {
+  id: string;
+  name: string;
+  formula: string;
+  cas: string;
+  category: string;
+  phase: string;
+  mw: number;
+  tc: number;
+  pc: number;
+  omega: number;
+};
+
 // Schema for custom chemical validation
 const customChemicalSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -79,7 +93,7 @@ const ComponentSelector: React.FC<ComponentSelectorProps> = ({
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [showRecommended, setShowRecommended] = useState(true);
-  const [customComponents, setCustomComponents] = useState<typeof CHEMICAL_DATABASE>([]);
+  const [customComponents, setCustomComponents] = useState<ChemicalComponent[]>([]);
   const [showCustomDialog, setShowCustomDialog] = useState(false);
   const [nextCustomId, setNextCustomId] = useState(100); // Start custom IDs from 100
   
@@ -154,9 +168,18 @@ const ComponentSelector: React.FC<ComponentSelectorProps> = ({
   };
 
   const onSubmitCustom = (values: CustomChemicalFormValues) => {
-    const newComponent = {
+    // Create a properly typed new component by ensuring all required fields are present
+    const newComponent: ChemicalComponent = {
       id: `custom-${nextCustomId}`,
-      ...values,
+      name: values.name,
+      formula: values.formula,
+      cas: values.cas || "",  // Provide default empty string for optional cas
+      category: values.category,
+      phase: values.phase,
+      mw: values.mw,
+      tc: values.tc || 0,     // Provide default 0 for optional tc
+      pc: values.pc || 0,     // Provide default 0 for optional pc
+      omega: values.omega || 0  // Provide default 0 for optional omega
     };
     
     setCustomComponents(prev => [...prev, newComponent]);
