@@ -76,15 +76,23 @@ const Settings = () => {
     });
   };
 
-  const handleSettingChange = (setting: string, value: boolean) => {
+  const handleSettingChange = (setting: string, value: boolean | number) => {
     setSettings(prev => ({
       ...prev,
       [setting]: value
     }));
-    toast({
-      title: "Setting updated",
-      description: `${setting.charAt(0).toUpperCase() + setting.slice(1).replace(/([A-Z])/g, ' $1')} has been ${value ? 'enabled' : 'disabled'}.`
-    });
+    
+    if (typeof value === 'boolean') {
+      toast({
+        title: "Setting updated",
+        description: `${setting.charAt(0).toUpperCase() + setting.slice(1).replace(/([A-Z])/g, ' $1')} has been ${value ? 'enabled' : 'disabled'}.`
+      });
+    } else {
+      toast({
+        title: "Setting updated",
+        description: `${setting.charAt(0).toUpperCase() + setting.slice(1).replace(/([A-Z])/g, ' $1')} has been set to ${value}.`
+      });
+    }
   };
 
   const handleProfileChange = (field: string, value: string) => {
