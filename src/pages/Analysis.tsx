@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import GlassPanel from "@/components/ui/GlassPanel";
@@ -26,29 +26,41 @@ const Analysis = () => {
   const [activeSimulation, setActiveSimulation] = useState<boolean>(false);
   const [analysisData, setAnalysisData] = useState<AnalysisData[]>([]);
   const [refreshInterval, setRefreshInterval] = useState<NodeJS.Timeout | null>(null);
+  const [simulationStarted, setSimulationStarted] = useState(false);
 
+  // Check for existing simulation data
   useEffect(() => {
-    // Check if we have a saved simulation
     const equipment = localStorage.getItem('chemflow-equipment');
     const streams = localStorage.getItem('chemflow-streams');
     
     if (equipment && streams) {
       setActiveSimulation(true);
-      refreshData();
-      
-      // Set up periodic refresh
-      const interval = setInterval(() => {
-        refreshData();
-      }, 10000); // Refresh every 10 seconds
-      
-      setRefreshInterval(interval);
-    } else {
-      setLoading(false);
     }
+    
+    setLoading(false);
     
     return () => {
       if (refreshInterval) {
         clearInterval(refreshInterval);
+      }
+    };
+  }, []);
+
+  // Start data generation when simulation is run
+  const startSimulation = useCallback(() => {
+    setSimulationStarted(true);
+    refreshData();
+    
+    // Set up periodic refresh every 10 seconds
+    const interval = setInterval(() => {
+      refreshData();
+    }, 10000);
+    
+    setRefreshInterval(interval);
+    
+    return () => {
+      if (interval) {
+        clearInterval(interval);
       }
     };
   }, []);
@@ -60,22 +72,30 @@ const Analysis = () => {
     const now = new Date();
     const newData: AnalysisData[] = [];
     
-    // Generate data for the last 24 hours with 1-hour intervals
+    // Generate data points with some realistic variations
     for (let i = 24; i >= 0; i--) {
       const timestamp = new Date(now.getTime() - i * 60 * 60 * 1000);
       
-      // Add some randomness to create realistic-looking data
-      const noise = Math.sin(i * 0.5) + Math.random() * 0.5;
-      const temperatureBase = 75 + noise * 5; // Base temperature with fluctuation
+      // Add sinusoidal patterns and some randomness for realism
+      const timeEffect = Math.sin(i * 0.5);
+      const randomFactor = Math.random() * 0.5;
+      const noiseComponent = timeEffect + randomFactor;
+      
+      // Calculate values with noise
+      const temperatureBase = 75 + noiseComponent * 5;
+      const pressureBase = 150 + noiseComponent * 10;
+      const flowBase = 120 + noiseComponent * 15;
+      const compABase = 78 + noiseComponent * 3;
+      const compBBase = 22 - noiseComponent * 3;
       
       newData.push({
         timestamp: timestamp.toISOString(),
         temperature: Math.round(temperatureBase * 10) / 10,
-        pressure: Math.round((150 + noise * 10) * 10) / 10,
-        flow: Math.round((120 + noise * 15) * 10) / 10,
+        pressure: Math.round(pressureBase * 10) / 10,
+        flow: Math.round(flowBase * 10) / 10,
         composition: {
-          componentA: Math.round((78 + noise * 3) * 10) / 10,
-          componentB: Math.round((22 - noise * 3) * 10) / 10,
+          componentA: Math.round(compABase * 10) / 10,
+          componentB: Math.round(compBBase * 10) / 10,
         }
       });
     }
@@ -119,15 +139,15 @@ const Analysis = () => {
               <Button 
                 variant="outline" 
                 onClick={refreshData}
-                disabled={loading || !activeSimulation}
+                disabled={loading || !activeSimulation || !simulationStarted}
               >
                 <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-                Refresh
+                Refresh Data
               </Button>
               <Button 
                 variant="outline" 
                 onClick={downloadData}
-                disabled={loading || !activeSimulation || analysisData.length === 0}
+                disabled={loading || !simulationStarted || analysisData.length === 0}
               >
                 <Download className="mr-2 h-4 w-4" />
                 Export Data
@@ -152,88 +172,99 @@ const Analysis = () => {
             </GlassPanel>
           ) : (
             <>
-              <ProcessFlow className="mb-8" />
+              <ProcessFlow className="mb-8" onStartSimulation={startSimulation} />
               
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                <GlassPanel className="p-6">
-                  <h2 className="text-xl font-medium mb-4">Temperature Profile</h2>
-                  <div className="h-80">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart
-                        data={analysisData}
-                        margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="timestamp" tickFormatter={formatTime} />
-                        <YAxis />
-                        <Tooltip formatter={(value) => [`${value}°C`, 'Temperature']} />
-                        <Legend />
-                        <Line type="monotone" dataKey="temperature" stroke="#3B82F6" strokeWidth={2} dot={false} />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </div>
+              {!simulationStarted ? (
+                <GlassPanel className="p-12 text-center mb-6">
+                  <h3 className="text-xl font-medium mb-2">Waiting for Simulation to Start</h3>
+                  <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                    Click the "Run Simulation" button above to generate real-time analysis data.
+                  </p>
                 </GlassPanel>
-                
-                <GlassPanel className="p-6">
-                  <h2 className="text-xl font-medium mb-4">Pressure Trend</h2>
-                  <div className="h-80">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart
-                        data={analysisData}
-                        margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="timestamp" tickFormatter={formatTime} />
-                        <YAxis />
-                        <Tooltip formatter={(value) => [`${value} kPa`, 'Pressure']} />
-                        <Legend />
-                        <Line type="monotone" dataKey="pressure" stroke="#22D3EE" strokeWidth={2} dot={false} />
-                      </LineChart>
-                    </ResponsiveContainer>
+              ) : (
+                <>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    <GlassPanel className="p-6">
+                      <h2 className="text-xl font-medium mb-4">Temperature Profile</h2>
+                      <div className="h-80">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <LineChart
+                            data={analysisData}
+                            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                          >
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="timestamp" tickFormatter={formatTime} />
+                            <YAxis />
+                            <Tooltip formatter={(value) => [`${value}°C`, 'Temperature']} />
+                            <Legend />
+                            <Line type="monotone" dataKey="temperature" stroke="#3B82F6" strokeWidth={2} dot={false} />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </GlassPanel>
+                    
+                    <GlassPanel className="p-6">
+                      <h2 className="text-xl font-medium mb-4">Pressure Trend</h2>
+                      <div className="h-80">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <LineChart
+                            data={analysisData}
+                            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                          >
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="timestamp" tickFormatter={formatTime} />
+                            <YAxis />
+                            <Tooltip formatter={(value) => [`${value} kPa`, 'Pressure']} />
+                            <Legend />
+                            <Line type="monotone" dataKey="pressure" stroke="#22D3EE" strokeWidth={2} dot={false} />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </GlassPanel>
                   </div>
-                </GlassPanel>
-              </div>
-              
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <GlassPanel className="p-6">
-                  <h2 className="text-xl font-medium mb-4">Flow Rate Analysis</h2>
-                  <div className="h-80">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart
-                        data={analysisData}
-                        margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="timestamp" tickFormatter={formatTime} />
-                        <YAxis />
-                        <Tooltip formatter={(value) => [`${value} kg/h`, 'Flow Rate']} />
-                        <Legend />
-                        <Line type="monotone" dataKey="flow" stroke="#2DD4BF" strokeWidth={2} dot={false} />
-                      </LineChart>
-                    </ResponsiveContainer>
+                  
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <GlassPanel className="p-6">
+                      <h2 className="text-xl font-medium mb-4">Flow Rate Analysis</h2>
+                      <div className="h-80">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <LineChart
+                            data={analysisData}
+                            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                          >
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="timestamp" tickFormatter={formatTime} />
+                            <YAxis />
+                            <Tooltip formatter={(value) => [`${value} kg/h`, 'Flow Rate']} />
+                            <Legend />
+                            <Line type="monotone" dataKey="flow" stroke="#2DD4BF" strokeWidth={2} dot={false} />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </GlassPanel>
+                    
+                    <GlassPanel className="p-6">
+                      <h2 className="text-xl font-medium mb-4">Component Composition</h2>
+                      <div className="h-80">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <LineChart
+                            data={analysisData}
+                            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                          >
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="timestamp" tickFormatter={formatTime} />
+                            <YAxis />
+                            <Tooltip formatter={(value) => [`${value}%`, 'Concentration']} />
+                            <Legend />
+                            <Line type="monotone" dataKey="composition.componentA" name="Component A" stroke="#8884d8" strokeWidth={2} dot={false} />
+                            <Line type="monotone" dataKey="composition.componentB" name="Component B" stroke="#82ca9d" strokeWidth={2} dot={false} />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </GlassPanel>
                   </div>
-                </GlassPanel>
-                
-                <GlassPanel className="p-6">
-                  <h2 className="text-xl font-medium mb-4">Component Composition</h2>
-                  <div className="h-80">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart
-                        data={analysisData}
-                        margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="timestamp" tickFormatter={formatTime} />
-                        <YAxis />
-                        <Tooltip formatter={(value) => [`${value}%`, 'Concentration']} />
-                        <Legend />
-                        <Line type="monotone" dataKey="composition.componentA" name="Component A" stroke="#8884d8" strokeWidth={2} dot={false} />
-                        <Line type="monotone" dataKey="composition.componentB" name="Component B" stroke="#82ca9d" strokeWidth={2} dot={false} />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </div>
-                </GlassPanel>
-              </div>
+                </>
+              )}
             </>
           )}
         </div>

@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import EquipmentCard from "./EquipmentCard";
 import GlassPanel from "./GlassPanel";
@@ -10,21 +10,65 @@ import {
   Download, 
   LineChart, 
   Play, 
-  Square, // Changed from Stop to Square
+  Square,
   Settings2, 
   Share2
 } from "lucide-react";
 
 interface ProcessFlowProps {
   className?: string;
+  onStartSimulation?: () => void;
 }
 
-const ProcessFlow: React.FC<ProcessFlowProps> = ({ className }) => {
+const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation }) => {
   const [isRunning, setIsRunning] = useState(false);
+  const [simulationData, setSimulationData] = useState({
+    componentA: 0,
+    componentB: 0,
+    systemEfficiency: 0
+  });
   
   const toggleSimulation = () => {
-    setIsRunning(!isRunning);
+    const newState = !isRunning;
+    setIsRunning(newState);
+    
+    if (newState && onStartSimulation) {
+      onStartSimulation();
+    }
+    
+    // Start updating simulation data if running
+    if (newState) {
+      startDataUpdates();
+    }
   };
+
+  const startDataUpdates = () => {
+    // Simulate data flow when simulation is running
+    let progress = 0;
+    const updateInterval = setInterval(() => {
+      progress += 5;
+      if (progress <= 100) {
+        setSimulationData({
+          componentA: Math.min(78, (78 * progress) / 100),
+          componentB: Math.min(45, (45 * progress) / 100),
+          systemEfficiency: Math.min(92, (92 * progress) / 100)
+        });
+      } else {
+        clearInterval(updateInterval);
+      }
+    }, 200);
+    
+    // Clean up interval on component unmount
+    return () => clearInterval(updateInterval);
+  };
+
+  useEffect(() => {
+    // Clean up on unmount
+    return () => {
+      // Reset state when component unmounts
+      setIsRunning(false);
+    };
+  }, []);
 
   return (
     <div className={cn("w-full", className)}>
@@ -46,7 +90,7 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className }) => {
             >
               {isRunning ? (
                 <>
-                  <Square className="mr-2 h-4 w-4" /> {/* Changed from Stop to Square */}
+                  <Square className="mr-2 h-4 w-4" />
                   Stop Simulation
                 </>
               ) : (
@@ -68,6 +112,7 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className }) => {
           </div>
         </div>
 
+        {/* Process Flow Diagram */}
         <div className="grid grid-cols-3 gap-6 mb-6">
           <div className="col-span-2">
             <div className="flex flex-col gap-4">
@@ -150,6 +195,7 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className }) => {
             </div>
           </div>
           
+          {/* Process Data Panel */}
           <div>
             <div className="h-full flex flex-col gap-6">
               <div className="flex-1 rounded-xl border border-gray-100 overflow-hidden shadow-sm bg-white p-4">
@@ -167,16 +213,17 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className }) => {
                     </button>
                   </div>
                 </div>
+                
                 <div className="space-y-4">
                   <div className="p-3 rounded-lg bg-gray-50">
                     <div className="flex justify-between">
                       <span className="text-sm text-gray-500">Component A</span>
-                      <span className="text-sm font-medium">{isRunning ? "78%" : "0%"}</span>
+                      <span className="text-sm font-medium">{simulationData.componentA.toFixed(1)}%</span>
                     </div>
                     <div className="w-full h-2 bg-gray-200 rounded-full mt-2">
                       <div 
-                        className="h-2 bg-flow-blue rounded-full transition-all duration-1000 ease-out"
-                        style={{ width: isRunning ? "78%" : "0%" }}
+                        className="h-2 bg-flow-blue rounded-full transition-all duration-500 ease-out"
+                        style={{ width: `${simulationData.componentA}%` }}
                       ></div>
                     </div>
                   </div>
@@ -184,12 +231,12 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className }) => {
                   <div className="p-3 rounded-lg bg-gray-50">
                     <div className="flex justify-between">
                       <span className="text-sm text-gray-500">Component B</span>
-                      <span className="text-sm font-medium">{isRunning ? "45%" : "0%"}</span>
+                      <span className="text-sm font-medium">{simulationData.componentB.toFixed(1)}%</span>
                     </div>
                     <div className="w-full h-2 bg-gray-200 rounded-full mt-2">
                       <div 
-                        className="h-2 bg-flow-cyan rounded-full transition-all duration-1000 ease-out"
-                        style={{ width: isRunning ? "45%" : "0%" }}
+                        className="h-2 bg-flow-cyan rounded-full transition-all duration-500 ease-out"
+                        style={{ width: `${simulationData.componentB}%` }}
                       ></div>
                     </div>
                   </div>
@@ -197,12 +244,12 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className }) => {
                   <div className="p-3 rounded-lg bg-gray-50">
                     <div className="flex justify-between">
                       <span className="text-sm text-gray-500">System Efficiency</span>
-                      <span className="text-sm font-medium">{isRunning ? "92%" : "0%"}</span>
+                      <span className="text-sm font-medium">{simulationData.systemEfficiency.toFixed(1)}%</span>
                     </div>
                     <div className="w-full h-2 bg-gray-200 rounded-full mt-2">
                       <div 
-                        className="h-2 bg-flow-teal rounded-full transition-all duration-1000 ease-out"
-                        style={{ width: isRunning ? "92%" : "0%" }}
+                        className="h-2 bg-flow-teal rounded-full transition-all duration-500 ease-out"
+                        style={{ width: `${simulationData.systemEfficiency}%` }}
                       ></div>
                     </div>
                   </div>
