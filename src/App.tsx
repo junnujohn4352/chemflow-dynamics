@@ -48,11 +48,19 @@ const App: React.FC = () => {
         <BrowserRouter>
           <Routes>
             {/* Public routes */}
-            <Route path="/sign-in" element={<SignIn />} />
-            <Route path="/sign-up" element={<SignUp />} />
+            <Route path="/sign-in" element={
+              isAuthenticated() ? <Navigate to="/simulations" replace /> : <SignIn />
+            } />
+            <Route path="/sign-up" element={
+              isAuthenticated() ? <Navigate to="/simulations" replace /> : <SignUp />
+            } />
+            
+            {/* Redirect root to simulations dashboard for authenticated users */}
+            <Route path="/" element={
+              isAuthenticated() ? <Navigate to="/simulations" replace /> : <Index />
+            } />
             
             {/* Protected routes */}
-            <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
             <Route path="/simulations" element={<ProtectedRoute><Simulations /></ProtectedRoute>} />
             <Route path="/create-simulation" element={<ProtectedRoute><CreateSimulation /></ProtectedRoute>} />
             <Route path="/components" element={<ProtectedRoute><Components /></ProtectedRoute>} />

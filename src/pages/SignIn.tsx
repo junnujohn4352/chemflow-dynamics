@@ -52,12 +52,16 @@ const SignIn: React.FC = () => {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1500));
       
+      // Set authentication status in localStorage
+      localStorage.setItem("auth", "true");
+      
       toast({
         title: "Signed in successfully",
         description: "Welcome back to ChemFlow!",
       });
       
-      navigate("/");
+      // Redirect to dashboard instead of root
+      navigate("/simulations");
     } catch (error) {
       toast({
         title: "Sign in failed",
