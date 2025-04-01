@@ -1,11 +1,20 @@
 
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import GlassPanel from "@/components/ui/GlassPanel";
-import { PlusCircle, Clock, ArrowRight, FlaskConical } from "lucide-react";
+import { 
+  PlusCircle, Clock, ArrowRight, FlaskConical, 
+  Trash2, Play, Edit, Download 
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+
+interface SimulationComponent {
+  name: string;
+  percentage: number;
+}
 
 interface SimulationCard {
   id: string;
@@ -13,19 +22,118 @@ interface SimulationCard {
   description: string;
   lastUpdated: string;
   efficiency: number;
-  components: { name: string; percentage: number }[];
+  components: SimulationComponent[];
+  equipment?: number;
+  streams?: number;
+  thermodynamicModel?: string;
 }
 
 const Simulations = () => {
   const { toast } = useToast();
-  // Empty simulations array - user will create their own
+  const navigate = useNavigate();
   const [simulations, setSimulations] = useState<SimulationCard[]>([]);
+  
+  // Load simulations when component mounts
+  useEffect(() => {
+    loadSimulations();
+  }, []);
+  
+  const loadSimulations = () => {
+    const saved = localStorage.getItem('chemflow-simulations');
+    if (saved) {
+      try {
+        const parsedSimulations = JSON.parse(saved);
+        setSimulations(parsedSimulations);
+      } catch (e) {
+        console.error("Error loading simulations:", e);
+      }
+    }
+  };
 
   const handleDeleteSimulation = (id: string) => {
-    setSimulations(simulations.filter(sim => sim.id !== id));
+    // Update the simulations list
+    const updatedSimulations = simulations.filter(sim => sim.id !== id);
+    setSimulations(updatedSimulations);
+    localStorage.setItem('chemflow-simulations', JSON.stringify(updatedSimulations));
+    
+    // If active simulation was deleted, clear active simulation flag
+    const activeSimData = localStorage.getItem('chemflow-simulation-data');
+    if (activeSimData) {
+      try {
+        const simData = JSON.parse(activeSimData);
+        const simName = simData.name;
+        
+        const deletedSim = simulations.find(sim => sim.id === id);
+        if (deletedSim && deletedSim.name === simName) {
+          localStorage.removeItem('chemflow-active-simulation');
+          localStorage.removeItem('chemflow-simulation-running');
+        }
+      } catch (e) {
+        console.error("Error checking active simulation:", e);
+      }
+    }
+    
     toast({
       title: "Simulation deleted",
       description: "The simulation has been removed successfully."
+    });
+  };
+  
+  const handleRunSimulation = (simulation: SimulationCard) => {
+    // Load the saved equipment and streams if available
+    localStorage.setItem('chemflow-active-simulation', 'true');
+    localStorage.setItem('chemflow-simulation-running', 'true');
+    
+    // Create simulation data object
+    const simulationData = {
+      name: simulation.name,
+      components: simulation.components.map(c => c.name),
+      thermodynamicModel: simulation.thermodynamicModel || 'Peng-Robinson',
+      lastUpdated: new Date().toISOString()
+    };
+    
+    localStorage.setItem('chemflow-simulation-data', JSON.stringify(simulationData));
+    
+    toast({
+      title: "Simulation activated",
+      description: "Navigating to analysis..."
+    });
+    
+    // Navigate to analysis page
+    setTimeout(() => {
+      navigate('/analysis');
+    }, 1000);
+  };
+  
+  const handleEditSimulation = (simulation: SimulationCard) => {
+    // Set this simulation as active and navigate to create-simulation
+    localStorage.setItem('chemflow-active-simulation', 'true');
+    
+    // Create simulation data object
+    const simulationData = {
+      name: simulation.name,
+      components: simulation.components.map(c => c.name),
+      thermodynamicModel: simulation.thermodynamicModel || 'Peng-Robinson',
+      lastUpdated: new Date().toISOString()
+    };
+    
+    localStorage.setItem('chemflow-simulation-data', JSON.stringify(simulationData));
+    
+    navigate('/create-simulation');
+  };
+  
+  const exportSimulation = (simulation: SimulationCard) => {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(simulation));
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("download", `${simulation.name}.json`);
+    document.body.appendChild(downloadAnchorNode);
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+    
+    toast({
+      title: "Simulation exported",
+      description: "The simulation has been downloaded as JSON"
     });
   };
 
@@ -62,14 +170,14 @@ const Simulations = () => {
                     </div>
                     <div className="flex items-center text-sm text-gray-500">
                       <Clock className="h-4 w-4 mr-1" />
-                      <span>{sim.lastUpdated}</span>
+                      <span>{new Date(sim.lastUpdated).toLocaleString()}</span>
                     </div>
                   </div>
                   
                   <h3 className="text-xl font-medium mb-2">{sim.name}</h3>
                   <p className="text-gray-600 text-sm mb-4">{sim.description}</p>
                   
-                  <div className="mb-6">
+                  <div className="mb-4">
                     <h4 className="text-sm font-medium mb-2">Components</h4>
                     {sim.components.map((comp, idx) => (
                       <div key={idx} className="mb-2">
@@ -87,18 +195,69 @@ const Simulations = () => {
                     ))}
                   </div>
                   
+                  {sim.thermodynamicModel && (
+                    <div className="text-sm mb-4">
+                      <span className="text-gray-500">Property Package:</span>
+                      <span className="ml-2 font-medium">{sim.thermodynamicModel}</span>
+                    </div>
+                  )}
+                  
+                  {sim.equipment !== undefined && (
+                    <div className="text-sm mb-4">
+                      <span className="text-gray-500">Equipment:</span>
+                      <span className="ml-2 font-medium">{sim.equipment}</span>
+                      {sim.streams !== undefined && (
+                        <>
+                          <span className="mx-2">|</span>
+                          <span className="text-gray-500">Streams:</span>
+                          <span className="ml-2 font-medium">{sim.streams}</span>
+                        </>
+                      )}
+                    </div>
+                  )}
+                  
                   <div className="flex items-center justify-between">
                     <div className="text-sm">
                       <span className="text-gray-500">Efficiency:</span>
                       <span className="ml-2 font-medium text-flow-blue">{sim.efficiency}%</span>
                     </div>
-                    <Link 
-                      to={`/simulation/${sim.id}`}
-                      className="inline-flex items-center text-flow-blue hover:text-flow-blue/80"
+                  </div>
+                  
+                  <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+                    <div className="flex space-x-2">
+                      <Button 
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleEditSimulation(sim)}
+                      >
+                        <Edit className="h-3.5 w-3.5 mr-1" />
+                        Edit
+                      </Button>
+                      <Button 
+                        size="sm"
+                        variant="outline"
+                        onClick={() => exportSimulation(sim)}
+                      >
+                        <Download className="h-3.5 w-3.5 mr-1" />
+                        Export
+                      </Button>
+                      <Button 
+                        size="sm"
+                        variant="outline"
+                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                        onClick={() => handleDeleteSimulation(sim.id)}
+                      >
+                        <Trash2 className="h-3.5 w-3.5 mr-1" />
+                        Delete
+                      </Button>
+                    </div>
+                    <Button 
+                      size="sm"
+                      onClick={() => handleRunSimulation(sim)}
                     >
-                      View Details
-                      <ArrowRight className="ml-1 h-4 w-4" />
-                    </Link>
+                      <Play className="h-3.5 w-3.5 mr-1" />
+                      Run
+                    </Button>
                   </div>
                 </GlassPanel>
               ))}

@@ -6,13 +6,13 @@ import { cn } from "@/lib/utils";
 import { 
   LayoutGrid, 
   FileText, 
-  Settings, 
   BarChart3, 
   Database, 
   PanelRight, 
   Search,
   Bell,
-  HelpCircle
+  HelpCircle,
+  Sliders
 } from "lucide-react";
 
 const Navbar: React.FC = () => {
@@ -51,11 +51,11 @@ const Navbar: React.FC = () => {
             </Link>
             
             <nav className="ml-10 hidden md:flex items-center space-x-1">
-              <NavItem icon={<LayoutGrid className="h-4 w-4" />} href="/" label="Dashboard" active />
-              <NavItem icon={<FileText className="h-4 w-4" />} href="/simulations" label="Simulations" />
+              <NavItem icon={<LayoutGrid className="h-4 w-4" />} href="/simulations" label="Simulations" />
+              <NavItem icon={<FileText className="h-4 w-4" />} href="/create-simulation" label="Create Simulation" />
               <NavItem icon={<Database className="h-4 w-4" />} href="/components" label="Components" />
               <NavItem icon={<BarChart3 className="h-4 w-4" />} href="/analysis" label="Analysis" />
-              <NavItem icon={<Settings className="h-4 w-4" />} href="/settings" label="Settings" />
+              <NavItem icon={<Sliders className="h-4 w-4" />} href="/settings" label="App Settings" />
             </nav>
           </div>
           
@@ -83,7 +83,7 @@ const Navbar: React.FC = () => {
             </button>
             
             <div className="h-10 w-10 rounded-full bg-gradient-to-r from-flow-blue to-flow-cyan shadow-sm flex items-center justify-center text-white font-medium text-sm">
-              AK
+              CF
             </div>
           </div>
         </div>
@@ -100,12 +100,15 @@ interface NavItemProps {
 }
 
 const NavItem: React.FC<NavItemProps> = ({ icon, label, href, active }) => {
+  // Check if current route matches this nav item
+  const isActive = window.location.pathname === href;
+  
   return (
     <Link
       to={href}
       className={cn(
         "px-3 py-2 rounded-lg text-sm font-medium flex items-center transition-all",
-        active
+        isActive
           ? "text-flow-blue bg-blue-50"
           : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
       )}

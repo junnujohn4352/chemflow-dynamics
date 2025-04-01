@@ -1,8 +1,9 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Plus, Minus, Thermometer, Droplets, Settings2, Container, FlaskConical, Columns, Gauge, Save, Trash2, X, Sliders } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import EquipmentSettings from "./EquipmentSettings";
+import { useNavigate } from "react-router-dom";
 
 interface SimulationBuilderProps {
   selectedComponents: string[];
@@ -10,22 +11,22 @@ interface SimulationBuilderProps {
   onRunSimulation: () => void;
 }
 
-type Equipment = {
+export interface Equipment {
   id: string;
   type: string;
   name: string;
   position: { x: number; y: number };
   connections: string[];
   settings: Record<string, any>;
-};
+}
 
-type Stream = {
+export interface Stream {
   id: string;
   from: string;
   to: string;
   type: "material" | "energy" | "signal";
   properties: Record<string, any>;
-};
+}
 
 const SimulationBuilder: React.FC<SimulationBuilderProps> = ({ 
   selectedComponents,
@@ -33,6 +34,7 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
   onRunSimulation
 }) => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [activeEquipment, setActiveEquipment] = useState<string | null>(null);
   const [equipment, setEquipment] = useState<Equipment[]>([]);
   const [streams, setStreams] = useState<Stream[]>([]);
@@ -43,6 +45,28 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
   const [zoom, setZoom] = useState(100);
   const [isDragging, setIsDragging] = useState(false);
   const [editingEquipment, setEditingEquipment] = useState<Equipment | null>(null);
+  const [simulationRunning, setSimulationRunning] = useState(false);
+  
+  useEffect(() => {
+    const savedEquipment = localStorage.getItem('chemflow-equipment');
+    const savedStreams = localStorage.getItem('chemflow-streams');
+    
+    if (savedEquipment) {
+      try {
+        setEquipment(JSON.parse(savedEquipment));
+      } catch (e) {
+        console.error("Error loading saved equipment:", e);
+      }
+    }
+    
+    if (savedStreams) {
+      try {
+        setStreams(JSON.parse(savedStreams));
+      } catch (e) {
+        console.error("Error loading saved streams:", e);
+      }
+    }
+  }, []);
   
   const equipmentList = [
     { id: "feed", name: "Feed Stream", icon: <Droplets className="h-5 w-5" /> },
@@ -57,6 +81,11 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     { id: "heatex", name: "Heat Exchanger", icon: <Thermometer className="h-5 w-5" /> },
     { id: "compressor", name: "Compressor", icon: <Gauge className="h-5 w-5" /> },
     { id: "valve", name: "Valve", icon: <Sliders className="h-5 w-5" /> },
+    { id: "extractor", name: "Liquid-Liquid Extractor", icon: <Container className="h-5 w-5" /> },
+    { id: "crystallizer", name: "Crystallizer", icon: <FlaskConical className="h-5 w-5" /> },
+    { id: "dryer", name: "Dryer", icon: <Thermometer className="h-5 w-5" /> },
+    { id: "adsorber", name: "Adsorption Column", icon: <Columns className="h-5 w-5" /> },
+    { id: "filter", name: "Filter", icon: <Sliders className="h-5 w-5" /> },
   ];
   
   const handleCanvasClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -244,9 +273,57 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     });
   };
   
-  const saveFlowsheet = () => {
+  const saveFlowsheet = (simulationName = "Untitled Simulation") => {
+    const timestamp = new Date().toISOString();
+    
+    const simulationData = {
+      equipment,
+      streams,
+      components: selectedComponents,
+      thermodynamicModel,
+      lastUpdated: timestamp,
+      name: simulationName
+    };
+    
     localStorage.setItem('chemflow-equipment', JSON.stringify(equipment));
     localStorage.setItem('chemflow-streams', JSON.stringify(streams));
+    localStorage.setItem('chemflow-simulation-data', JSON.stringify(simulationData));
+    localStorage.setItem('chemflow-active-simulation', 'true');
+    
+    const existingSimulations = localStorage.getItem('chemflow-simulations');
+    let simulationsList = existingSimulations ? JSON.parse(existingSimulations) : [];
+    
+    const existingIndex = simulationsList.findIndex((sim: any) => 
+      sim.name === simulationName && 
+      JSON.stringify(sim.components) === JSON.stringify(selectedComponents)
+    );
+    
+    if (existingIndex !== -1) {
+      simulationsList[existingIndex] = {
+        ...simulationsList[existingIndex],
+        equipment: equipment.length,
+        streams: streams.length,
+        lastUpdated: timestamp,
+        thermodynamicModel
+      };
+    } else {
+      simulationsList.push({
+        id: `sim-${Date.now()}`,
+        name: simulationName,
+        description: `Process simulation with ${selectedComponents.length} components`,
+        lastUpdated: timestamp,
+        equipment: equipment.length,
+        streams: streams.length,
+        components: selectedComponents.map(comp => ({
+          name: comp,
+          percentage: 100 / selectedComponents.length
+        })),
+        efficiency: Math.floor(70 + Math.random() * 25),
+        thermodynamicModel
+      });
+    }
+    
+    localStorage.setItem('chemflow-simulations', JSON.stringify(simulationsList));
     
     toast({
       title: "Flowsheet Saved",
@@ -275,12 +352,19 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     
     saveFlowsheet();
     
+    localStorage.setItem('chemflow-simulation-running', 'true');
+    setSimulationRunning(true);
+    
     toast({
       title: "Running Simulation",
       description: "Calculating process flows and conditions..."
     });
     
     onRunSimulation();
+    
+    setTimeout(() => {
+      navigate('/analysis');
+    }, 1000);
   };
 
   const openEquipmentSettings = (equipment: Equipment) => {
@@ -475,13 +559,14 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
                 variant="default" 
                 className="w-full"
                 onClick={runSimulation}
+                disabled={simulationRunning}
               >
-                Run Simulation
+                {simulationRunning ? "Simulation Running..." : "Run Simulation"}
               </Button>
               <Button 
                 variant="outline" 
                 className="w-full"
-                onClick={saveFlowsheet}
+                onClick={() => saveFlowsheet()}
               >
                 <Save className="mr-2 h-4 w-4" />
                 Save Flowsheet
