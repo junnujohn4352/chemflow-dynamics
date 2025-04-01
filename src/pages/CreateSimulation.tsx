@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
@@ -131,7 +130,14 @@ const CreateSimulation = () => {
     const timePoints = Array.from({ length: 25 }, (_, i) => i);
     
     const data = timePoints.map(time => {
-      const baseObj = { time };
+      // Create a base object with type definition to satisfy TypeScript
+      const baseObj: { 
+        time: number; 
+        temperature?: number; 
+        pressure?: number; 
+        conversion?: number;
+        [key: string]: number | undefined; 
+      } = { time };
       
       // Add data for each component
       selectedComponents.forEach(comp => {

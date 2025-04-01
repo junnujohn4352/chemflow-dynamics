@@ -1,11 +1,10 @@
-
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { 
   Menu, X, ChevronDown, 
   LayoutDashboard, FileText, 
   BarChart3, Database, Settings,
-  Brain, Flask
+  Brain, Beaker
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ChemFlowLogo from "@/assets/icons/ChemFlowLogo";
@@ -80,7 +79,7 @@ const Navbar = () => {
               asChild
             >
               <Link to="/create-simulation">
-                <Flask className="h-4 w-4 mr-2" />
+                <Beaker className="h-4 w-4 mr-2" />
                 Create Simulation
               </Link>
             </Button>
@@ -128,7 +127,7 @@ const Navbar = () => {
               onClick={() => setIsOpen(false)}
             >
               <div className="flex items-center">
-                <Flask className="h-4 w-4 mr-2" />
+                <Beaker className="h-4 w-4 mr-2" />
                 Create Simulation
               </div>
             </Link>
