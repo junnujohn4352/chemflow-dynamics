@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import ChemFlowLogo from "@/assets/icons/ChemFlowLogo";
 import { cn } from "@/lib/utils";
 import { 
@@ -12,11 +12,13 @@ import {
   Search,
   Bell,
   HelpCircle,
-  Sliders
+  Sliders,
+  Brain
 } from "lucide-react";
 
 const Navbar: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
+  const location = useLocation();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -46,15 +48,16 @@ const Navbar: React.FC = () => {
       <div className="max-w-screen-2xl mx-auto px-6">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center">
-            <Link to="/" className="flex items-center">
+            <Link to="/dashboard" className="flex items-center">
               <ChemFlowLogo className="h-10 w-auto" />
             </Link>
             
             <nav className="ml-10 hidden md:flex items-center space-x-1">
-              <NavItem icon={<LayoutGrid className="h-4 w-4" />} href="/simulations" label="Simulations" />
-              <NavItem icon={<FileText className="h-4 w-4" />} href="/create-simulation" label="Create Simulation" />
+              <NavItem icon={<LayoutGrid className="h-4 w-4" />} href="/dashboard" label="Dashboard" />
+              <NavItem icon={<FileText className="h-4 w-4" />} href="/simulations" label="Simulations" />
               <NavItem icon={<Database className="h-4 w-4" />} href="/components" label="Components" />
               <NavItem icon={<BarChart3 className="h-4 w-4" />} href="/analysis" label="Analysis" />
+              <NavItem icon={<Brain className="h-4 w-4" />} href="/ai-simulation" label="AI Simulation" />
               <NavItem icon={<Sliders className="h-4 w-4" />} href="/settings" label="App Settings" />
             </nav>
           </div>
@@ -100,8 +103,9 @@ interface NavItemProps {
 }
 
 const NavItem: React.FC<NavItemProps> = ({ icon, label, href, active }) => {
+  const location = useLocation();
   // Check if current route matches this nav item
-  const isActive = window.location.pathname === href;
+  const isActive = location.pathname === href;
   
   return (
     <Link
