@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
 import GlassPanel from "@/components/ui/GlassPanel";
@@ -9,20 +9,34 @@ import {
   BarChart3, 
   Database,
   Brain,
-  ArrowRight
+  ArrowRight,
+  Info
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import LearnMoreModal from "@/components/ui/LearnMoreModal";
 
 const Dashboard = () => {
+  const [isLearnMoreOpen, setIsLearnMoreOpen] = useState(false);
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
       <Navbar />
       
       <main className="flex-1 py-16 px-6">
         <div className="max-w-screen-xl mx-auto">
-          <div className="mb-8">
-            <h1 className="text-3xl font-display font-bold mb-2 dark:text-white">Dashboard</h1>
-            <p className="text-gray-600 dark:text-gray-400">Welcome to ChemFlow - Your Chemical Process Simulation Platform</p>
+          <div className="mb-8 flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-display font-bold mb-2 dark:text-white">Dashboard</h1>
+              <p className="text-gray-600 dark:text-gray-400">Welcome to ChemFlow - Your Chemical Process Simulation Platform</p>
+            </div>
+            <Button 
+              variant="outline" 
+              className="flex gap-2 items-center"
+              onClick={() => setIsLearnMoreOpen(true)}
+            >
+              <Info className="h-4 w-4" />
+              Learn More
+            </Button>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
@@ -51,6 +65,11 @@ const Dashboard = () => {
           </div>
         </div>
       </main>
+      
+      <LearnMoreModal
+        open={isLearnMoreOpen}
+        onClose={() => setIsLearnMoreOpen(false)}
+      />
     </div>
   );
 };
