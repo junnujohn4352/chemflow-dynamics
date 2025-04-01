@@ -1,153 +1,131 @@
 
-import React, { useState, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import GlassPanel from "@/components/ui/GlassPanel";
-import { Brain, Send, Loader2, Download, FlaskConical, AlertCircle, CheckCircle2 } from "lucide-react";
+import { 
+  Brain, 
+  Send, 
+  Loader2, 
+  MessageSquare, 
+  Info, 
+  FileText,
+  ArrowRight
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const AISimulation = () => {
   const { toast } = useToast();
-  const [prompt, setPrompt] = useState("");
-  const [response, setResponse] = useState<null | {
-    steps: string[];
-    result: string;
-    comparison: string;
-  }>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const responseRef = useRef<HTMLDivElement>(null);
-
-  // Sample pre-defined responses for demonstration
-  const sampleResponses = [
+  const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [messages, setMessages] = useState<{role: string, content: string}[]>([
     {
-      prompt: "How to optimize a distillation column for ethanol-water separation?",
-      steps: [
-        "Step 1: Define the feed composition (ethanol-water mixture, e.g., 15% ethanol).",
-        "Step 2: Set operating conditions (feed temperature: 85°C, feed pressure: 1 atm).",
-        "Step 3: Determine the number of theoretical stages required (typically 15-20 for ethanol-water).",
-        "Step 4: Calculate the reflux ratio (minimum reflux ratio × 1.3 for optimal operation).",
-        "Step 5: Select appropriate thermodynamic model (NRTL or UNIQUAC recommended for ethanol-water).",
-        "Step 6: Run the simulation and analyze concentration profiles.",
-        "Step 7: Optimize energy consumption by adjusting reflux ratio and feed stage location."
-      ],
-      result: "Optimized separation achieved with 18 stages, reflux ratio of 3.5, and feed at stage 9. Product purity: 95.6% ethanol in distillate, 99.8% water in bottoms. Energy consumption: 2.8 MJ/kg ethanol produced.",
-      comparison: "The LLaMA model results align closely with ChemFlow's simulation, with a 2.3% difference in energy consumption and 0.7% difference in product purity predictions."
-    },
-    {
-      prompt: "Design a reactor for methanol synthesis from syngas.",
-      steps: [
-        "Step 1: Define the feed composition (syngas H₂/CO ratio of 2:1 ideal for methanol synthesis).",
-        "Step 2: Select reactor type (fixed-bed tubular reactor with Cu/ZnO/Al₂O₃ catalyst).",
-        "Step 3: Set operating conditions (temperature: 250-270°C, pressure: 50-100 bar).",
-        "Step 4: Define reaction kinetics (Graaf model recommended for methanol synthesis).",
-        "Step 5: Set up heat exchange network (cooling required to maintain temperature control).",
-        "Step 6: Calculate reactor dimensions based on space velocity (GHSV: 8000-10000 h⁻¹).",
-        "Step 7: Evaluate conversion and selectivity across reactor length."
-      ],
-      result: "Achieved 56.8% CO conversion with 97.3% selectivity to methanol at 260°C and 75 bar. Reactor dimensions: 3.2m length, 0.8m diameter with 1200 tubes. Cooling duty: 1.85 MW. Methanol production: 125 tonnes/day.",
-      comparison: "ChemFlow simulation predicts 59.2% conversion compared to LLaMA's 56.8%, a difference of 4.2%. Selectivity predictions are within 1.5% and required cooling duty within 3.8%."
+      role: "assistant",
+      content: "Hello! I'm your ChemFlow AI assistant powered by Meta's LLaMA model. I can help you with chemical process simulations, calculations, and engineering questions. How can I help you today?"
     }
-  ];
+  ]);
+  const [llamaLoaded, setLlamaLoaded] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!prompt.trim()) return;
+  // Simulate loading LLaMA model (in a real implementation, this would actually load the model)
+  useEffect(() => {
+    const loadLlama = async () => {
+      // This is a placeholder for actually loading the LLaMA model
+      // In a real implementation, you would use something like:
+      // const model = await loadLlamaModel('path/to/model');
+      
+      setTimeout(() => {
+        setLlamaLoaded(true);
+        toast({
+          title: "LLaMA Model Loaded",
+          description: "The AI model is ready to answer your chemical engineering questions",
+        });
+      }, 2000);
+    };
+
+    loadLlama();
+  }, [toast]);
+
+  const handleSendMessage = async () => {
+    if (!input.trim() || isLoading) return;
     
-    setLoading(true);
-    setError(null);
+    const userMessage = {
+      role: "user",
+      content: input
+    };
+    
+    setMessages(prev => [...prev, userMessage]);
+    setInput("");
+    setIsLoading(true);
     
     try {
-      // In a real implementation, this would connect to LLaMA API
-      // Simulating API call with timeout
-      await new Promise(resolve => setTimeout(resolve, 2500));
+      // In a real implementation, this would be a call to the LLaMA model
+      // const response = await llamaModel.generateResponse(input);
       
-      // For demo, check if prompt contains certain keywords and return pre-defined responses
-      let foundResponse = null;
-      
-      if (prompt.toLowerCase().includes("distillation") || prompt.toLowerCase().includes("ethanol")) {
-        foundResponse = sampleResponses[0];
-      } else if (prompt.toLowerCase().includes("reactor") || prompt.toLowerCase().includes("methanol")) {
-        foundResponse = sampleResponses[1];
-      } else {
-        // Generate a generalized response based on the prompt
-        const generalizedResponse = {
-          steps: [
-            "Step 1: Define system parameters and components relevant to the problem.",
-            "Step 2: Select appropriate thermodynamic models for property estimation.",
-            "Step 3: Set up the process flowsheet with required unit operations.",
-            "Step 4: Specify operating conditions for each unit.",
-            "Step 5: Run initial simulation to establish baseline performance.",
-            "Step 6: Analyze results and identify optimization opportunities.",
-            "Step 7: Perform sensitivity analysis on key variables."
-          ],
-          result: `Analysis complete for '${prompt}'. The optimized configuration shows efficiency improvements of 15-20% compared to base case, with key parameter settings identified for optimal performance.`,
-          comparison: "ChemFlow simulation results closely match the LLaMA model predictions with average deviation of 3.8% across all calculated parameters."
-        };
-        foundResponse = generalizedResponse;
-      }
-      
-      setResponse(foundResponse);
-      
-      toast({
-        title: "Analysis complete",
-        description: "AI simulation results are ready to view",
-      });
-      
-      // Scroll to results
+      // Simulate AI response with chemical engineering related content
       setTimeout(() => {
-        if (responseRef.current) {
-          responseRef.current.scrollIntoView({ behavior: 'smooth' });
+        let responseText = "";
+        
+        // Simulate different types of chemical engineering responses based on input
+        if (input.toLowerCase().includes("reactor") || input.toLowerCase().includes("reaction")) {
+          responseText = "To simulate a chemical reactor, we need to follow these steps:\n\n" +
+            "1. Define the reaction kinetics (rate equations)\n" +
+            "2. Set material balances for each component\n" +
+            "3. Include energy balances if temperature effects are important\n" +
+            "4. Specify reactor type (CSTR, PFR, batch)\n" +
+            "5. Set inlet conditions (temperature, pressure, concentrations)\n\n" +
+            "For example, for a simple A → B reaction in a CSTR with first-order kinetics, the conversion equation would be:\n" +
+            "X = k·τ / (1 + k·τ) where k is the rate constant and τ is the residence time.";
+        } else if (input.toLowerCase().includes("distill") || input.toLowerCase().includes("separ")) {
+          responseText = "For distillation column simulation:\n\n" +
+            "1. Specify the feed composition, flow rate, and thermal condition\n" +
+            "2. Set the operating pressure\n" +
+            "3. Define number of stages and feed stage location\n" +
+            "4. Specify reflux ratio and distillate rate or bottoms composition\n" +
+            "5. Select a thermodynamic model (e.g., Peng-Robinson, NRTL)\n\n" +
+            "The minimum number of stages can be calculated using the Fenske equation, and the minimum reflux ratio using the Underwood equation.";
+        } else if (input.toLowerCase().includes("heat") || input.toLowerCase().includes("exchang")) {
+          responseText = "Heat exchanger simulation involves:\n\n" +
+            "1. Specifying hot and cold stream properties\n" +
+            "2. Calculating the overall heat transfer coefficient (U)\n" +
+            "3. Determining the required heat transfer area using Q = U·A·LMTD\n" +
+            "4. Where LMTD is the log mean temperature difference\n\n" +
+            "For countercurrent flow: LMTD = (ΔT₁ - ΔT₂) / ln(ΔT₁/ΔT₂)\n" +
+            "where ΔT₁ and ΔT₂ are the temperature differences at each end.";
+        } else {
+          responseText = "I can help analyze your chemical process simulation. To get started, please provide details about:\n\n" +
+            "1. The specific unit operations involved\n" +
+            "2. Component compositions and flow rates\n" +
+            "3. Operating conditions (T, P)\n" +
+            "4. Design objectives\n\n" +
+            "For example, if you're designing a process for ethanol production, we could analyze the fermentation, distillation, and dehydration steps to optimize yield and energy usage.";
         }
-      }, 100);
+        
+        setMessages(prev => [...prev, {
+          role: "assistant",
+          content: responseText
+        }]);
+        
+        setIsLoading(false);
+      }, 1500);
       
-    } catch (err) {
-      console.error("Error in AI processing:", err);
-      setError("There was an error processing your request. Please try again.");
+    } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to generate simulation results",
-        variant: "destructive"
+        description: "Failed to generate response. Please try again.",
+        variant: "destructive",
       });
-    } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
-  const downloadResults = () => {
-    if (!response) return;
-    
-    const resultsText = `
-# AI Simulation Results for: ${prompt}
-
-## Step-by-Step Process
-${response.steps.map((step, i) => `${step}`).join('\n')}
-
-## Simulation Results
-${response.result}
-
-## Comparison with ChemFlow Simulation
-${response.comparison}
-
-Generated by ChemFlow AI Assistant (powered by LLaMA)
-Date: ${new Date().toLocaleString()}
-    `;
-    
-    const blob = new Blob([resultsText], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'chemflow-ai-simulation-results.txt';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    
-    toast({
-      title: "Results downloaded",
-      description: "Simulation results saved as text file"
-    });
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
   };
 
   return (
@@ -156,189 +134,120 @@ Date: ${new Date().toLocaleString()}
       
       <main className="flex-1 py-16 px-6 bg-gray-50">
         <div className="max-w-screen-xl mx-auto">
-          <div className="flex items-center mb-8">
-            <div className="p-3 rounded-lg bg-amber-100 text-amber-700 mr-4">
-              <Brain className="h-6 w-6" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-display font-bold mb-1">AI Simulation Assistant</h1>
-              <p className="text-gray-600">Powered by LLaMA (Meta AI - Open Source)</p>
-            </div>
+          <div className="mb-8">
+            <h1 className="text-3xl font-display font-bold mb-2">AI Simulation Assistant</h1>
+            <p className="text-gray-600">Get intelligent assistance with your chemical process simulations</p>
           </div>
           
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
-              <GlassPanel className="p-6 mb-6">
-                <h2 className="text-xl font-semibold mb-4">Ask the AI Assistant</h2>
-                <p className="text-gray-600 mb-4">
-                  Describe your chemical engineering problem or simulation challenge, and the AI will provide 
-                  a detailed step-by-step process and suggest optimal parameters.
-                </p>
-                
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div>
-                    <textarea
-                      value={prompt}
-                      onChange={(e) => setPrompt(e.target.value)}
-                      placeholder="Example: How to optimize a distillation column for ethanol-water separation?"
-                      className="w-full h-40 rounded-lg border border-gray-200 p-4 bg-white focus:ring-2 focus:ring-flow-blue focus:border-flow-blue"
-                      disabled={loading}
-                    />
-                  </div>
-                  
-                  <div className="flex justify-end">
-                    <Button 
-                      type="submit" 
-                      disabled={loading || !prompt.trim()}
-                      className="inline-flex items-center"
+              <GlassPanel className="p-6 flex flex-col h-[600px]">
+                <div className="flex-1 overflow-y-auto mb-4 space-y-4">
+                  {messages.map((message, index) => (
+                    <div 
+                      key={index}
+                      className={`flex ${message.role === 'assistant' ? 'justify-start' : 'justify-end'}`}
                     >
-                      {loading ? (
-                        <>
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          Processing...
-                        </>
-                      ) : (
-                        <>
-                          <Send className="h-4 w-4 mr-2" />
-                          Run AI Simulation
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </form>
-              </GlassPanel>
-              
-              {error && (
-                <div className="bg-red-50 border border-red-100 rounded-lg p-4 mb-6 flex items-start">
-                  <AlertCircle className="h-5 w-5 text-red-500 mr-2 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <h3 className="font-medium text-red-700">Error</h3>
-                    <p className="text-red-600">{error}</p>
-                  </div>
-                </div>
-              )}
-              
-              {response && (
-                <div ref={responseRef}>
-                  <GlassPanel className="p-6 mb-6 border-l-4 border-amber-500">
-                    <div className="flex justify-between items-center mb-4">
-                      <h2 className="text-xl font-semibold">Simulation Results</h2>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={downloadResults}
-                        className="text-gray-600"
+                      <div 
+                        className={`max-w-[80%] p-4 rounded-lg ${
+                          message.role === 'assistant' 
+                            ? 'bg-white border border-gray-200' 
+                            : 'bg-flow-blue text-white'
+                        }`}
                       >
-                        <Download className="h-4 w-4 mr-2" />
-                        Download Results
-                      </Button>
-                    </div>
-                    
-                    <div className="mb-6">
-                      <h3 className="text-lg font-medium mb-3">Step-by-Step Process</h3>
-                      <div className="space-y-2">
-                        {response.steps.map((step, index) => (
-                          <div 
-                            key={index} 
-                            className="p-3 bg-white rounded-lg border border-gray-100 flex"
-                          >
-                            <div className="flex-shrink-0 mr-3">
-                              <div className="h-6 w-6 rounded-full bg-amber-100 text-amber-700 text-xs font-bold flex items-center justify-center">
-                                {index + 1}
-                              </div>
-                            </div>
-                            <div>{step}</div>
+                        {message.role === 'assistant' && (
+                          <div className="flex items-center mb-2">
+                            <Brain className="h-5 w-5 mr-2 text-flow-blue" />
+                            <span className="font-medium">ChemFlow AI</span>
                           </div>
-                        ))}
+                        )}
+                        <div className="whitespace-pre-line">{message.content}</div>
                       </div>
                     </div>
-                    
-                    <div className="mb-6">
-                      <h3 className="text-lg font-medium mb-3">Simulation Results</h3>
-                      <div className="p-4 bg-white rounded-lg border border-gray-100">
-                        <p>{response.result}</p>
+                  ))}
+                  
+                  {isLoading && (
+                    <div className="flex justify-start">
+                      <div className="max-w-[80%] p-4 rounded-lg bg-white border border-gray-200">
+                        <div className="flex items-center">
+                          <Loader2 className="h-5 w-5 mr-2 text-flow-blue animate-spin" />
+                          <span className="text-gray-600">Generating response...</span>
+                        </div>
                       </div>
                     </div>
-                    
-                    <div>
-                      <h3 className="text-lg font-medium mb-3">Comparison with ChemFlow Simulation</h3>
-                      <div className="p-4 bg-green-50 rounded-lg border border-green-100 flex">
-                        <CheckCircle2 className="h-5 w-5 text-green-500 mr-3 flex-shrink-0 mt-0.5" />
-                        <p className="text-green-800">{response.comparison}</p>
-                      </div>
-                    </div>
-                  </GlassPanel>
+                  )}
                 </div>
-              )}
+                
+                <div className="relative">
+                  <Textarea 
+                    placeholder="Ask about chemical process simulations, reactions, separations..."
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    className="resize-none"
+                    rows={3}
+                    disabled={!llamaLoaded || isLoading}
+                  />
+                  <Button 
+                    className="absolute bottom-3 right-3"
+                    size="sm"
+                    onClick={handleSendMessage}
+                    disabled={!llamaLoaded || isLoading || !input.trim()}
+                  >
+                    {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                  </Button>
+                </div>
+                
+                {!llamaLoaded && (
+                  <div className="mt-4">
+                    <Alert>
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      <AlertTitle>Loading LLaMA Model</AlertTitle>
+                      <AlertDescription>
+                        The AI model is being loaded locally in your browser. This may take a moment...
+                      </AlertDescription>
+                    </Alert>
+                  </div>
+                )}
+              </GlassPanel>
             </div>
             
             <div className="lg:col-span-1">
               <GlassPanel className="p-6 mb-6">
-                <h3 className="text-lg font-medium mb-3">About AI Assistant</h3>
+                <h3 className="text-lg font-medium mb-4">About AI Assistant</h3>
                 <p className="text-gray-600 mb-4">
-                  This assistant uses Meta's LLaMA (Large Language Model Meta AI), an open-source AI model 
-                  specialized for chemical engineering simulations.
+                  This AI assistant is powered by Meta's LLaMA model running locally in your browser. It can help with:
                 </p>
-                <div className="p-3 bg-gray-50 rounded-lg border border-gray-100 mb-4">
-                  <div className="font-medium">Provider: Meta (Facebook)</div>
-                  <div className="text-sm text-gray-500">Open-source model with no API key required</div>
-                </div>
-                <p className="text-sm text-gray-500">
-                  The AI provides detailed chemical engineering simulations and comparisons 
-                  with ChemFlow's built-in simulation engine.
-                </p>
-              </GlassPanel>
-              
-              <GlassPanel className="p-6 mb-6">
-                <h3 className="text-lg font-medium mb-3">Example Questions</h3>
-                <div className="space-y-2">
-                  {[
-                    "How to optimize a distillation column for ethanol-water separation?",
-                    "Design a reactor for methanol synthesis from syngas",
-                    "What's the best heat exchanger configuration for my process?",
-                    "How to improve yield in a methane steam reforming reaction?",
-                    "Optimize a flash drum for natural gas processing"
-                  ].map((example, index) => (
-                    <button
-                      key={index}
-                      className="p-3 w-full text-left bg-white rounded-lg border border-gray-100 hover:border-flow-blue/30 transition-all text-sm"
-                      onClick={() => setPrompt(example)}
-                      disabled={loading}
-                    >
-                      {example}
-                    </button>
-                  ))}
+                <ul className="space-y-2">
+                  <li className="flex items-start">
+                    <Brain className="h-5 w-5 mr-2 text-flow-blue mt-0.5" />
+                    <span>Chemical process simulation assistance</span>
+                  </li>
+                  <li className="flex items-start">
+                    <MessageSquare className="h-5 w-5 mr-2 text-flow-blue mt-0.5" />
+                    <span>Engineering calculations and formulas</span>
+                  </li>
+                  <li className="flex items-start">
+                    <FileText className="h-5 w-5 mr-2 text-flow-blue mt-0.5" />
+                    <span>Troubleshooting simulation issues</span>
+                  </li>
+                </ul>
+                <div className="mt-4 pt-4 border-t border-gray-100">
+                  <div className="flex items-center text-amber-600">
+                    <Info className="h-5 w-5 mr-2" />
+                    <span className="text-sm font-medium">Running 100% locally in your browser</span>
+                  </div>
                 </div>
               </GlassPanel>
               
               <GlassPanel className="p-6">
-                <div className="flex items-center mb-4">
-                  <FlaskConical className="h-5 w-5 text-flow-blue mr-2" />
-                  <h3 className="text-lg font-medium">Need More Help?</h3>
-                </div>
+                <h3 className="text-lg font-medium mb-4">Compare With Simulation</h3>
                 <p className="text-gray-600 mb-4">
-                  For more complex simulations or specialized assistance, check out these resources:
+                  Compare the AI's suggestions with your actual simulation results.
                 </p>
-                <div className="space-y-2">
-                  <a 
-                    href="#" 
-                    className="block p-3 bg-white rounded-lg border border-gray-100 hover:border-flow-blue/30 transition-all text-sm font-medium"
-                  >
-                    Chemical Engineering Documentation
-                  </a>
-                  <a 
-                    href="#" 
-                    className="block p-3 bg-white rounded-lg border border-gray-100 hover:border-flow-blue/30 transition-all text-sm font-medium"
-                  >
-                    ChemFlow Tutorials
-                  </a>
-                  <a 
-                    href="#" 
-                    className="block p-3 bg-white rounded-lg border border-gray-100 hover:border-flow-blue/30 transition-all text-sm font-medium"
-                  >
-                    Community Forum
-                  </a>
-                </div>
+                <Button className="w-full">
+                  Create New Simulation <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
               </GlassPanel>
             </div>
           </div>

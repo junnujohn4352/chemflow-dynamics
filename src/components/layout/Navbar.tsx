@@ -1,125 +1,141 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import ChemFlowLogo from "@/assets/icons/ChemFlowLogo";
-import { cn } from "@/lib/utils";
 import { 
-  LayoutGrid, 
-  FileText, 
-  BarChart3, 
-  Database, 
-  PanelRight, 
-  Search,
-  Bell,
-  HelpCircle,
-  Sliders,
-  Brain
+  Menu, X, ChevronDown, 
+  LayoutDashboard, FileText, 
+  BarChart3, Database, Settings,
+  Brain, Flask
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import ChemFlowLogo from "@/assets/icons/ChemFlowLogo";
 
-const Navbar: React.FC = () => {
-  const [scrolled, setScrolled] = useState(false);
+const Navbar = () => {
+  const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const offset = window.scrollY;
-      if (offset > 10) {
-        setScrolled(true);
-      } else {
-        setScrolled(false);
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, []);
+  
+  const isActiveRoute = (route: string) => {
+    return location.pathname === route;
+  };
+  
+  const navigationItems = [
+    { 
+      label: "Dashboard", 
+      href: "/dashboard", 
+      icon: <LayoutDashboard className="h-4 w-4 mr-2" />
+    },
+    { 
+      label: "Simulations", 
+      href: "/simulations", 
+      icon: <FileText className="h-4 w-4 mr-2" />
+    },
+    { 
+      label: "AI Assistant", 
+      href: "/ai-simulation", 
+      icon: <Brain className="h-4 w-4 mr-2" />
+    },
+    { 
+      label: "Settings", 
+      href: "/settings", 
+      icon: <Settings className="h-4 w-4 mr-2" />
+    },
+  ];
 
   return (
-    <header
-      className={cn(
-        "fixed top-0 left-0 right-0 z-50 transition-all duration-200",
-        scrolled 
-          ? "bg-white/70 backdrop-blur-lg shadow-sm border-b border-gray-100" 
-          : "bg-transparent"
-      )}
-    >
-      <div className="max-w-screen-2xl mx-auto px-6">
-        <div className="flex h-16 items-center justify-between">
+    <header className="bg-white border-b border-gray-200 sticky top-0 z-30">
+      <div className="max-w-screen-xl mx-auto px-4 sm:px-6">
+        <div className="flex justify-between items-center h-16">
+          {/* Logo and Brand */}
           <div className="flex items-center">
             <Link to="/dashboard" className="flex items-center">
-              <ChemFlowLogo className="h-10 w-auto" />
+              <ChemFlowLogo className="h-8 w-auto mr-2" />
+              <span className="text-xl font-display font-bold tracking-tight">
+                ChemFlow
+              </span>
             </Link>
-            
-            <nav className="ml-10 hidden md:flex items-center space-x-1">
-              <NavItem icon={<LayoutGrid className="h-4 w-4" />} href="/dashboard" label="Dashboard" />
-              <NavItem icon={<FileText className="h-4 w-4" />} href="/simulations" label="Simulations" />
-              <NavItem icon={<Database className="h-4 w-4" />} href="/components" label="Components" />
-              <NavItem icon={<BarChart3 className="h-4 w-4" />} href="/analysis" label="Analysis" />
-              <NavItem icon={<Brain className="h-4 w-4" />} href="/ai-simulation" label="AI Simulation" />
-              <NavItem icon={<Sliders className="h-4 w-4" />} href="/settings" label="App Settings" />
-            </nav>
           </div>
           
-          <div className="flex items-center space-x-4">
-            <div className="relative hidden md:flex items-center">
-              <Search className="absolute left-3 h-4 w-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search..."
-                className="pl-9 pr-4 py-2 rounded-lg bg-gray-50 border border-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-flow-blue/20 focus:border-flow-blue transition-all w-56"
-              />
-            </div>
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center space-x-1">
+            {navigationItems.map((item, index) => (
+              <Link
+                key={index}
+                to={item.href}
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  isActiveRoute(item.href)
+                    ? "bg-flow-blue text-white"
+                    : "text-gray-600 hover:bg-gray-100"
+                }`}
+              >
+                <div className="flex items-center">
+                  {item.icon}
+                  {item.label}
+                </div>
+              </Link>
+            ))}
             
-            <button className="p-2 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors relative">
-              <Bell className="h-5 w-5" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+            <Button 
+              variant="outline" 
+              size="sm"
+              asChild
+            >
+              <Link to="/create-simulation">
+                <Flask className="h-4 w-4 mr-2" />
+                Create Simulation
+              </Link>
+            </Button>
+          </nav>
+          
+          {/* Mobile menu button */}
+          <div className="md:hidden flex items-center">
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none"
+              aria-expanded={isOpen}
+            >
+              <span className="sr-only">Open main menu</span>
+              {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
-            
-            <button className="p-2 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors">
-              <HelpCircle className="h-5 w-5" />
-            </button>
-            
-            <button className="p-2 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors">
-              <PanelRight className="h-5 w-5" />
-            </button>
-            
-            <div className="h-10 w-10 rounded-full bg-gradient-to-r from-flow-blue to-flow-cyan shadow-sm flex items-center justify-center text-white font-medium text-sm">
-              CF
-            </div>
           </div>
         </div>
       </div>
-    </header>
-  );
-};
-
-interface NavItemProps {
-  icon: React.ReactNode;
-  label: string;
-  href: string;
-  active?: boolean;
-}
-
-const NavItem: React.FC<NavItemProps> = ({ icon, label, href, active }) => {
-  const location = useLocation();
-  // Check if current route matches this nav item
-  const isActive = location.pathname === href;
-  
-  return (
-    <Link
-      to={href}
-      className={cn(
-        "px-3 py-2 rounded-lg text-sm font-medium flex items-center transition-all",
-        isActive
-          ? "text-flow-blue bg-blue-50"
-          : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+      
+      {/* Mobile Menu */}
+      {isOpen && (
+        <div className="md:hidden">
+          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+            {navigationItems.map((item, index) => (
+              <Link
+                key={index}
+                to={item.href}
+                className={`block px-3 py-2 rounded-md text-base font-medium ${
+                  isActiveRoute(item.href)
+                    ? "bg-flow-blue text-white"
+                    : "text-gray-600 hover:bg-gray-100"
+                }`}
+                onClick={() => setIsOpen(false)}
+              >
+                <div className="flex items-center">
+                  {item.icon}
+                  {item.label}
+                </div>
+              </Link>
+            ))}
+            
+            <Link
+              to="/create-simulation"
+              className="block px-3 py-2 rounded-md text-base font-medium text-gray-600 hover:bg-gray-100"
+              onClick={() => setIsOpen(false)}
+            >
+              <div className="flex items-center">
+                <Flask className="h-4 w-4 mr-2" />
+                Create Simulation
+              </div>
+            </Link>
+          </div>
+        </div>
       )}
-    >
-      <span className="mr-2">{icon}</span>
-      {label}
-    </Link>
+    </header>
   );
 };
 

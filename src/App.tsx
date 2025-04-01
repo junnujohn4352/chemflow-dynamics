@@ -9,12 +9,11 @@ import Index from "./pages/Index";
 import LandingPage from "./pages/LandingPage";
 import Dashboard from "./pages/Dashboard";
 import Simulations from "./pages/Simulations";
-import Components from "./pages/Components";
-import Analysis from "./pages/Analysis";
-import Settings from "./pages/Settings";
-import NotFound from "./pages/NotFound";
 import CreateSimulation from "./pages/CreateSimulation";
 import AISimulation from "./pages/AISimulation";
+import Settings from "./pages/Settings";
+import NotFound from "./pages/NotFound";
+import Analysis from "./pages/Analysis";
 
 // Create a query client
 const queryClient = new QueryClient({
@@ -41,9 +40,8 @@ const App: React.FC = () => {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/simulations" element={<Simulations />} />
             <Route path="/create-simulation" element={<CreateSimulation />} />
-            <Route path="/components" element={<Components />} />
-            <Route path="/analysis" element={<Analysis />} />
             <Route path="/ai-simulation" element={<AISimulation />} />
+            <Route path="/analysis" element={<Analysis />} />
             <Route path="/settings" element={<Settings />} />
             
             {/* Legacy index page */}

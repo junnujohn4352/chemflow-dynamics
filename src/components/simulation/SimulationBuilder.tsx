@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { Plus, Minus, Thermometer, Droplets, Settings2, Container, FlaskConical, Columns, Gauge, Save, Trash2, X, Sliders } from "lucide-react";
+import { Plus, Minus, Thermometer, Droplets, Settings2, Container, FlaskConical, Columns, Gauge, Save, Trash2, X, Sliders, Move } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import EquipmentSettings from "./EquipmentSettings";
@@ -18,6 +18,7 @@ export interface Equipment {
   position: { x: number; y: number };
   connections: string[];
   settings: Record<string, any>;
+  subType?: string;
 }
 
 export interface Stream {
@@ -36,6 +37,7 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
   const { toast } = useToast();
   const navigate = useNavigate();
   const [activeEquipment, setActiveEquipment] = useState<string | null>(null);
+  const [activeSubType, setActiveSubType] = useState<string | null>(null);
   const [equipment, setEquipment] = useState<Equipment[]>([]);
   const [streams, setStreams] = useState<Stream[]>([]);
   const [isConnecting, setIsConnecting] = useState<string | null>(null);
@@ -44,8 +46,11 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
   const [showSettings, setShowSettings] = useState(false);
   const [zoom, setZoom] = useState(100);
   const [isDragging, setIsDragging] = useState(false);
+  const [draggedEquipment, setDraggedEquipment] = useState<string | null>(null);
+  const [dragStartPos, setDragStartPos] = useState({ x: 0, y: 0 });
   const [editingEquipment, setEditingEquipment] = useState<Equipment | null>(null);
   const [simulationRunning, setSimulationRunning] = useState(false);
+  const [showSubTypes, setShowSubTypes] = useState(false);
   
   useEffect(() => {
     const savedEquipment = localStorage.getItem('chemflow-equipment');
@@ -70,22 +75,142 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
   
   const equipmentList = [
     { id: "feed", name: "Feed Stream", icon: <Droplets className="h-5 w-5" /> },
-    { id: "mixer", name: "Mixer", icon: <Columns className="h-5 w-5" /> },
-    { id: "splitter", name: "Splitter", icon: <Columns className="h-5 w-5 rotate-90" /> },
-    { id: "heater", name: "Heater", icon: <Thermometer className="h-5 w-5" /> },
-    { id: "cooler", name: "Cooler", icon: <Thermometer className="h-5 w-5" /> },
-    { id: "flash", name: "Flash Separator", icon: <Container className="h-5 w-5" /> },
-    { id: "column", name: "Distillation Column", icon: <FlaskConical className="h-5 w-5" /> },
-    { id: "pump", name: "Pump", icon: <Gauge className="h-5 w-5" /> },
-    { id: "reactor", name: "Reactor", icon: <FlaskConical className="h-5 w-5" /> },
-    { id: "heatex", name: "Heat Exchanger", icon: <Thermometer className="h-5 w-5" /> },
-    { id: "compressor", name: "Compressor", icon: <Gauge className="h-5 w-5" /> },
-    { id: "valve", name: "Valve", icon: <Sliders className="h-5 w-5" /> },
-    { id: "extractor", name: "Liquid-Liquid Extractor", icon: <Container className="h-5 w-5" /> },
-    { id: "crystallizer", name: "Crystallizer", icon: <FlaskConical className="h-5 w-5" /> },
-    { id: "dryer", name: "Dryer", icon: <Thermometer className="h-5 w-5" /> },
-    { id: "adsorber", name: "Adsorption Column", icon: <Columns className="h-5 w-5" /> },
-    { id: "filter", name: "Filter", icon: <Sliders className="h-5 w-5" /> },
+    { 
+      id: "reactor", 
+      name: "Reactor", 
+      icon: <FlaskConical className="h-5 w-5" />,
+      subTypes: [
+        { id: "cstr", name: "CSTR" },
+        { id: "pfr", name: "PFR" },
+        { id: "batch", name: "Batch Reactor" },
+        { id: "pbr", name: "Packed Bed Reactor" },
+        { id: "fbr", name: "Fluidized Bed Reactor" }
+      ]
+    },
+    { 
+      id: "column", 
+      name: "Distillation Column", 
+      icon: <FlaskConical className="h-5 w-5" />,
+      subTypes: [
+        { id: "tray", name: "Tray Column" },
+        { id: "packed", name: "Packed Column" },
+        { id: "extractive", name: "Extractive Distillation" },
+        { id: "azeotropic", name: "Azeotropic Distillation" }
+      ]
+    },
+    { 
+      id: "heater", 
+      name: "Heater", 
+      icon: <Thermometer className="h-5 w-5" />,
+      subTypes: [
+        { id: "electric", name: "Electric Heater" },
+        { id: "steam", name: "Steam Heater" },
+        { id: "combustion", name: "Fired Heater" }
+      ]
+    },
+    { 
+      id: "cooler", 
+      name: "Cooler", 
+      icon: <Thermometer className="h-5 w-5" />,
+      subTypes: [
+        { id: "water", name: "Water Cooler" },
+        { id: "air", name: "Air Cooler" },
+        { id: "refrigeration", name: "Refrigeration" }
+      ]
+    },
+    { 
+      id: "mixer", 
+      name: "Mixer", 
+      icon: <Columns className="h-5 w-5" />,
+      subTypes: [
+        { id: "static", name: "Static Mixer" },
+        { id: "dynamic", name: "Dynamic Mixer" },
+        { id: "inline", name: "Inline Mixer" }
+      ]
+    },
+    { 
+      id: "splitter", 
+      name: "Splitter", 
+      icon: <Columns className="h-5 w-5 rotate-90" />,
+      subTypes: [
+        { id: "tee", name: "Tee Splitter" },
+        { id: "ratio", name: "Ratio Splitter" },
+        { id: "component", name: "Component Splitter" }
+      ]
+    },
+    { 
+      id: "flash", 
+      name: "Flash Separator", 
+      icon: <Container className="h-5 w-5" />,
+      subTypes: [
+        { id: "vertical", name: "Vertical Flash" },
+        { id: "horizontal", name: "Horizontal Flash" },
+        { id: "threephase", name: "Three-Phase Separator" }
+      ]
+    },
+    { 
+      id: "pump", 
+      name: "Pump", 
+      icon: <Gauge className="h-5 w-5" />,
+      subTypes: [
+        { id: "centrifugal", name: "Centrifugal Pump" },
+        { id: "positive", name: "Positive Displacement" },
+        { id: "vacuum", name: "Vacuum Pump" }
+      ]
+    },
+    { 
+      id: "heatex", 
+      name: "Heat Exchanger", 
+      icon: <Thermometer className="h-5 w-5" />,
+      subTypes: [
+        { id: "shell", name: "Shell & Tube" },
+        { id: "plate", name: "Plate" },
+        { id: "spiral", name: "Spiral" },
+        { id: "double-pipe", name: "Double-Pipe" }
+      ]
+    },
+    { 
+      id: "compressor", 
+      name: "Compressor", 
+      icon: <Gauge className="h-5 w-5" />,
+      subTypes: [
+        { id: "centrifugal", name: "Centrifugal Compressor" },
+        { id: "reciprocating", name: "Reciprocating Compressor" },
+        { id: "screw", name: "Screw Compressor" }
+      ]
+    },
+    { 
+      id: "valve", 
+      name: "Valve", 
+      icon: <Sliders className="h-5 w-5" />,
+      subTypes: [
+        { id: "control", name: "Control Valve" },
+        { id: "relief", name: "Relief Valve" },
+        { id: "check", name: "Check Valve" },
+        { id: "ball", name: "Ball Valve" }
+      ]
+    },
+    { 
+      id: "crystallizer", 
+      name: "Crystallizer", 
+      icon: <FlaskConical className="h-5 w-5" />,
+      subTypes: [
+        { id: "batch", name: "Batch Crystallizer" },
+        { id: "continuous", name: "Continuous Crystallizer" },
+        { id: "cooling", name: "Cooling Crystallizer" }
+      ]
+    },
+    { 
+      id: "dryer", 
+      name: "Dryer", 
+      icon: <Thermometer className="h-5 w-5" />,
+      subTypes: [
+        { id: "tray", name: "Tray Dryer" },
+        { id: "rotary", name: "Rotary Dryer" },
+        { id: "spray", name: "Spray Dryer" },
+        { id: "fluidized", name: "Fluidized Bed Dryer" }
+      ]
+    },
   ];
   
   const handleCanvasClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -100,19 +225,24 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
       const newEquipment: Equipment = {
         id: `${activeEquipment}-${Date.now()}`,
         type: activeEquipment,
-        name: activeEquipmentInfo.name,
+        name: activeSubType 
+          ? `${activeEquipmentInfo.name} (${activeSubType})` 
+          : activeEquipmentInfo.name,
         position: { x, y },
         connections: [],
-        settings: getDefaultSettings(activeEquipment)
+        settings: getDefaultSettings(activeEquipment),
+        subType: activeSubType || undefined
       };
       
       setEquipment(prev => [...prev, newEquipment]);
       toast({
         title: "Equipment Added",
-        description: `${activeEquipmentInfo.name} has been added to the flowsheet`
+        description: `${newEquipment.name} has been added to the flowsheet`
       });
       
       setActiveEquipment(null);
+      setActiveSubType(null);
+      setShowSubTypes(false);
     }
   };
 
@@ -247,6 +377,59 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     });
   };
   
+  const startDragging = (e: React.MouseEvent, equipmentId: string) => {
+    e.stopPropagation();
+    const equipment = equipmentList.find(eq => eq.id === equipmentId);
+    if (!equipment) return;
+    
+    setDraggedEquipment(equipmentId);
+    setDragStartPos({ x: e.clientX, y: e.clientY });
+    document.addEventListener('mousemove', handleDragMove);
+    document.addEventListener('mouseup', handleDragEnd);
+    
+    toast({
+      description: "Dragging equipment - click to place",
+    });
+  };
+  
+  const handleDragMove = useCallback((e: MouseEvent) => {
+    if (!draggedEquipment || !canvasRef.current) return;
+    
+    const rect = canvasRef.current.getBoundingClientRect();
+    const deltaX = (e.clientX - dragStartPos.x) / (zoom / 100);
+    const deltaY = (e.clientY - dragStartPos.y) / (zoom / 100);
+    
+    setEquipment(prev => prev.map(eq => {
+      if (eq.id === draggedEquipment) {
+        return {
+          ...eq,
+          position: {
+            x: eq.position.x + deltaX,
+            y: eq.position.y + deltaY
+          }
+        };
+      }
+      return eq;
+    }));
+    
+    setDragStartPos({ x: e.clientX, y: e.clientY });
+  }, [draggedEquipment, dragStartPos, zoom]);
+  
+  const handleDragEnd = useCallback(() => {
+    setDraggedEquipment(null);
+    document.removeEventListener('mousemove', handleDragMove);
+    document.removeEventListener('mouseup', handleDragEnd);
+    
+    localStorage.setItem('chemflow-equipment', JSON.stringify(equipment));
+  }, [equipment, handleDragMove]);
+  
+  useEffect(() => {
+    return () => {
+      document.removeEventListener('mousemove', handleDragMove);
+      document.removeEventListener('mouseup', handleDragEnd);
+    };
+  }, [handleDragMove, handleDragEnd]);
+  
   const deleteSelected = () => {
     if (!selectedElement) return;
     
@@ -362,9 +545,10 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     
     onRunSimulation();
     
-    setTimeout(() => {
-      navigate('/analysis');
-    }, 1000);
+    const analysisTabElement = document.getElementById('analysis-tab');
+    if (analysisTabElement) {
+      analysisTabElement.click();
+    }
   };
 
   const openEquipmentSettings = (equipment: Equipment) => {
@@ -388,10 +572,33 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     });
   };
   
+  const handleEquipmentSelect = (equipmentId: string) => {
+    const equipment = equipmentList.find(eq => eq.id === equipmentId);
+    
+    if (equipment?.subTypes && equipment.subTypes.length > 0) {
+      setActiveEquipment(equipmentId);
+      setShowSubTypes(true);
+    } else {
+      setActiveEquipment(equipmentId);
+      setShowSubTypes(false);
+      setActiveSubType(null);
+    }
+  };
+  
+  const handleSubTypeSelect = (subTypeId: string, subTypeName: string) => {
+    setActiveSubType(subTypeId);
+    setShowSubTypes(false);
+    
+    toast({
+      description: `Selected ${subTypeName}. Click on canvas to place.`
+    });
+  };
+  
   const renderEquipment = (item: Equipment) => {
     const equipmentType = equipmentList.find(e => e.id === item.type);
     const isSelected = selectedElement === item.id;
     const isConnectingThis = isConnecting === item.id;
+    const isDraggingThis = draggedEquipment === item.id;
     
     return (
       <div 
@@ -399,6 +606,7 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
         className={`absolute cursor-pointer p-3 rounded-lg shadow-md bg-white border ${
           isSelected ? 'border-flow-blue ring-2 ring-flow-blue/20' : 
           isConnectingThis ? 'border-green-500 ring-2 ring-green-500/20' : 
+          isDraggingThis ? 'border-amber-500 ring-2 ring-amber-500/20' :
           'border-gray-200'
         }`}
         style={{ 
@@ -433,6 +641,15 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
                 }}
               >
                 <Plus className="h-3 w-3" />
+              </button>
+              <button 
+                className="p-1 rounded-full bg-amber-500 text-white hover:bg-amber-600"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  startDragging(e, item.id);
+                }}
+              >
+                <Move className="h-3 w-3" />
               </button>
               <button 
                 className="p-1 rounded-full bg-red-500 text-white hover:bg-red-600"
@@ -517,24 +734,56 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
         <div className="col-span-1">
           <div className="bg-gray-50 rounded-lg border border-gray-200 p-4">
             <h3 className="font-medium mb-3">Equipment</h3>
-            <div className="space-y-2 max-h-[400px] overflow-y-auto">
-              {equipmentList.map((equipment) => (
-                <div
-                  key={equipment.id}
-                  className={`flex items-center p-2 rounded-lg cursor-pointer transition-colors ${
-                    activeEquipment === equipment.id
-                      ? "bg-flow-blue/10 text-flow-blue"
-                      : "hover:bg-gray-100"
-                  }`}
-                  onClick={() => setActiveEquipment(equipment.id)}
-                >
-                  <div className="p-1.5 rounded bg-white mr-3 shadow-sm">
-                    {equipment.icon}
-                  </div>
-                  <span className="text-sm">{equipment.name}</span>
+            
+            {showSubTypes ? (
+              <div>
+                <div className="flex items-center mb-3">
+                  <button 
+                    className="p-1 mr-2 rounded hover:bg-gray-200"
+                    onClick={() => setShowSubTypes(false)}
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                  </button>
+                  <span className="font-medium">
+                    {equipmentList.find(e => e.id === activeEquipment)?.name} Types
+                  </span>
                 </div>
-              ))}
-            </div>
+                <div className="space-y-2 max-h-[400px] overflow-y-auto">
+                  {equipmentList.find(e => e.id === activeEquipment)?.subTypes?.map(subType => (
+                    <div
+                      key={subType.id}
+                      className={`flex items-center p-2 rounded-lg cursor-pointer transition-colors ${
+                        activeSubType === subType.id
+                          ? "bg-flow-blue/10 text-flow-blue"
+                          : "hover:bg-gray-100"
+                      }`}
+                      onClick={() => handleSubTypeSelect(subType.id, subType.name)}
+                    >
+                      <span className="text-sm">{subType.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-2 max-h-[400px] overflow-y-auto">
+                {equipmentList.map((equipment) => (
+                  <div
+                    key={equipment.id}
+                    className={`flex items-center p-2 rounded-lg cursor-pointer transition-colors ${
+                      activeEquipment === equipment.id
+                        ? "bg-flow-blue/10 text-flow-blue"
+                        : "hover:bg-gray-100"
+                    }`}
+                    onClick={() => handleEquipmentSelect(equipment.id)}
+                  >
+                    <div className="p-1.5 rounded bg-white mr-3 shadow-sm">
+                      {equipment.icon}
+                    </div>
+                    <span className="text-sm">{equipment.name}</span>
+                  </div>
+                ))}
+              </div>
+            )}
             
             <div className="mt-6 border-t border-gray-200 pt-4">
               <h3 className="font-medium mb-3">Simulation Info</h3>
@@ -603,12 +852,16 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
                 </button>
                 <div className="text-gray-600 text-sm">Zoom: {zoom}%</div>
               </div>
-              <button 
-                className="p-1.5 rounded hover:bg-gray-100 transition-colors"
-                onClick={() => setShowSettings(!showSettings)}
-              >
-                <Settings2 className="h-4 w-4 text-gray-600" />
-              </button>
+              
+              <div className="flex items-center space-x-2">
+                <div id="analysis-tab" className="hidden">Analysis Tab</div>
+                <button 
+                  className="p-1.5 rounded hover:bg-gray-100 transition-colors"
+                  onClick={() => setShowSettings(!showSettings)}
+                >
+                  <Settings2 className="h-4 w-4 text-gray-600" />
+                </button>
+              </div>
             </div>
             
             <div 
@@ -658,12 +911,19 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
               {activeEquipment && (
                 <div className="absolute top-4 right-4 bg-blue-50 text-blue-800 p-3 rounded-lg shadow-sm">
                   <div className="flex items-center">
-                    <span>Click on the canvas to place {equipmentList.find(e => e.id === activeEquipment)?.name}</span>
+                    <span>Click on the canvas to place {
+                      activeSubType 
+                        ? `${equipmentList.find(e => e.id === activeEquipment)?.name} (${
+                            equipmentList.find(e => e.id === activeEquipment)?.subTypes?.find(st => st.id === activeSubType)?.name
+                          })` 
+                        : equipmentList.find(e => e.id === activeEquipment)?.name
+                    }</span>
                     <button 
                       className="ml-2 p-1 rounded-full hover:bg-blue-200"
                       onClick={(e) => {
                         e.stopPropagation();
                         setActiveEquipment(null);
+                        setActiveSubType(null);
                       }}
                     >
                       <X className="h-4 w-4" />
