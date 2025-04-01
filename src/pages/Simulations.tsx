@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
 import GlassPanel from "@/components/ui/GlassPanel";
 import { 
   PlusCircle, Clock, ArrowRight, FlaskConical, 
@@ -138,15 +137,15 @@ const Simulations = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
       <Navbar />
       
-      <main className="flex-1 py-16 px-6 bg-gray-50">
+      <main className="flex-1 py-16 px-6">
         <div className="max-w-screen-xl mx-auto">
           <div className="flex justify-between items-center mb-8">
             <div>
-              <h1 className="text-3xl font-display font-bold mb-2">My Simulations</h1>
-              <p className="text-gray-600">Manage and run your chemical process simulations</p>
+              <h1 className="text-3xl font-display font-bold mb-2 dark:text-white">My Simulations</h1>
+              <p className="text-gray-600 dark:text-gray-400">Manage and run your chemical process simulations</p>
             </div>
             <Link 
               to="/create-simulation"
@@ -162,30 +161,30 @@ const Simulations = () => {
               {simulations.map((sim) => (
                 <GlassPanel 
                   key={sim.id} 
-                  className="p-6 hover:shadow-md transition-shadow"
+                  className="p-6 hover:shadow-md transition-shadow bg-white dark:bg-gray-800 dark:border-gray-700"
                 >
                   <div className="flex justify-between items-start mb-4">
-                    <div className="p-2 rounded-lg bg-blue-50 text-flow-blue">
+                    <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-900 text-flow-blue dark:text-blue-200">
                       <FlaskConical className="h-5 w-5" />
                     </div>
-                    <div className="flex items-center text-sm text-gray-500">
+                    <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
                       <Clock className="h-4 w-4 mr-1" />
                       <span>{new Date(sim.lastUpdated).toLocaleString()}</span>
                     </div>
                   </div>
                   
-                  <h3 className="text-xl font-medium mb-2">{sim.name}</h3>
-                  <p className="text-gray-600 text-sm mb-4">{sim.description}</p>
+                  <h3 className="text-xl font-medium mb-2 dark:text-white">{sim.name}</h3>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">{sim.description}</p>
                   
                   <div className="mb-4">
-                    <h4 className="text-sm font-medium mb-2">Components</h4>
+                    <h4 className="text-sm font-medium mb-2 dark:text-gray-200">Components</h4>
                     {sim.components.map((comp, idx) => (
                       <div key={idx} className="mb-2">
-                        <div className="flex justify-between text-sm mb-1">
+                        <div className="flex justify-between text-sm mb-1 dark:text-gray-300">
                           <span>{comp.name}</span>
                           <span>{comp.percentage}%</span>
                         </div>
-                        <div className="w-full h-1.5 bg-gray-200 rounded-full">
+                        <div className="w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full">
                           <div 
                             className="h-1.5 rounded-full bg-flow-blue"
                             style={{ width: `${comp.percentage}%` }}
@@ -196,20 +195,20 @@ const Simulations = () => {
                   </div>
                   
                   {sim.thermodynamicModel && (
-                    <div className="text-sm mb-4">
-                      <span className="text-gray-500">Property Package:</span>
+                    <div className="text-sm mb-4 dark:text-gray-300">
+                      <span className="text-gray-500 dark:text-gray-400">Property Package:</span>
                       <span className="ml-2 font-medium">{sim.thermodynamicModel}</span>
                     </div>
                   )}
                   
                   {sim.equipment !== undefined && (
-                    <div className="text-sm mb-4">
-                      <span className="text-gray-500">Equipment:</span>
+                    <div className="text-sm mb-4 dark:text-gray-300">
+                      <span className="text-gray-500 dark:text-gray-400">Equipment:</span>
                       <span className="ml-2 font-medium">{sim.equipment}</span>
                       {sim.streams !== undefined && (
                         <>
                           <span className="mx-2">|</span>
-                          <span className="text-gray-500">Streams:</span>
+                          <span className="text-gray-500 dark:text-gray-400">Streams:</span>
                           <span className="ml-2 font-medium">{sim.streams}</span>
                         </>
                       )}
@@ -217,18 +216,19 @@ const Simulations = () => {
                   )}
                   
                   <div className="flex items-center justify-between">
-                    <div className="text-sm">
-                      <span className="text-gray-500">Efficiency:</span>
+                    <div className="text-sm dark:text-gray-300">
+                      <span className="text-gray-500 dark:text-gray-400">Efficiency:</span>
                       <span className="ml-2 font-medium text-flow-blue">{sim.efficiency}%</span>
                     </div>
                   </div>
                   
-                  <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+                  <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
                     <div className="flex space-x-2">
                       <Button 
                         size="sm"
                         variant="outline"
                         onClick={() => handleEditSimulation(sim)}
+                        className="dark:border-gray-600 dark:text-gray-200"
                       >
                         <Edit className="h-3.5 w-3.5 mr-1" />
                         Edit
@@ -237,6 +237,7 @@ const Simulations = () => {
                         size="sm"
                         variant="outline"
                         onClick={() => exportSimulation(sim)}
+                        className="dark:border-gray-600 dark:text-gray-200"
                       >
                         <Download className="h-3.5 w-3.5 mr-1" />
                         Export
@@ -244,7 +245,7 @@ const Simulations = () => {
                       <Button 
                         size="sm"
                         variant="outline"
-                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                        className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20 dark:border-gray-600"
                         onClick={() => handleDeleteSimulation(sim.id)}
                       >
                         <Trash2 className="h-3.5 w-3.5 mr-1" />
@@ -263,14 +264,14 @@ const Simulations = () => {
               ))}
             </div>
           ) : (
-            <GlassPanel className="p-12 text-center">
+            <GlassPanel className="p-12 text-center bg-white dark:bg-gray-800 dark:border-gray-700">
               <div className="flex justify-center mb-4">
-                <div className="p-4 rounded-full bg-blue-50 text-flow-blue">
+                <div className="p-4 rounded-full bg-blue-50 dark:bg-blue-900 text-flow-blue dark:text-blue-200">
                   <FlaskConical className="h-8 w-8" />
                 </div>
               </div>
-              <h3 className="text-xl font-medium mb-2">No simulations found</h3>
-              <p className="text-gray-600 mb-6 max-w-md mx-auto">
+              <h3 className="text-xl font-medium mb-2 dark:text-white">No simulations found</h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
                 Create your first simulation to start modeling chemical processes with ChemFlow
               </p>
               <Link 
@@ -284,8 +285,6 @@ const Simulations = () => {
           )}
         </div>
       </main>
-      
-      <Footer />
     </div>
   );
 };

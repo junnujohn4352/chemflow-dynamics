@@ -1,16 +1,17 @@
+
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { 
   Menu, X, ChevronDown, 
   LayoutDashboard, FileText, 
   BarChart3, Database, Settings,
-  Brain, Beaker
+  Brain, Beaker, Moon, Sun
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import ChemFlowLogo from "@/assets/icons/ChemFlowLogo";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
   const location = useLocation();
   
   const isActiveRoute = (route: string) => {
@@ -40,15 +41,30 @@ const Navbar = () => {
     },
   ];
 
+  const toggleDarkMode = () => {
+    const newMode = !darkMode;
+    setDarkMode(newMode);
+    document.documentElement.classList.toggle('dark', newMode);
+    localStorage.setItem('darkMode', newMode ? 'dark' : 'light');
+  };
+
+  // Check for saved dark mode preference when component mounts
+  React.useEffect(() => {
+    const savedMode = localStorage.getItem('darkMode');
+    if (savedMode === 'dark') {
+      setDarkMode(true);
+      document.documentElement.classList.add('dark');
+    }
+  }, []);
+
   return (
-    <header className="bg-white border-b border-gray-200 sticky top-0 z-30">
+    <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-30">
       <div className="max-w-screen-xl mx-auto px-4 sm:px-6">
         <div className="flex justify-between items-center h-16">
-          {/* Logo and Brand */}
+          {/* Brand text only */}
           <div className="flex items-center">
             <Link to="/dashboard" className="flex items-center">
-              <ChemFlowLogo className="h-8 w-auto mr-2" />
-              <span className="text-xl font-display font-bold tracking-tight">
+              <span className="text-xl font-display font-bold tracking-tight dark:text-white">
                 ChemFlow
               </span>
             </Link>
@@ -62,8 +78,8 @@ const Navbar = () => {
                 to={item.href}
                 className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                   isActiveRoute(item.href)
-                    ? "bg-flow-blue text-white"
-                    : "text-gray-600 hover:bg-gray-100"
+                    ? "bg-flow-blue text-white dark:bg-flow-blue/80"
+                    : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                 }`}
               >
                 <div className="flex items-center">
@@ -77,19 +93,38 @@ const Navbar = () => {
               variant="outline" 
               size="sm"
               asChild
+              className="dark:border-gray-600 dark:text-gray-200"
             >
               <Link to="/create-simulation">
                 <Beaker className="h-4 w-4 mr-2" />
                 Create Simulation
               </Link>
             </Button>
+
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleDarkMode}
+              className="ml-2"
+            >
+              {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            </Button>
           </nav>
           
           {/* Mobile menu button */}
           <div className="md:hidden flex items-center">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleDarkMode}
+              className="mr-2"
+            >
+              {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            </Button>
+            
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none"
+              className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none"
               aria-expanded={isOpen}
             >
               <span className="sr-only">Open main menu</span>
@@ -102,15 +137,15 @@ const Navbar = () => {
       {/* Mobile Menu */}
       {isOpen && (
         <div className="md:hidden">
-          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white dark:bg-gray-800">
             {navigationItems.map((item, index) => (
               <Link
                 key={index}
                 to={item.href}
                 className={`block px-3 py-2 rounded-md text-base font-medium ${
                   isActiveRoute(item.href)
-                    ? "bg-flow-blue text-white"
-                    : "text-gray-600 hover:bg-gray-100"
+                    ? "bg-flow-blue text-white dark:bg-flow-blue/80"
+                    : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                 }`}
                 onClick={() => setIsOpen(false)}
               >
@@ -123,7 +158,7 @@ const Navbar = () => {
             
             <Link
               to="/create-simulation"
-              className="block px-3 py-2 rounded-md text-base font-medium text-gray-600 hover:bg-gray-100"
+              className="block px-3 py-2 rounded-md text-base font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
               onClick={() => setIsOpen(false)}
             >
               <div className="flex items-center">
