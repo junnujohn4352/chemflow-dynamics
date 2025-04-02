@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -428,21 +429,21 @@ const AISimulation = () => {
                       {streamedResponse ? (
                         <ReactMarkdown
                           components={{
-                            code({ node, inline, className, children, ...props }) {
+                            code({ node, className, children, ...props }) {
                               const match = /language-(\w+)/.exec(className || '')
-                              return !inline && match ? (
+                              return !className?.includes('language-') ? (
+                                <code className={className} {...props}>
+                                  {children}
+                                </code>
+                              ) : (
                                 <SyntaxHighlighter
                                   style={dracula}
-                                  language={match[1]}
+                                  language={match?.[1] || ''}
                                   PreTag="div"
                                   {...props}
                                 >
                                   {String(children).replace(/\n$/, '')}
                                 </SyntaxHighlighter>
-                              ) : (
-                                <code className={className} {...props}>
-                                  {children}
-                                </code>
                               )
                             }
                           }}
@@ -452,21 +453,21 @@ const AISimulation = () => {
                       ) : (
                         <ReactMarkdown
                           components={{
-                            code({ node, inline, className, children, ...props }) {
+                            code({ node, className, children, ...props }) {
                               const match = /language-(\w+)/.exec(className || '')
-                              return !inline && match ? (
+                              return !className?.includes('language-') ? (
+                                <code className={className} {...props}>
+                                  {children}
+                                </code>
+                              ) : (
                                 <SyntaxHighlighter
                                   style={dracula}
-                                  language={match[1]}
+                                  language={match?.[1] || ''}
                                   PreTag="div"
                                   {...props}
                                 >
                                   {String(children).replace(/\n$/, '')}
                                 </SyntaxHighlighter>
-                              ) : (
-                                <code className={className} {...props}>
-                                  {children}
-                                </code>
                               )
                             }
                           }}
