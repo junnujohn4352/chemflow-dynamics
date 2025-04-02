@@ -177,6 +177,7 @@ const EquipmentSettings: React.FC<EquipmentSettingsProps> = ({
         let unit = "";
         let min = 0;
         let step = 0.1;
+        let maxValue = 100; // Define maxValue variable instead of max
         
         if (key.includes('temperature')) {
           unit = "°C";
@@ -193,7 +194,7 @@ const EquipmentSettings: React.FC<EquipmentSettingsProps> = ({
         } else if (key.includes('efficiency')) {
           unit = "%";
           min = 0;
-          max = 100;
+          maxValue = 100; // Use maxValue instead of max
         } else if (key.includes('volume')) {
           unit = "m³";
           min = 0;
@@ -209,6 +210,7 @@ const EquipmentSettings: React.FC<EquipmentSettingsProps> = ({
                 type="number"
                 min={min}
                 step={step}
+                max={key.includes('efficiency') ? maxValue : undefined} // Use maxValue here
                 value={value}
                 onChange={(e) => handleChange(key, parseFloat(e.target.value))}
                 className="flex-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-flow-blue/20 focus:border-flow-blue"
