@@ -21,7 +21,7 @@ interface SimulationCard {
   description: string;
   lastUpdated: string;
   efficiency: number;
-  components: SimulationComponent[];
+  components: SimulationComponent[] | string[];
   equipment?: number;
   streams?: number;
   thermodynamicModel?: string;
@@ -146,20 +146,43 @@ const Simulations = () => {
       return <p className="text-sm text-gray-500">No components available</p>;
     }
 
-    return components.map((comp, idx) => (
-      <div key={idx} className="mb-2">
-        <div className="flex justify-between text-sm mb-1 dark:text-gray-300">
-          <span>{typeof comp === 'string' ? comp : comp.name}</span>
-          <span>{typeof comp === 'string' ? '' : `${comp.percentage}%`}</span>
+    return components.map((comp, idx) => {
+      // Ensure we're properly handling the component, whether it's a string or object
+      const compName = typeof comp === 'string' ? comp : (comp.name || 'Unknown');
+      const percentage = typeof comp === 'string' ? 100 : (comp.percentage || 0);
+      
+      return (
+        <div key={idx} className="mb-2">
+          <div className="flex justify-between text-sm mb-1 dark:text-gray-300">
+            <span>{compName}</span>
+            <span>{typeof comp === 'string' ? '' : `${percentage}%`}</span>
+          </div>
+          <div className="w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full">
+            <div 
+              className="h-1.5 rounded-full bg-flow-blue"
+              style={{ width: `${percentage}%` }}
+            ></div>
+          </div>
         </div>
-        <div className="w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full">
-          <div 
-            className="h-1.5 rounded-full bg-flow-blue"
-            style={{ width: typeof comp === 'string' ? '100%' : `${comp.percentage}%` }}
-          ></div>
-        </div>
-      </div>
-    ));
+      );
+    });
+  };
+
+  // Helper function to safely stringify values
+  const safeStringify = (value: any): string => {
+    if (value === null || value === undefined) {
+      return '';
+    }
+    
+    if (typeof value === 'object') {
+      try {
+        return JSON.stringify(value);
+      } catch (e) {
+        return '[Object]';
+      }
+    }
+    
+    return String(value);
   };
 
   return (
