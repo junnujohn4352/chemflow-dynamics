@@ -68,6 +68,7 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
   const [editingEquipment, setEditingEquipment] = useState<Equipment | null>(null);
   const [simulationRunning, setSimulationRunning] = useState(false);
   const [showSubTypes, setShowSubTypes] = useState(false);
+  const [isMoving, setIsMoving] = useState(false);
   
   useEffect(() => {
     const savedEquipment = localStorage.getItem('chemflow-equipment');
@@ -150,7 +151,7 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     { id: "product", name: "Product Stream", icon: <Droplets className="h-5 w-5" /> }
   ];
   
-  // Add the missing handler functions
+  // Add the handler functions
   const handleZoomIn = () => {
     setZoom(prev => Math.min(prev + 10, 200));
   };
@@ -255,10 +256,42 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
       // Deselect if clicking on canvas
       setSelectedElement(null);
     }
+    setIsMoving(false);
   };
 
   const handleEquipmentClick = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
+    
+    if (isMoving) {
+      // If we're in moving mode, update the equipment's position
+      if (canvasRef.current) {
+        const rect = canvasRef.current.getBoundingClientRect();
+        const scale = zoom / 100;
+        
+        const x = (e.clientX - rect.left) / scale;
+        const y = (e.clientY - rect.top) / scale;
+        
+        setEquipment(prev => prev.map(eq => {
+          if (eq.id === selectedElement) {
+            return {
+              ...eq,
+              position: { x, y }
+            };
+          }
+          return eq;
+        }));
+        
+        // Save to localStorage
+        localStorage.setItem('chemflow-equipment', JSON.stringify(equipment));
+        
+        setIsMoving(false);
+        toast({
+          title: "Equipment moved",
+          description: "New position saved"
+        });
+      }
+      return;
+    }
     
     if (isConnecting && isConnecting !== id) {
       // Create a new stream
@@ -344,6 +377,17 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     }
   };
   
+  const handleStartMove = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    setIsMoving(true);
+    setSelectedElement(id);
+    
+    toast({
+      title: "Move mode activated",
+      description: "Click on the canvas to place the equipment",
+    });
+  };
+  
   const handleOpenSettings = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
     const eq = equipment.find(item => item.id === id);
@@ -403,6 +447,7 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
   const renderEquipmentCard = (eq: Equipment) => {
     const isSelected = selectedElement === eq.id;
     const isSource = isConnecting === eq.id;
+    const isBeingMoved = isMoving && selectedElement === eq.id;
     
     // Get the equipment type data
     const equipmentType = equipmentList.find(e => e.id === eq.type);
@@ -414,8 +459,10 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
           isSelected 
             ? 'border-flow-blue' 
             : isSource 
-              ? 'border-amber-500' 
-              : 'border-gray-200'
+              ? 'border-amber-500'
+              : isBeingMoved
+                ? 'border-green-500'
+                : 'border-gray-200'
         }`}
         style={{
           left: `${eq.position.x}px`,
@@ -446,6 +493,13 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
                 title="Connect to another equipment"
               >
                 <Play className="h-3 w-3" />
+              </button>
+              <button 
+                className="p-1 rounded-full bg-green-100 hover:bg-green-200 text-green-600"
+                onClick={(e) => handleStartMove(e, eq.id)}
+                title="Move to specific location"
+              >
+                <Move className="h-3 w-3" />
               </button>
               <button 
                 className="p-1 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600"
@@ -671,6 +725,18 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
               <button 
                 onClick={() => setIsConnecting(null)}
                 className="p-1 rounded-full bg-amber-200 text-amber-700 hover:bg-amber-300"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          )}
+          
+          {isMoving && (
+            <div className="fixed bottom-4 right-4 bg-green-100 text-green-700 p-3 rounded-lg shadow-md text-sm flex items-center gap-2">
+              <span>Click on the canvas to place the equipment</span>
+              <button 
+                onClick={() => setIsMoving(false)}
+                className="p-1 rounded-full bg-green-200 text-green-700 hover:bg-green-300"
               >
                 <X className="h-4 w-4" />
               </button>
