@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Plus, Minus, Thermometer, Droplets, Settings2, Container, FlaskConical, Columns, Gauge, Save, Trash2, X, Sliders, Move, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -145,279 +146,165 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
         { id: "inline", name: "Inline Mixer" }
       ]
     },
-    { 
-      id: "splitter", 
-      name: "Splitter", 
-      icon: <Columns className="h-5 w-5 rotate-90" />,
-      subTypes: [
-        { id: "tee", name: "Tee Splitter" },
-        { id: "ratio", name: "Ratio Splitter" },
-        { id: "component", name: "Component Splitter" }
-      ]
-    },
-    { 
-      id: "flash", 
-      name: "Flash Separator", 
-      icon: <Container className="h-5 w-5" />,
-      subTypes: [
-        { id: "vertical", name: "Vertical Flash" },
-        { id: "horizontal", name: "Horizontal Flash" },
-        { id: "threephase", name: "Three-Phase Separator" }
-      ]
-    },
-    { 
-      id: "pump", 
-      name: "Pump", 
-      icon: <Gauge className="h-5 w-5" />,
-      subTypes: [
-        { id: "centrifugal", name: "Centrifugal Pump" },
-        { id: "positive", name: "Positive Displacement" },
-        { id: "vacuum", name: "Vacuum Pump" }
-      ]
-    },
-    { 
-      id: "heatex", 
-      name: "Heat Exchanger", 
-      icon: <Thermometer className="h-5 w-5" />,
-      subTypes: [
-        { id: "shell", name: "Shell & Tube" },
-        { id: "plate", name: "Plate" },
-        { id: "spiral", name: "Spiral" },
-        { id: "double-pipe", name: "Double-Pipe" }
-      ]
-    },
-    { 
-      id: "compressor", 
-      name: "Compressor", 
-      icon: <Gauge className="h-5 w-5" />,
-      subTypes: [
-        { id: "centrifugal", name: "Centrifugal Compressor" },
-        { id: "reciprocating", name: "Reciprocating Compressor" },
-        { id: "screw", name: "Screw Compressor" }
-      ]
-    },
-    { 
-      id: "valve", 
-      name: "Valve", 
-      icon: <Sliders className="h-5 w-5" />,
-      subTypes: [
-        { id: "control", name: "Control Valve" },
-        { id: "relief", name: "Relief Valve" },
-        { id: "check", name: "Check Valve" },
-        { id: "ball", name: "Ball Valve" }
-      ]
-    },
-    { 
-      id: "crystallizer", 
-      name: "Crystallizer", 
-      icon: <FlaskConical className="h-5 w-5" />,
-      subTypes: [
-        { id: "batch", name: "Batch Crystallizer" },
-        { id: "continuous", name: "Continuous Crystallizer" },
-        { id: "cooling", name: "Cooling Crystallizer" }
-      ]
-    },
-    { 
-      id: "dryer", 
-      name: "Dryer", 
-      icon: <Thermometer className="h-5 w-5" />,
-      subTypes: [
-        { id: "tray", name: "Tray Dryer" },
-        { id: "rotary", name: "Rotary Dryer" },
-        { id: "spray", name: "Spray Dryer" },
-        { id: "fluidized", name: "Fluidized Bed Dryer" }
-      ]
-    },
+    { id: "valve", name: "Valve", icon: <Gauge className="h-5 w-5" /> },
+    { id: "pump", name: "Pump", icon: <Gauge className="h-5 w-5" /> },
+    { id: "product", name: "Product Stream", icon: <Droplets className="h-5 w-5" /> }
   ];
   
-  const handleCanvasClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!canvasRef.current || !activeEquipment) return;
+  const handleAddEquipment = (type: string, subType?: string) => {
+    const equipmentType = equipmentList.find(item => item.id === type);
     
-    const rect = canvasRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    if (!equipmentType) return;
     
-    const activeEquipmentInfo = equipmentList.find(item => item.id === activeEquipment);
-    if (activeEquipmentInfo) {
-      const newEquipment: Equipment = {
-        id: `${activeEquipment}-${Date.now()}`,
-        type: activeEquipment,
-        name: activeSubType 
-          ? `${activeEquipmentInfo.name} (${activeSubType})` 
-          : activeEquipmentInfo.name,
-        position: { x, y },
-        connections: [],
-        settings: getDefaultSettings(activeEquipment),
-        subType: activeSubType || undefined
+    let name = equipmentType.name;
+    if (subType) {
+      const subTypeOption = equipmentType.subTypes?.find(item => item.id === subType);
+      if (subTypeOption) {
+        name = subTypeOption.name;
+      }
+    }
+    
+    const newEquipment: Equipment = {
+      id: `${type}-${Date.now()}`,
+      type,
+      name,
+      position: { x: 100, y: 100 },
+      connections: [],
+      settings: {},
+      subType
+    };
+    
+    // Add specific settings based on equipment type
+    if (type === 'feed') {
+      newEquipment.settings = {
+        temperature: 25,
+        pressure: 101.3,
+        flowRate: 100,
+        composition: selectedComponents.reduce((acc, comp) => {
+          acc[comp] = 100 / selectedComponents.length;
+          return acc;
+        }, {} as Record<string, number>)
+      };
+    } else if (type === 'reactor') {
+      const reactionTypes = {
+        cstr: 'CSTR',
+        pfr: 'PFR',
+        batch: 'Batch'
       };
       
-      setEquipment(prev => [...prev, newEquipment]);
+      newEquipment.settings = {
+        temperature: 50,
+        pressure: 150,
+        conversionTarget: 0.85,
+        reactionType: reactionTypes[subType as keyof typeof reactionTypes] || 'CSTR'
+      };
+    } else if (type === 'heater' || type === 'cooler') {
+      newEquipment.settings = {
+        targetTemperature: type === 'heater' ? 80 : 15,
+        heatDuty: type === 'heater' ? 500 : -500,
+        pressure: 101.3
+      };
+    } else if (type === 'column') {
+      newEquipment.settings = {
+        numberOfStages: 10,
+        feedStage: 5,
+        refluxRatio: 1.5,
+        reboilerDuty: 1000,
+        pressure: 101.3
+      };
+    } else if (type === 'valve') {
+      newEquipment.settings = {
+        pressureDrop: 50,
+        valveType: 'linear'
+      };
+    } else if (type === 'pump') {
+      newEquipment.settings = {
+        pressureIncrease: 100,
+        efficiency: 0.75
+      };
+    } else if (type === 'product') {
+      newEquipment.settings = {
+        temperature: 25,
+        pressure: 101.3
+      };
+    } else if (type === 'mixer') {
+      newEquipment.settings = {
+        pressure: 101.3,
+        temperature: 25,
+        mixingEfficiency: 0.95
+      };
+    }
+    
+    setEquipment([...equipment, newEquipment]);
+    setActiveEquipment(null);
+    setActiveSubType(null);
+    setShowSubTypes(false);
+    
+    toast({
+      title: "Equipment added",
+      description: `${name} has been added to the simulation`
+    });
+  };
+  
+  const handleConnectEquipment = (id: string) => {
+    if (!isConnecting) {
+      // Start connecting
+      setIsConnecting(id);
+      
       toast({
-        title: "Equipment Added",
-        description: `${newEquipment.name} has been added to the flowsheet`
+        title: "Connect mode activated",
+        description: "Select another equipment to create a stream between them"
+      });
+    } else if (isConnecting !== id) {
+      // Complete connection
+      const newStream: Stream = {
+        id: `stream-${Date.now()}`,
+        from: isConnecting,
+        to: id,
+        type: "material",
+        properties: {
+          flowRate: 100,
+          temperature: 25,
+          pressure: 101.3
+        }
+      };
+      
+      const updatedStreams = [...streams, newStream];
+      setStreams(updatedStreams);
+      
+      // Update equipment connections
+      const updatedEquipment = equipment.map(eq => {
+        if (eq.id === isConnecting) {
+          return { ...eq, connections: [...eq.connections, id] };
+        }
+        return eq;
       });
       
-      setActiveEquipment(null);
-      setActiveSubType(null);
-      setShowSubTypes(false);
-    }
-  };
-
-  const getDefaultSettings = (type: string): Record<string, any> => {
-    switch(type) {
-      case "feed":
-        return { 
-          temperature: 25,
-          pressure: 101.3,
-          flowRate: 100,
-          composition: selectedComponents.reduce((acc, id) => {
-            acc[id] = 100 / selectedComponents.length;
-            return acc;
-          }, {} as Record<string, number>)
-        };
-      case "heater":
-        return { 
-          targetTemperature: 80,
-          pressure: 101.3,
-          heatDuty: 500 
-        };
-      case "cooler":
-        return { 
-          targetTemperature: 15,
-          pressure: 101.3,
-          coolingDuty: 500 
-        };
-      case "flash":
-        return { 
-          temperature: 60,
-          pressure: 80,
-          vaporFraction: 0.5
-        };
-      case "column":
-        return { 
-          numberOfStages: 20,
-          feedStage: 10,
-          refluxRatio: 1.5,
-          reboilerDuty: 1000,
-          condenserDuty: -900,
-          topPressure: 101.3,
-          bottomPressure: 110
-        };
-      case "pump":
-        return { 
-          pressureIncrease: 200,
-          efficiency: 0.75
-        };
-      case "reactor":
-        return { 
-          temperature: 120,
-          pressure: 150,
-          conversion: 0.8,
-          reactionType: "CSTR"
-        };
-      case "mixer":
-        return { 
-          pressure: 101.3
-        };
-      case "splitter":
-        return { 
-          splitRatio: 0.5,
-          pressure: 101.3
-        };
-      case "heatex":
-        return {
-          hotInletTemp: 120,
-          hotOutletTemp: 80,
-          coldInletTemp: 25,
-          coldOutletTemp: 60,
-          heatTransferCoeff: 800,
-          pressure: 101.3
-        };
-      case "compressor":
-        return {
-          pressureRatio: 3,
-          efficiency: 0.75
-        };
-      case "valve":
-        return {
-          outletPressure: 101.3,
-          valveType: "linear"
-        };
-      default:
-        return {};
-    }
-  };
-  
-  const handleEquipmentClick = (e: React.MouseEvent, equipmentId: string) => {
-    e.stopPropagation();
-    
-    if (isConnecting) {
-      if (isConnecting !== equipmentId) {
-        const newStream: Stream = {
-          id: `stream-${Date.now()}`,
-          from: isConnecting,
-          to: equipmentId,
-          type: "material",
-          properties: {}
-        };
-        
-        setStreams(prev => [...prev, newStream]);
-        
-        setEquipment(prev => 
-          prev.map(eq => {
-            if (eq.id === isConnecting) {
-              return {...eq, connections: [...eq.connections, equipmentId]};
-            }
-            if (eq.id === equipmentId) {
-              return {...eq, connections: [...eq.connections, isConnecting]};
-            }
-            return eq;
-          })
-        );
-        
-        setIsConnecting(null);
-        toast({
-          title: "Connection Created",
-          description: "Stream has been added between the equipment"
-        });
-      }
+      setEquipment(updatedEquipment);
+      setIsConnecting(null);
+      
+      // Save to localStorage
+      localStorage.setItem('chemflow-streams', JSON.stringify(updatedStreams));
+      localStorage.setItem('chemflow-equipment', JSON.stringify(updatedEquipment));
+      
+      toast({
+        title: "Stream created",
+        description: "A new stream has been added to the simulation"
+      });
     } else {
-      setSelectedElement(equipmentId);
+      // Cancel connecting
+      setIsConnecting(null);
+      
+      toast({
+        title: "Connect mode cancelled",
+        description: "Connection process has been cancelled"
+      });
     }
   };
   
-  const startConnectionWithEvent = (e: React.MouseEvent, equipmentId: string) => {
-    e.stopPropagation();
-    setIsConnecting(equipmentId);
-    toast({
-      description: "Click on another equipment to create a connection"
-    });
-  };
-  
-  const startDragging = (e: React.MouseEvent, equipmentId: string) => {
-    e.stopPropagation();
-    const equipmentItem = equipmentList.find(eq => eq.id === equipmentId);
-    if (!equipmentItem) return;
-    
-    setDraggedEquipment(equipmentId);
-    setDragStartPos({ x: e.clientX, y: e.clientY });
-    document.addEventListener('mousemove', handleDragMove);
-    document.addEventListener('mouseup', handleDragEnd);
-    
-    toast({
-      description: "Dragging equipment - click to place",
-    });
-  };
-  
-  const handleDragMove = useCallback((e: MouseEvent) => {
-    if (!draggedEquipment || !canvasRef.current) return;
-    
-    const rect = canvasRef.current.getBoundingClientRect();
-    const deltaX = (e.clientX - dragStartPos.x) / (zoom / 100);
-    const deltaY = (e.clientY - dragStartPos.y) / (zoom / 100);
-    
-    setEquipment(prev => prev.map(eq => {
-      if (eq.id === draggedEquipment) {
+  const handleMoveEquipment = (id: string, deltaX: number, deltaY: number) => {
+    const updatedEquipment = equipment.map(eq => {
+      if (eq.id === id) {
         return {
           ...eq,
           position: {
@@ -427,556 +314,571 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
         };
       }
       return eq;
-    }));
-    
-    setDragStartPos({ x: e.clientX, y: e.clientY });
-  }, [draggedEquipment, dragStartPos, zoom]);
-  
-  const handleDragEnd = useCallback(() => {
-    setDraggedEquipment(null);
-    document.removeEventListener('mousemove', handleDragMove);
-    document.removeEventListener('mouseup', handleDragEnd);
-    
-    localStorage.setItem('chemflow-equipment', JSON.stringify(equipment));
-  }, [equipment, handleDragMove]);
-  
-  useEffect(() => {
-    return () => {
-      document.removeEventListener('mousemove', handleDragMove);
-      document.removeEventListener('mouseup', handleDragEnd);
-    };
-  }, [handleDragMove, handleDragEnd]);
-  
-  const deleteSelected = () => {
-    if (!selectedElement) return;
-    
-    setEquipment(prev => prev.filter(eq => eq.id !== selectedElement));
-    setStreams(prev => prev.filter(
-      stream => stream.from !== selectedElement && stream.to !== selectedElement
-    ));
-    
-    setSelectedElement(null);
-    toast({
-      title: "Deleted",
-      description: "Equipment has been removed from the flowsheet"
-    });
-  };
-  
-  const clearCanvas = () => {
-    setEquipment([]);
-    setStreams([]);
-    setSelectedElement(null);
-    setIsConnecting(null);
-    toast({
-      title: "Canvas Cleared",
-      description: "All equipment and connections have been removed"
-    });
-  };
-  
-  const saveFlowsheet = (simulationName = "Untitled Simulation") => {
-    const timestamp = new Date().toISOString();
-    
-    const simulationData = {
-      equipment,
-      streams,
-      components: selectedComponents,
-      thermodynamicModel,
-      lastUpdated: timestamp,
-      name: simulationName
-    };
-    
-    localStorage.setItem('chemflow-equipment', JSON.stringify(equipment));
-    localStorage.setItem('chemflow-streams', JSON.stringify(streams));
-    localStorage.setItem('chemflow-simulation-data', JSON.stringify(simulationData));
-    localStorage.setItem('chemflow-active-simulation', 'true');
-    
-    const existingSimulations = localStorage.getItem('chemflow-simulations');
-    let simulationsList = existingSimulations ? JSON.parse(existingSimulations) : [];
-    
-    const existingIndex = simulationsList.findIndex((sim: any) => 
-      sim.name === simulationName && 
-      JSON.stringify(sim.components) === JSON.stringify(selectedComponents)
-    );
-    
-    if (existingIndex !== -1) {
-      simulationsList[existingIndex] = {
-        ...simulationsList[existingIndex],
-        equipment: equipment.length,
-        streams: streams.length,
-        lastUpdated: timestamp,
-        thermodynamicModel
-      };
-    } else {
-      simulationsList.push({
-        id: `sim-${Date.now()}`,
-        name: simulationName,
-        description: `Process simulation with ${selectedComponents.length} components`,
-        lastUpdated: timestamp,
-        equipment: equipment.length,
-        streams: streams.length,
-        components: selectedComponents.map(comp => ({
-          name: comp,
-          percentage: 100 / selectedComponents.length
-        })),
-        efficiency: Math.floor(70 + Math.random() * 25),
-        thermodynamicModel
-      });
-    }
-    
-    localStorage.setItem('chemflow-simulations', JSON.stringify(simulationsList));
-    
-    toast({
-      title: "Flowsheet Saved",
-      description: "Your process design has been saved successfully"
-    });
-  };
-  
-  const runSimulation = () => {
-    if (equipment.length === 0) {
-      toast({
-        title: "Cannot Run",
-        description: "Please add equipment to the flowsheet first",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    if (selectedComponents.length === 0) {
-      toast({
-        title: "Components Required",
-        description: "Please select chemical components before running",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    saveFlowsheet();
-    
-    localStorage.setItem('chemflow-simulation-running', 'true');
-    setSimulationRunning(true);
-    
-    toast({
-      title: "Running Simulation",
-      description: "Calculating process flows and conditions..."
     });
     
-    onRunSimulation();
-    
-    const analysisTabElement = document.getElementById('analysis-tab');
-    if (analysisTabElement) {
-      analysisTabElement.click();
-    }
+    setEquipment(updatedEquipment);
+    localStorage.setItem('chemflow-equipment', JSON.stringify(updatedEquipment));
   };
-
-  const openEquipmentSettings = (equipment: Equipment) => {
-    setEditingEquipment(equipment);
-  };
-
-  const updateEquipmentSettings = (equipmentId: string, newSettings: Record<string, any>) => {
-    const { _equipmentName, ...restSettings } = newSettings;
-    setEquipment(prev => 
-      prev.map(eq => {
-        if (eq.id === equipmentId) {
-          return { 
-            ...eq, 
-            name: _equipmentName || eq.name,
-            settings: restSettings
+  
+  const handleDeleteElement = (id: string, type: 'equipment' | 'stream') => {
+    if (type === 'equipment') {
+      // Remove equipment
+      const updatedEquipment = equipment.filter(eq => eq.id !== id);
+      
+      // Remove all streams connected to this equipment
+      const updatedStreams = streams.filter(s => s.from !== id && s.to !== id);
+      
+      // Update connections in other equipment
+      const equipmentWithUpdatedConnections = updatedEquipment.map(eq => ({
+        ...eq,
+        connections: eq.connections.filter(conn => conn !== id)
+      }));
+      
+      setEquipment(equipmentWithUpdatedConnections);
+      setStreams(updatedStreams);
+      
+      localStorage.setItem('chemflow-equipment', JSON.stringify(equipmentWithUpdatedConnections));
+      localStorage.setItem('chemflow-streams', JSON.stringify(updatedStreams));
+    } else if (type === 'stream') {
+      // Remove stream
+      const streamToRemove = streams.find(s => s.id === id);
+      if (!streamToRemove) return;
+      
+      const updatedStreams = streams.filter(s => s.id !== id);
+      
+      // Update connections in equipment
+      const updatedEquipment = equipment.map(eq => {
+        if (eq.id === streamToRemove.from) {
+          return {
+            ...eq,
+            connections: eq.connections.filter(conn => conn !== streamToRemove.to)
           };
         }
         return eq;
-      })
-    );
-    
-    setShowSettings(false);
+      });
+      
+      setEquipment(updatedEquipment);
+      setStreams(updatedStreams);
+      
+      localStorage.setItem('chemflow-equipment', JSON.stringify(updatedEquipment));
+      localStorage.setItem('chemflow-streams', JSON.stringify(updatedStreams));
+    }
     
     toast({
-      title: "Settings updated",
-      description: "Equipment settings have been updated successfully"
+      title: `${type === 'equipment' ? 'Equipment' : 'Stream'} deleted`,
+      description: `The ${type} has been removed from the simulation`
     });
   };
   
-  const handleEquipmentSelect = (equipmentId: string) => {
-    const equipment = equipmentList.find(eq => eq.id === equipmentId);
+  const handleSelectElement = (id: string, type: 'equipment' | 'stream') => {
+    setSelectedElement(id);
     
-    if (equipment?.subTypes && equipment.subTypes.length > 0) {
-      setActiveEquipment(equipmentId);
-      setShowSubTypes(true);
-    } else {
-      setActiveEquipment(equipmentId);
-      setShowSubTypes(false);
-      setActiveSubType(null);
+    if (type === 'equipment') {
+      const selectedEq = equipment.find(eq => eq.id === id);
+      if (selectedEq) {
+        setEditingEquipment(selectedEq);
+        setShowSettings(true);
+      }
     }
   };
   
-  const handleSubTypeSelect = (subTypeId: string, subTypeName: string) => {
-    setActiveSubType(subTypeId);
-    setShowSubTypes(false);
+  const handleSaveSettings = (equipmentId: string, newSettings: Record<string, any>) => {
+    // Extract equipment name from settings if provided
+    const equipmentName = newSettings._equipmentName;
+    delete newSettings._equipmentName;
     
-    toast({
-      description: `Selected ${subTypeName}. Click on canvas to place.`
-    });
-  };
-  
-  const getEquipmentColor = (type: string) => {
-    switch (type) {
-      case 'feed': return 'bg-blue-100 text-blue-800';
-      case 'reactor': return 'bg-red-100 text-red-800';
-      case 'column': return 'bg-green-100 text-green-800';
-      case 'heater': return 'bg-orange-100 text-orange-800';
-      case 'cooler': return 'bg-teal-100 text-teal-800';
-      case 'mixer': return 'bg-purple-100 text-purple-800';
-      case 'splitter': return 'bg-yellow-100 text-yellow-800';
-      case 'flash': return 'bg-pink-100 text-pink-800';
-      case 'pump': return 'bg-indigo-100 text-indigo-800';
-      case 'heatex': return 'bg-lime-100 text-lime-800';
-      case 'compressor': return 'bg-cyan-100 text-cyan-800';
-      case 'valve': return 'bg-rose-100 text-rose-800';
-      case 'crystallizer': return 'bg-amber-100 text-amber-800';
-      case 'dryer': return 'bg-fuchsia-100 text-fuchsia-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-  
-  const getEquipmentIcon = (type: string) => {
-    switch (type) {
-      case 'feed': return <Droplets className="h-5 w-5" />;
-      case 'reactor': return <FlaskConical className="h-5 w-5" />;
-      case 'column': return <Columns className="h-5 w-5" />;
-      case 'heater': return <Thermometer className="h-5 w-5" />;
-      case 'cooler': return <Thermometer className="h-5 w-5" />;
-      case 'mixer': return <Columns className="h-5 w-5" />;
-      case 'splitter': return <Columns className="h-5 w-5 rotate-90" />;
-      case 'flash': return <Container className="h-5 w-5" />;
-      case 'pump': return <Gauge className="h-5 w-5" />;
-      case 'heatex': return <Thermometer className="h-5 w-5" />;
-      case 'compressor': return <Gauge className="h-5 w-5" />;
-      case 'valve': return <Sliders className="h-5 w-5" />;
-      case 'crystallizer': return <FlaskConical className="h-5 w-5" />;
-      case 'dryer': return <Thermometer className="h-5 w-5" />;
-      default: return <FlaskConical className="h-5 w-5" />;
-    }
-  };
-  
-  const getSubTypeName = (type: string, subType: string) => {
-    const equipment = equipmentList.find(e => e.id === type);
-    if (equipment && equipment.subTypes) {
-      const subTypeObj = equipment.subTypes.find(st => st.id === subType);
-      return subTypeObj ? subTypeObj.name : subType;
-    }
-    return subType;
-  };
-  
-  const handleCanvasMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    if (!isDragging || !draggedEquipment || !canvasRef.current) return;
-    
-    const rect = canvasRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    
-    setEquipment(prev => prev.map(eq => {
-      if (eq.id === draggedEquipment) {
-        return { ...eq, position: { x, y } };
+    const updatedEquipment = equipment.map(eq => {
+      if (eq.id === equipmentId) {
+        return {
+          ...eq,
+          name: equipmentName || eq.name,
+          settings: newSettings
+        };
       }
       return eq;
-    }));
-  }, [isDragging, draggedEquipment]);
-  
-  const handleDragStart = (e: React.MouseEvent, equipmentId: string) => {
-    e.stopPropagation();
-    setIsDragging(true);
-    setDraggedEquipment(equipmentId);
-    setSelectedElement(equipmentId);
+    });
+    
+    setEquipment(updatedEquipment);
+    setShowSettings(false);
+    setEditingEquipment(null);
+    
+    localStorage.setItem('chemflow-equipment', JSON.stringify(updatedEquipment));
+    
+    toast({
+      title: "Settings saved",
+      description: "Equipment settings have been updated"
+    });
   };
   
-  const completeConnection = (targetEquipmentId: string) => {
-    if (!isConnecting || isConnecting === targetEquipmentId) {
-      setIsConnecting(null);
+  const handleMouseDown = (e: React.MouseEvent, id: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (isConnecting) {
+      handleConnectEquipment(id);
       return;
     }
     
-    const newStream: Stream = {
-      id: `stream-${Date.now()}`,
-      from: isConnecting,
-      to: targetEquipmentId,
-      type: "material",
-      properties: {}
+    setIsDragging(true);
+    setDraggedEquipment(id);
+    setDragStartPos({
+      x: e.clientX,
+      y: e.clientY
+    });
+  };
+  
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (!isDragging || !draggedEquipment) return;
+    
+    const deltaX = e.clientX - dragStartPos.x;
+    const deltaY = e.clientY - dragStartPos.y;
+    
+    // Move equipment
+    handleMoveEquipment(draggedEquipment, deltaX, deltaY);
+    
+    // Update drag start position
+    setDragStartPos({
+      x: e.clientX,
+      y: e.clientY
+    });
+  }, [isDragging, draggedEquipment, dragStartPos]);
+  
+  const handleMouseUp = useCallback(() => {
+    setIsDragging(false);
+    setDraggedEquipment(null);
+  }, []);
+  
+  // Add mouse move and up event listeners for dragging
+  useEffect(() => {
+    if (isDragging) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+    }
+    
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDragging, handleMouseMove, handleMouseUp]);
+  
+  // Save to localStorage when equipment or streams change
+  useEffect(() => {
+    if (equipment.length > 0) {
+      localStorage.setItem('chemflow-equipment', JSON.stringify(equipment));
+    }
+    
+    if (streams.length > 0) {
+      localStorage.setItem('chemflow-streams', JSON.stringify(streams));
+    }
+  }, [equipment, streams]);
+  
+  const handleZoomIn = () => {
+    setZoom(Math.min(zoom + 10, 150));
+  };
+  
+  const handleZoomOut = () => {
+    setZoom(Math.max(zoom - 10, 50));
+  };
+  
+  const handleClearCanvas = () => {
+    if (equipment.length === 0 && streams.length === 0) return;
+    
+    setEquipment([]);
+    setStreams([]);
+    localStorage.removeItem('chemflow-equipment');
+    localStorage.removeItem('chemflow-streams');
+    
+    toast({
+      title: "Canvas cleared",
+      description: "All equipment and streams have been removed"
+    });
+  };
+  
+  const handleStartSimulation = () => {
+    // Validate simulation
+    if (equipment.length === 0) {
+      toast({
+        title: "No equipment",
+        description: "Please add at least one piece of equipment to the simulation",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setSimulationRunning(true);
+    
+    // Update equipment counts for the simulation
+    localStorage.setItem('chemflow-simulation-equipment-count', equipment.length.toString());
+    localStorage.setItem('chemflow-simulation-streams-count', streams.length.toString());
+    
+    // Call the parent's onRunSimulation callback
+    onRunSimulation();
+  };
+  
+  const renderEquipmentIcon = (type: string, selected: boolean = false) => {
+    const icons: Record<string, React.ReactNode> = {
+      feed: <Droplets className="h-6 w-6" />,
+      reactor: <FlaskConical className="h-6 w-6" />,
+      heater: <Thermometer className="h-6 w-6" />,
+      cooler: <Thermometer className="h-6 w-6 rotate-180" />,
+      column: <Container className="h-6 w-6" />,
+      valve: <Gauge className="h-6 w-6" />,
+      pump: <Gauge className="h-6 w-6" />,
+      mixer: <Columns className="h-6 w-6" />,
+      product: <Droplets className="h-6 w-6" />
     };
     
-    setStreams(prev => [...prev, newStream]);
-    
-    setEquipment(prev => 
-      prev.map(eq => {
-        if (eq.id === isConnecting) {
-          return {...eq, connections: [...eq.connections, targetEquipmentId]};
-        }
-        if (eq.id === targetEquipmentId) {
-          return {...eq, connections: [...eq.connections, isConnecting]};
-        }
-        return eq;
-      })
-    );
-    
-    setIsConnecting(null);
-    toast({
-      title: "Connection Created",
-      description: "Stream has been added between the equipment"
-    });
-  };
-  
-  const deleteEquipment = (equipmentId: string) => {
-    setEquipment(prev => prev.filter(eq => eq.id !== equipmentId));
-    setStreams(prev => prev.filter(
-      stream => stream.from !== equipmentId && stream.to !== equipmentId
-    ));
-    setSelectedElement(null);
-    toast({
-      title: "Deleted",
-      description: "Equipment has been removed from the flowsheet"
-    });
-  };
-  
-  const handleSaveFlowsheet = () => {
-    saveFlowsheet(localStorage.getItem('chemflow-simulation-name') || "Untitled Simulation");
-  };
-  
-  const initConnection = (equipmentId: string) => {
-    setIsConnecting(equipmentId);
-    setSelectedElement(null);
-    toast({
-      description: "Click on another equipment to create a connection"
-    });
-  };
-  
-  const editStream = (streamId: string) => {
-    toast({
-      description: "Stream editing is not yet implemented"
-    });
-  };
-  
-  const deleteStream = (streamId: string) => {
-    setStreams(prev => prev.filter(stream => stream.id !== streamId));
-    setSelectedElement(null);
-    toast({
-      title: "Deleted",
-      description: "Stream has been removed from the flowsheet"
-    });
-  };
-  
-  const renderStream = (stream: Stream) => {
-    if (!stream) return null;
-    
-    const fromEquipment = equipment.find(eq => eq.id === stream.from);
-    const toEquipment = equipment.find(eq => eq.id === stream.to);
-    const isSelected = selectedElement === stream.id;
-    
-    if (!fromEquipment || !toEquipment) return null;
-    
-    const fromPos = fromEquipment.position;
-    const toPos = toEquipment.position;
-    
-    const fromOffset = { x: 60, y: 50 };
-    const toOffset = { x: 60, y: 50 };
-    
-    const startX = fromPos.x;
-    const startY = fromPos.y;
-    const endX = toPos.x;
-    const endY = toPos.y;
-    
-    const streamColor = stream.type === 'signal' ? '#10B981' : '#4F46E5';
-    
     return (
-      <div 
-        key={stream.id} 
-        className={`absolute ${isSelected ? 'z-20' : 'z-10'}`}
-        style={{
-          left: `${startX}px`,
-          top: `${startY}px`,
-          width: `${Math.max(1, Math.abs(endX - startX))}px`,
-          height: `${Math.max(1, Math.abs(endY - startY))}px`,
-        }}
-      >
-        <svg 
-          className="absolute top-0 left-0 w-full h-full overflow-visible"
-          onClick={() => setSelectedElement(stream.id)}
-        >
-          <line
-            x1={fromOffset.x}
-            y1={fromOffset.y}
-            x2={toOffset.x}
-            y2={toOffset.y}
-            stroke={streamColor}
-            strokeWidth={isSelected ? 3 : 2}
-            strokeDasharray={stream.type === 'signal' ? "5,5" : "none"}
-            markerEnd={`url(#${stream.type === 'signal' ? 'signalArrow' : 'materialArrow'})`}
-          />
-        </svg>
-        
-        {isSelected && (
-          <div className="absolute flex space-x-1" style={{
-            left: `${(fromOffset.x + toOffset.x) / 2}px`,
-            top: `${(fromOffset.y + toOffset.y) / 2}px`,
-            transform: 'translate(-50%, -50%)'
-          }}>
-            <button 
-              className="p-1 bg-red-100 rounded-full text-red-600 hover:bg-red-200"
-              onClick={() => deleteStream(stream.id)}
-            >
-              <Trash2 className="h-3 w-3" />
-            </button>
-            <button 
-              className="p-1 bg-blue-100 rounded-full text-blue-600 hover:bg-blue-200"
-              onClick={() => editStream(stream.id)}
-            >
-              <Settings2 className="h-3 w-3" />
-            </button>
-          </div>
-        )}
+      <div className={`p-3 rounded-full ${selected ? 'bg-flow-blue text-white' : 'bg-gray-100 text-gray-600'}`}>
+        {icons[type] || <FlaskConical className="h-6 w-6" />}
       </div>
     );
   };
   
-  const renderEquipment = (item: Equipment) => {
-    if (!item) return null;
+  const renderEquipmentCard = (eq: Equipment) => {
+    const isSelected = selectedElement === eq.id;
+    const isConnecting = isConnecting === eq.id;
     
-    const isSelected = selectedElement === item.id;
+    // Extract simplified settings for display
+    const displaySettings: Record<string, string> = {};
+    
+    if (eq.settings) {
+      for (const [key, value] of Object.entries(eq.settings)) {
+        if (key === 'composition') continue;
+        
+        if (typeof value === 'number') {
+          displaySettings[key] = value.toFixed(1);
+        } else {
+          displaySettings[key] = safeStringify(value);
+        }
+      }
+    }
     
     return (
-      <div 
-        key={item.id}
-        className={`absolute cursor-grab bg-white rounded-lg border ${isSelected ? 'ring-2 ring-blue-500 z-30' : 'z-20'} transition-shadow hover:shadow-md`}
+      <div
+        key={eq.id}
+        className={`absolute bg-white p-4 rounded-lg shadow-md transition-all ${
+          isSelected ? 'ring-2 ring-flow-blue' : ''
+        } ${isConnecting ? 'ring-2 ring-amber-500' : ''}`}
         style={{
-          left: `${item.position.x}px`,
-          top: `${item.position.y}px`,
-          width: '120px',
-          height: '100px',
-          transform: 'translate(-50%, -50%)'
+          left: eq.position.x,
+          top: eq.position.y,
+          zIndex: isSelected ? 10 : 1,
+          minWidth: '180px'
         }}
-        onClick={(e) => {
-          e.stopPropagation();
-          if (isConnecting) {
-            completeConnection(item.id);
-          } else {
-            setSelectedElement(item.id);
-          }
-        }}
-        onMouseDown={(e) => handleDragStart(e, item.id)}
+        onMouseDown={(e) => handleMouseDown(e, eq.id)}
       >
-        <div className="relative h-full flex flex-col items-center justify-center p-2">
-          <div className={`p-2 rounded-full ${getEquipmentColor(item.type)}`}>
-            {getEquipmentIcon(item.type)}
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            {renderEquipmentIcon(eq.type)}
+            <div>
+              <h4 className="font-medium text-sm">{safeStringify(eq.name)}</h4>
+              <span className="text-xs text-gray-500">{eq.type}{eq.subType ? ` (${eq.subType})` : ''}</span>
+            </div>
           </div>
-          <div className="mt-2 text-center">
-            <p className="text-xs font-medium truncate max-w-full">{safeStringify(item.name) || 'Equipment'}</p>
-            {item.subType && (
-              <p className="text-xs text-gray-500 truncate max-w-full">
-                {getSubTypeName(item.type, item.subType) || item.subType}
-              </p>
+          <button
+            onClick={() => handleDeleteElement(eq.id, 'equipment')}
+            className="p-1 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </button>
+        </div>
+        
+        {Object.keys(displaySettings).length > 0 && (
+          <div className="mt-2 space-y-1 border-t pt-2">
+            {Object.entries(displaySettings).slice(0, 3).map(([key, value]) => (
+              <div key={key} className="flex justify-between text-xs">
+                <span className="text-gray-500 capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
+                <span className="font-medium">{safeStringify(value)}</span>
+              </div>
+            ))}
+            {Object.keys(displaySettings).length > 3 && (
+              <div className="text-xs text-gray-400 text-center">+{Object.keys(displaySettings).length - 3} more</div>
             )}
           </div>
+        )}
+        
+        <div className="flex items-center justify-between mt-3">
+          <button
+            onClick={() => handleConnectEquipment(eq.id)}
+            className={`p-1.5 rounded text-xs ${
+              isConnecting === eq.id 
+                ? 'bg-amber-100 text-amber-600'
+                : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+            }`}
+          >
+            {isConnecting === eq.id ? 'Cancel' : 'Connect'}
+          </button>
+          <button
+            onClick={() => handleSelectElement(eq.id, 'equipment')}
+            className="p-1.5 bg-flow-blue/10 rounded text-flow-blue text-xs hover:bg-flow-blue/20"
+          >
+            Configure
+          </button>
+          <div className="p-1.5 bg-gray-100 rounded text-gray-500 hover:bg-gray-200 cursor-move">
+            <Move className="h-3.5 w-3.5" />
+          </div>
+        </div>
+      </div>
+    );
+  };
+  
+  const renderStream = (stream: Stream) => {
+    const fromEq = equipment.find(eq => eq.id === stream.from);
+    const toEq = equipment.find(eq => eq.id === stream.to);
+    
+    if (!fromEq || !toEq) return null;
+    
+    const startX = fromEq.position.x + 90;
+    const startY = fromEq.position.y + 60;
+    const endX = toEq.position.x + 90;
+    const endY = toEq.position.y + 60;
+    
+    const isSelected = selectedElement === stream.id;
+    
+    return (
+      <svg
+        key={stream.id}
+        className="absolute top-0 left-0 w-full h-full pointer-events-none"
+        style={{ zIndex: 0 }}
+      >
+        <defs>
+          <marker
+            id={`arrowhead-${stream.id}`}
+            markerWidth="10"
+            markerHeight="7"
+            refX="10"
+            refY="3.5"
+            orient="auto"
+          >
+            <polygon 
+              points="0 0, 10 3.5, 0 7" 
+              fill={isSelected ? "#3b82f6" : "#94a3b8"} 
+            />
+          </marker>
+        </defs>
+        <g onClick={() => handleSelectElement(stream.id, 'stream')}>
+          <line
+            x1={startX}
+            y1={startY}
+            x2={endX}
+            y2={endY}
+            stroke={isSelected ? "#3b82f6" : "#94a3b8"}
+            strokeWidth={isSelected ? 3 : 2}
+            strokeDasharray={stream.type === "energy" ? "5,5" : "none"}
+            markerEnd={`url(#arrowhead-${stream.id})`}
+            className="pointer-events-auto cursor-pointer"
+          />
+          
+          <text
+            x={(startX + endX) / 2}
+            y={(startY + endY) / 2 - 8}
+            fill="#64748b"
+            fontSize="10"
+            textAnchor="middle"
+            className="pointer-events-auto cursor-pointer"
+          >
+            {safeStringify(stream.properties?.flowRate || '')} kg/h
+          </text>
           
           {isSelected && (
-            <div className="absolute -top-3 -right-3 flex space-x-1">
-              {!isConnecting && (
-                <>
-                  <button 
-                    className="p-1 bg-green-100 rounded-full text-green-600 hover:bg-green-200"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      initConnection(item.id);
-                    }}
-                    title="Connect"
-                  >
-                    <Plus className="h-3 w-3" />
-                  </button>
-                  <button 
-                    className="p-1 bg-blue-100 rounded-full text-blue-600 hover:bg-blue-200"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      openEquipmentSettings(item);
-                    }}
-                    title="Settings"
-                  >
-                    <Settings2 className="h-3 w-3" />
-                  </button>
-                  <button 
-                    className="p-1 bg-red-100 rounded-full text-red-600 hover:bg-red-200"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      deleteEquipment(item.id);
-                    }}
-                    title="Delete"
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </button>
-                </>
+            <rect
+              x={(startX + endX) / 2 - 10}
+              y={(startY + endY) / 2 + 8}
+              width="20"
+              height="20"
+              fill="white"
+              stroke="#e2e8f0"
+              rx="4"
+              className="pointer-events-auto cursor-pointer"
+              onClick={() => handleDeleteElement(stream.id, 'stream')}
+            />
+          )}
+          
+          {isSelected && (
+            <text
+              x={(startX + endX) / 2}
+              y={(startY + endY) / 2 + 21}
+              fill="#ef4444"
+              fontSize="12"
+              textAnchor="middle"
+              className="pointer-events-auto cursor-pointer"
+              onClick={() => handleDeleteElement(stream.id, 'stream')}
+            >
+              ×
+            </text>
+          )}
+        </g>
+      </svg>
+    );
+  };
+  
+  return (
+    <div className="flex flex-col">
+      <div className="mb-6">
+        <h3 className="text-lg font-medium mb-2">Flowsheet Builder</h3>
+        <p className="text-gray-600 text-sm">
+          Build your process flowsheet by adding and connecting equipment from the palette below.
+        </p>
+      </div>
+      
+      {/* Equipment Selection */}
+      <div className="p-4 border rounded-lg bg-gray-50 mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <h4 className="font-medium">Equipment Palette</h4>
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={handleZoomIn}
+              className="p-1.5 rounded-lg bg-white text-gray-500 border hover:bg-gray-50"
+            >
+              <Plus className="h-4 w-4" />
+            </button>
+            <span className="text-sm">{zoom}%</span>
+            <button 
+              onClick={handleZoomOut}
+              className="p-1.5 rounded-lg bg-white text-gray-500 border hover:bg-gray-50"
+            >
+              <Minus className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+        
+        <div className="flex flex-wrap gap-3">
+          {equipmentList.map((item) => (
+            <React.Fragment key={item.id}>
+              <button
+                onClick={() => {
+                  if (item.subTypes && item.subTypes.length > 0) {
+                    setActiveEquipment(item.id);
+                    setShowSubTypes(!showSubTypes);
+                  } else {
+                    handleAddEquipment(item.id);
+                  }
+                }}
+                className={`p-2 rounded-lg ${
+                  activeEquipment === item.id ? 'bg-flow-blue/10 text-flow-blue' : 'bg-white text-gray-600 hover:bg-gray-50'
+                } flex items-center gap-2 border transition-colors`}
+              >
+                <span>{item.icon}</span>
+                <span className="text-sm font-medium">{item.name}</span>
+              </button>
+              
+              {activeEquipment === item.id && showSubTypes && item.subTypes && (
+                <div className="w-full mt-2 mb-1 ml-4 pl-4 border-l-2 border-flow-blue/20">
+                  <div className="flex flex-wrap gap-2">
+                    {item.subTypes.map(subType => (
+                      <button
+                        key={subType.id}
+                        onClick={() => {
+                          handleAddEquipment(item.id, subType.id);
+                        }}
+                        className={`px-3 py-1.5 rounded-lg ${
+                          activeSubType === subType.id 
+                            ? 'bg-flow-blue/10 text-flow-blue' 
+                            : 'bg-white text-gray-600 hover:bg-gray-50'
+                        } text-xs border transition-colors`}
+                      >
+                        {subType.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               )}
-              {isConnecting && isConnecting === item.id && (
-                <button 
-                  className="p-1 bg-gray-100 rounded-full text-gray-600 hover:bg-gray-200"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsConnecting(null);
-                  }}
-                  title="Cancel"
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              )}
+            </React.Fragment>
+          ))}
+        </div>
+      </div>
+      
+      {/* Canvas */}
+      <div className="flex-1 relative overflow-hidden">
+        <div className="bg-white border rounded-lg p-1 mb-4 flex items-center justify-between">
+          <div className="flex items-center gap-1">
+            <button
+              onClick={handleClearCanvas}
+              className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100"
+              title="Clear canvas"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => setZoom(100)}
+              className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100"
+              title="Reset zoom"
+            >
+              <Settings2 className="h-4 w-4" />
+            </button>
+          </div>
+          
+          <div className="text-xs text-gray-500">
+            {equipment.length} equipment · {streams.length} streams
+          </div>
+          
+          <button
+            onClick={handleStartSimulation}
+            className="px-3 py-1.5 rounded-lg bg-green-500 text-white hover:bg-green-600 text-xs font-medium flex items-center gap-1"
+            disabled={simulationRunning}
+          >
+            {simulationRunning ? (
+              <>Running...</>
+            ) : (
+              <>
+                <Play className="h-3 w-3" />
+                Run Simulation
+              </>
+            )}
+          </button>
+        </div>
+        
+        <div 
+          ref={canvasRef}
+          className="relative border rounded-lg h-[500px] overflow-auto bg-gray-50"
+          style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top left' }}
+        >
+          {/* Grid Background */}
+          <div className="absolute inset-0 w-full h-full" 
+               style={{
+                 backgroundImage: 'radial-gradient(circle, #d1d5db 1px, transparent 1px)',
+                 backgroundSize: '20px 20px'
+               }}
+          />
+          
+          {/* Streams */}
+          {streams.map(renderStream)}
+          
+          {/* Equipment */}
+          {equipment.map(renderEquipmentCard)}
+          
+          {/* Indicator when connecting */}
+          {isConnecting && (
+            <div className="fixed bottom-4 right-4 bg-amber-100 text-amber-700 p-3 rounded-lg shadow-md text-sm flex items-center gap-2">
+              <span>Select an equipment to connect</span>
+              <button 
+                onClick={() => setIsConnecting(null)}
+                className="p-1 rounded-full bg-amber-200 text-amber-700 hover:bg-amber-300"
+              >
+                <X className="h-4 w-4" />
+              </button>
             </div>
           )}
         </div>
       </div>
-    );
-  };
-
-  return (
-    <div className="flex flex-col h-full">
-      <div
-        ref={canvasRef}
-        className="flex-1 relative border border-gray-200 rounded-lg bg-gray-50 overflow-hidden"
-        onClick={handleCanvasClick}
-        onMouseMove={handleCanvasMouseMove}
-      >
-        {streams.map(stream => renderStream(stream))}
-        
-        {equipment.map(item => renderEquipment(item))}
-      </div>
       
-      {editingEquipment && (
-        <EquipmentSettings 
+      {/* Equipment Settings Modal */}
+      {showSettings && editingEquipment && (
+        <EquipmentSettings
           equipment={editingEquipment}
           equipmentTypes={equipmentList}
-          onClose={() => setEditingEquipment(null)}
-          onSave={updateEquipmentSettings}
+          onClose={() => {
+            setShowSettings(false);
+            setEditingEquipment(null);
+          }}
+          onSave={handleSaveSettings}
         />
       )}
       
-      <div className="flex justify-between items-center mt-4 border-t border-gray-200 pt-4">
-        <div className="flex items-center space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={clearCanvas}
-          >
-            <Trash2 className="h-4 w-4 mr-1" />
-            Clear
-          </Button>
-          
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleSaveFlowsheet}
-          >
-            <Save className="h-4 w-4 mr-1" />
-            Save
-          </Button>
-        </div>
-        
-        <Button
-          onClick={runSimulation}
-          disabled={simulationRunning}
-        >
-          Run Simulation
+      <div className="mt-6 flex justify-end">
+        <Button onClick={handleStartSimulation} disabled={simulationRunning}>
+          {simulationRunning ? 'Simulating...' : 'Run Simulation'}
         </Button>
       </div>
     </div>
