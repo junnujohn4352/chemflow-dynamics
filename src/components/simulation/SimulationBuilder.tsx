@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Plus, Minus, Thermometer, Droplets, Settings2, Container, FlaskConical, Columns, Gauge, Save, Trash2, X, Sliders, Move, ArrowLeft, Play } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -151,7 +150,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     { id: "product", name: "Product Stream", icon: <Droplets className="h-5 w-5" /> }
   ];
   
-  // Add the handler functions
   const handleZoomIn = () => {
     setZoom(prev => Math.min(prev + 10, 200));
   };
@@ -177,7 +175,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     setActiveSubType(null);
     setShowSubTypes(false);
     
-    // Save to localStorage
     localStorage.setItem('chemflow-equipment', JSON.stringify([...equipment, newEquipment]));
     
     toast({
@@ -216,44 +213,62 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     
     setSimulationRunning(true);
     
-    // Save current state
     localStorage.setItem('chemflow-equipment', JSON.stringify(equipment));
     localStorage.setItem('chemflow-streams', JSON.stringify(streams));
     
-    // Call the onRunSimulation prop to start the simulation
     onRunSimulation();
     
-    // Simulate some delay for processing
     setTimeout(() => {
       setSimulationRunning(false);
     }, 2000);
   };
 
-  const handleSaveSettings = (updatedEquipment: Equipment) => {
+  const handleSaveSettings = (equipmentId: string, newSettings: Record<string, any>) => {
     setEquipment(prev => 
-      prev.map(eq => eq.id === updatedEquipment.id ? updatedEquipment : eq)
+      prev.map(eq => {
+        if (eq.id === equipmentId) {
+          const equipmentName = newSettings._equipmentName;
+          delete newSettings._equipmentName;
+          
+          return {
+            ...eq,
+            name: equipmentName || eq.name,
+            settings: newSettings
+          };
+        }
+        return eq;
+      })
     );
     
     setShowSettings(false);
     setEditingEquipment(null);
     
-    // Save to localStorage
     localStorage.setItem('chemflow-equipment', JSON.stringify(
-      equipment.map(eq => eq.id === updatedEquipment.id ? updatedEquipment : eq)
+      equipment.map(eq => {
+        if (eq.id === equipmentId) {
+          const equipmentName = newSettings._equipmentName;
+          delete newSettings._equipmentName;
+          
+          return {
+            ...eq,
+            name: equipmentName || eq.name,
+            settings: newSettings
+          };
+        }
+        return eq;
+      })
     ));
     
     toast({
       title: "Settings saved",
-      description: `Updated settings for ${updatedEquipment.name}`
+      description: `Updated settings for equipment`
     });
   };
 
   const handleCanvasClick = (e: React.MouseEvent) => {
     if (isConnecting) {
-      // Cancel connection if clicking on canvas
       setIsConnecting(null);
     } else {
-      // Deselect if clicking on canvas
       setSelectedElement(null);
     }
     setIsMoving(false);
@@ -263,7 +278,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     e.stopPropagation();
     
     if (isMoving) {
-      // If we're in moving mode, update the equipment's position
       if (canvasRef.current) {
         const rect = canvasRef.current.getBoundingClientRect();
         const scale = zoom / 100;
@@ -281,7 +295,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
           return eq;
         }));
         
-        // Save to localStorage
         localStorage.setItem('chemflow-equipment', JSON.stringify(equipment));
         
         setIsMoving(false);
@@ -294,7 +307,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     }
     
     if (isConnecting && isConnecting !== id) {
-      // Create a new stream
       const newStream: Stream = {
         id: `stream-${Date.now()}`,
         from: isConnecting,
@@ -305,7 +317,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
       
       setStreams(prev => [...prev, newStream]);
       
-      // Update connections for both equipment
       setEquipment(prev => prev.map(eq => {
         if (eq.id === isConnecting || eq.id === id) {
           return {
@@ -316,7 +327,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
         return eq;
       }));
       
-      // Save to localStorage
       localStorage.setItem('chemflow-streams', JSON.stringify([...streams, newStream]));
       
       toast({
@@ -353,7 +363,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     setIsDragging(false);
     setDraggedEquipment(null);
     
-    // Save the updated positions to localStorage
     localStorage.setItem('chemflow-equipment', JSON.stringify(equipment));
   };
   
@@ -400,12 +409,10 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
   const handleDeleteEquipment = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
     
-    // Find connected streams
     const connectedStreams = streams.filter(
       stream => stream.from === id || stream.to === id
     );
     
-    // Update equipment to remove connections
     setEquipment(prev => 
       prev
         .filter(eq => eq.id !== id)
@@ -417,12 +424,10 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
         }))
     );
     
-    // Remove streams
     setStreams(prev => 
       prev.filter(stream => stream.from !== id && stream.to !== id)
     );
     
-    // Save to localStorage
     localStorage.setItem('chemflow-equipment', JSON.stringify(
       equipment
         .filter(eq => eq.id !== id)
@@ -449,7 +454,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     const isSource = isConnecting === eq.id;
     const isBeingMoved = isMoving && selectedElement === eq.id;
     
-    // Get the equipment type data
     const equipmentType = equipmentList.find(e => e.id === eq.type);
     
     return (
@@ -530,18 +534,15 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
       return null;
     }
     
-    // Calculate the center points of each equipment
     const sourceX = sourceEq.position.x + 10;
     const sourceY = sourceEq.position.y + 10;
     const targetX = targetEq.position.x + 10;
     const targetY = targetEq.position.y + 10;
     
-    // Calculate the angle and draw the arrow
     const dx = targetX - sourceX;
     const dy = targetY - sourceY;
     const angle = Math.atan2(dy, dx);
     
-    // Get the stream color based on type
     let streamColor = "stroke-blue-500";
     if (stream.type === "energy") {
       streamColor = "stroke-red-500";
