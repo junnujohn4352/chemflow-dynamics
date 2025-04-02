@@ -194,33 +194,33 @@ const AISimulation = () => {
   const [showDataDifferentialPrivacyDetails, setShowDataDifferentialPrivacyDetails] = useState(true);
   const [showDataFederatedLearningDetails, setShowDataFederatedLearningDetails] = useState(true);
   const [showDataSecureMultiPartyComputationDetails, setShowDataSecureMultiPartyComputationDetails] = useState(true);
-  const [showDataHomomorphicEncryptionDetails, setShowDataHomomorphicEncryptionDetails] = useState(true);
-  const [showDataAnonymizationDetails, setShowDataAnonymizationDetails] = useState(true);
-  const [showDataPseudonymizationDetails, setShowDataPseudonymizationDetails] = useState(true);
-  const [showDataDeidentificationDetails, setShowDataDeidentificationDetails] = useState(true);
-  const [showDataMinimizationDetails, setShowDataMinimizationDetails] = useState(true);
-  const [showDataPurposeLimitationDetails, setShowDataPurposeLimitationDetails] = useState(true);
+  const [showDataHomomorphicEncryptionDetails, setShowHomomorphicEncryptionDetails] = useState(true);
+  const [showDataAnonymizationTechniques, setShowDataAnonymizationTechniques] = useState(true);
+  const [showDataPseudonymizationTechniques, setShowDataPseudonymizationTechniques] = useState(true);
+  const [showDataDeidentificationTechniques, setShowDataDeidentificationTechniques] = useState(true);
+  const [showDataMinimizationTechniques, setShowDataMinimizationTechniques] = useState(true);
+  const [showPurposeLimitationDetails, setShowPurposeLimitationDetails] = useState(true);
   const [showDataSubjectRightsDetails, setShowDataSubjectRightsDetails] = useState(true);
-  const [showDataRightToAccessDetails, setShowDataRightToAccessDetails] = useState(true);
-  const [showDataRightToRectificationDetails, setShowDataRightToRectificationDetails] = useState(true);
-  const [showDataRightToErasureDetails, setShowDataRightToErasureDetails] = useState(true);
-  const [showDataRightToRestrictionOfProcessingDetails, setShowDataRightToRestrictionOfProcessingDetails] = useState(true);
-  const [showDataRightToDataPortabilityDetails, setShowDataRightToDataPortabilityDetails] = useState(true);
-  const [showDataRightToObjectDetails, setShowDataRightToObjectDetails] = useState(true);
-  const [showDataAutomatedDecisionMakingDetails, setShowDataAutomatedDecisionMakingDetails] = useState(true);
-  const [showDataProfilingDetails, setShowDataProfilingDetails] = useState(true);
-  const [showDataLegalBasisForProcessingDetails, setShowDataLegalBasisForProcessingDetails] = useState(true);
-  const [showDataConsentManagementDetails, setShowDataConsentManagementDetails] = useState(true);
+  const [showRightToAccessDetails, setShowRightToAccessDetails] = useState(true);
+  const [showRightToRectificationDetails, setShowRightToRectificationDetails] = useState(true);
+  const [showRightToErasureDetails, setShowRightToErasureDetails] = useState(true);
+  const [showRightToRestrictionOfProcessingDetails, setShowRightToRestrictionOfProcessingDetails] = useState(true);
+  const [showRightToDataPortabilityDetails, setShowRightToDataPortabilityDetails] = useState(true);
+  const [showRightToObjectDetails, setShowRightToObjectDetails] = useState(true);
+  const [showAutomatedDecisionMakingDetails, setShowAutomatedDecisionMakingDetails] = useState(true);
+  const [showProfilingDetails, setShowProfilingDetails] = useState(true);
+  const [showLegalBasisForProcessingDetails, setShowLegalBasisForProcessingDetails] = useState(true);
+  const [showConsentManagementDetails, setShowConsentManagementDetails] = useState(true);
   const [showDataTransferDetails, setShowDataTransferDetails] = useState(true);
-  const [showDataInternationalDataTransferDetails, setShowDataInternationalDataTransferDetails] = useState(true);
-  const [showDataCrossBorderDataTransferDetails, setShowDataCrossBorderDataTransferDetails] = useState(true);
-  const [showDataStandardContractualClausesDetails, setShowDataStandardContractualClausesDetails] = useState(true);
-  const [showDataBindingCorporateRulesDetails, setShowDataBindingCorporateRulesDetails] = useState(true);
-  const [showDataAdequacyDecisionsDetails, setShowDataAdequacyDecisionsDetails] = useState(true);
+  const [showInternationalDataTransferDetails, setShowInternationalDataTransferDetails] = useState(true);
+  const [showCrossBorderDataTransferDetails, setShowCrossBorderDataTransferDetails] = useState(true);
+  const [showStandardContractualClausesDetails, setShowStandardContractualClausesDetails] = useState(true);
+  const [showBindingCorporateRulesDetails, setShowBindingCorporateRulesDetails] = useState(true);
+  const [showAdequacyDecisionsDetails, setShowAdequacyDecisionsDetails] = useState(true);
   const [showDataLocalizationDetails, setShowDataLocalizationDetails] = useState(true);
   const [showDataResidencyDetails, setShowDataResidencyDetails] = useState(true);
-  const [showDataSovereigntyRequirementsDetails, setShowDataSovereigntyRequirementsDetails] = useState(true);
-  const [showDataGeographicRestrictionsDetails, setShowDataGeographicRestrictionsDetails] = useState(true);
+  const [showSovereigntyRequirementsDetails, setShowSovereigntyRequirementsDetails] = useState(true);
+  const [showGeographicRestrictionsDetails, setShowGeographicRestrictionsDetails] = useState(true);
   const [showDataGovernanceDetails, setShowDataGovernanceDetails] = useState(true);
   const [showDataStewardshipDetails, setShowDataStewardshipDetails] = useState(true);
   const [showDataQualityDetails, setShowDataQualityDetails] = useState(true);
@@ -496,5 +496,9 @@ const AISimulation = () => {
     "How can I optimize the operating conditions of a separation process?",
     "What are the environmental impacts of using a particular solvent?",
     "Can you help me troubleshoot a control issue in my process?",
-    "What are the safety considerations for handling a hazardous chemical?",
-    "
+    "What are the safety considerations for handling a hazardous chemical?"
+  ];
+
+  return (
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <div className="flex flex-col h-screen
