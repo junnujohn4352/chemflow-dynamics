@@ -5,14 +5,49 @@ import Navbar from "@/components/layout/Navbar";
 import GlassPanel from "@/components/ui/GlassPanel";
 import { 
   PlusCircle, Clock, ArrowRight, FlaskConical, 
-  Trash2, Play, Edit, Download, Trash
+  Trash2, Play, Edit, Download, Trash, Info,
+  Thermometer, Droplets, Zap, Activity, Layers, BarChart3
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+
+interface ComponentProperties {
+  criticalTemp?: number;      // K
+  criticalPressure?: number;  // kPa
+  acentricFactor?: number;
+  molecularWeight?: number;   // g/mol
+  boilingPoint?: number;      // K
+  densityLiquid?: number;     // kg/m³
+  densityVapor?: number;      // kg/m³
+  cpLiquid?: number;          // J/(kg·K)
+  cpVapor?: number;           // J/(kg·K)
+  heatOfVaporization?: number; // kJ/mol
+}
 
 interface SimulationComponent {
   name: string;
   percentage: number;
+  properties?: ComponentProperties;
+}
+
+interface StreamData {
+  name: string;
+  temperature?: number;      // K
+  pressure?: number;         // kPa
+  flowRate?: number;         // kg/h
+  vaporFraction?: number;    // 0-1
+  composition?: {[component: string]: number}; // mole fractions
+}
+
+interface EquipmentData {
+  name: string;
+  type: string;
+  efficiency?: number;
+  operatingTemp?: number;    // K
+  operatingPressure?: number; // kPa
+  dutyCooling?: number;      // kW
+  dutyHeating?: number;      // kW
 }
 
 interface SimulationCard {
@@ -22,9 +57,21 @@ interface SimulationCard {
   lastUpdated: string;
   efficiency: number;
   components: SimulationComponent[] | string[];
-  equipment?: number;
-  streams?: number;
+  equipment?: EquipmentData[] | number;
+  streams?: StreamData[] | number;
   thermodynamicModel?: string;
+  unitSet?: string;
+  reactions?: {
+    name: string;
+    type: string;
+    rate?: number;
+    conversion?: number;
+  }[];
+  energy?: {
+    totalHeatingDuty?: number;
+    totalCoolingDuty?: number;
+    netEnergy?: number;
+  };
 }
 
 // Helper function to safely convert objects to strings
@@ -48,6 +95,7 @@ const Simulations = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [simulations, setSimulations] = useState<SimulationCard[]>([]);
+  const [activeSimId, setActiveSimId] = useState<string | null>(null);
   
   // Load simulations when component mounts
   useEffect(() => {
@@ -59,11 +107,214 @@ const Simulations = () => {
     if (saved) {
       try {
         const parsedSimulations = JSON.parse(saved);
-        setSimulations(parsedSimulations);
+        
+        // Add HYSYS-like data if not present
+        const enhancedSimulations = parsedSimulations.map((sim: SimulationCard) => {
+          if (!Array.isArray(sim.components) || typeof sim.components[0] === 'string') {
+            // If components are just strings, convert them to objects with properties
+            const enhancedComponents = (sim.components as string[]).map(name => ({
+              name,
+              percentage: Math.floor(Math.random() * 70) + 30, // Random percentage for demo
+              properties: generateDummyComponentProperties(name)
+            }));
+            
+            return {
+              ...sim,
+              components: enhancedComponents,
+              equipment: Array.isArray(sim.equipment) ? sim.equipment : generateDummyEquipment(),
+              streams: Array.isArray(sim.streams) ? sim.streams : generateDummyStreams(sim.components as string[]),
+              unitSet: sim.unitSet || "SI",
+              reactions: sim.reactions || generateDummyReactions(),
+              energy: sim.energy || {
+                totalHeatingDuty: Math.floor(Math.random() * 1000) + 100,
+                totalCoolingDuty: Math.floor(Math.random() * 800) + 50,
+                netEnergy: Math.floor(Math.random() * 500) - 250
+              }
+            };
+          }
+          return sim;
+        });
+        
+        setSimulations(enhancedSimulations);
       } catch (e) {
         console.error("Error loading simulations:", e);
       }
     }
+  };
+
+  // Generate realistic component properties based on component name
+  const generateDummyComponentProperties = (name: string): ComponentProperties => {
+    // Define common properties for well-known components
+    const commonProperties: {[key: string]: ComponentProperties} = {
+      'Water': {
+        criticalTemp: 647.1,
+        criticalPressure: 22064,
+        acentricFactor: 0.344,
+        molecularWeight: 18.02,
+        boilingPoint: 373.15,
+        densityLiquid: 997,
+        densityVapor: 0.804,
+        cpLiquid: 4186,
+        cpVapor: 1996,
+        heatOfVaporization: 40.65
+      },
+      'Methane': {
+        criticalTemp: 190.6,
+        criticalPressure: 4599,
+        acentricFactor: 0.011,
+        molecularWeight: 16.04,
+        boilingPoint: 111.7,
+        densityLiquid: 422.6,
+        densityVapor: 1.8,
+        cpLiquid: 3500,
+        cpVapor: 2226,
+        heatOfVaporization: 8.17
+      },
+      'Ethanol': {
+        criticalTemp: 513.9,
+        criticalPressure: 6137,
+        acentricFactor: 0.644,
+        molecularWeight: 46.07,
+        boilingPoint: 351.5,
+        densityLiquid: 789,
+        densityVapor: 1.6,
+        cpLiquid: 2400,
+        cpVapor: 1500,
+        heatOfVaporization: 38.6
+      },
+      'Benzene': {
+        criticalTemp: 562.2,
+        criticalPressure: 4894,
+        acentricFactor: 0.212,
+        molecularWeight: 78.11,
+        boilingPoint: 353.3,
+        densityLiquid: 876,
+        densityVapor: 2.7,
+        cpLiquid: 1720,
+        cpVapor: 1050,
+        heatOfVaporization: 30.72
+      },
+      'Nitrogen': {
+        criticalTemp: 126.2,
+        criticalPressure: 3396,
+        acentricFactor: 0.037,
+        molecularWeight: 28.01,
+        boilingPoint: 77.4,
+        densityLiquid: 808,
+        densityVapor: 1.25,
+        cpLiquid: 2042,
+        cpVapor: 1040,
+        heatOfVaporization: 5.57
+      }
+    };
+    
+    if (commonProperties[name]) {
+      return commonProperties[name];
+    }
+    
+    // For unknown components, generate random but realistic values
+    return {
+      criticalTemp: Math.floor(Math.random() * 500) + 200,
+      criticalPressure: Math.floor(Math.random() * 6000) + 2000,
+      acentricFactor: Math.random() * 0.8,
+      molecularWeight: Math.floor(Math.random() * 100) + 15,
+      boilingPoint: Math.floor(Math.random() * 300) + 200,
+      densityLiquid: Math.floor(Math.random() * 900) + 500,
+      densityVapor: Math.floor(Math.random() * 5) + 0.5,
+      cpLiquid: Math.floor(Math.random() * 3000) + 1000,
+      cpVapor: Math.floor(Math.random() * 1500) + 800,
+      heatOfVaporization: Math.floor(Math.random() * 40) + 5
+    };
+  };
+  
+  // Generate dummy equipment data
+  const generateDummyEquipment = (): EquipmentData[] => {
+    return [
+      {
+        name: "Reactor-001",
+        type: "CSTR",
+        efficiency: 0.85,
+        operatingTemp: 345,
+        operatingPressure: 1200,
+        dutyHeating: 125
+      },
+      {
+        name: "Distillation-001",
+        type: "Distillation Column",
+        efficiency: 0.78,
+        operatingTemp: 380,
+        operatingPressure: 101.3,
+        dutyCooling: 95
+      },
+      {
+        name: "Heat-Exchanger-001",
+        type: "Shell and Tube",
+        efficiency: 0.92,
+        operatingTemp: 320,
+        dutyHeating: 75
+      }
+    ];
+  };
+  
+  // Generate dummy stream data
+  const generateDummyStreams = (components: string[]): StreamData[] => {
+    const streams: StreamData[] = [];
+    
+    // Feed stream
+    const feedComposition: {[component: string]: number} = {};
+    components.forEach(comp => {
+      if (typeof comp === 'string') {
+        feedComposition[comp] = 1.0 / components.length;
+      } else {
+        feedComposition[(comp as SimulationComponent).name] = 1.0 / components.length;
+      }
+    });
+    
+    streams.push({
+      name: "Feed",
+      temperature: 298,
+      pressure: 101.3,
+      flowRate: 1000,
+      vaporFraction: 0,
+      composition: feedComposition
+    });
+    
+    // Product streams
+    streams.push({
+      name: "Product-Vapor",
+      temperature: 380,
+      pressure: 95,
+      flowRate: 400,
+      vaporFraction: 1.0,
+      composition: { ...feedComposition }
+    });
+    
+    streams.push({
+      name: "Product-Liquid",
+      temperature: 320,
+      pressure: 110,
+      flowRate: 600,
+      vaporFraction: 0,
+      composition: { ...feedComposition }
+    });
+    
+    return streams;
+  };
+  
+  // Generate dummy reaction data
+  const generateDummyReactions = () => {
+    return [
+      {
+        name: "Main Reaction",
+        type: "Conversion",
+        conversion: 0.85
+      },
+      {
+        name: "Side Reaction",
+        type: "Kinetic",
+        rate: 0.015
+      }
+    ];
   };
 
   const handleDeleteSimulation = (id: string) => {
@@ -119,9 +370,8 @@ const Simulations = () => {
     // Create simulation data object
     const simulationData = {
       name: safeStringify(simulation.name),
-      components: simulation.components.map(c => 
-        typeof c === 'string' ? c : safeStringify(c.name)
-      ),
+      components: Array.isArray(simulation.components) ? 
+        simulation.components.map(c => typeof c === 'string' ? c : safeStringify(c.name)) : [],
       thermodynamicModel: safeStringify(simulation.thermodynamicModel || 'Peng-Robinson'),
       lastUpdated: new Date().toISOString()
     };
@@ -146,9 +396,8 @@ const Simulations = () => {
     // Create simulation data object
     const simulationData = {
       name: safeStringify(simulation.name),
-      components: simulation.components.map(c => 
-        typeof c === 'string' ? c : safeStringify(c.name)
-      ),
+      components: Array.isArray(simulation.components) ? 
+        simulation.components.map(c => typeof c === 'string' ? c : safeStringify(c.name)) : [],
       thermodynamicModel: safeStringify(simulation.thermodynamicModel || 'Peng-Robinson'),
       lastUpdated: new Date().toISOString()
     };
@@ -201,6 +450,157 @@ const Simulations = () => {
     });
   };
 
+  // Show detailed component properties when a simulation is expanded
+  const toggleSimulationDetails = (id: string) => {
+    setActiveSimId(activeSimId === id ? null : id);
+  };
+
+  // Render detailed component properties
+  const renderComponentProperties = (component: SimulationComponent) => {
+    if (!component.properties) return null;
+    
+    const props = component.properties;
+    
+    return (
+      <div className="mt-2 bg-gray-50 dark:bg-gray-800 p-3 rounded-lg text-xs">
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <p className="text-gray-500 dark:text-gray-400">MW: {props.molecularWeight} g/mol</p>
+            <p className="text-gray-500 dark:text-gray-400">Tc: {props.criticalTemp} K</p>
+            <p className="text-gray-500 dark:text-gray-400">Pc: {props.criticalPressure} kPa</p>
+          </div>
+          <div>
+            <p className="text-gray-500 dark:text-gray-400">Tb: {props.boilingPoint} K</p>
+            <p className="text-gray-500 dark:text-gray-400">ω: {props.acentricFactor?.toFixed(3)}</p>
+            <p className="text-gray-500 dark:text-gray-400">ΔHvap: {props.heatOfVaporization} kJ/mol</p>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Render streams information
+  const renderStreams = (streams: StreamData[]) => {
+    return (
+      <div className="mt-3 border-t border-gray-200 dark:border-gray-700 pt-3">
+        <h4 className="text-sm font-medium mb-2 flex items-center dark:text-gray-200">
+          <Droplets className="h-4 w-4 mr-1 text-blue-500" />
+          Streams
+        </h4>
+        <div className="space-y-2">
+          {streams.map((stream, idx) => (
+            <div key={idx} className="text-xs bg-gray-50 dark:bg-gray-800 p-2 rounded">
+              <div className="font-medium mb-1">{stream.name}</div>
+              <div className="grid grid-cols-3 gap-1">
+                <span className="text-gray-500 dark:text-gray-400">T: {stream.temperature} K</span>
+                <span className="text-gray-500 dark:text-gray-400">P: {stream.pressure} kPa</span>
+                <span className="text-gray-500 dark:text-gray-400">F: {stream.flowRate} kg/h</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  // Render equipment information
+  const renderEquipment = (equipment: EquipmentData[]) => {
+    return (
+      <div className="mt-3 border-t border-gray-200 dark:border-gray-700 pt-3">
+        <h4 className="text-sm font-medium mb-2 flex items-center dark:text-gray-200">
+          <Layers className="h-4 w-4 mr-1 text-purple-500" />
+          Equipment
+        </h4>
+        <div className="space-y-2">
+          {equipment.map((equip, idx) => (
+            <div key={idx} className="text-xs bg-gray-50 dark:bg-gray-800 p-2 rounded">
+              <div className="font-medium mb-1">{equip.name} ({equip.type})</div>
+              <div className="grid grid-cols-2 gap-1">
+                {equip.operatingTemp && (
+                  <span className="text-gray-500 dark:text-gray-400">Temp: {equip.operatingTemp} K</span>
+                )}
+                {equip.operatingPressure && (
+                  <span className="text-gray-500 dark:text-gray-400">Press: {equip.operatingPressure} kPa</span>
+                )}
+                {equip.efficiency && (
+                  <span className="text-gray-500 dark:text-gray-400">Eff: {(equip.efficiency * 100).toFixed(1)}%</span>
+                )}
+                {equip.dutyHeating && (
+                  <span className="text-gray-500 dark:text-gray-400">Q(+): {equip.dutyHeating} kW</span>
+                )}
+                {equip.dutyCooling && (
+                  <span className="text-gray-500 dark:text-gray-400">Q(-): {equip.dutyCooling} kW</span>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  // Render reactions information
+  const renderReactions = (reactions: {name: string, type: string, rate?: number, conversion?: number}[]) => {
+    if (!reactions || reactions.length === 0) return null;
+    
+    return (
+      <div className="mt-3 border-t border-gray-200 dark:border-gray-700 pt-3">
+        <h4 className="text-sm font-medium mb-2 flex items-center dark:text-gray-200">
+          <Zap className="h-4 w-4 mr-1 text-amber-500" />
+          Reactions
+        </h4>
+        <div className="space-y-2">
+          {reactions.map((reaction, idx) => (
+            <div key={idx} className="text-xs bg-gray-50 dark:bg-gray-800 p-2 rounded">
+              <div className="font-medium">{reaction.name}</div>
+              <div className="text-gray-500 dark:text-gray-400">Type: {reaction.type}</div>
+              {reaction.conversion && (
+                <div className="text-gray-500 dark:text-gray-400">Conversion: {(reaction.conversion * 100).toFixed(1)}%</div>
+              )}
+              {reaction.rate && (
+                <div className="text-gray-500 dark:text-gray-400">Rate: {reaction.rate} mol/(L·s)</div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  // Render energy information
+  const renderEnergy = (energy: {totalHeatingDuty?: number, totalCoolingDuty?: number, netEnergy?: number}) => {
+    if (!energy) return null;
+    
+    return (
+      <div className="mt-3 border-t border-gray-200 dark:border-gray-700 pt-3">
+        <h4 className="text-sm font-medium mb-2 flex items-center dark:text-gray-200">
+          <Activity className="h-4 w-4 mr-1 text-red-500" />
+          Energy Analysis
+        </h4>
+        <div className="grid grid-cols-3 gap-2 text-xs">
+          {energy.totalHeatingDuty !== undefined && (
+            <div className="bg-red-50 dark:bg-red-900/20 p-2 rounded text-center">
+              <div className="text-red-500 dark:text-red-400 font-medium">Heating</div>
+              <div>{energy.totalHeatingDuty} kW</div>
+            </div>
+          )}
+          {energy.totalCoolingDuty !== undefined && (
+            <div className="bg-blue-50 dark:bg-blue-900/20 p-2 rounded text-center">
+              <div className="text-blue-500 dark:text-blue-400 font-medium">Cooling</div>
+              <div>{energy.totalCoolingDuty} kW</div>
+            </div>
+          )}
+          {energy.netEnergy !== undefined && (
+            <div className="bg-purple-50 dark:bg-purple-900/20 p-2 rounded text-center">
+              <div className="text-purple-500 dark:text-purple-400 font-medium">Net</div>
+              <div>{energy.netEnergy} kW</div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
       <Navbar />
@@ -241,7 +641,10 @@ const Simulations = () => {
                   className="p-6 hover:shadow-md transition-shadow bg-white dark:bg-gray-800 dark:border-gray-700"
                 >
                   <div className="flex justify-between items-start mb-4">
-                    <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-900 text-flow-blue dark:text-blue-200">
+                    <div 
+                      className="p-2 rounded-lg bg-blue-50 dark:bg-blue-900 text-flow-blue dark:text-blue-200 cursor-pointer"
+                      onClick={() => toggleSimulationDetails(sim.id)}
+                    >
                       <FlaskConical className="h-5 w-5" />
                     </div>
                     <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
@@ -250,11 +653,28 @@ const Simulations = () => {
                     </div>
                   </div>
                   
-                  <h3 className="text-xl font-medium mb-2 dark:text-white">{safeStringify(sim.name)}</h3>
+                  <h3 className="text-xl font-medium mb-2 dark:text-white flex items-center">
+                    {safeStringify(sim.name)}
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button className="ml-2" onClick={() => toggleSimulationDetails(sim.id)}>
+                            <Info className="h-4 w-4 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Click to show/hide details</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </h3>
                   <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">{safeStringify(sim.description)}</p>
                   
                   <div className="mb-4">
-                    <h4 className="text-sm font-medium mb-2 dark:text-gray-200">Components</h4>
+                    <h4 className="text-sm font-medium mb-2 flex items-center dark:text-gray-200">
+                      <Beaker className="h-4 w-4 mr-1 text-green-500" />
+                      Components
+                    </h4>
                     {sim.components && Array.isArray(sim.components) ? (
                       renderComponents(sim.components)
                     ) : (
@@ -262,28 +682,65 @@ const Simulations = () => {
                     )}
                   </div>
                   
-                  {sim.thermodynamicModel && (
-                    <div className="text-sm mb-4 dark:text-gray-300">
-                      <span className="text-gray-500 dark:text-gray-400">Property Package:</span>
-                      <span className="ml-2 font-medium">{safeStringify(sim.thermodynamicModel)}</span>
-                    </div>
-                  )}
-                  
-                  {sim.equipment !== undefined && (
-                    <div className="text-sm mb-4 dark:text-gray-300">
-                      <span className="text-gray-500 dark:text-gray-400">Equipment:</span>
-                      <span className="ml-2 font-medium">{safeStringify(sim.equipment)}</span>
-                      {sim.streams !== undefined && (
-                        <>
-                          <span className="mx-2">|</span>
-                          <span className="text-gray-500 dark:text-gray-400">Streams:</span>
-                          <span className="ml-2 font-medium">{safeStringify(sim.streams)}</span>
-                        </>
+                  {/* Expanded details section */}
+                  {activeSimId === sim.id && (
+                    <div className="mt-4 pt-2 border-t border-gray-200 dark:border-gray-700">
+                      {/* Detailed component properties */}
+                      <div className="mb-3">
+                        <h4 className="text-sm font-medium mb-2 flex items-center dark:text-gray-200">
+                          <Thermometer className="h-4 w-4 mr-1 text-green-600" />
+                          Component Properties
+                        </h4>
+                        <div className="space-y-3">
+                          {Array.isArray(sim.components) && sim.components.map((comp, idx) => {
+                            if (typeof comp !== 'string' && comp.properties) {
+                              return (
+                                <div key={idx}>
+                                  <div className="font-medium text-sm">{comp.name}</div>
+                                  {renderComponentProperties(comp as SimulationComponent)}
+                                </div>
+                              );
+                            }
+                            return null;
+                          })}
+                        </div>
+                      </div>
+                      
+                      {/* Thermodynamics */}
+                      <div className="mb-3 border-t border-gray-200 dark:border-gray-700 pt-3">
+                        <h4 className="text-sm font-medium flex items-center dark:text-gray-200">
+                          <BarChart3 className="h-4 w-4 mr-1 text-indigo-500" />
+                          Thermodynamics
+                        </h4>
+                        <div className="mt-2 bg-gray-50 dark:bg-gray-800 p-3 rounded-lg text-xs">
+                          <p className="text-gray-700 dark:text-gray-300">Property Package: <span className="font-medium">{safeStringify(sim.thermodynamicModel)}</span></p>
+                          <p className="text-gray-700 dark:text-gray-300">Unit Set: <span className="font-medium">{safeStringify(sim.unitSet || "SI")}</span></p>
+                        </div>
+                      </div>
+                      
+                      {/* Equipment data */}
+                      {sim.equipment && Array.isArray(sim.equipment) && (
+                        renderEquipment(sim.equipment as EquipmentData[])
+                      )}
+                      
+                      {/* Stream data */}
+                      {sim.streams && Array.isArray(sim.streams) && (
+                        renderStreams(sim.streams as StreamData[])
+                      )}
+                      
+                      {/* Reactions data */}
+                      {sim.reactions && Array.isArray(sim.reactions) && (
+                        renderReactions(sim.reactions)
+                      )}
+                      
+                      {/* Energy Analysis */}
+                      {sim.energy && (
+                        renderEnergy(sim.energy)
                       )}
                     </div>
                   )}
                   
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                     <div className="text-sm dark:text-gray-300">
                       <span className="text-gray-500 dark:text-gray-400">Efficiency:</span>
                       <span className="ml-2 font-medium text-flow-blue">{safeStringify(sim.efficiency)}%</span>
