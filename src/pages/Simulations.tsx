@@ -86,7 +86,9 @@ const Simulations = () => {
     // Create simulation data object
     const simulationData = {
       name: simulation.name,
-      components: simulation.components.map(c => c.name),
+      components: simulation.components.map(c => 
+        typeof c === 'string' ? c : c.name
+      ),
       thermodynamicModel: simulation.thermodynamicModel || 'Peng-Robinson',
       lastUpdated: new Date().toISOString()
     };
@@ -111,7 +113,9 @@ const Simulations = () => {
     // Create simulation data object
     const simulationData = {
       name: simulation.name,
-      components: simulation.components.map(c => c.name),
+      components: simulation.components.map(c => 
+        typeof c === 'string' ? c : c.name
+      ),
       thermodynamicModel: simulation.thermodynamicModel || 'Peng-Robinson',
       lastUpdated: new Date().toISOString()
     };
@@ -134,6 +138,28 @@ const Simulations = () => {
       title: "Simulation exported",
       description: "The simulation has been downloaded as JSON"
     });
+  };
+
+  // Helper function to safely render components
+  const renderComponents = (components: any[]) => {
+    if (!components || !Array.isArray(components)) {
+      return <p className="text-sm text-gray-500">No components available</p>;
+    }
+
+    return components.map((comp, idx) => (
+      <div key={idx} className="mb-2">
+        <div className="flex justify-between text-sm mb-1 dark:text-gray-300">
+          <span>{typeof comp === 'string' ? comp : comp.name}</span>
+          <span>{typeof comp === 'string' ? '' : `${comp.percentage}%`}</span>
+        </div>
+        <div className="w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full">
+          <div 
+            className="h-1.5 rounded-full bg-flow-blue"
+            style={{ width: typeof comp === 'string' ? '100%' : `${comp.percentage}%` }}
+          ></div>
+        </div>
+      </div>
+    ));
   };
 
   return (
@@ -179,20 +205,7 @@ const Simulations = () => {
                   <div className="mb-4">
                     <h4 className="text-sm font-medium mb-2 dark:text-gray-200">Components</h4>
                     {sim.components && Array.isArray(sim.components) ? (
-                      sim.components.map((comp, idx) => (
-                        <div key={idx} className="mb-2">
-                          <div className="flex justify-between text-sm mb-1 dark:text-gray-300">
-                            <span>{typeof comp === 'string' ? comp : comp.name}</span>
-                            <span>{typeof comp === 'string' ? '' : `${comp.percentage}%`}</span>
-                          </div>
-                          <div className="w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full">
-                            <div 
-                              className="h-1.5 rounded-full bg-flow-blue"
-                              style={{ width: typeof comp === 'string' ? '100%' : `${comp.percentage}%` }}
-                            ></div>
-                          </div>
-                        </div>
-                      ))
+                      renderComponents(sim.components)
                     ) : (
                       <p className="text-sm text-gray-500">No components available</p>
                     )}
