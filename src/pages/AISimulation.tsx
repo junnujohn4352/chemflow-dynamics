@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import GlassPanel from "@/components/ui/GlassPanel";
@@ -11,7 +11,8 @@ import {
   Info, 
   FileText,
   ArrowRight,
-  Github
+  Github,
+  BarChart3
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -34,6 +35,7 @@ const AISimulation = () => {
   const [llamaLoaded, setLlamaLoaded] = useState(false);
   const [showFlowsheet, setShowFlowsheet] = useState(false);
   const [flowsheetProblem, setFlowsheetProblem] = useState("");
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Load LLaMA model
   useEffect(() => {
@@ -42,6 +44,25 @@ const AISimulation = () => {
       try {
         await llamaService.loadModel();
         setLlamaLoaded(true);
+        
+        // Add simulation context if available
+        const savedComponents = localStorage.getItem('chemflow-selected-components');
+        const thermodynamicModel = localStorage.getItem('chemflow-selected-model');
+        
+        if (savedComponents) {
+          try {
+            const components = JSON.parse(savedComponents);
+            // Set simulation data in LlamaService for context-aware responses
+            llamaService.setSimulationData({
+              components,
+              thermodynamicModel: thermodynamicModel || 'Peng-Robinson',
+              timestamp: new Date().toISOString()
+            });
+          } catch (error) {
+            console.error("Error parsing saved components:", error);
+          }
+        }
+        
         toast({
           title: "LLaMA Model Loaded",
           description: "The AI model is ready to answer your chemical engineering questions",
@@ -60,6 +81,11 @@ const AISimulation = () => {
 
     loadLlama();
   }, [toast]);
+
+  // Scroll to bottom of messages when they change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
   const handleSendMessage = async () => {
     if (!input.trim() || isLoading) return;
@@ -133,7 +159,15 @@ const AISimulation = () => {
     // Simulate AI response with chemical engineering related content
     let responseText = "";
     
-    // Simulate different types of chemical engineering responses based on input
+    // Try to use LlamaService anyway
+    const llamaService = LlamaService.getInstance();
+    try {
+      return llamaService.generateRealTimeAnalysis('general', input);
+    } catch (error) {
+      console.error("Error generating real-time response:", error);
+    }
+    
+    // Fallback static responses if all else fails
     if (input.toLowerCase().includes("reactor") || input.toLowerCase().includes("reaction")) {
       responseText = "To simulate a chemical reactor, we need to follow these steps:\n\n" +
         "1. Define the reaction kinetics (rate equations)\n" +
@@ -159,15 +193,6 @@ const AISimulation = () => {
         "4. Where LMTD is the log mean temperature difference\n\n" +
         "For countercurrent flow: LMTD = (ΔT₁ - ΔT₂) / ln(ΔT₁/ΔT₂)\n" +
         "where ΔT₁ and ΔT₂ are the temperature differences at each end.";
-    } else if (input.toLowerCase().includes("ethanol") || input.toLowerCase().includes("ferment")) {
-      responseText = "For ethanol production via fermentation:\n\n" +
-        "1. Feedstock preparation: Corn or sugarcane is milled and mixed with water\n" +
-        "2. Liquefaction: Starch is broken down into fermentable sugars using alpha-amylase at 80-90°C\n" +
-        "3. Saccharification: Glucoamylase converts dextrins to glucose at 60-65°C\n" +
-        "4. Fermentation: Yeast converts glucose to ethanol at 30-35°C for 48-72 hours\n" +
-        "5. Distillation: Ethanol is separated to ~95% purity\n" +
-        "6. Dehydration: Molecular sieves remove remaining water to produce anhydrous ethanol\n\n" +
-        "Key parameters include temperature control, pH maintenance at 4.0-5.0, and oxygen limitation during fermentation.";
     } else {
       responseText = "I can help analyze your chemical process simulation. To get started, please provide details about:\n\n" +
         "1. The specific unit operations involved\n" +
@@ -217,31 +242,56 @@ const AISimulation = () => {
     }
   };
 
+  // Convert markdown-like content to HTML
+  const formatContent = (content: string) => {
+    let formattedContent = content
+      .replace(/\n/g, '<br>')
+      // Headers (##, ###)
+      .replace(/#{3}\s?(.*?)(?:\n|$)/g, '<h4 class="text-md font-medium mt-3 mb-1">$1</h4>')
+      .replace(/#{2}\s?(.*?)(?:\n|$)/g, '<h3 class="text-lg font-medium text-flow-blue mt-4 mb-2">$1</h3>')
+      // Lists
+      .replace(/\*\s(.*?)(?:<br>|$)/g, '<li class="ml-4">$1</li>')
+      // Bold
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      // Italics
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      // Add a class to generated timestamps
+      .replace(/\*Generated at: (.*?)\*/g, '<span class="text-xs text-gray-500 italic">Generated at: $1</span>');
+    
+    return formattedContent;
+  };
+
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-blue-50 to-white dark:from-gray-900 dark:to-gray-800">
       <Navbar />
       
-      <main className="flex-1 py-16 px-6 bg-gray-50 dark:bg-gray-900">
+      <main className="flex-1 py-16 px-6">
         <div className="max-w-screen-xl mx-auto">
           <div className="mb-8">
-            <h1 className="text-3xl font-display font-bold mb-2 dark:text-white">AI Simulation Assistant</h1>
+            <h1 className="text-3xl font-display font-bold mb-2 bg-gradient-to-r from-flow-blue to-blue-600 bg-clip-text text-transparent">
+              AI Simulation Assistant
+            </h1>
             <p className="text-gray-600 dark:text-gray-400">Get intelligent assistance with your chemical process simulations</p>
           </div>
           
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
-              <GlassPanel className="p-6 flex flex-col h-[600px]">
-                <div className="flex-1 overflow-y-auto mb-4 space-y-4">
+              <GlassPanel className="p-6 flex flex-col h-[600px] relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-full bg-blue-400/5 pointer-events-none"></div>
+                <div className="absolute -top-20 -right-20 w-64 h-64 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-float"></div>
+                <div className="absolute bottom-20 -left-20 w-64 h-64 bg-cyan-200 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-float-delay"></div>
+                
+                <div className="flex-1 overflow-y-auto mb-4 space-y-4 pr-2 relative z-10 custom-scrollbar">
                   {messages.map((message, index) => (
                     <div 
                       key={index}
                       className={`flex ${message.role === 'assistant' ? 'justify-start' : 'justify-end'}`}
                     >
                       <div 
-                        className={`max-w-[80%] p-4 rounded-lg ${
+                        className={`max-w-[90%] p-4 rounded-lg shadow-sm ${
                           message.role === 'assistant' 
-                            ? 'bg-white border border-gray-200 dark:bg-gray-800 dark:border-gray-700' 
-                            : 'bg-flow-blue text-white'
+                            ? 'bg-white/90 backdrop-blur-sm border border-blue-100/50 dark:bg-gray-800/90 dark:border-gray-700/50' 
+                            : 'bg-gradient-to-r from-flow-blue to-blue-600 text-white'
                         }`}
                       >
                         {message.role === 'assistant' && (
@@ -250,16 +300,19 @@ const AISimulation = () => {
                             <span className="font-medium">ChemFlow AI</span>
                           </div>
                         )}
-                        <div className="whitespace-pre-line">{message.content}</div>
+                        <div 
+                          className="whitespace-pre-wrap"
+                          dangerouslySetInnerHTML={{ __html: formatContent(message.content) }}
+                        ></div>
                         
                         {message.includesImage && (
-                          <div className="mt-4 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                          <div className="mt-4 border border-blue-100 dark:border-gray-700 rounded-lg overflow-hidden shadow-md">
                             <img 
                               src="https://placehold.co/600x400/EEE/31343C?text=Process+Flowsheet+Diagram&font=montserrat"
                               alt="Process Flowsheet"
                               className="w-full"
                             />
-                            <div className="p-3 bg-gray-50 dark:bg-gray-900 text-sm">
+                            <div className="p-3 bg-blue-50/50 dark:bg-gray-900/50 text-sm">
                               <p className="font-medium mb-1">Recommended Process Parameters:</p>
                               <ul className="list-disc pl-4 space-y-1">
                                 <li>Reactor Temperature: 75-85°C</li>
@@ -277,10 +330,10 @@ const AISimulation = () => {
                   
                   {isLoading && (
                     <div className="flex justify-start">
-                      <div className="max-w-[80%] p-4 rounded-lg bg-white border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+                      <div className="max-w-[80%] p-4 rounded-lg bg-white/90 backdrop-blur-sm border border-blue-100/50 dark:bg-gray-800/90 dark:border-gray-700/50 shadow-sm">
                         <div className="flex items-center">
                           <Loader2 className="h-5 w-5 mr-2 text-flow-blue animate-spin" />
-                          <span className="text-gray-600 dark:text-gray-400">Generating response...</span>
+                          <span className="text-gray-600 dark:text-gray-400">Generating real-time analysis...</span>
                         </div>
                       </div>
                     </div>
@@ -288,30 +341,32 @@ const AISimulation = () => {
                   
                   {showFlowsheet && !isLoading && (
                     <div className="flex justify-start">
-                      <div className="max-w-[80%] p-4 rounded-lg bg-white border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+                      <div className="max-w-[80%] p-4 rounded-lg bg-white/90 backdrop-blur-sm border border-blue-100/50 dark:bg-gray-800/90 dark:border-gray-700/50 shadow-sm">
                         <Button 
                           onClick={handleGenerateFlowsheet} 
-                          className="w-full"
+                          className="w-full bg-gradient-to-r from-flow-blue to-blue-600 hover:from-flow-blue/90 hover:to-blue-600/90 transition-all"
                         >
                           Generate Process Flowsheet <ArrowRight className="ml-2 h-4 w-4" />
                         </Button>
                       </div>
                     </div>
                   )}
+                  
+                  <div ref={messagesEndRef} />
                 </div>
                 
-                <div className="relative">
+                <div className="relative z-10">
                   <Textarea 
                     placeholder="Ask about chemical process simulations, reactions, separations..."
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    className="resize-none dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+                    className="resize-none dark:bg-gray-800/80 dark:border-gray-700 dark:text-white shadow-sm border-blue-100"
                     rows={3}
                     disabled={!llamaLoaded || isLoading}
                   />
                   <Button 
-                    className="absolute bottom-3 right-3"
+                    className="absolute bottom-3 right-3 bg-gradient-to-r from-flow-blue to-blue-600 hover:from-flow-blue/90 hover:to-blue-600/90 transition-all"
                     size="sm"
                     onClick={handleSendMessage}
                     disabled={!llamaLoaded || isLoading || !input.trim()}
@@ -321,9 +376,9 @@ const AISimulation = () => {
                 </div>
                 
                 {!llamaLoaded && (
-                  <div className="mt-4">
-                    <Alert>
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  <div className="mt-4 z-10">
+                    <Alert className="bg-blue-50/80 backdrop-blur-sm border-blue-100">
+                      <Loader2 className="h-4 w-4 animate-spin mr-2 text-flow-blue" />
                       <AlertTitle>Loading LLaMA Model</AlertTitle>
                       <AlertDescription>
                         The AI model is being loaded locally in your browser. This may take a moment...
@@ -335,26 +390,40 @@ const AISimulation = () => {
             </div>
             
             <div className="lg:col-span-1">
-              <GlassPanel className="p-6 mb-6">
-                <h3 className="text-lg font-medium mb-4 dark:text-white">About AI Assistant</h3>
+              <GlassPanel className="p-6 mb-6 bg-gradient-to-br from-white to-blue-50/50 dark:from-gray-800 dark:to-gray-800/50 relative overflow-hidden">
+                <div className="absolute -top-10 -right-10 w-40 h-40 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float"></div>
+                
+                <h3 className="text-lg font-medium mb-4 bg-gradient-to-r from-flow-blue to-blue-600 bg-clip-text text-transparent">About AI Assistant</h3>
                 <p className="text-gray-600 dark:text-gray-400 mb-4">
                   This AI assistant is powered by Meta's LLaMA model running locally in your browser. It can help with:
                 </p>
-                <ul className="space-y-2">
+                <ul className="space-y-3">
                   <li className="flex items-start">
-                    <Brain className="h-5 w-5 mr-2 text-flow-blue mt-0.5 dark:text-blue-400" />
-                    <span className="dark:text-gray-300">Chemical process simulation assistance</span>
+                    <div className="p-1 bg-blue-100/50 rounded mr-2 mt-0.5">
+                      <Brain className="h-4 w-4 text-flow-blue" />
+                    </div>
+                    <span className="dark:text-gray-300">Chemical process simulation analysis</span>
                   </li>
                   <li className="flex items-start">
-                    <MessageSquare className="h-5 w-5 mr-2 text-flow-blue mt-0.5 dark:text-blue-400" />
+                    <div className="p-1 bg-blue-100/50 rounded mr-2 mt-0.5">
+                      <MessageSquare className="h-4 w-4 text-flow-blue" />
+                    </div>
                     <span className="dark:text-gray-300">Engineering calculations and formulas</span>
                   </li>
                   <li className="flex items-start">
-                    <FileText className="h-5 w-5 mr-2 text-flow-blue mt-0.5 dark:text-blue-400" />
+                    <div className="p-1 bg-blue-100/50 rounded mr-2 mt-0.5">
+                      <BarChart3 className="h-4 w-4 text-flow-blue" />
+                    </div>
+                    <span className="dark:text-gray-300">Real-time process data analysis</span>
+                  </li>
+                  <li className="flex items-start">
+                    <div className="p-1 bg-blue-100/50 rounded mr-2 mt-0.5">
+                      <FileText className="h-4 w-4 text-flow-blue" />
+                    </div>
                     <span className="dark:text-gray-300">Troubleshooting simulation issues</span>
                   </li>
                 </ul>
-                <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+                <div className="mt-6 pt-4 border-t border-blue-100/50 dark:border-gray-700/50">
                   <div className="flex items-center text-amber-600 dark:text-amber-400">
                     <Info className="h-5 w-5 mr-2" />
                     <span className="text-sm font-medium">Running 100% locally in your browser</span>
@@ -362,12 +431,14 @@ const AISimulation = () => {
                 </div>
               </GlassPanel>
               
-              <GlassPanel className="p-6">
-                <h3 className="text-lg font-medium mb-4 dark:text-white">Open Source LLaMA</h3>
+              <GlassPanel className="p-6 bg-gradient-to-br from-white to-blue-50/50 dark:from-gray-800 dark:to-gray-800/50 relative overflow-hidden">
+                <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-cyan-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float-delay"></div>
+                
+                <h3 className="text-lg font-medium mb-4 bg-gradient-to-r from-flow-blue to-blue-600 bg-clip-text text-transparent">Open Source LLaMA</h3>
                 <p className="text-gray-600 dark:text-gray-400 mb-4">
                   This assistant uses Meta's LLaMA model, an open-source large language model optimized for chemical engineering applications.
                 </p>
-                <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg mb-4">
+                <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm p-4 rounded-lg mb-4 border border-blue-100/50 dark:border-gray-700/50 shadow-sm">
                   <div className="flex items-center text-sm text-gray-600 dark:text-gray-400 mb-2">
                     <Github className="h-4 w-4 mr-2" />
                     <span className="font-medium">llama.cpp</span>
@@ -377,7 +448,7 @@ const AISimulation = () => {
                   </div>
                 </div>
                 <Button 
-                  className="w-full"
+                  className="w-full bg-gradient-to-r from-flow-blue to-blue-600 hover:from-flow-blue/90 hover:to-blue-600/90 transition-all"
                   onClick={() => navigate('/create-simulation')}
                 >
                   Create New Simulation <ArrowRight className="ml-2 h-4 w-4" />
@@ -389,6 +460,55 @@ const AISimulation = () => {
       </main>
       
       <Footer />
+      
+      <style jsx global>{`
+        @keyframes float {
+          0% { transform: translateY(0) rotate(0); }
+          50% { transform: translateY(-20px) rotate(5deg); }
+          100% { transform: translateY(0) rotate(0); }
+        }
+        
+        @keyframes float-delay {
+          0% { transform: translateY(0) rotate(0); }
+          50% { transform: translateY(-15px) rotate(-5deg); }
+          100% { transform: translateY(0) rotate(0); }
+        }
+        
+        @keyframes flow {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(300%); }
+        }
+        
+        .animate-float {
+          animation: float 15s ease-in-out infinite;
+        }
+        
+        .animate-float-delay {
+          animation: float-delay 20s ease-in-out infinite;
+        }
+        
+        .flow-stream-animation {
+          animation: flow 2s linear infinite;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 8px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: rgba(0, 0, 0, 0.05);
+          border-radius: 8px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(59, 130, 246, 0.2);
+          border-radius: 8px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: rgba(59, 130, 246, 0.4);
+        }
+      `}</style>
     </div>
   );
 };
