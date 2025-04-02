@@ -1,4 +1,3 @@
-
 // This is an implementation of the LLaMA model service with real-time analysis capabilities
 
 export class LlamaService {
@@ -138,7 +137,7 @@ export class LlamaService {
     return analysisDetails.join("\n");
   }
   
-  private generateRealTimeAnalysis(type: string, prompt: string): string {
+  public generateRealTimeAnalysis(type: string, prompt: string): string {
     // Get components from simulation data or use defaults
     const components = this.getComponentsFromSimulation();
     
@@ -170,7 +169,7 @@ export class LlamaService {
 Time series data [${this.generateTimeSeriesData(8, 'increasing').join(', ')}]°C
 
 ### Component-Specific Analysis
-${this.generateComponentsFromSimulation()}
+${this.generateAnalysisForComponents(components)}
 
 ### Recommendations
 1. ${Math.random() > 0.5 ? 'Consider increasing cooling water flow rate by 15% to improve efficiency' : 'Evaluate heat exchanger cleaning schedule based on fouling trend'}
@@ -202,6 +201,9 @@ ${this.generateComponentsFromSimulation()}
 - NPSH Available: ${this.generateRandomValue(3, 8, 1)} m
 - NPSH Required: ${this.generateRandomValue(2, 4, 1)} m
 
+### Component-Specific Analysis
+${this.generateAnalysisForComponents(components)}
+
 ### Recommendations
 1. ${Math.random() > 0.5 ? 'Adjust control valve CV to optimize pressure distribution' : 'Review pump curve against system curve for more efficient operation'}
 2. Monitor ${Math.random() > 0.5 ? 'vibration patterns at pump discharge' : 'differential pressure across filters'} for early detection of issues
@@ -228,8 +230,8 @@ ${this.generateComponentsFromSimulation()}
 - Property Prediction Confidence: ${this.generateRandomValue(85, 99, 1)}%
 - Data Regression Quality: R² = ${this.generateRandomValue(0.95, 0.999, 4)}
 
-### Component-Specific Behavior
-${this.generateComponentsFromSimulation()}
+### Component-Specific Analysis
+${this.generateAnalysisForComponents(components)}
 
 ### Key Findings
 1. ${Math.random() > 0.5 ? 'Non-ideal behavior observed at current conditions' : 'System exhibits near-ideal behavior at current state'}
@@ -311,7 +313,7 @@ ${this.generateComponentsFromSimulation()}
 - Key Performance Indicators: ${this.generateRandomValue(85, 98, 1)}% of target
 
 ### Component Behavior
-${this.generateComponentsFromSimulation()}
+${this.generateAnalysisForComponents(components)}
 
 ### Process Trends
 - Temperature Trend: [${this.generateTimeSeriesData(8, 'steady').join(', ')}]°C

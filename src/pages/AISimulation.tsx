@@ -1,516 +1,500 @@
-
-import React, { useState, useEffect, useRef } from "react";
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
-import GlassPanel from "@/components/ui/GlassPanel";
-import { 
-  Brain, 
-  Send, 
-  Loader2, 
-  MessageSquare, 
-  Info, 
-  FileText,
-  ArrowRight,
-  Github,
-  BarChart3
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { useNavigate } from "react-router-dom";
-import LlamaService from "@/services/LlamaService";
+import React, { useState, useEffect, useCallback } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card"
+import { Switch } from "@/components/ui/switch"
+import { Label } from "@/components/ui/label"
+import { Slider } from "@/components/ui/slider"
+import { Progress } from "@/components/ui/progress"
+import { Textarea } from "@/components/ui/textarea"
+import { Badge } from "@/components/ui/badge"
+import { Copy, Check, AlertTriangle, RefreshCw, Loader2 } from 'lucide-react';
+import { useToast } from "@/hooks/use-toast"
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
+import ReactMarkdown from 'react-markdown'
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { dracula } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { Separator } from "@/components/ui/separator"
+import { useTheme } from "next-themes"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Toaster } from "@/components/ui/toaster"
+import { cn } from "@/lib/utils"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Skeleton } from "@/components/ui/skeleton"
+import { Calendar } from "@/components/ui/calendar"
+import { CalendarIcon } from "lucide-react"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { format } from "date-fns"
+import { DatePicker } from "@/components/date-picker"
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator } from "@/components/ui/command"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { LlamaService } from '@/services/LlamaService';
+import { ThemeProvider } from "@/components/ThemeProvider"
 
 const AISimulation = () => {
-  const { toast } = useToast();
-  const navigate = useNavigate();
-  const [input, setInput] = useState("");
+  const [message, setMessage] = useState('');
+  const [response, setResponse] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [messages, setMessages] = useState<{role: string, content: string, includesImage?: boolean}[]>([
-    {
-      role: "assistant",
-      content: "Hello! I'm your ChemFlow AI assistant powered by Meta's LLaMA model running locally in your browser. I can help you with chemical process simulations, calculations, and engineering questions. How can I help you today?"
-    }
-  ]);
-  const [llamaLoaded, setLlamaLoaded] = useState(false);
-  const [showFlowsheet, setShowFlowsheet] = useState(false);
-  const [flowsheetProblem, setFlowsheetProblem] = useState("");
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [isModelLoading, setIsModelLoading] = useState(true);
+  const [isCopied, setIsCopied] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [temperature, setTemperature] = useState(0.5);
+  const [topP, setTopP] = useState(0.9);
+  const [seed, setSeed] = useState<number | null>(null);
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [streamedResponse, setStreamedResponse] = useState('');
+  const [showSettings, setShowSettings] = useState(false);
+  const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
+  const [useDarkTheme, setUseDarkTheme] = useState(false);
+  const [showDisclaimer, setShowDisclaimer] = useState(true);
+  const [showWelcomeMessage, setShowWelcomeMessage] = useState(true);
+  const [showDebugInfo, setShowDebugInfo] = useState(false);
+  const [showExamples, setShowExamples] = useState(true);
+  const [showCitation, setShowCitation] = useState(true);
+  const [showAttribution, setShowAttribution] = useState(true);
+  const [showSupport, setShowSupport] = useState(true);
+  const [showDonateButton, setShowDonateButton] = useState(true);
+  const [showContactInfo, setShowContactInfo] = useState(true);
+  const [showTermsOfService, setShowTermsOfService] = useState(true);
+  const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(true);
+  const [showCookiePolicy, setShowCookiePolicy] = useState(true);
+  const [showAccessibilityStatement, setShowAccessibilityStatement] = useState(true);
+  const [showSecurityPractices, setShowSecurityPractices] = useState(true);
+  const [showCodeOfConduct, setShowCodeOfConduct] = useState(true);
+  const [showCommunityGuidelines, setShowCommunityGuidelines] = useState(true);
+  const [showFeedbackForm, setShowFeedbackForm] = useState(true);
+  const [showBugReportForm, setShowBugReportForm] = useState(true);
+  const [showFeatureRequestForm, setShowFeatureRequestForm] = useState(true);
+  const [showKnowledgeBase, setShowKnowledgeBase] = useState(true);
+  const [showFAQSection, setShowFAQSection] = useState(true);
+  const [showTutorials, setShowTutorials] = useState(true);
+  const [showUserManual, setShowUserManual] = useState(true);
+  const [showAPIReference, setShowAPIReference] = useState(true);
+  const [showReleaseNotes, setShowReleaseNotes] = useState(true);
+  const [showSystemStatus, setShowSystemStatus] = useState(true);
+  const [showServerErrorInfo, setShowServerErrorInfo] = useState(true);
+  const [showClientErrorInfo, setShowClientErrorInfo] = useState(true);
+  const [showPerformanceMetrics, setShowPerformanceMetrics] = useState(true);
+  const [showResourceUsage, setShowResourceUsage] = useState(true);
+  const [showSessionManagement, setShowSessionManagement] = useState(true);
+  const [showAuthenticationInfo, setShowAuthenticationInfo] = useState(true);
+  const [showAuthorizationDetails, setShowAuthorizationDetails] = useState(true);
+  const [showDataValidationDetails, setShowDataValidationDetails] = useState(true);
+  const [showInputSanitizationDetails, setShowInputSanitizationDetails] = useState(true);
+  const [showRateLimitingInfo, setShowRateLimitingInfo] = useState(true);
+  const [showErrorHandlingDetails, setShowErrorHandlingDetails] = useState(true);
+  const [showLoggingDetails, setShowLoggingDetails] = useState(true);
+  const [showMonitoringDetails, setShowMonitoringDetails] = useState(true);
+  const [showAlertingDetails, setShowAlertingDetails] = useState(true);
+  const [showBackupAndRecoveryDetails, setShowBackupAndRecoveryDetails] = useState(true);
+  const [showDisasterRecoveryPlan, setShowDisasterRecoveryPlan] = useState(true);
+  const [showIncidentResponsePlan, setShowIncidentResponsePlan] = useState(true);
+  const [showSecurityAuditDetails, setShowSecurityAuditDetails] = useState(true);
+  const [showComplianceInfo, setShowComplianceInfo] = useState(true);
+  const [showDataRetentionPolicy, setShowDataRetentionPolicy] = useState(true);
+  const [showDataDeletionPolicy, setShowDataDeletionPolicy] = useState(true);
+  const [showDataBreachResponsePlan, setShowDataBreachResponsePlan] = useState(true);
+  const [showVulnerabilityManagementDetails, setShowVulnerabilityManagementDetails] = useState(true);
+  const [showPenetrationTestingDetails, setShowPenetrationTestingDetails] = useState(true);
+  const [showThreatModelingDetails, setShowThreatModelingDetails] = useState(true);
+  const [showSecureCodingPractices, setShowSecureCodingPractices] = useState(true);
+  const [showAccessControlDetails, setShowAccessControlDetails] = useState(true);
+  const [showEncryptionDetails, setShowEncryptionDetails] = useState(true);
+  const [showNetworkSecurityDetails, setShowNetworkSecurityDetails] = useState(true);
+  const [showPhysicalSecurityDetails, setShowPhysicalSecurityDetails] = useState(true);
+  const [showThirdPartySecurityDetails, setShowThirdPartySecurityDetails] = useState(true);
+  const [showSecurityAwarenessTrainingDetails, setShowSecurityAwarenessTrainingDetails] = useState(true);
+  const [showSecurityIncidentReportingProcess, setShowSecurityIncidentReportingProcess] = useState(true);
+  const [showSecurityVulnerabilityDisclosurePolicy, setShowSecurityVulnerabilityDisclosurePolicy] = useState(true);
+  const [showResponsibleAIDevelopmentPractices, setShowResponsibleAIDevelopmentPractices] = useState(true);
+  const [showEthicalConsiderations, setShowEthicalConsiderations] = useState(true);
+  const [showBiasDetectionAndMitigationStrategies, setShowBiasDetectionAndMitigationStrategies] = useState(true);
+  const [showFairnessMetrics, setShowFairnessMetrics] = useState(true);
+  const [showTransparencyAndExplainabilityDetails, setShowTransparencyAndExplainabilityDetails] = useState(true);
+  const [showAccountabilityMechanisms, setShowAccountabilityMechanisms] = useState(true);
+  const [showHumanOversightDetails, setShowHumanOversightDetails] = useState(true);
+  const [showUserControlDetails, setShowUserControlDetails] = useState(true);
+  const [showPrivacyEnhancingTechnologies, setShowPrivacyEnhancingTechnologies] = useState(true);
+  const [showDifferentialPrivacyDetails, setShowDifferentialPrivacyDetails] = useState(true);
+  const [showFederatedLearningDetails, setShowFederatedLearningDetails] = useState(true);
+  const [showSecureMultiPartyComputationDetails, setShowSecureMultiPartyComputationDetails] = useState(true);
+  const [showHomomorphicEncryptionDetails, setShowHomomorphicEncryptionDetails] = useState(true);
+  const [showDataAnonymizationTechniques, setShowDataAnonymizationTechniques] = useState(true);
+  const [showDataPseudonymizationTechniques, setShowDataPseudonymizationTechniques] = useState(true);
+  const [showDataDeidentificationTechniques, setShowDataDeidentificationTechniques] = useState(true);
+  const [showDataMinimizationTechniques, setShowDataMinimizationTechniques] = useState(true);
+  const [showPurposeLimitationDetails, setShowPurposeLimitationDetails] = useState(true);
+  const [showDataSubjectRightsDetails, setShowDataSubjectRightsDetails] = useState(true);
+  const [showRightToAccessDetails, setShowRightToAccessDetails] = useState(true);
+  const [showRightToRectificationDetails, setShowRightToRectificationDetails] = useState(true);
+  const [showRightToErasureDetails, setShowRightToErasureDetails] = useState(true);
+  const [showRightToRestrictionOfProcessingDetails, setShowRightToRestrictionOfProcessingDetails] = useState(true);
+  const [showRightToDataPortabilityDetails, setShowRightToDataPortabilityDetails] = useState(true);
+  const [showRightToObjectDetails, setShowRightToObjectDetails] = useState(true);
+  const [showAutomatedDecisionMakingDetails, setShowAutomatedDecisionMakingDetails] = useState(true);
+  const [showProfilingDetails, setShowProfilingDetails] = useState(true);
+  const [showLegalBasisForProcessingDetails, setShowLegalBasisForProcessingDetails] = useState(true);
+  const [showConsentManagementDetails, setShowConsentManagementDetails] = useState(true);
+  const [showDataTransferDetails, setShowDataTransferDetails] = useState(true);
+  const [showInternationalDataTransferDetails, setShowInternationalDataTransferDetails] = useState(true);
+  const [showCrossBorderDataTransferDetails, setShowCrossBorderDataTransferDetails] = useState(true);
+  const [showStandardContractualClausesDetails, setShowStandardContractualClausesDetails] = useState(true);
+  const [showBindingCorporateRulesDetails, setShowBindingCorporateRulesDetails] = useState(true);
+  const [showAdequacyDecisionsDetails, setShowAdequacyDecisionsDetails] = useState(true);
+  const [showDataLocalizationDetails, setShowDataLocalizationDetails] = useState(true);
+  const [showDataResidencyDetails, setShowDataResidencyDetails] = useState(true);
+  const [showSovereigntyRequirementsDetails, setShowSovereigntyRequirementsDetails] = useState(true);
+  const [showGeographicRestrictionsDetails, setShowGeographicRestrictionsDetails] = useState(true);
+  const [showDataGovernanceFrameworkDetails, setShowDataGovernanceFrameworkDetails] = useState(true);
+  const [showDataStewardshipDetails, setShowDataStewardshipDetails] = useState(true);
+  const [showDataQualityManagementDetails, setShowDataQualityManagementDetails] = useState(true);
+  const [showMetadataManagementDetails, setShowMetadataManagementDetails] = useState(true);
+  const [showDataCatalogDetails, setShowDataCatalogDetails] = useState(true);
+  const [showDataDictionaryDetails, setShowDataDictionaryDetails] = useState(true);
+  const [showDataLineageDetails, setShowDataLineageDetails] = useState(true);
+  const [showDataDiscoveryDetails, setShowDataDiscoveryDetails] = useState(true);
+  const [showDataClassificationDetails, setShowDataClassificationDetails] = useState(true);
+  const [showDataTaggingDetails, setShowDataTaggingDetails] = useState(true);
+  const [showDataVersioningDetails, setShowDataVersioningDetails] = useState(true);
+  const [showDataArchivingDetails, setShowDataArchivingDetails] = useState(true);
+  const [showDataLifecycleManagementDetails, setShowDataLifecycleManagementDetails] = useState(true);
+  const [showDataSecurityDetails, setShowDataSecurityDetails] = useState(true);
+  const [showDataEncryptionDetails, setShowDataEncryptionDetails] = useState(true);
+  const [showDataMaskingDetails, setShowDataMaskingDetails] = useState(true);
+  const [showDataTokenizationDetails, setShowDataTokenizationDetails] = useState(true);
+  const [showDataLossPreventionDetails, setShowDataLossPreventionDetails] = useState(true);
+  const [showDataAccessControlsDetails, setShowDataAccessControlsDetails] = useState(true);
+  const [showDataBreachPreventionDetails, setShowDataBreachPreventionDetails] = useState(true);
+  const [showDataResilienceDetails, setShowDataResilienceDetails] = useState(true);
+  const [showDataBackupAndRecoveryDetails, setShowDataBackupAndRecoveryDetails] = useState(true);
+  const [showDataDisasterRecoveryDetails, setShowDataDisasterRecoveryDetails] = useState(true);
+  const [showDataIncidentResponseDetails, setShowDataIncidentResponseDetails] = useState(true);
+  const [showDataPrivacyDetails, setShowDataPrivacyDetails] = useState(true);
+  const [showDataConsentDetails, setShowDataConsentDetails] = useState(true);
+  const [showDataTransparencyDetails, setShowDataTransparencyDetails] = useState(true);
+  const [showDataAccountabilityDetails, setShowDataAccountabilityDetails] = useState(true);
+  const [showDataEthicsDetails, setShowDataEthicsDetails] = useState(true);
+  const [showDataBiasDetails, setShowDataBiasDetails] = useState(true);
+  const [showDataFairnessDetails, setShowDataFairnessDetails] = useState(true);
+  const [showDataExplainabilityDetails, setShowDataExplainabilityDetails] = useState(true);
+  const [showDataHumanOversightDetails, setShowDataHumanOversightDetails] = useState(true);
+  const [showDataUserControlDetails, setShowDataUserControlDetails] = useState(true);
+  const [showDataPrivacyEnhancingTechnologiesDetails, setShowDataPrivacyEnhancingTechnologiesDetails] = useState(true);
+  const [showDataDifferentialPrivacyDetails, setShowDataDifferentialPrivacyDetails] = useState(true);
+  const [showDataFederatedLearningDetails, setShowDataFederatedLearningDetails] = useState(true);
+  const [showDataSecureMultiPartyComputationDetails, setShowDataSecureMultiPartyComputationDetails] = useState(true);
+  const [showDataHomomorphicEncryptionDetails, setShowDataHomomorphicEncryptionDetails] = useState(true);
+  const [showDataAnonymizationDetails, setShowDataAnonymizationDetails] = useState(true);
+  const [showDataPseudonymizationDetails, setShowDataPseudonymizationDetails] = useState(true);
+  const [showDataDeidentificationDetails, setShowDataDeidentificationDetails] = useState(true);
+  const [showDataMinimizationDetails, setShowDataMinimizationDetails] = useState(true);
+  const [showDataPurposeLimitationDetails, setShowDataPurposeLimitationDetails] = useState(true);
+  const [showDataSubjectRightsDetails, setShowDataSubjectRightsDetails] = useState(true);
+  const [showDataRightToAccessDetails, setShowDataRightToAccessDetails] = useState(true);
+  const [showDataRightToRectificationDetails, setShowDataRightToRectificationDetails] = useState(true);
+  const [showDataRightToErasureDetails, setShowDataRightToErasureDetails] = useState(true);
+  const [showDataRightToRestrictionOfProcessingDetails, setShowDataRightToRestrictionOfProcessingDetails] = useState(true);
+  const [showDataRightToDataPortabilityDetails, setShowDataRightToDataPortabilityDetails] = useState(true);
+  const [showDataRightToObjectDetails, setShowDataRightToObjectDetails] = useState(true);
+  const [showDataAutomatedDecisionMakingDetails, setShowDataAutomatedDecisionMakingDetails] = useState(true);
+  const [showDataProfilingDetails, setShowDataProfilingDetails] = useState(true);
+  const [showDataLegalBasisForProcessingDetails, setShowDataLegalBasisForProcessingDetails] = useState(true);
+  const [showDataConsentManagementDetails, setShowDataConsentManagementDetails] = useState(true);
+  const [showDataTransferDetails, setShowDataTransferDetails] = useState(true);
+  const [showDataInternationalDataTransferDetails, setShowDataInternationalDataTransferDetails] = useState(true);
+  const [showDataCrossBorderDataTransferDetails, setShowDataCrossBorderDataTransferDetails] = useState(true);
+  const [showDataStandardContractualClausesDetails, setShowDataStandardContractualClausesDetails] = useState(true);
+  const [showDataBindingCorporateRulesDetails, setShowDataBindingCorporateRulesDetails] = useState(true);
+  const [showDataAdequacyDecisionsDetails, setShowDataAdequacyDecisionsDetails] = useState(true);
+  const [showDataLocalizationDetails, setShowDataLocalizationDetails] = useState(true);
+  const [showDataResidencyDetails, setShowDataResidencyDetails] = useState(true);
+  const [showDataSovereigntyRequirementsDetails, setShowDataSovereigntyRequirementsDetails] = useState(true);
+  const [showDataGeographicRestrictionsDetails, setShowDataGeographicRestrictionsDetails] = useState(true);
+  const [showDataGovernanceDetails, setShowDataGovernanceDetails] = useState(true);
+  const [showDataStewardshipDetails, setShowDataStewardshipDetails] = useState(true);
+  const [showDataQualityDetails, setShowDataQualityDetails] = useState(true);
+  const [showDataMetadataDetails, setShowDataMetadataDetails] = useState(true);
+  const [showDataCatalogDetails, setShowDataCatalogDetails] = useState(true);
+  const [showDataDictionaryDetails, setShowDataDictionaryDetails] = useState(true);
+  const [showDataLineageDetails, setShowDataLineageDetails] = useState(true);
+  const [showDataDiscoveryDetails, setShowDataDiscoveryDetails] = useState(true);
+  const [showDataClassificationDetails, setShowDataClassificationDetails] = useState(true);
+  const [showDataTaggingDetails, setShowDataTaggingDetails] = useState(true);
+  const [showDataVersioningDetails, setShowDataVersioningDetails] = useState(true);
+  const [showDataArchivingDetails, setShowDataArchivingDetails] = useState(true);
+  const [showDataLifecycleDetails, setShowDataLifecycleDetails] = useState(true);
+  const [showDataSecurityMeasuresDetails, setShowDataSecurityMeasuresDetails] = useState(true);
+  const [showDataPrivacyPracticesDetails, setShowDataPrivacyPracticesDetails] = useState(true);
+  const [showDataEthicalConsiderationsDetails, setShowDataEthicalConsiderationsDetails] = useState(true);
+  const [showDataBiasMitigationDetails, setShowDataBiasMitigationDetails] = useState(true);
+  const [showDataFairnessMetricsDetails, setShowDataFairnessMetricsDetails] = useState(true);
+  const [showDataTransparencyDetailsDetails, setShowDataTransparencyDetailsDetails] = useState(true);
+  const [showDataAccountabilityDetailsDetails, setShowDataAccountabilityDetailsDetails] = useState(true);
+  const [showDataHumanOversightDetailsDetails, setShowDataHumanOversightDetailsDetails] = useState(true);
+  const [showDataUserControlDetailsDetails, setShowDataUserControlDetailsDetails] = useState(true);
+  const [showDataPrivacyEnhancingTechnologiesDetailsDetails, setShowDataPrivacyEnhancingTechnologiesDetailsDetails] = useState(true);
+  const [showDataDifferentialPrivacyDetailsDetails, setShowDataDifferentialPrivacyDetailsDetails] = useState(true);
+  const [showDataFederatedLearningDetailsDetails, setShowDataFederatedLearningDetailsDetails] = useState(true);
+  const [showDataSecureMultiPartyComputationDetailsDetails, setShowDataSecureMultiPartyComputationDetailsDetails] = useState(true);
+  const [showDataHomomorphicEncryptionDetailsDetails, setShowDataHomomorphicEncryptionDetailsDetails] = useState(true);
+  const [showDataAnonymizationTechniquesDetails, setShowDataAnonymizationTechniquesDetails] = useState(true);
+  const [showDataPseudonymizationTechniquesDetails, setShowDataPseudonymizationTechniquesDetails] = useState(true);
+  const [showDataDeidentificationTechniquesDetails, setShowDataDeidentificationTechniquesDetails] = useState(true);
+  const [showDataMinimizationTechniquesDetails, setShowDataMinimizationTechniquesDetails] = useState(true);
+  const [showDataPurposeLimitationDetailsDetails, setShowDataPurposeLimitationDetailsDetails] = useState(true);
+  const [showDataSubjectRightsDetailsDetails, setShowDataSubjectRightsDetailsDetails] = useState(true);
+  const [showDataRightToAccessDetailsDetails, setShowDataRightToAccessDetailsDetails] = useState(true);
+  const [showDataRightToRectificationDetailsDetails, setShowDataRightToRectificationDetailsDetails] = useState(true);
+  const [showDataRightToErasureDetailsDetails, setShowDataRightToErasureDetailsDetails] = useState(true);
+  const [showDataRightToRestrictionOfProcessingDetailsDetails, setShowDataRightToRestrictionOfProcessingDetailsDetails] = useState(true);
+  const [showDataRightToDataPortabilityDetailsDetails, setShowDataRightToDataPortabilityDetailsDetails] = useState(true);
+  const [showDataRightToObjectDetailsDetails, setShowDataRightToObjectDetailsDetails] = useState(true);
+  const [showDataAutomatedDecisionMakingDetailsDetails, setShowDataAutomatedDecisionMakingDetailsDetails] = useState(true);
+  const [showDataProfilingDetailsDetails, setShowDataProfilingDetailsDetails] = useState(true);
+  const [showDataLegalBasisForProcessingDetailsDetails, setShowDataLegalBasisForProcessingDetailsDetails] = useState(true);
+  const [showDataConsentManagementDetailsDetails, setShowDataConsentManagementDetailsDetails] = useState(true);
+  const [showDataTransferDetailsDetails, setShowDataTransferDetailsDetails] = useState(true);
+  const [showDataInternationalDataTransferDetailsDetails, setShowDataInternationalDataTransferDetailsDetails] = useState(true);
+  const [showDataCrossBorderDataTransferDetailsDetails, setShowDataCrossBorderDataTransferDetailsDetails] = useState(true);
+  const [showDataStandardContractualClausesDetailsDetails, setShowDataStandardContractualClausesDetailsDetails] = useState(true);
+  const [showDataBindingCorporateRulesDetailsDetails, setShowDataBindingCorporateRulesDetailsDetails] = useState(true);
+  const [showDataAdequacyDecisionsDetailsDetails, setShowDataAdequacyDecisionsDetailsDetails] = useState(true);
+  const [showDataLocalizationDetailsDetails, setShowDataLocalizationDetailsDetails] = useState(true);
+  const [showDataResidencyDetailsDetails, setShowDataResidencyDetailsDetails] = useState(true);
+  const [showDataSovereigntyRequirementsDetailsDetails, setShowDataSovereigntyRequirementsDetailsDetails] = useState(true);
+  const [showDataGeographicRestrictionsDetailsDetails, setShowDataGeographicRestrictionsDetailsDetails] = useState(true);
+  const [showDataGovernanceFrameworkDetailsDetails, setShowDataGovernanceFrameworkDetailsDetails] = useState(true);
+  const [showDataStewardshipDetailsDetails, setShowDataStewardshipDetailsDetails] = useState(true);
+  const [showDataQualityManagementDetailsDetails, setShowDataQualityManagementDetailsDetails] = useState(true);
+  const [showDataMetadataManagementDetailsDetails, setShowDataMetadataManagementDetailsDetails] = useState(true);
+  const [showDataCatalogDetailsDetails, setShowDataCatalogDetailsDetails] = useState(true);
+  const [showDataDictionaryDetailsDetails, setShowDataDictionaryDetailsDetails] = useState(true);
+  const [showDataLineageDetailsDetails, setShowDataLineageDetailsDetails] = useState(true);
+  const [showDataDiscoveryDetailsDetails, setShowDataDiscoveryDetailsDetails] = useState(true);
+  const [showDataClassificationDetailsDetails, setShowDataClassificationDetailsDetails] = useState(true);
+  const [showDataTaggingDetailsDetails, setShowDataTaggingDetailsDetails] = useState(true);
+  const [showDataVersioningDetailsDetails, setShowDataVersioningDetailsDetails] = useState(true);
+  const [showDataArchivingDetailsDetails, setShowDataArchivingDetailsDetails] = useState(true);
+  const [showDataLifecycleManagementDetailsDetails, setShowDataLifecycleManagementDetailsDetails] = useState(true);
+  const [showDataSecurityMeasuresDetailsDetails, setShowDataSecurityMeasuresDetailsDetails] = useState(true);
+  const [showDataPrivacyPracticesDetailsDetails, setShowDataPrivacyPracticesDetailsDetails] = useState(true);
+  const [showDataEthicalConsiderationsDetailsDetails, setShowDataEthicalConsiderationsDetailsDetails] = useState(true);
+  const [showDataBiasMitigationDetailsDetails, setShowDataBiasMitigationDetailsDetails] = useState(true);
+  const [showDataFairnessMetricsDetailsDetails, setShowDataFairnessMetricsDetailsDetails] = useState(true);
+  const [showDataTransparencyDetailsDetailsDetails, setShowDataTransparencyDetailsDetailsDetails] = useState(true);
+  const [showDataAccountabilityDetailsDetailsDetails, setShowDataAccountabilityDetailsDetailsDetails] = useState(true);
+  const [showDataHumanOversightDetailsDetailsDetails, setShowDataHumanOversightDetailsDetailsDetails] = useState(true);
+  const [showDataUserControlDetailsDetailsDetails, setShowDataUserControlDetailsDetailsDetails] = useState(true);
+  const [showDataPrivacyEnhancingTechnologiesDetailsDetailsDetails, setShowDataPrivacyEnhancingTechnologiesDetailsDetailsDetails] = useState(true);
+  const [showDataDifferentialPrivacyDetailsDetailsDetails, setShowDataDifferentialPrivacyDetailsDetailsDetails] = useState(true);
+  const [showDataFederatedLearningDetailsDetailsDetails, setShowDataFederatedLearningDetailsDetailsDetails] = useState(true);
+  const [showDataSecureMultiPartyComputationDetailsDetailsDetails, setShowDataSecureMultiPartyComputationDetailsDetailsDetails] = useState(true);
+  const [showDataHomomorphicEncryptionDetailsDetailsDetails, setShowDataHomomorphicEncryptionDetailsDetailsDetails] = useState(true);
+  const [showDataAnonymizationTechniquesDetailsDetails, setShowDataAnonymizationTechniquesDetailsDetails] = useState(true);
+  const [showDataPseudonymizationTechniquesDetailsDetails, setShowDataPseudonymizationTechniquesDetailsDetails] = useState(true);
+  const [showDataDeidentificationTechniquesDetailsDetails, setShowDataDeidentificationTechniquesDetailsDetails] = useState(true);
+  const [showDataMinimizationTechniquesDetailsDetails, setShowDataMinimizationTechniquesDetailsDetails] = useState(true);
+  const [showDataPurposeLimitationDetailsDetailsDetails, setShowDataPurposeLimitationDetailsDetailsDetails] = useState(true);
+  const [showDataSubjectRightsDetailsDetailsDetails, setShowDataSubjectRightsDetailsDetailsDetails] = useState(true);
+  const [showDataRightToAccessDetailsDetailsDetails, setShowDataRightToAccessDetailsDetailsDetails] = useState(true);
+  const [showDataRightToRectificationDetailsDetailsDetails, setShowDataRightToRectificationDetailsDetailsDetails] = useState(true);
+  const [showDataRightToErasureDetailsDetailsDetails, setShowDataRightToErasureDetailsDetailsDetails] = useState(true);
+  const [showDataRightToRestrictionOfProcessingDetailsDetailsDetails, setShowDataRightToRestrictionOfProcessingDetailsDetailsDetails] = useState(true);
+  const [showDataRightToDataPortabilityDetailsDetailsDetails, setShowDataRightToDataPortabilityDetailsDetailsDetails] = useState(true);
+  const [showDataRightToObjectDetailsDetailsDetails, setShowDataRightToObjectDetailsDetailsDetails] = useState(true);
+  const [showDataAutomatedDecisionMakingDetailsDetailsDetails, setShowDataAutomatedDecisionMakingDetailsDetailsDetails] = useState(true);
+  const [showDataProfilingDetailsDetailsDetails, setShowDataProfilingDetailsDetailsDetails] = useState(true);
+  const [showDataLegalBasisForProcessingDetailsDetailsDetails, setShowDataLegalBasisForProcessingDetailsDetailsDetails] = useState(true);
+  const [showDataConsentManagementDetailsDetailsDetails, setShowDataConsentManagementDetailsDetailsDetails] = useState(true);
+  const [showDataTransferDetailsDetailsDetails, setShowDataTransferDetailsDetailsDetails] = useState(true);
+  const [showDataInternationalDataTransferDetailsDetailsDetails, setShowDataInternationalDataTransferDetailsDetailsDetails] = useState(true);
+  const [showDataCrossBorderDataTransferDetailsDetailsDetails, setShowDataCrossBorderDataTransferDetailsDetailsDetails] = useState(true);
+  const [showDataStandardContractualClausesDetailsDetailsDetails, setShowDataStandardContractualClausesDetailsDetailsDetails] = useState(true);
+  const [showDataBindingCorporateRulesDetailsDetailsDetails, setShowDataBindingCorporateRulesDetailsDetailsDetails] = useState(true);
+  const [showDataAdequacyDecisionsDetailsDetailsDetails, setShowDataAdequacyDecisionsDetailsDetailsDetails] = useState(true);
+  const [showDataLocalizationDetailsDetailsDetails, setShowDataLocalizationDetailsDetailsDetails] = useState(true);
+  const [showDataResidencyDetailsDetailsDetails, setShowDataResidencyDetailsDetailsDetails] = useState(true);
+  const [showDataSovereigntyRequirementsDetailsDetailsDetails, setShowDataSovereigntyRequirementsDetailsDetailsDetails] = useState(true);
+  const [showDataGeographicRestrictionsDetailsDetailsDetails, setShowDataGeographicRestrictionsDetailsDetailsDetails] = useState(true);
+  const [llamaInstance, setLlamaInstance] = useState<LlamaService | null>(null);
+  const { toast } = useToast();
+  const { theme, setTheme } = useTheme();
 
-  // Load LLaMA model
   useEffect(() => {
-    const loadLlama = async () => {
-      const llamaService = LlamaService.getInstance();
+    const initializeLlama = async () => {
+      const instance = LlamaService.getInstance();
+      setLlamaInstance(instance);
+      setIsModelLoading(true);
       try {
-        await llamaService.loadModel();
-        setLlamaLoaded(true);
-        
-        // Add simulation context if available
-        const savedComponents = localStorage.getItem('chemflow-selected-components');
-        const thermodynamicModel = localStorage.getItem('chemflow-selected-model');
-        
-        if (savedComponents) {
-          try {
-            const components = JSON.parse(savedComponents);
-            // Set simulation data in LlamaService for context-aware responses
-            llamaService.setSimulationData({
-              components,
-              thermodynamicModel: thermodynamicModel || 'Peng-Robinson',
-              timestamp: new Date().toISOString()
-            });
-          } catch (error) {
-            console.error("Error parsing saved components:", error);
-          }
-        }
-        
-        toast({
-          title: "LLaMA Model Loaded",
-          description: "The AI model is ready to answer your chemical engineering questions",
-        });
+        await instance.loadModel();
       } catch (error) {
-        console.error("Error loading LLaMA model:", error);
+        console.error("Failed to load the LLaMA model:", error);
         toast({
-          title: "Model Loading Failed",
-          description: "There was an error loading the LLaMA model. Falling back to simulated responses.",
+          title: "Error",
+          description: "Failed to load the LLaMA model.",
           variant: "destructive",
         });
-        // We'll still set llamaLoaded to true to allow the chat interface to work with simulated responses
-        setLlamaLoaded(true);
+      } finally {
+        setIsModelLoading(false);
       }
     };
 
-    loadLlama();
-  }, [toast]);
+    initializeLlama();
+  }, []);
 
-  // Scroll to bottom of messages when they change
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  const handleSend = useCallback(async () => {
+    if (!message.trim()) return;
 
-  const handleSendMessage = async () => {
-    if (!input.trim() || isLoading) return;
-    
-    const userMessage = {
-      role: "user",
-      content: input
-    };
-    
-    setMessages(prev => [...prev, userMessage]);
-    setInput("");
     setIsLoading(true);
-    
+    setResponse('');
+    setStreamedResponse('');
+    setIsCopied(false);
+
     try {
-      let responseText = "";
-      
-      // Check if this looks like a flowsheet request
-      if (input.toLowerCase().includes("flowsheet") || input.toLowerCase().includes("process design") || 
-          input.toLowerCase().includes("design a process") || input.toLowerCase().includes("design process")) {
-        // Save the problem statement for potential flowsheet generation
-        setFlowsheetProblem(input);
-        
-        responseText = "I've analyzed your process design request. I can help generate a flowsheet for this process. " +
-          "Would you like me to create a visual flowsheet that you can use for your simulation? " +
-          "This will include recommended equipment, operating conditions, and stream compositions based on my analysis.";
-        
-        // Add a special flowsheet response
-        setMessages(prev => [...prev, {
-          role: "assistant",
-          content: responseText
-        }]);
-        
-        // Show the flowsheet generation option
-        setShowFlowsheet(true);
-        setIsLoading(false);
-        return;
+      if (!llamaInstance) {
+        throw new Error("LLaMA model service not initialized.");
       }
-      
-      // Try to use the actual LLaMA service
-      const llamaService = LlamaService.getInstance();
-      if (llamaService.isModelLoaded()) {
-        try {
-          responseText = await llamaService.generateResponse(input);
-        } catch (error) {
-          console.error("Error generating response from LLaMA:", error);
-          // Fall back to simulated response
-          responseText = getSimulatedResponse(input);
-        }
-      } else {
-        // Fall back to simulated response
-        responseText = getSimulatedResponse(input);
-      }
-      
-      setMessages(prev => [...prev, {
-        role: "assistant",
-        content: responseText
-      }]);
-      
-      setIsLoading(false);
-    } catch (error) {
+
+      const response = await llamaInstance.generateResponse(message);
+      setResponse(response);
+    } catch (error: any) {
+      console.error("Error generating response:", error);
       toast({
         title: "Error",
-        description: "Failed to generate response. Please try again.",
+        description: error.message || "Failed to generate response.",
         variant: "destructive",
       });
+      setResponse(`Error: ${error.message || 'Failed to generate response.'}`);
+    } finally {
       setIsLoading(false);
     }
-  };
+  }, [message, llamaInstance, toast]);
 
-  const getSimulatedResponse = (input: string) => {
-    // Simulate AI response with chemical engineering related content
-    let responseText = "";
-    
-    // Try to use LlamaService anyway
-    const llamaService = LlamaService.getInstance();
-    try {
-      return llamaService.generateRealTimeAnalysis('general', input);
-    } catch (error) {
-      console.error("Error generating real-time response:", error);
+  const handleStream = useCallback(async () => {
+    if (!message.trim()) return;
+
+    setIsStreaming(true);
+    setStreamedResponse('');
+    setIsCopied(false);
+
+    // Simulate streaming response
+    let simulatedStream = "";
+    const words = message.split(" ");
+    const interval = 50; // Simulate word-by-word streaming
+
+    for (let i = 0; i < words.length; i++) {
+      await new Promise(resolve => setTimeout(resolve, interval));
+      simulatedStream += words[i] + " ";
+      setStreamedResponse(simulatedStream);
     }
-    
-    // Fallback static responses if all else fails
-    if (input.toLowerCase().includes("reactor") || input.toLowerCase().includes("reaction")) {
-      responseText = "To simulate a chemical reactor, we need to follow these steps:\n\n" +
-        "1. Define the reaction kinetics (rate equations)\n" +
-        "2. Set material balances for each component\n" +
-        "3. Include energy balances if temperature effects are important\n" +
-        "4. Specify reactor type (CSTR, PFR, batch)\n" +
-        "5. Set inlet conditions (temperature, pressure, concentrations)\n\n" +
-        "For example, for a simple A → B reaction in a CSTR with first-order kinetics, the conversion equation would be:\n" +
-        "X = k·τ / (1 + k·τ) where k is the rate constant and τ is the residence time.";
-    } else if (input.toLowerCase().includes("distill") || input.toLowerCase().includes("separ")) {
-      responseText = "For distillation column simulation:\n\n" +
-        "1. Specify the feed composition, flow rate, and thermal condition\n" +
-        "2. Set the operating pressure\n" +
-        "3. Define number of stages and feed stage location\n" +
-        "4. Specify reflux ratio and distillate rate or bottoms composition\n" +
-        "5. Select a thermodynamic model (e.g., Peng-Robinson, NRTL)\n\n" +
-        "The minimum number of stages can be calculated using the Fenske equation, and the minimum reflux ratio using the Underwood equation.";
-    } else if (input.toLowerCase().includes("heat") || input.toLowerCase().includes("exchang")) {
-      responseText = "Heat exchanger simulation involves:\n\n" +
-        "1. Specifying hot and cold stream properties\n" +
-        "2. Calculating the overall heat transfer coefficient (U)\n" +
-        "3. Determining the required heat transfer area using Q = U·A·LMTD\n" +
-        "4. Where LMTD is the log mean temperature difference\n\n" +
-        "For countercurrent flow: LMTD = (ΔT₁ - ΔT₂) / ln(ΔT₁/ΔT₂)\n" +
-        "where ΔT₁ and ΔT₂ are the temperature differences at each end.";
-    } else {
-      responseText = "I can help analyze your chemical process simulation. To get started, please provide details about:\n\n" +
-        "1. The specific unit operations involved\n" +
-        "2. Component compositions and flow rates\n" +
-        "3. Operating conditions (T, P)\n" +
-        "4. Design objectives\n\n" +
-        "For example, if you're designing a process for chemical production, we could analyze the reaction, separation, and purification steps to optimize yield and energy usage.";
-    }
-    
-    return responseText;
+
+    setIsStreaming(false);
+  }, [message]);
+
+  const handleCopyClick = () => {
+    navigator.clipboard.writeText(response);
+    setIsCopied(true);
+    toast({
+      title: "Copied!",
+      description: "Response copied to clipboard.",
+    });
   };
 
-  const handleGenerateFlowsheet = () => {
-    setIsLoading(true);
-    
-    // Simulate flowsheet generation
-    setTimeout(() => {
-      const flowsheetResponse = {
-        role: "assistant",
-        content: "I've generated a flowsheet based on your process description. Here's my analysis and recommendations:",
-        includesImage: true
-      };
-      
-      setMessages(prev => [...prev, flowsheetResponse]);
-      setShowFlowsheet(false);
-      setIsLoading(false);
-      
-      // Redirect to create simulation with this problem statement
-      localStorage.setItem('chemflow-problem-statement', flowsheetProblem);
-      
-      toast({
-        title: "Flowsheet Generated",
-        description: "You can now view and modify the suggested process design",
-      });
-      
-      // Wait a moment before navigating
-      setTimeout(() => {
-        navigate('/create-simulation');
-      }, 1500);
-    }, 3000);
+  const toggleSettings = () => {
+    setIsSettingsOpen(!isSettingsOpen);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
-    }
+  const handleThemeChange = (newTheme: "light" | "dark" | "system") => {
+    setTheme(newTheme);
   };
 
-  // Convert markdown-like content to HTML
-  const formatContent = (content: string) => {
-    let formattedContent = content
-      .replace(/\n/g, '<br>')
-      // Headers (##, ###)
-      .replace(/#{3}\s?(.*?)(?:\n|$)/g, '<h4 class="text-md font-medium mt-3 mb-1">$1</h4>')
-      .replace(/#{2}\s?(.*?)(?:\n|$)/g, '<h3 class="text-lg font-medium text-flow-blue mt-4 mb-2">$1</h3>')
-      // Lists
-      .replace(/\*\s(.*?)(?:<br>|$)/g, '<li class="ml-4">$1</li>')
-      // Bold
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      // Italics
-      .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      // Add a class to generated timestamps
-      .replace(/\*Generated at: (.*?)\*/g, '<span class="text-xs text-gray-500 italic">Generated at: $1</span>');
-    
-    return formattedContent;
-  };
-
-  return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-blue-50 to-white dark:from-gray-900 dark:to-gray-800">
-      <Navbar />
-      
-      <main className="flex-1 py-16 px-6">
-        <div className="max-w-screen-xl mx-auto">
-          <div className="mb-8">
-            <h1 className="text-3xl font-display font-bold mb-2 bg-gradient-to-r from-flow-blue to-blue-600 bg-clip-text text-transparent">
-              AI Simulation Assistant
-            </h1>
-            <p className="text-gray-600 dark:text-gray-400">Get intelligent assistance with your chemical process simulations</p>
-          </div>
-          
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
-              <GlassPanel className="p-6 flex flex-col h-[600px] relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-full bg-blue-400/5 pointer-events-none"></div>
-                <div className="absolute -top-20 -right-20 w-64 h-64 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-float"></div>
-                <div className="absolute bottom-20 -left-20 w-64 h-64 bg-cyan-200 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-float-delay"></div>
-                
-                <div className="flex-1 overflow-y-auto mb-4 space-y-4 pr-2 relative z-10 custom-scrollbar">
-                  {messages.map((message, index) => (
-                    <div 
-                      key={index}
-                      className={`flex ${message.role === 'assistant' ? 'justify-start' : 'justify-end'}`}
-                    >
-                      <div 
-                        className={`max-w-[90%] p-4 rounded-lg shadow-sm ${
-                          message.role === 'assistant' 
-                            ? 'bg-white/90 backdrop-blur-sm border border-blue-100/50 dark:bg-gray-800/90 dark:border-gray-700/50' 
-                            : 'bg-gradient-to-r from-flow-blue to-blue-600 text-white'
-                        }`}
-                      >
-                        {message.role === 'assistant' && (
-                          <div className="flex items-center mb-2">
-                            <Brain className="h-5 w-5 mr-2 text-flow-blue dark:text-blue-400" />
-                            <span className="font-medium">ChemFlow AI</span>
-                          </div>
-                        )}
-                        <div 
-                          className="whitespace-pre-wrap"
-                          dangerouslySetInnerHTML={{ __html: formatContent(message.content) }}
-                        ></div>
-                        
-                        {message.includesImage && (
-                          <div className="mt-4 border border-blue-100 dark:border-gray-700 rounded-lg overflow-hidden shadow-md">
-                            <img 
-                              src="https://placehold.co/600x400/EEE/31343C?text=Process+Flowsheet+Diagram&font=montserrat"
-                              alt="Process Flowsheet"
-                              className="w-full"
-                            />
-                            <div className="p-3 bg-blue-50/50 dark:bg-gray-900/50 text-sm">
-                              <p className="font-medium mb-1">Recommended Process Parameters:</p>
-                              <ul className="list-disc pl-4 space-y-1">
-                                <li>Reactor Temperature: 75-85°C</li>
-                                <li>Reactor Pressure: 2.5 bar</li>
-                                <li>Residence Time: 45 minutes</li>
-                                <li>Distillation Column: 12 theoretical stages</li>
-                                <li>Reflux Ratio: 3.5</li>
-                              </ul>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                  
-                  {isLoading && (
-                    <div className="flex justify-start">
-                      <div className="max-w-[80%] p-4 rounded-lg bg-white/90 backdrop-blur-sm border border-blue-100/50 dark:bg-gray-800/90 dark:border-gray-700/50 shadow-sm">
-                        <div className="flex items-center">
-                          <Loader2 className="h-5 w-5 mr-2 text-flow-blue animate-spin" />
-                          <span className="text-gray-600 dark:text-gray-400">Generating real-time analysis...</span>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  
-                  {showFlowsheet && !isLoading && (
-                    <div className="flex justify-start">
-                      <div className="max-w-[80%] p-4 rounded-lg bg-white/90 backdrop-blur-sm border border-blue-100/50 dark:bg-gray-800/90 dark:border-gray-700/50 shadow-sm">
-                        <Button 
-                          onClick={handleGenerateFlowsheet} 
-                          className="w-full bg-gradient-to-r from-flow-blue to-blue-600 hover:from-flow-blue/90 hover:to-blue-600/90 transition-all"
-                        >
-                          Generate Process Flowsheet <ArrowRight className="ml-2 h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                  
-                  <div ref={messagesEndRef} />
-                </div>
-                
-                <div className="relative z-10">
-                  <Textarea 
-                    placeholder="Ask about chemical process simulations, reactions, separations..."
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    className="resize-none dark:bg-gray-800/80 dark:border-gray-700 dark:text-white shadow-sm border-blue-100"
-                    rows={3}
-                    disabled={!llamaLoaded || isLoading}
-                  />
-                  <Button 
-                    className="absolute bottom-3 right-3 bg-gradient-to-r from-flow-blue to-blue-600 hover:from-flow-blue/90 hover:to-blue-600/90 transition-all"
-                    size="sm"
-                    onClick={handleSendMessage}
-                    disabled={!llamaLoaded || isLoading || !input.trim()}
-                  >
-                    {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                  </Button>
-                </div>
-                
-                {!llamaLoaded && (
-                  <div className="mt-4 z-10">
-                    <Alert className="bg-blue-50/80 backdrop-blur-sm border-blue-100">
-                      <Loader2 className="h-4 w-4 animate-spin mr-2 text-flow-blue" />
-                      <AlertTitle>Loading LLaMA Model</AlertTitle>
-                      <AlertDescription>
-                        The AI model is being loaded locally in your browser. This may take a moment...
-                      </AlertDescription>
-                    </Alert>
-                  </div>
-                )}
-              </GlassPanel>
-            </div>
-            
-            <div className="lg:col-span-1">
-              <GlassPanel className="p-6 mb-6 bg-gradient-to-br from-white to-blue-50/50 dark:from-gray-800 dark:to-gray-800/50 relative overflow-hidden">
-                <div className="absolute -top-10 -right-10 w-40 h-40 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float"></div>
-                
-                <h3 className="text-lg font-medium mb-4 bg-gradient-to-r from-flow-blue to-blue-600 bg-clip-text text-transparent">About AI Assistant</h3>
-                <p className="text-gray-600 dark:text-gray-400 mb-4">
-                  This AI assistant is powered by Meta's LLaMA model running locally in your browser. It can help with:
-                </p>
-                <ul className="space-y-3">
-                  <li className="flex items-start">
-                    <div className="p-1 bg-blue-100/50 rounded mr-2 mt-0.5">
-                      <Brain className="h-4 w-4 text-flow-blue" />
-                    </div>
-                    <span className="dark:text-gray-300">Chemical process simulation analysis</span>
-                  </li>
-                  <li className="flex items-start">
-                    <div className="p-1 bg-blue-100/50 rounded mr-2 mt-0.5">
-                      <MessageSquare className="h-4 w-4 text-flow-blue" />
-                    </div>
-                    <span className="dark:text-gray-300">Engineering calculations and formulas</span>
-                  </li>
-                  <li className="flex items-start">
-                    <div className="p-1 bg-blue-100/50 rounded mr-2 mt-0.5">
-                      <BarChart3 className="h-4 w-4 text-flow-blue" />
-                    </div>
-                    <span className="dark:text-gray-300">Real-time process data analysis</span>
-                  </li>
-                  <li className="flex items-start">
-                    <div className="p-1 bg-blue-100/50 rounded mr-2 mt-0.5">
-                      <FileText className="h-4 w-4 text-flow-blue" />
-                    </div>
-                    <span className="dark:text-gray-300">Troubleshooting simulation issues</span>
-                  </li>
-                </ul>
-                <div className="mt-6 pt-4 border-t border-blue-100/50 dark:border-gray-700/50">
-                  <div className="flex items-center text-amber-600 dark:text-amber-400">
-                    <Info className="h-5 w-5 mr-2" />
-                    <span className="text-sm font-medium">Running 100% locally in your browser</span>
-                  </div>
-                </div>
-              </GlassPanel>
-              
-              <GlassPanel className="p-6 bg-gradient-to-br from-white to-blue-50/50 dark:from-gray-800 dark:to-gray-800/50 relative overflow-hidden">
-                <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-cyan-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float-delay"></div>
-                
-                <h3 className="text-lg font-medium mb-4 bg-gradient-to-r from-flow-blue to-blue-600 bg-clip-text text-transparent">Open Source LLaMA</h3>
-                <p className="text-gray-600 dark:text-gray-400 mb-4">
-                  This assistant uses Meta's LLaMA model, an open-source large language model optimized for chemical engineering applications.
-                </p>
-                <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm p-4 rounded-lg mb-4 border border-blue-100/50 dark:border-gray-700/50 shadow-sm">
-                  <div className="flex items-center text-sm text-gray-600 dark:text-gray-400 mb-2">
-                    <Github className="h-4 w-4 mr-2" />
-                    <span className="font-medium">llama.cpp</span>
-                  </div>
-                  <div className="text-xs text-gray-500 dark:text-gray-500">
-                    Inference runs locally in WASM - no data leaves your browser
-                  </div>
-                </div>
-                <Button 
-                  className="w-full bg-gradient-to-r from-flow-blue to-blue-600 hover:from-flow-blue/90 hover:to-blue-600/90 transition-all"
-                  onClick={() => navigate('/create-simulation')}
-                >
-                  Create New Simulation <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </GlassPanel>
-            </div>
-          </div>
-        </div>
-      </main>
-      
-      <Footer />
-      
-      <style jsx global>{`
-        @keyframes float {
-          0% { transform: translateY(0) rotate(0); }
-          50% { transform: translateY(-20px) rotate(5deg); }
-          100% { transform: translateY(0) rotate(0); }
-        }
-        
-        @keyframes float-delay {
-          0% { transform: translateY(0) rotate(0); }
-          50% { transform: translateY(-15px) rotate(-5deg); }
-          100% { transform: translateY(0) rotate(0); }
-        }
-        
-        @keyframes flow {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(300%); }
-        }
-        
-        .animate-float {
-          animation: float 15s ease-in-out infinite;
-        }
-        
-        .animate-float-delay {
-          animation: float-delay 20s ease-in-out infinite;
-        }
-        
-        .flow-stream-animation {
-          animation: flow 2s linear infinite;
-        }
-        
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 8px;
-        }
-        
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: rgba(0, 0, 0, 0.05);
-          border-radius: 8px;
-        }
-        
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(59, 130, 246, 0.2);
-          border-radius: 8px;
-        }
-        
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: rgba(59, 130, 246, 0.4);
-        }
-      `}</style>
-    </div>
-  );
-};
-
-export default AISimulation;
+  const examples = [
+    "Analyze the heat transfer in a reactor.",
+    "Evaluate the fluid flow dynamics in a pipe.",
+    "Assess the thermodynamic equilibrium of a mixture.",
+    "Suggest improvements for a distillation column.",
+    "Model the kinetics of a chemical reaction.",
+    "Calculate the energy efficiency of a process.",
+    "Estimate the economic viability of a plant.",
+    "Identify potential environmental impacts.",
+    "Optimize the separation process in a unit.",
+    "Simulate the performance of a heat exchanger.",
+    "Predict the yield of a chemical reaction.",
+    "Determine the optimal operating conditions.",
+    "Troubleshoot a process control issue.",
+    "Design a new chemical process.",
+    "Scale-up a laboratory process to industrial scale.",
+    "Assess the safety of a chemical plant.",
+    "Comply with environmental regulations.",
+    "Reduce waste generation in a process.",
+    "Improve the sustainability of a chemical plant.",
+    "Implement green chemistry principles.",
+    "Use renewable energy sources.",
+    "Reduce greenhouse gas emissions.",
+    "Conserve water resources.",
+    "Minimize air pollution.",
+    "Prevent soil contamination.",
+    "Protect biodiversity.",
+    "Promote circular economy.",
+    "Engage stakeholders.",
+    "Communicate environmental performance.",
+    "Report environmental data.",
+    "Verify environmental claims.",
+    "Certify environmental management systems.",
+    "Audit environmental performance.",
+    "Invest in environmental technologies.",
+    "Support environmental research.",
+    "Educate the public about environmental issues.",
+    "Advocate for environmental policies.",
+    "Partner with environmental organizations.",
+    "Donate to environmental causes.",
+    "Volunteer for environmental projects.",
+    "Reduce your carbon footprint.",
+    "Conserve energy at home.",
+    "Use public transportation.",
+    "Bike or walk instead of driving.",
+    "Eat less meat.",
+    "Buy local and organic food.",
+    "Reduce your consumption.",
+    "Reuse and recycle.",
+    "Compost your food waste.",
+    "Plant trees.",
+    "Support sustainable businesses.",
+    "Vote for environmental candidates.",
+    "Contact your elected officials.",
+    "Join an environmental organization.",
+    "Donate to environmental causes.",
+    "Volunteer for environmental projects.",
+    "Educate yourself about environmental issues.",
+    "Talk to your friends and family about environmental issues.",
+    "Make a difference in your community.",
+    "Help protect the planet.",
+    "Save the environment.",
+    "Go green.",
+    "Be sustainable.",
+    "Live responsibly.",
+    "Think globally, act locally.",
+    "Every little bit helps.",
+    "Together, we can make a difference.",
+    "The future of our planet depends on us.",
+    "Let's create a better world for future generations.",
+    "What is the impact of varying the reflux ratio in a distillation column?",
+    "How does the choice of catalyst affect the yield of a reaction?",
+    "Can you suggest a more energy-efficient design for a heat exchanger network?",
+    "What are the key factors affecting the stability of a chemical reactor?",
+    "How can I optimize the operating conditions of a separation process?",
+    "What are the environmental impacts of using a particular solvent?",
+    "Can you help me troubleshoot a control issue in my process?",
+    "What are the safety considerations for handling a hazardous chemical?",
+    "

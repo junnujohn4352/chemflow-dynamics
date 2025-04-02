@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { PlusCircle, Trash2, Save, Play, Grid3X3, ZoomIn, ZoomOut, Move } from 'lucide-react';
 import ProcessFlow from '@/components/ui/ProcessFlow';
@@ -76,7 +75,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
   const canvasRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   
-  // Initialize canvas size
   useEffect(() => {
     if (containerRef.current) {
       const { width, height } = containerRef.current.getBoundingClientRect();
@@ -84,7 +82,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     }
   }, []);
   
-  // Save to LlamaService for context-aware responses
   useEffect(() => {
     const simulation = {
       components: selectedComponents,
@@ -93,7 +90,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
       streams: flowStreams.length
     };
     
-    // Set simulation data in LlamaService
     LlamaService.getInstance().setSimulationData(simulation);
   }, [selectedComponents, thermodynamicModel, equipmentList, flowStreams]);
   
@@ -101,7 +97,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     const id = `equip-${Date.now()}`;
     const name = getDefaultName(type);
     
-    // Default settings based on equipment type
     const settings: Record<string, any> = {};
     
     if (type === 'reactor') {
@@ -140,7 +135,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
       settings.pressure = 1.01325;
     }
     
-    // Default connection points based on equipment type
     let connectionPoints;
     
     if (type === 'reactor' || type === 'column') {
@@ -207,7 +201,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
   
   const handleEquipmentClick = (id: string) => {
     if (connecting?.active) {
-      // If we're connecting, trying to connect to a target equipment
       handleCreateConnection(id);
     } else {
       setSelectedEquipment(id);
@@ -233,7 +226,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
   const handleCreateConnection = (targetId: string) => {
     if (!connecting) return;
     
-    // Don't connect to self
     if (connecting.sourceId === targetId) {
       setConnecting(null);
       return;
@@ -247,10 +239,8 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
       return;
     }
     
-    // Use the first input point for simplicity
     const targetPoint = 0;
     
-    // Create a new flow stream with default parameters
     const newStream: FlowStreamType = {
       id: `stream-${Date.now()}`,
       sourceId: connecting.sourceId,
@@ -278,7 +268,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
   
   const handleDeleteSelected = () => {
     if (selectedEquipment) {
-      // Also delete any streams connected to this equipment
       setFlowStreams(prev => prev.filter(s => 
         s.sourceId !== selectedEquipment && s.targetId !== selectedEquipment
       ));
@@ -360,13 +349,17 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     }
   };
   
-  const handleSaveEquipmentSettings = (settings: Record<string, any>) => {
-    if (!selectedEquipment) return;
+  const handleSaveEquipmentSettings = (equipmentId: string, settings: Record<string, any>) => {
+    if (!equipmentId) return;
+    
+    const newName = settings._equipmentName;
+    delete settings._equipmentName;
     
     setEquipmentList(prev => prev.map(eq => {
-      if (eq.id === selectedEquipment) {
+      if (eq.id === equipmentId) {
         return {
           ...eq,
+          name: newName || eq.name,
           settings: {
             ...eq.settings,
             ...settings
@@ -430,17 +423,14 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     
     if (!sourcePoint || !targetPoint) return null;
     
-    // Calculate absolute positions
-    const sourceX = sourceEquipment.position.x + sourcePoint.x * 150; // Assuming 150px equipment width
-    const sourceY = sourceEquipment.position.y + sourcePoint.y * 150; // Assuming 150px equipment height
+    const sourceX = sourceEquipment.position.x + sourcePoint.x * 150;
+    const sourceY = sourceEquipment.position.y + sourcePoint.y * 150;
     const targetX = targetEquipment.position.x + targetPoint.x * 150;
     const targetY = targetEquipment.position.y + targetPoint.y * 150;
     
-    // Calculate midpoint for label positioning
     const midX = (sourceX + targetX) / 2;
     const midY = (sourceY + targetY) / 2;
     
-    // Calculate stream length for label positioning
     const length = Math.sqrt(Math.pow(targetX - sourceX, 2) + Math.pow(targetY - sourceY, 2));
     
     return {
@@ -466,7 +456,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
             }}
             onClick={(e) => {
               e.stopPropagation();
-              // Input points can't initiate connections
             }}
           />
         ))}
@@ -527,7 +516,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
       
       const { source, target, mid, length } = pathInfo;
       
-      // Calculate angle for proper rotation
       const angle = Math.atan2(target.y - source.y, target.x - source.x) * 180 / Math.PI;
       
       return (
@@ -571,7 +559,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     const iconSize = "w-12 h-12";
     const iconColor = "text-flow-blue";
     
-    // Simple SVG icons for equipment types
     switch (type) {
       case 'reactor':
         return (
@@ -754,7 +741,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
         <Button 
           variant="outline"
           onClick={() => {
-            // Save simulation
             toast({
               title: "Simulation Saved",
               description: "Your flowsheet has been saved"
@@ -774,32 +760,21 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
         </Button>
       </div>
       
-      {/* Equipment Settings Modal */}
       {showEquipmentSettings && selectedEquipment && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <EquipmentSettings
-            equipmentId={selectedEquipment}
-            type={equipmentList.find(eq => eq.id === selectedEquipment)?.type || ''}
-            name={equipmentList.find(eq => eq.id === selectedEquipment)?.name || ''}
-            settings={getCurrentEquipmentSettings()}
+            equipment={{
+              id: selectedEquipment,
+              type: equipmentList.find(eq => eq.id === selectedEquipment)?.type || '',
+              name: equipmentList.find(eq => eq.id === selectedEquipment)?.name || '',
+              settings: getCurrentEquipmentSettings()
+            }}
             onClose={() => setShowEquipmentSettings(false)}
             onSave={handleSaveEquipmentSettings}
-            onNameChange={(newName) => {
-              setEquipmentList(prev => prev.map(eq => {
-                if (eq.id === selectedEquipment) {
-                  return {
-                    ...eq,
-                    name: newName
-                  };
-                }
-                return eq;
-              }));
-            }}
           />
         </div>
       )}
       
-      {/* Stream Settings Modal */}
       {showStreamSettings && selectedStream && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <StreamSettings

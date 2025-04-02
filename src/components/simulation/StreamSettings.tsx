@@ -37,11 +37,14 @@ const StreamSettings: React.FC<StreamSettingsProps> = ({
   useEffect(() => {
     const normalizeComposition = () => {
       const composition = {...parameters.composition};
-      const total = Object.values(composition).reduce((sum: any, val: any) => sum + val, 0);
+      // Fix: ensure total is a number
+      const total = Object.values(composition).reduce((sum, val) => sum + (typeof val === 'number' ? val : 0), 0);
       
       if (total > 0) {
         Object.keys(composition).forEach(key => {
-          composition[key] = composition[key] / total;
+          if (typeof composition[key] === 'number') {
+            composition[key] = composition[key] / total;
+          }
         });
         
         setParameters(prev => ({
@@ -85,8 +88,9 @@ const StreamSettings: React.FC<StreamSettingsProps> = ({
   
   const phases = ['Vapor', 'Liquid', 'Mixed', 'Solid'];
   
-  // Calculate total composition to normalize sliders
-  const totalComposition = Object.values(parameters.composition).reduce((sum: any, val: any) => sum + val, 0);
+  // Calculate total composition to normalize sliders - Fix: ensure values are numbers
+  const totalComposition = Object.values(parameters.composition)
+    .reduce((sum, val) => sum + (typeof val === 'number' ? val : 0), 0);
   
   return (
     <div className="stream-settings bg-white rounded-lg shadow-lg border border-blue-100 p-4 max-w-md w-full">
