@@ -739,7 +739,7 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     saveFlowsheet(localStorage.getItem('chemflow-simulation-name') || "Untitled Simulation");
   };
   
-  const startConnection = (equipmentId: string) => {
+  const initConnection = (equipmentId: string) => {
     setIsConnecting(equipmentId);
     setSelectedElement(null);
     toast({
@@ -748,7 +748,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
   };
   
   const editStream = (streamId: string) => {
-    // Placeholder for stream editing logic
     toast({
       description: "Stream editing is not yet implemented"
     });
@@ -796,7 +795,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
           height: `${Math.max(1, Math.abs(endY - startY))}px`,
         }}
       >
-        {/* Stream line rendering */}
         <svg 
           className="absolute top-0 left-0 w-full h-full overflow-visible"
           onClick={() => setSelectedElement(stream.id)}
@@ -884,7 +882,7 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
                     className="p-1 bg-green-100 rounded-full text-green-600 hover:bg-green-200"
                     onClick={(e) => {
                       e.stopPropagation();
-                      startConnection(item.id);
+                      initConnection(item.id);
                     }}
                     title="Connect"
                   >
