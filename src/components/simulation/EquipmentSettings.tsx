@@ -10,7 +10,7 @@ interface EquipmentSettingsProps {
     name: string;
     settings: Record<string, any>;
   };
-  equipmentTypes: {
+  equipmentTypes?: {
     id: string;
     name: string;
     icon: React.ReactNode;
