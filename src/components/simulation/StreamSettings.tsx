@@ -12,6 +12,11 @@ interface StreamSettingsProps {
   initialParameters?: any;
 }
 
+// Define a safer type for composition entries
+interface CompositionEntry {
+  [component: string]: number;
+}
+
 const StreamSettings: React.FC<StreamSettingsProps> = ({
   streamId,
   onClose,
@@ -36,7 +41,7 @@ const StreamSettings: React.FC<StreamSettingsProps> = ({
   // Normalize composition to sum to 1
   useEffect(() => {
     const normalizeComposition = () => {
-      const composition = {...parameters.composition};
+      const composition = {...parameters.composition} as CompositionEntry;
       // Calculate total ensuring values are numbers
       const total = Object.values(composition).reduce((sum, val) => {
         const numVal = typeof val === 'number' ? val : 0;
@@ -46,7 +51,7 @@ const StreamSettings: React.FC<StreamSettingsProps> = ({
       if (total > 0) {
         Object.keys(composition).forEach(key => {
           if (typeof composition[key] === 'number') {
-            composition[key] = (composition[key] as number) / total;
+            composition[key] = composition[key] / total;
           }
         });
         
@@ -92,7 +97,7 @@ const StreamSettings: React.FC<StreamSettingsProps> = ({
   const phases = ['Vapor', 'Liquid', 'Mixed', 'Solid'];
   
   // Calculate total composition to normalize sliders - ensuring values are numbers
-  const totalComposition = Object.values(parameters.composition)
+  const totalComposition = Object.values(parameters.composition as CompositionEntry)
     .reduce((sum, val) => {
       const numVal = typeof val === 'number' ? val : 0;
       return sum + numVal;
@@ -216,27 +221,31 @@ const StreamSettings: React.FC<StreamSettingsProps> = ({
           
           {expandedSections.composition && (
             <div className="p-3 space-y-3">
-              {availableComponents.map(component => (
-                <div key={component}>
-                  <div className="flex justify-between mb-1">
-                    <label className="text-sm text-gray-700">{component}</label>
-                    <span className="text-sm font-medium">
-                      {typeof parameters.composition[component] === 'number' ? 
-                        ((parameters.composition[component] as number) / totalComposition * 100).toFixed(1) + '%' :
-                        '0.0%'}
-                    </span>
+              {availableComponents.map(component => {
+                const componentValue = (parameters.composition as CompositionEntry)[component] || 0;
+                const displayPercentage = totalComposition > 0 
+                  ? (componentValue / totalComposition * 100).toFixed(1) 
+                  : '0.0';
+                
+                return (
+                  <div key={component}>
+                    <div className="flex justify-between mb-1">
+                      <label className="text-sm text-gray-700">{component}</label>
+                      <span className="text-sm font-medium">
+                        {displayPercentage}%
+                      </span>
+                    </div>
+                    <Slider 
+                      value={[componentValue * 100]}
+                      min={0}
+                      max={100}
+                      step={0.1}
+                      onValueChange={(values) => handleCompositionChange(component, values[0] / 100)}
+                      className="mb-3"
+                    />
                   </div>
-                  <Slider 
-                    value={[typeof parameters.composition[component] === 'number' ? 
-                      (parameters.composition[component] as number) * 100 : 0]}
-                    min={0}
-                    max={100}
-                    step={0.1}
-                    onValueChange={(values) => handleCompositionChange(component, values[0] / 100)}
-                    className="mb-3"
-                  />
-                </div>
-              ))}
+                );
+              })}
               
               <div className="text-xs text-gray-500 italic mt-2">
                 Note: Composition values will be normalized to sum to 100%
