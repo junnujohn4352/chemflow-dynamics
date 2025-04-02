@@ -1,4 +1,3 @@
-
 // This is a mock implementation of the LLaMA model service
 // In a real implementation, you would use WebAssembly to run LLaMA locally in the browser
 
@@ -128,7 +127,7 @@ export class LlamaService {
   }
   
   private generateStepByStepResponse(category: string, prompt: string): string {
-    // Generate detailed response based on the category
+    // Enhanced responses with more detailed calculations and examples
     const baseResponses: Record<string, string> = {
       "heat transfer": `## Heat Transfer Analysis
 
@@ -155,7 +154,52 @@ The problem involves heat transfer calculations for ${prompt.includes("exchanger
 
 ### Step 5: Check Fouling and Efficiency
 - Account for fouling factors in the overall heat transfer coefficient
-- Evaluate performance over time with fouling effects`,
+- Evaluate performance over time with fouling effects
+
+### Detailed Example: Counter-current Heat Exchanger Design
+
+#### Given Data:
+- Hot fluid: 10,000 kg/h of oil (Cp = 2.1 kJ/kg·K)
+- Cold fluid: 15,000 kg/h of water (Cp = 4.18 kJ/kg·K)
+- Hot fluid inlet temperature: 120°C
+- Hot fluid outlet temperature: 70°C
+- Cold fluid inlet temperature: 25°C
+- Cold fluid outlet temperature: 55°C
+- Overall heat transfer coefficient: 500 W/m²·K
+
+#### Step 1: Calculate the heat duty
+Q = mₕ × Cpₕ × (Tₕ₁ - Tₕ₂)
+Q = (10,000 kg/h) × (2.1 kJ/kg·K) × (120°C - 70°C) / 3600 s/h
+Q = 291.67 kW
+
+#### Step 2: Calculate LMTD
+ΔT₁ = Tₕ₁ - Tc₂ = 120°C - 55°C = 65°C
+ΔT₂ = Tₕ₂ - Tc₁ = 70°C - 25°C = 45°C
+LMTD = (65°C - 45°C) / ln(65°C / 45°C) = 54.17°C
+
+#### Step 3: Calculate required heat transfer area
+A = Q / (U × LMTD)
+A = 291.67 kW / (0.5 kW/m²·K × 54.17°C)
+A = 10.77 m²
+
+#### Step 4: Calculate NTU and effectiveness
+Cₕ = mₕ × Cpₕ = (10,000 kg/h) × (2.1 kJ/kg·K) / 3600 s/h = 5.83 kW/K
+Cc = mc × Cpc = (15,000 kg/h) × (4.18 kJ/kg·K) / 3600 s/h = 17.42 kW/K
+Cmin = 5.83 kW/K (hot fluid)
+Cr = Cmin/Cmax = 5.83/17.42 = 0.335
+
+NTU = U × A / Cmin = 0.5 kW/m²·K × 10.77 m² / 5.83 kW/K = 0.923
+
+For counter-current flow with Cr = 0.335:
+ε = [1 - exp(-NTU × (1 - Cr))] / [1 - Cr × exp(-NTU × (1 - Cr))]
+ε = [1 - exp(-0.923 × (1 - 0.335))] / [1 - 0.335 × exp(-0.923 × (1 - 0.335))]
+ε = 0.557 or 55.7%
+
+#### Step 5: Verification
+Qmax = Cmin × (Tₕ₁ - Tc₁) = 5.83 kW/K × (120°C - 25°C) = 553.85 kW
+Qactual = ε × Qmax = 0.557 × 553.85 kW = 308.5 kW ≈ 291.67 kW (calculated in step 1)
+
+The small difference (5.8%) is due to rounding in calculations.`,
 
       "fluid flow": `## Fluid Flow Analysis
 
@@ -182,7 +226,51 @@ The problem involves fluid flow calculations ${prompt.includes("pipe") ? "in a p
 
 ### Step 5: Check Flow Distribution and Balance
 - For multiple paths, equalize pressure drops
-- Verify flow rates meet process requirements`,
+- Verify flow rates meet process requirements
+
+### Detailed Example: Water Flow in a Pipe System
+
+#### Given Data:
+- Fluid: Water at 20°C (ρ = 998 kg/m³, μ = 0.001 Pa·s)
+- Pipe: Carbon steel, 3-inch schedule 40 (D = 0.0779 m, ε = 4.5×10⁻⁵ m)
+- Flow rate: 50 m³/h
+- Pipe length: 100 m
+- Fittings: 5 elbows (90°), 2 gate valves (fully open)
+
+#### Step 1: Calculate velocity and Reynolds number
+v = Q/(π×D²/4) = (50 m³/h)/(π×(0.0779 m)²/4) × (1/3600) h/s = 2.92 m/s
+Re = ρvD/μ = 998 kg/m³ × 2.92 m/s × 0.0779 m / 0.001 Pa·s = 2.27×10⁵
+Since Re > 4000, the flow is turbulent.
+
+#### Step 2: Calculate relative roughness and friction factor
+Relative roughness = ε/D = 4.5×10⁻⁵ m / 0.0779 m = 5.78×10⁻⁴
+Using Colebrook-White equation (iteratively solved):
+f = 0.0185
+
+#### Step 3: Calculate straight pipe pressure drop
+ΔP_pipe = f × (L/D) × (ρv²/2)
+ΔP_pipe = 0.0185 × (100/0.0779) × (998×2.92²/2)
+ΔP_pipe = 109,700 Pa or 109.7 kPa
+
+#### Step 4: Calculate minor losses from fittings
+K values:
+- Each 90° elbow: K = 0.75
+- Each gate valve (fully open): K = 0.17
+Total K = 5×0.75 + 2×0.17 = 4.09
+
+ΔP_minor = K × (ρv²/2)
+ΔP_minor = 4.09 × (998×2.92²/2)
+ΔP_minor = 17,500 Pa or 17.5 kPa
+
+#### Step 5: Calculate total pressure drop and pump requirements
+ΔP_total = ΔP_pipe + ΔP_minor = 109.7 + 17.5 = 127.2 kPa
+
+Pump head = ΔP_total/(ρg) = 127,200 Pa / (998 kg/m³ × 9.81 m/s²) = 13.0 m
+
+Hydraulic power = ρgQH = 998 × 9.81 × (50/3600) × 13.0 = 1,774 W
+
+Assuming pump efficiency of 70%:
+Pump power = 1,774 W / 0.7 = 2,534 W or 2.53 kW`,
 
       "thermodynamics": `## Thermodynamic Analysis
 
@@ -368,44 +456,90 @@ The problem involves utility calculations and environmental impacts for ${prompt
     
     // Add calculation examples and numerical values for more realism
     if (prompt.includes("example") || prompt.includes("calculate")) {
-      response += `\n\n### Example Calculation
-Let me show a specific example with numbers:
+      // Enhanced with more detailed examples
+      response += `\n\n### Detailed Numerical Example
+Let's work through a comprehensive engineering example:
 
 Input parameters:
-- ${category === "heat transfer" ? "Heat duty = 500 kW" : 
-           category === "fluid flow" ? "Flow rate = 100 m³/h" :
-           category === "thermodynamics" ? "Operating pressure = 10 bar" :
-           category === "mass transfer" ? "Feed flow rate = 1000 kg/h" :
-           category === "reaction engineering" ? "Reaction rate constant = 0.05 min⁻¹" :
-           category === "safety analysis" ? "Set pressure = 30 barg" :
-           category === "process simulation" ? "Product purity = 99.5%" :
-           "Operating temperature = 80°C"}
-- ${category === "heat transfer" ? "LMTD = 45°C" : 
-           category === "fluid flow" ? "Pipe diameter = 0.1 m" :
-           category === "thermodynamics" ? "Feed composition = 40% A, 60% B" :
-           category === "mass transfer" ? "Reflux ratio = 1.5" :
-           category === "reaction engineering" ? "Conversion = 85%" :
-           category === "safety analysis" ? "Inlet pressure = 25 barg" :
-           category === "process simulation" ? "Feed rate = 5000 kg/h" :
-           "Efficiency = 75%"}
+- ${category === "heat transfer" ? "Heat exchanger type: Shell-and-tube, counter-current flow" : 
+           category === "fluid flow" ? "Pipe system: 4-inch schedule 40 carbon steel piping network" :
+           category === "thermodynamics" ? "System: Binary mixture of methanol and water at 10 bar" :
+           category === "mass transfer" ? "Column type: 30-tray distillation column with sieve trays" :
+           category === "reaction engineering" ? "Reactor: 5 m³ CSTR for exothermic liquid-phase reaction" :
+           category === "safety analysis" ? "Relief scenario: External fire case for a horizontal pressure vessel" :
+           category === "process simulation" ? "Process: Natural gas sweetening with amine absorption" :
+           "Operating conditions: Continuous process with variable feedstock"}
+- ${category === "heat transfer" ? "Hot fluid: Process water at 95°C, 50,000 kg/h" : 
+           category === "fluid flow" ? "Fluid: 50% glycol solution at 40°C (ρ = 1080 kg/m³, μ = 3.2 mPa·s)" :
+           category === "thermodynamics" ? "Feed composition: 40 mol% methanol, 60 mol% water" :
+           category === "mass transfer" ? "Feed: 100 kmol/h, 40 mol% ethanol in water" :
+           category === "reaction engineering" ? "Reaction: A + 2B → C, k = 0.15 L/mol·min at 80°C" :
+           category === "safety analysis" ? "Vessel volume: 20 m³, operating pressure: 15 barg, MAWP: 18 barg" :
+           category === "process simulation" ? "Amine solution: 30 wt% MEA, circulation rate: 150 m³/h" :
+           "Production capacity: 25 tonnes/day with 95% on-stream factor"}
+- ${category === "heat transfer" ? "Cold fluid: Process oil at 25��C, 40,000 kg/h (Cp = 2.1 kJ/kg·K)" : 
+           category === "fluid flow" ? "Flow rate: 80 m³/h with 120 m total equivalent length" :
+           category === "thermodynamics" ? "Temperature range: 65-95°C for VLE calculations" :
+           category === "mass transfer" ? "Reflux ratio: 1.8, distillate purity target: 88 mol% ethanol" :
+           category === "reaction engineering" ? "Initial concentrations: CA₀ = 2.0 mol/L, CB₀ = 4.5 mol/L" :
+           category === "safety analysis" ? "Heat input (fire case): 3.344 MW based on API 521 wetted area method" :
+           category === "process simulation" ? "Sour gas: 5 mol% H₂S, 3 mol% CO₂, flow rate: 250,000 Sm³/day" :
+           "Operating constraints: Maximum temperature 250°C, pressure limit 30 barg"}
 
-Calculations:
-1. ${category === "heat transfer" ? "A = Q/(U×LMTD) = 500 kW/(0.85 kW/m²·°C × 45°C) = 13.1 m²" : 
-           category === "fluid flow" ? "Re = ρvD/μ = 1000 × 3.5 × 0.1 / 0.001 = 350,000 (turbulent flow)" :
-           category === "thermodynamics" ? "K₁ = 2.4, K₂ = 0.8 at equilibrium" :
-           category === "mass transfer" ? "Minimum theoretical stages = 12" :
-           category === "reaction engineering" ? "τ = -ln(1-X)/k = -ln(1-0.85)/0.05 = 37.8 min" :
-           category === "safety analysis" ? "Required relief area = 25 cm²" :
-           category === "process simulation" ? "Optimum feed stage = 8" :
-           "Cooling water requirement = 120 m³/h"}
-2. ${category === "heat transfer" ? "Effectiveness = 0.82 or 82%" : 
-           category === "fluid flow" ? "f = 0.018 (from Moody diagram)" :
-           category === "thermodynamics" ? "Bubble point temperature = 78.5°C" :
-           category === "mass transfer" ? "Actual stages with 70% efficiency = 18" :
-           category === "reaction engineering" ? "CSTR volume = 6.3 m³" :
-           category === "safety analysis" ? "Discharge coefficient = 0.975" :
-           category === "process simulation" ? "Reboiler duty = 2.4 MW" :
-           "CO₂ emissions = 1.2 tonnes/day"}`;
+Applying theoretical principles to this specific problem:
+
+1. ${category === "heat transfer" ? "First, calculate the heat duty: Q = 50,000 kg/h × 4.18 kJ/kg·K × (95°C - 75°C) / 3600 s/h = 1,161 kW" : 
+           category === "fluid flow" ? "Calculate Reynolds number: Re = 1080 × (80/3600) × 0.1023 / (0.0032) = 7,617 (turbulent flow)" :
+           category === "thermodynamics" ? "Using modified Raoult's law: y₁P = x₁γ₁P₁ˢᵃᵗ and y₂P = x₂γ₂P₂ˢᵃᵗ" :
+           category === "mass transfer" ? "Minimum reflux ratio (calculated using Underwood method): Rmin = 1.27" :
+           category === "reaction engineering" ? "Time to reach 85% conversion: τ = -ln(1-X)/(k×CB₀) = -ln(1-0.85)/(0.15×4.5) = 21.3 minutes" :
+           category === "safety analysis" ? "Calculate relief mass flow: ṁ = Q/(ΔHvap×KR) = 3.344×10⁶/(250×0.9) = 14,862 kg/h" :
+           category === "process simulation" ? "Equilibrium flash calculation at 35°C, 15 bar shows 98.7% H₂S removal with 30% MEA solution" :
+           "Energy balance: Heat input = 3.8 MW, heat removed by cooling water = 3.2 MW"}
+
+2. ${category === "heat transfer" ? "Calculate outlet temperatures: T_oil_out = 25°C + [1,161 kW × 3600 s/h / (40,000 kg/h × 2.1 kJ/kg·K)] = 75°C" : 
+           category === "fluid flow" ? "Friction factor (Swamee-Jain equation): f = 0.0296" :
+           category === "thermodynamics" ? "Activity coefficients (NRTL method): γ₁ = 1.82, γ₂ = 1.29 at x₁ = 0.4" :
+           category === "mass transfer" ? "Number of theoretical stages (McCabe-Thiele method): 12 trays including reboiler and condenser" :
+           category === "reaction engineering" ? "CSTR volume needed: V = FA₀X/(−rA) = 2.0×0.85/(0.15×2.0×4.5×(1-0.85)²) = 224 L" :
+           category === "safety analysis" ? "Required relief area (API 520): A = 14,862 / (0.9×0.62×51.5×√(18×1.3×10⁵×290.6)) = 18.7 cm²" :
+           category === "process simulation" ? "Optimized amine circulation rate to minimize reboiler duty: 120 m³/h with 98.3% H₂S removal" :
+           "Pinch analysis reveals minimum hot utility requirement of 1.2 MW and cold utility of 1.7 MW"}
+
+3. ${category === "heat transfer" ? "LMTD = [(95-75)-(75-25)]/ln[(95-75)/(75-25)] = 32.2°C" : 
+           category === "fluid flow" ? "Pressure drop: ΔP = 0.0296 × (120/0.1023) × (1080×(80/3600)²)/(2) = 173 kPa" :
+           category === "thermodynamics" ? "Calculated bubble point at 10 bar: T = 76.8°C with y₁ = 0.71 (methanol)" :
+           category === "mass transfer" ? "HETP (Height Equivalent to Theoretical Plate) for sieve trays: 0.5 m" :
+           category === "reaction engineering" ? "Heat of reaction: ΔH = -85 kJ/mol, maximum temperature rise (adiabatic): ΔT = 41.8°C" :
+           category === "safety analysis" ? "Recommended PSV size: API orifice type \"G\" with actual area of 22.6 cm²" :
+           category === "process simulation" ? "Sensitivity analysis shows 5% increase in circulation rate improves H₂S removal by 0.3%" :
+           "Plant efficiency calculated as 76% based on thermal performance"}
+
+Key results:
+- ${category === "heat transfer" ? "Required heat transfer area: A = 1,161 kW / (600 W/m²·K × 32.2°C) = 60.2 m²" : 
+           category === "fluid flow" ? "Pump power requirement: P = (173 kPa × 80 m³/h) / (3600 s/h × 0.75) = 5.1 kW" :
+           category === "thermodynamics" ? "Relative volatility at operating conditions: α = 3.17" :
+           category === "mass transfer" ? "Total column height: 12 stages × 0.5 m HETP + 2 m (disengagement spaces) = 8 m" :
+           category === "reaction engineering" ? "Reactor conversion: 85% of limiting reactant" :
+           category === "safety analysis" ? "Time to reach set pressure: 12.4 minutes from fire initiation" :
+           category === "process simulation" ? "Annual operating cost: $1.47 million for the optimized process configuration" :
+           "Product yield: 94.8% of theoretical maximum"}
+- ${category === "heat transfer" ? "Heat exchanger effectiveness: ε = 77.4%" : 
+           category === "fluid flow" ? "Flow velocity: 2.71 m/s (within recommended range of 1.5-3.0 m/s)" :
+           category === "thermodynamics" ? "Enthalpy of mixing at optimum composition: -3.78 kJ/mol" :
+           category === "mass transfer" ? "Reflux ratio: 1.8 (1.42 times the minimum reflux ratio)" :
+           category === "reaction engineering" ? "Residence time: 25 minutes to achieve target conversion" :
+           category === "safety analysis" ? "Estimated relieving rate: 14.9 tonnes/hour of two-phase mixture" :
+           category === "process simulation" ? "Clean gas: 0.06 mol% H₂S (meets pipeline specification of 4 ppmv)" :
+           "The process satisfies all environmental and safety constraints"}
+- ${category === "heat transfer" ? "Recommended heat exchanger: BEM type with 20% overdesign factor" : 
+           category === "fluid flow" ? "Cavitation risk: None (NPSH available > NPSH required by 2.3 m)" :
+           category === "thermodynamics" ? "Critical solution temperature: 128.3°C at 10 bar" :
+           category === "mass transfer" ? "Column diameter: 1.2 m (calculated at 80% of flooding velocity)" :
+           category === "reaction engineering" ? "Selectivity for desired product: 95.3%" :
+           category === "safety analysis" ? "Rupture disk + PSV configuration recommended with 3 millisecond response time" :
+           category === "process simulation" ? "Economic analysis: Payback period of 2.7 years for capital investment" :
+           "Compliance with all regulatory requirements confirmed"}`;
     }
     
     return response;

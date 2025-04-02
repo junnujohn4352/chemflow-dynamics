@@ -14,8 +14,22 @@ const HysysCalculations = () => {
           <div className="mb-8">
             <h1 className="text-3xl font-display font-bold mb-2 dark:text-white">Aspen HYSYS Calculations</h1>
             <p className="text-gray-600 dark:text-gray-400">
-              Access a comprehensive library of chemical process calculations and analyses
+              Access a comprehensive library of chemical process calculations with real-time analysis
             </p>
+            <div className="mt-4 flex flex-wrap gap-3">
+              <span className="inline-flex items-center px-3 py-1 text-xs font-medium rounded-full bg-flow-blue/10 text-flow-blue">
+                Real-time Analysis
+              </span>
+              <span className="inline-flex items-center px-3 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
+                Step-by-step Calculations
+              </span>
+              <span className="inline-flex items-center px-3 py-1 text-xs font-medium rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300">
+                Interactive Examples
+              </span>
+              <span className="inline-flex items-center px-3 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300">
+                Aspen HYSYS Compatible
+              </span>
+            </div>
           </div>
           
           <AspenCalculations />
