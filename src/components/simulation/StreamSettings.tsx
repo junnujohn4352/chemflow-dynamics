@@ -37,13 +37,16 @@ const StreamSettings: React.FC<StreamSettingsProps> = ({
   useEffect(() => {
     const normalizeComposition = () => {
       const composition = {...parameters.composition};
-      // Fix: ensure total is a number
-      const total = Object.values(composition).reduce((sum, val) => sum + (typeof val === 'number' ? val : 0), 0);
+      // Calculate total ensuring values are numbers
+      const total = Object.values(composition).reduce((sum, val) => {
+        const numVal = typeof val === 'number' ? val : 0;
+        return sum + numVal;
+      }, 0);
       
       if (total > 0) {
         Object.keys(composition).forEach(key => {
           if (typeof composition[key] === 'number') {
-            composition[key] = composition[key] / total;
+            composition[key] = (composition[key] as number) / total;
           }
         });
         
@@ -88,9 +91,12 @@ const StreamSettings: React.FC<StreamSettingsProps> = ({
   
   const phases = ['Vapor', 'Liquid', 'Mixed', 'Solid'];
   
-  // Calculate total composition to normalize sliders - Fix: ensure values are numbers
+  // Calculate total composition to normalize sliders - ensuring values are numbers
   const totalComposition = Object.values(parameters.composition)
-    .reduce((sum, val) => sum + (typeof val === 'number' ? val : 0), 0);
+    .reduce((sum, val) => {
+      const numVal = typeof val === 'number' ? val : 0;
+      return sum + numVal;
+    }, 0);
   
   return (
     <div className="stream-settings bg-white rounded-lg shadow-lg border border-blue-100 p-4 max-w-md w-full">
@@ -215,11 +221,14 @@ const StreamSettings: React.FC<StreamSettingsProps> = ({
                   <div className="flex justify-between mb-1">
                     <label className="text-sm text-gray-700">{component}</label>
                     <span className="text-sm font-medium">
-                      {(parameters.composition[component] / totalComposition * 100).toFixed(1)}%
+                      {typeof parameters.composition[component] === 'number' ? 
+                        ((parameters.composition[component] as number) / totalComposition * 100).toFixed(1) + '%' :
+                        '0.0%'}
                     </span>
                   </div>
                   <Slider 
-                    value={[parameters.composition[component] * 100]}
+                    value={[typeof parameters.composition[component] === 'number' ? 
+                      (parameters.composition[component] as number) * 100 : 0]}
                     min={0}
                     max={100}
                     step={0.1}
