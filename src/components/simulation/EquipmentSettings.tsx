@@ -150,7 +150,7 @@ const EquipmentSettings: React.FC<EquipmentSettingsProps> = ({
       <div className="bg-white rounded-lg shadow-xl max-w-lg w-full max-h-[80vh] overflow-y-auto">
         <div className="flex justify-between items-center p-4 border-b">
           <h3 className="text-lg font-medium">
-            {equipment.name} Settings
+            {typeof equipment.name === 'string' ? equipment.name : String(equipment.name)} Settings
           </h3>
           <button 
             onClick={onClose}
