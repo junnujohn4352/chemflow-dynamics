@@ -29,6 +29,23 @@ interface Equipment {
   position: { x: number; y: number };
 }
 
+// Helper function to safely render metric values
+const renderMetricValue = (metric: any): string => {
+  if (metric === null || metric === undefined) {
+    return '';
+  }
+  
+  if (typeof metric === 'object') {
+    try {
+      return JSON.stringify(metric);
+    } catch (e) {
+      return '[Object]';
+    }
+  }
+  
+  return String(metric);
+};
+
 const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation }) => {
   const [isRunning, setIsRunning] = useState(false);
   const [simulationData, setSimulationData] = useState({
@@ -309,7 +326,7 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
                     >
                       <EquipmentCard 
                         type={eq.type} 
-                        name={eq.name} 
+                        name={typeof eq.name === 'string' ? eq.name : String(eq.name)} 
                         status={isRunning ? "running" : "stopped"} 
                         metrics={eq.metrics}
                       />
@@ -442,14 +459,14 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
                     <div className="space-y-2">
                       {equipment.map(eq => (
                         <div key={eq.id} className="flex justify-between py-1.5 border-b border-gray-100">
-                          <span className="text-sm text-gray-500">{eq.name}</span>
+                          <span className="text-sm text-gray-500">{typeof eq.name === 'string' ? eq.name : String(eq.name)}</span>
                           <span className="text-sm font-medium">
                             {eq.type === 'tank' 
-                              ? `${eq.metrics.level}% level` 
+                              ? `${renderMetricValue(eq.metrics.level)}% level` 
                               : eq.type === 'pump' 
-                                ? `${eq.metrics.flow} kg/h` 
+                                ? `${renderMetricValue(eq.metrics.flow)} kg/h` 
                                 : eq.type === 'heater' || eq.type === 'column' || eq.type === 'condenser'
-                                  ? `${eq.metrics.temperature}°C`
+                                  ? `${renderMetricValue(eq.metrics.temperature)}°C`
                                   : ''}
                           </span>
                         </div>
