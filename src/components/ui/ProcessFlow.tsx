@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import EquipmentCard from "./EquipmentCard";
@@ -108,12 +107,13 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
   const [selectedEquipment, setSelectedEquipment] = useState<string | null>(null);
   const [editingName, setEditingName] = useState<string | null>(null);
   const [tempName, setTempName] = useState("");
+  const [dragStartPos, setDragStartPos] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
   
   const toggleSimulation = () => {
     const newState = !isRunning;
     setIsRunning(newState);
     
-    // Update equipment status
     setEquipment(equipment.map(eq => ({
       ...eq,
       status: newState ? 'running' : 'stopped'
@@ -123,14 +123,12 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
       onStartSimulation();
     }
     
-    // Start updating simulation data if running
     if (newState) {
       startDataUpdates();
     }
   };
 
   const startDataUpdates = () => {
-    // Simulate data flow when simulation is running
     let progress = 0;
     const updateInterval = setInterval(() => {
       progress += 5;
@@ -141,7 +139,6 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
           systemEfficiency: Math.min(92, (92 * progress) / 100)
         });
         
-        // Update equipment metrics based on running state
         setEquipment(prev => prev.map(eq => {
           const updatedMetrics = { ...eq.metrics };
           
@@ -168,24 +165,53 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
       }
     }, 200);
     
-    // Clean up interval on component unmount
     return () => clearInterval(updateInterval);
   };
 
   useEffect(() => {
-    // Clean up on unmount
     return () => {
-      // Reset state when component unmounts
       setIsRunning(false);
     };
   }, []);
 
-  const handleEquipmentDragStart = (id: string) => {
+  const handleEquipmentDragStart = (id: string, e: React.MouseEvent) => {
+    e.preventDefault();
     setSelectedEquipment(id);
+    setIsDragging(true);
+    setDragStartPos({
+      x: e.clientX,
+      y: e.clientY
+    });
   };
 
   const handleEquipmentDragEnd = () => {
     setSelectedEquipment(null);
+    setIsDragging(false);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || !selectedEquipment) return;
+    
+    const deltaX = e.clientX - dragStartPos.x;
+    const deltaY = e.clientY - dragStartPos.y;
+    
+    setEquipment(prev => prev.map(eq => {
+      if (eq.id === selectedEquipment) {
+        return {
+          ...eq,
+          position: {
+            x: Math.max(0, Math.min(2, eq.position.x + Math.round(deltaX / 120))),
+            y: Math.max(0, Math.min(4, eq.position.y + Math.round(deltaY / 120)))
+          }
+        };
+      }
+      return eq;
+    }));
+    
+    setDragStartPos({
+      x: e.clientX,
+      y: e.clientY
+    });
   };
 
   const handleEquipmentMove = (id: string, direction: 'up' | 'down' | 'left' | 'right') => {
@@ -234,30 +260,21 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
     }
   };
 
-  // Function to safely render metric values
-  const renderMetricValue = (metric: any): string => {
-    if (metric === null || metric === undefined) {
-      return '';
-    }
-    
-    if (typeof metric === 'object') {
-      return JSON.stringify(metric);
-    }
-    
-    return String(metric);
-  };
-
   const renderEquipmentGrid = () => {
     const grid = Array(5).fill(0).map(() => Array(3).fill(null));
     
-    // Place equipment on the grid
     equipment.forEach(eq => {
       const { x, y } = eq.position;
       grid[y][x] = eq;
     });
     
     return (
-      <div className="grid grid-cols-3 gap-4">
+      <div 
+        className="grid grid-cols-3 gap-4"
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleEquipmentDragEnd}
+        onMouseLeave={handleEquipmentDragEnd}
+      >
         {grid.map((row, rowIndex) => (
           <React.Fragment key={`row-${rowIndex}`}>
             {row.map((eq, colIndex) => (
@@ -320,8 +337,7 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
                     
                     <div 
                       className="cursor-move"
-                      onMouseDown={() => handleEquipmentDragStart(eq.id)}
-                      onMouseUp={handleEquipmentDragEnd}
+                      onMouseDown={(e) => handleEquipmentDragStart(eq.id, e)}
                       onDoubleClick={() => startEditingName(eq.id)}
                     >
                       <EquipmentCard 
@@ -387,7 +403,6 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
           </div>
         </div>
 
-        {/* Process Flow Diagram */}
         <div className="grid grid-cols-3 gap-6 mb-6">
           <div className="col-span-2">
             <div className="flex flex-col gap-4">
@@ -395,7 +410,6 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
             </div>
           </div>
           
-          {/* Process Data Panel */}
           <div>
             <div className="h-full flex flex-col gap-6">
               <div className="flex-1 rounded-xl border border-gray-100 overflow-hidden shadow-sm bg-white p-4">

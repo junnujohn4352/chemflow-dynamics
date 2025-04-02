@@ -1,3 +1,4 @@
+
 import React, { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -17,6 +18,7 @@ import Components from "./pages/Components";
 import HysysCalculations from "./pages/HysysCalculations";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
+import About from "./pages/About";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -124,6 +126,7 @@ function App() {
               <Route path="/settings" element={<Settings />} />
               <Route path="/sign-in" element={<SignIn />} />
               <Route path="/sign-up" element={<SignUp />} />
+              <Route path="/about" element={<About />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

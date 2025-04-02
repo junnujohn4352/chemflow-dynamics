@@ -1,6 +1,5 @@
-
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { Plus, Minus, Thermometer, Droplets, Settings2, Container, FlaskConical, Columns, Gauge, Save, Trash2, X, Sliders, Move, ArrowLeft } from "lucide-react";
+import { Plus, Minus, Thermometer, Droplets, Settings2, Container, FlaskConical, Columns, Gauge, Save, Trash2, X, Sliders, Move, ArrowLeft, Play } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import EquipmentSettings from "./EquipmentSettings";
@@ -30,7 +29,6 @@ export interface Stream {
   properties: Record<string, any>;
 }
 
-// Helper function to safely convert objects to strings
 const safeStringify = (value: any): string => {
   if (value === null || value === undefined) {
     return '';
@@ -174,7 +172,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
       subType
     };
     
-    // Add specific settings based on equipment type
     if (type === 'feed') {
       newEquipment.settings = {
         temperature: 25,
@@ -248,7 +245,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
   
   const handleConnectEquipment = (id: string) => {
     if (!isConnecting) {
-      // Start connecting
       setIsConnecting(id);
       
       toast({
@@ -256,7 +252,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
         description: "Select another equipment to create a stream between them"
       });
     } else if (isConnecting !== id) {
-      // Complete connection
       const newStream: Stream = {
         id: `stream-${Date.now()}`,
         from: isConnecting,
@@ -272,7 +267,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
       const updatedStreams = [...streams, newStream];
       setStreams(updatedStreams);
       
-      // Update equipment connections
       const updatedEquipment = equipment.map(eq => {
         if (eq.id === isConnecting) {
           return { ...eq, connections: [...eq.connections, id] };
@@ -283,7 +277,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
       setEquipment(updatedEquipment);
       setIsConnecting(null);
       
-      // Save to localStorage
       localStorage.setItem('chemflow-streams', JSON.stringify(updatedStreams));
       localStorage.setItem('chemflow-equipment', JSON.stringify(updatedEquipment));
       
@@ -292,7 +285,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
         description: "A new stream has been added to the simulation"
       });
     } else {
-      // Cancel connecting
       setIsConnecting(null);
       
       toast({
@@ -322,13 +314,10 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
   
   const handleDeleteElement = (id: string, type: 'equipment' | 'stream') => {
     if (type === 'equipment') {
-      // Remove equipment
       const updatedEquipment = equipment.filter(eq => eq.id !== id);
       
-      // Remove all streams connected to this equipment
       const updatedStreams = streams.filter(s => s.from !== id && s.to !== id);
       
-      // Update connections in other equipment
       const equipmentWithUpdatedConnections = updatedEquipment.map(eq => ({
         ...eq,
         connections: eq.connections.filter(conn => conn !== id)
@@ -340,13 +329,11 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
       localStorage.setItem('chemflow-equipment', JSON.stringify(equipmentWithUpdatedConnections));
       localStorage.setItem('chemflow-streams', JSON.stringify(updatedStreams));
     } else if (type === 'stream') {
-      // Remove stream
       const streamToRemove = streams.find(s => s.id === id);
       if (!streamToRemove) return;
       
       const updatedStreams = streams.filter(s => s.id !== id);
       
-      // Update connections in equipment
       const updatedEquipment = equipment.map(eq => {
         if (eq.id === streamToRemove.from) {
           return {
@@ -383,7 +370,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
   };
   
   const handleSaveSettings = (equipmentId: string, newSettings: Record<string, any>) => {
-    // Extract equipment name from settings if provided
     const equipmentName = newSettings._equipmentName;
     delete newSettings._equipmentName;
     
@@ -433,10 +419,8 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     const deltaX = e.clientX - dragStartPos.x;
     const deltaY = e.clientY - dragStartPos.y;
     
-    // Move equipment
     handleMoveEquipment(draggedEquipment, deltaX, deltaY);
     
-    // Update drag start position
     setDragStartPos({
       x: e.clientX,
       y: e.clientY
@@ -448,7 +432,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     setDraggedEquipment(null);
   }, []);
   
-  // Add mouse move and up event listeners for dragging
   useEffect(() => {
     if (isDragging) {
       window.addEventListener('mousemove', handleMouseMove);
@@ -461,7 +444,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     };
   }, [isDragging, handleMouseMove, handleMouseUp]);
   
-  // Save to localStorage when equipment or streams change
   useEffect(() => {
     if (equipment.length > 0) {
       localStorage.setItem('chemflow-equipment', JSON.stringify(equipment));
@@ -495,7 +477,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
   };
   
   const handleStartSimulation = () => {
-    // Validate simulation
     if (equipment.length === 0) {
       toast({
         title: "No equipment",
@@ -507,11 +488,9 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     
     setSimulationRunning(true);
     
-    // Update equipment counts for the simulation
     localStorage.setItem('chemflow-simulation-equipment-count', equipment.length.toString());
     localStorage.setItem('chemflow-simulation-streams-count', streams.length.toString());
     
-    // Call the parent's onRunSimulation callback
     onRunSimulation();
   };
   
@@ -539,7 +518,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     const isSelected = selectedElement === eq.id;
     const isConnecting = isConnecting === eq.id;
     
-    // Extract simplified settings for display
     const displaySettings: Record<string, string> = {};
     
     if (eq.settings) {
@@ -722,7 +700,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
         </p>
       </div>
       
-      {/* Equipment Selection */}
       <div className="p-4 border rounded-lg bg-gray-50 mb-6">
         <div className="flex items-center justify-between mb-4">
           <h4 className="font-medium">Equipment Palette</h4>
@@ -789,7 +766,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
         </div>
       </div>
       
-      {/* Canvas */}
       <div className="flex-1 relative overflow-hidden">
         <div className="bg-white border rounded-lg p-1 mb-4 flex items-center justify-between">
           <div className="flex items-center gap-1">
@@ -834,7 +810,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
           className="relative border rounded-lg h-[500px] overflow-auto bg-gray-50"
           style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top left' }}
         >
-          {/* Grid Background */}
           <div className="absolute inset-0 w-full h-full" 
                style={{
                  backgroundImage: 'radial-gradient(circle, #d1d5db 1px, transparent 1px)',
@@ -842,13 +817,10 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
                }}
           />
           
-          {/* Streams */}
           {streams.map(renderStream)}
           
-          {/* Equipment */}
           {equipment.map(renderEquipmentCard)}
           
-          {/* Indicator when connecting */}
           {isConnecting && (
             <div className="fixed bottom-4 right-4 bg-amber-100 text-amber-700 p-3 rounded-lg shadow-md text-sm flex items-center gap-2">
               <span>Select an equipment to connect</span>
@@ -863,7 +835,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
         </div>
       </div>
       
-      {/* Equipment Settings Modal */}
       {showSettings && editingEquipment && (
         <EquipmentSettings
           equipment={editingEquipment}
