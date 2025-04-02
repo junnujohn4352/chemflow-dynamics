@@ -27,6 +27,23 @@ interface SimulationCard {
   thermodynamicModel?: string;
 }
 
+// Helper function to safely convert objects to strings
+const safeStringify = (value: any): string => {
+  if (value === null || value === undefined) {
+    return '';
+  }
+  
+  if (typeof value === 'object') {
+    try {
+      return JSON.stringify(value);
+    } catch (e) {
+      return '[Object]';
+    }
+  }
+  
+  return String(value);
+};
+
 const Simulations = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -168,23 +185,6 @@ const Simulations = () => {
     });
   };
 
-  // Helper function to safely stringify values
-  const safeStringify = (value: any): string => {
-    if (value === null || value === undefined) {
-      return '';
-    }
-    
-    if (typeof value === 'object') {
-      try {
-        return JSON.stringify(value);
-      } catch (e) {
-        return '[Object]';
-      }
-    }
-    
-    return String(value);
-  };
-
   return (
     <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
       <Navbar />
@@ -222,8 +222,8 @@ const Simulations = () => {
                     </div>
                   </div>
                   
-                  <h3 className="text-xl font-medium mb-2 dark:text-white">{sim.name}</h3>
-                  <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">{sim.description}</p>
+                  <h3 className="text-xl font-medium mb-2 dark:text-white">{safeStringify(sim.name)}</h3>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">{safeStringify(sim.description)}</p>
                   
                   <div className="mb-4">
                     <h4 className="text-sm font-medium mb-2 dark:text-gray-200">Components</h4>
@@ -237,7 +237,7 @@ const Simulations = () => {
                   {sim.thermodynamicModel && (
                     <div className="text-sm mb-4 dark:text-gray-300">
                       <span className="text-gray-500 dark:text-gray-400">Property Package:</span>
-                      <span className="ml-2 font-medium">{sim.thermodynamicModel}</span>
+                      <span className="ml-2 font-medium">{safeStringify(sim.thermodynamicModel)}</span>
                     </div>
                   )}
                   

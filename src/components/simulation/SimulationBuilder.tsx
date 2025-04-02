@@ -842,13 +842,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     
     const isSelected = selectedElement === item.id;
     
-    const handleDragStart = (e: React.MouseEvent, equipmentId: string) => {
-      e.stopPropagation();
-      setIsDragging(true);
-      setDraggedEquipment(equipmentId);
-      setSelectedElement(equipmentId);
-    };
-    
     return (
       <div 
         key={item.id}
@@ -875,7 +868,7 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
             {getEquipmentIcon(item.type)}
           </div>
           <div className="mt-2 text-center">
-            <p className="text-xs font-medium truncate max-w-full">{item.name || 'Equipment'}</p>
+            <p className="text-xs font-medium truncate max-w-full">{safeStringify(item.name) || 'Equipment'}</p>
             {item.subType && (
               <p className="text-xs text-gray-500 truncate max-w-full">
                 {getSubTypeName(item.type, item.subType) || item.subType}
@@ -895,3 +888,100 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
                     }}
                     title="Connect"
                   >
+                    <Plus className="h-3 w-3" />
+                  </button>
+                  <button 
+                    className="p-1 bg-blue-100 rounded-full text-blue-600 hover:bg-blue-200"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openEquipmentSettings(item);
+                    }}
+                    title="Settings"
+                  >
+                    <Settings2 className="h-3 w-3" />
+                  </button>
+                  <button 
+                    className="p-1 bg-red-100 rounded-full text-red-600 hover:bg-red-200"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      deleteEquipment(item.id);
+                    }}
+                    title="Delete"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </button>
+                </>
+              )}
+              {isConnecting && isConnecting === item.id && (
+                <button 
+                  className="p-1 bg-gray-100 rounded-full text-gray-600 hover:bg-gray-200"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsConnecting(null);
+                  }}
+                  title="Cancel"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="flex flex-col h-full">
+      <div
+        ref={canvasRef}
+        className="flex-1 relative border border-gray-200 rounded-lg bg-gray-50 overflow-hidden"
+        onClick={handleCanvasClick}
+        onMouseMove={handleCanvasMouseMove}
+      >
+        {streams.map(stream => renderStream(stream))}
+        
+        {equipment.map(item => renderEquipment(item))}
+      </div>
+      
+      {editingEquipment && (
+        <EquipmentSettings 
+          equipment={editingEquipment}
+          onSave={(newSettings) => updateEquipmentSettings(editingEquipment.id, newSettings)}
+          onCancel={() => setEditingEquipment(null)}
+        />
+      )}
+      
+      <div className="flex justify-between items-center mt-4 border-t border-gray-200 pt-4">
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={clearCanvas}
+          >
+            <Trash2 className="h-4 w-4 mr-1" />
+            Clear
+          </Button>
+          
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleSaveFlowsheet}
+          >
+            <Save className="h-4 w-4 mr-1" />
+            Save
+          </Button>
+        </div>
+        
+        <Button
+          onClick={runSimulation}
+          disabled={simulationRunning}
+        >
+          Run Simulation
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+export default SimulationBuilder;

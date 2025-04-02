@@ -8,12 +8,14 @@ import './index.css'
 if (process.env.NODE_ENV !== 'production') {
   const originalConsoleError = console.error;
   console.error = (...args) => {
+    // Catch and log special warning for objects in JSX
     if (
       typeof args[0] === 'string' && 
       args[0].includes('Objects are not valid as a React child')
     ) {
       console.warn('WARNING: Attempting to render an object directly in JSX:', args);
     }
+    // Pass through to original console.error
     return originalConsoleError(...args);
   };
 }
