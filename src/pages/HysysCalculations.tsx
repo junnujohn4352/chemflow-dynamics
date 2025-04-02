@@ -3,6 +3,7 @@ import React from "react";
 import Navbar from "@/components/layout/Navbar";
 import AspenCalculations from "@/components/simulation/AspenCalculations";
 import Footer from "@/components/layout/Footer";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 const HysysCalculations = () => {
   return (
@@ -32,7 +33,9 @@ const HysysCalculations = () => {
             </div>
           </div>
           
-          <AspenCalculations />
+          <TooltipProvider>
+            <AspenCalculations />
+          </TooltipProvider>
         </div>
       </main>
       
