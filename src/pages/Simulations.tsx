@@ -146,7 +146,7 @@ const Simulations = () => {
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(simulation));
     const downloadAnchorNode = document.createElement('a');
     downloadAnchorNode.setAttribute("href", dataStr);
-    downloadAnchorNode.setAttribute("download", `${simulation.name}.json`);
+    downloadAnchorNode.setAttribute("download", `${String(simulation.name)}.json`);
     document.body.appendChild(downloadAnchorNode);
     downloadAnchorNode.click();
     downloadAnchorNode.remove();
@@ -165,7 +165,7 @@ const Simulations = () => {
 
     return components.map((comp, idx) => {
       // Ensure we're properly handling the component, whether it's a string or object
-      const compName = typeof comp === 'string' ? comp : (comp.name || 'Unknown');
+      const compName = typeof comp === 'string' ? comp : (comp.name ? safeStringify(comp.name) : 'Unknown');
       const percentage = typeof comp === 'string' ? 100 : (comp.percentage || 0);
       
       return (
@@ -209,7 +209,7 @@ const Simulations = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {simulations.map((sim) => (
                 <GlassPanel 
-                  key={sim.id} 
+                  key={safeStringify(sim.id)} 
                   className="p-6 hover:shadow-md transition-shadow bg-white dark:bg-gray-800 dark:border-gray-700"
                 >
                   <div className="flex justify-between items-start mb-4">
@@ -218,7 +218,7 @@ const Simulations = () => {
                     </div>
                     <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
                       <Clock className="h-4 w-4 mr-1" />
-                      <span>{new Date(sim.lastUpdated).toLocaleString()}</span>
+                      <span>{new Date(safeStringify(sim.lastUpdated)).toLocaleString()}</span>
                     </div>
                   </div>
                   
@@ -244,12 +244,12 @@ const Simulations = () => {
                   {sim.equipment !== undefined && (
                     <div className="text-sm mb-4 dark:text-gray-300">
                       <span className="text-gray-500 dark:text-gray-400">Equipment:</span>
-                      <span className="ml-2 font-medium">{sim.equipment}</span>
+                      <span className="ml-2 font-medium">{safeStringify(sim.equipment)}</span>
                       {sim.streams !== undefined && (
                         <>
                           <span className="mx-2">|</span>
                           <span className="text-gray-500 dark:text-gray-400">Streams:</span>
-                          <span className="ml-2 font-medium">{sim.streams}</span>
+                          <span className="ml-2 font-medium">{safeStringify(sim.streams)}</span>
                         </>
                       )}
                     </div>
@@ -258,7 +258,7 @@ const Simulations = () => {
                   <div className="flex items-center justify-between">
                     <div className="text-sm dark:text-gray-300">
                       <span className="text-gray-500 dark:text-gray-400">Efficiency:</span>
-                      <span className="ml-2 font-medium text-flow-blue">{sim.efficiency}%</span>
+                      <span className="ml-2 font-medium text-flow-blue">{safeStringify(sim.efficiency)}%</span>
                     </div>
                     <div className="flex space-x-2">
                       <button
