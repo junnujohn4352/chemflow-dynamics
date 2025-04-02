@@ -5,7 +5,7 @@ import Navbar from "@/components/layout/Navbar";
 import GlassPanel from "@/components/ui/GlassPanel";
 import { 
   PlusCircle, Clock, ArrowRight, FlaskConical, 
-  Trash2, Play, Edit, Download 
+  Trash2, Play, Edit, Download, Trash
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -95,6 +95,22 @@ const Simulations = () => {
     });
   };
   
+  const handleClearAllSimulations = () => {
+    // Clear all simulations
+    setSimulations([]);
+    localStorage.removeItem('chemflow-simulations');
+    
+    // Clear active simulation as well
+    localStorage.removeItem('chemflow-active-simulation');
+    localStorage.removeItem('chemflow-simulation-running');
+    localStorage.removeItem('chemflow-simulation-data');
+    
+    toast({
+      title: "All simulations cleared",
+      description: "All simulations have been removed successfully."
+    });
+  };
+  
   const handleRunSimulation = (simulation: SimulationCard) => {
     // Load the saved equipment and streams if available
     localStorage.setItem('chemflow-active-simulation', 'true');
@@ -102,11 +118,11 @@ const Simulations = () => {
     
     // Create simulation data object
     const simulationData = {
-      name: simulation.name,
+      name: safeStringify(simulation.name),
       components: simulation.components.map(c => 
-        typeof c === 'string' ? c : c.name
+        typeof c === 'string' ? c : safeStringify(c.name)
       ),
-      thermodynamicModel: simulation.thermodynamicModel || 'Peng-Robinson',
+      thermodynamicModel: safeStringify(simulation.thermodynamicModel || 'Peng-Robinson'),
       lastUpdated: new Date().toISOString()
     };
     
@@ -129,11 +145,11 @@ const Simulations = () => {
     
     // Create simulation data object
     const simulationData = {
-      name: simulation.name,
+      name: safeStringify(simulation.name),
       components: simulation.components.map(c => 
-        typeof c === 'string' ? c : c.name
+        typeof c === 'string' ? c : safeStringify(c.name)
       ),
-      thermodynamicModel: simulation.thermodynamicModel || 'Peng-Robinson',
+      thermodynamicModel: safeStringify(simulation.thermodynamicModel || 'Peng-Robinson'),
       lastUpdated: new Date().toISOString()
     };
     
@@ -146,7 +162,7 @@ const Simulations = () => {
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(simulation));
     const downloadAnchorNode = document.createElement('a');
     downloadAnchorNode.setAttribute("href", dataStr);
-    downloadAnchorNode.setAttribute("download", `${String(simulation.name)}.json`);
+    downloadAnchorNode.setAttribute("download", `${safeStringify(simulation.name)}.json`);
     document.body.appendChild(downloadAnchorNode);
     downloadAnchorNode.click();
     downloadAnchorNode.remove();
@@ -196,13 +212,25 @@ const Simulations = () => {
               <h1 className="text-3xl font-display font-bold mb-2 dark:text-white">My Simulations</h1>
               <p className="text-gray-600 dark:text-gray-400">Manage and run your chemical process simulations</p>
             </div>
-            <Link 
-              to="/create-simulation"
-              className="inline-flex items-center px-5 py-2.5 rounded-lg bg-flow-blue text-white font-medium shadow-sm hover:bg-flow-blue/90 transition-colors"
-            >
-              <PlusCircle className="mr-2 h-4 w-4" />
-              New Simulation
-            </Link>
+            <div className="flex space-x-3">
+              {simulations.length > 0 && (
+                <Button 
+                  variant="destructive"
+                  onClick={handleClearAllSimulations}
+                  className="inline-flex items-center"
+                >
+                  <Trash className="mr-2 h-4 w-4" />
+                  Clear All
+                </Button>
+              )}
+              <Link 
+                to="/create-simulation"
+                className="inline-flex items-center px-5 py-2.5 rounded-lg bg-flow-blue text-white font-medium shadow-sm hover:bg-flow-blue/90 transition-colors"
+              >
+                <PlusCircle className="mr-2 h-4 w-4" />
+                New Simulation
+              </Link>
+            </div>
           </div>
           
           {simulations.length > 0 ? (
