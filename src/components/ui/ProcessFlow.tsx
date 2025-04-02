@@ -213,8 +213,8 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
         }
         return eq;
       }));
+      setEditingName(null);
     }
-    setEditingName(null);
   };
 
   const renderEquipmentGrid = () => {
@@ -235,7 +235,7 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
                 {eq ? (
                   <div className="relative group">
                     {editingName === eq.id ? (
-                      <div className="absolute -top-10 left-0 right-0 flex">
+                      <div className="absolute -top-10 left-0 right-0 flex z-50">
                         <input
                           type="text"
                           value={tempName}
@@ -427,22 +427,20 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
                   <div className="mt-8">
                     <h4 className="text-sm font-medium mb-3">Key Parameters</h4>
                     <div className="space-y-2">
-                      <div className="flex justify-between py-1.5 border-b border-gray-100">
-                        <span className="text-sm text-gray-500">Reflux Ratio</span>
-                        <span className="text-sm font-medium">3.5</span>
-                      </div>
-                      <div className="flex justify-between py-1.5 border-b border-gray-100">
-                        <span className="text-sm text-gray-500">Feed Rate</span>
-                        <span className="text-sm font-medium">120 kg/h</span>
-                      </div>
-                      <div className="flex justify-between py-1.5 border-b border-gray-100">
-                        <span className="text-sm text-gray-500">Reboiler Duty</span>
-                        <span className="text-sm font-medium">850 kW</span>
-                      </div>
-                      <div className="flex justify-between py-1.5 border-b border-gray-100">
-                        <span className="text-sm text-gray-500">Condenser Duty</span>
-                        <span className="text-sm font-medium">-780 kW</span>
-                      </div>
+                      {equipment.map(eq => (
+                        <div key={eq.id} className="flex justify-between py-1.5 border-b border-gray-100">
+                          <span className="text-sm text-gray-500">{eq.name}</span>
+                          <span className="text-sm font-medium">
+                            {eq.type === 'tank' 
+                              ? `${eq.metrics.level}% level` 
+                              : eq.type === 'pump' 
+                                ? `${eq.metrics.flow} kg/h` 
+                                : eq.type === 'heater' || eq.type === 'column' || eq.type === 'condenser'
+                                  ? `${eq.metrics.temperature}°C`
+                                  : ''}
+                          </span>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>

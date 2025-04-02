@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
@@ -6,13 +7,14 @@ import GlassPanel from "@/components/ui/GlassPanel";
 import { 
   Save, ArrowLeft, Layers, Database, Settings2, 
   Thermometer, GitBranch, Play, Check, 
-  BarChart3, ChevronDown, ChevronUp
+  BarChart3, ChevronDown, ChevronUp, Beaker, Waves, Zap, Droplets, Shield, Cpu, Leaf
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import SimulationBuilder from "@/components/simulation/SimulationBuilder";
 import ComponentSelector from "@/components/simulation/ComponentSelector";
 import ThermodynamicsSelector from "@/components/simulation/ThermodynamicsSelector";
 import { Button } from "@/components/ui/button";
+import LlamaService from "@/services/LlamaService";
 import {
   AreaChart,
   Area,
@@ -28,6 +30,14 @@ import {
   Bar
 } from 'recharts';
 
+interface SubjectAnalysis {
+  id: string;
+  title: string;
+  icon: React.ReactNode;
+  content: string;
+  charts: React.ReactNode;
+}
+
 const CreateSimulation = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -39,6 +49,9 @@ const CreateSimulation = () => {
   const [isSimulationRunning, setIsSimulationRunning] = useState(false);
   const [showAnalysis, setShowAnalysis] = useState(false);
   const [analysisData, setAnalysisData] = useState<any[]>([]);
+  const [simulationSubject, setSimulationSubject] = useState<string | null>(null);
+  const [subjectAnalyses, setSubjectAnalyses] = useState<SubjectAnalysis[]>([]);
+  const [activeSubjectAnalysis, setActiveSubjectAnalysis] = useState<string | null>(null);
   
   useEffect(() => {
     // Load previous simulation if available
@@ -54,6 +67,9 @@ const CreateSimulation = () => {
         }
         if (simData.name) {
           setSimulationName(simData.name);
+        }
+        if (simData.subject) {
+          setSimulationSubject(simData.subject);
         }
       } catch (e) {
         console.error("Error loading saved simulation data:", e);
@@ -90,14 +106,50 @@ const CreateSimulation = () => {
     localStorage.setItem('chemflow-selected-components', JSON.stringify(selectedComponents));
     localStorage.setItem('chemflow-selected-model', selectedModel);
     
+    if (simulationSubject) {
+      localStorage.setItem('chemflow-simulation-subject', simulationSubject);
+    }
+    
     toast({
       title: "Simulation saved",
       description: "Your simulation has been created successfully!"
     });
   };
 
+  // Detect simulation subject based on components and equipment
+  const detectSimulationSubject = () => {
+    // Example detection logic - could be more sophisticated
+    const hasAromatic = selectedComponents.some(c => 
+      ['Benzene', 'Toluene', 'Xylene', 'Styrene'].includes(c));
+    
+    const hasAlcohol = selectedComponents.some(c => 
+      ['Methanol', 'Ethanol', 'Propanol', 'Butanol'].includes(c));
+      
+    const hasAcid = selectedComponents.some(c => 
+      ['Acetic Acid', 'Formic Acid', 'Sulfuric Acid'].includes(c));
+    
+    const hasGas = selectedComponents.some(c => 
+      ['Methane', 'Ethane', 'Propane', 'Nitrogen', 'Oxygen', 'Carbon Dioxide'].includes(c));
+    
+    if (hasAromatic && hasAlcohol) {
+      return "Liquid-Liquid Extraction";
+    } else if (hasAlcohol && hasAcid) {
+      return "Esterification Reaction";
+    } else if (hasAlcohol) {
+      return "Distillation";
+    } else if (hasGas) {
+      return "Gas Processing";
+    } else if (hasAromatic) {
+      return "Aromatics Separation";
+    } else if (hasAcid) {
+      return "Acid Gas Treatment";
+    } else {
+      return "Chemical Process";
+    }
+  };
+
   // Handle run simulation
-  const handleRunSimulation = () => {
+  const handleRunSimulation = async () => {
     if (!allStepsValid) {
       toast({
         title: "Incomplete setup",
@@ -109,8 +161,16 @@ const CreateSimulation = () => {
 
     setIsSimulationRunning(true);
     
+    // Determine the type of simulation based on components
+    const subject = detectSimulationSubject();
+    setSimulationSubject(subject);
+    localStorage.setItem('chemflow-simulation-subject', subject);
+    
     // Generate synthetic data for analysis
     generateAnalysisData();
+    
+    // Generate subject-specific analyses
+    await generateSubjectAnalyses(subject);
     
     // Simulate a processing delay
     setTimeout(() => {
@@ -120,7 +180,7 @@ const CreateSimulation = () => {
       
       toast({
         title: "Simulation complete",
-        description: "Process simulation finished successfully!",
+        description: `${subject} simulation finished successfully!`,
       });
     }, 2000);
   };
@@ -168,6 +228,231 @@ const CreateSimulation = () => {
     
     setAnalysisData(data);
   };
+
+  const generateSubjectAnalyses = async (subject: string) => {
+    try {
+      // Initialize LLaMA service if not already loaded
+      if (!LlamaService.getInstance().isModelLoaded()) {
+        await LlamaService.getInstance().loadModel();
+      }
+      
+      // Create prompts based on simulation subject
+      const heatTransferPrompt = `Generate a detailed heat transfer analysis for a ${subject} process using components: ${selectedComponents.join(", ")}.`;
+      const fluidFlowPrompt = `Perform fluid flow and pressure drop analysis for a ${subject} process with components: ${selectedComponents.join(", ")}.`;
+      const thermodynamicsPrompt = `Analyze thermodynamic properties and phase equilibrium for a ${subject} process with components: ${selectedComponents.join(", ")}.`;
+      const massTransferPrompt = `Create a mass transfer and separation analysis for a ${subject} process using components: ${selectedComponents.join(", ")}.`;
+      const reactionPrompt = `Perform reaction engineering analysis for a ${subject} process with components: ${selectedComponents.join(", ")}.`;
+      const safetyPrompt = `Conduct a safety and relief system analysis for a ${subject} process with components: ${selectedComponents.join(", ")}.`;
+      const processPrompt = `Generate a process simulation and optimization report for a ${subject} process with components: ${selectedComponents.join(", ")}.`;
+      const utilityPrompt = `Analyze utility requirements and environmental impact for a ${subject} process with components: ${selectedComponents.join(", ")}.`;
+      
+      // Generate analyses using the LLaMA service (in parallel)
+      const [
+        heatTransferAnalysis,
+        fluidFlowAnalysis,
+        thermodynamicsAnalysis,
+        massTransferAnalysis,
+        reactionAnalysis,
+        safetyAnalysis,
+        processAnalysis,
+        utilityAnalysis
+      ] = await Promise.all([
+        LlamaService.getInstance().generateResponse(heatTransferPrompt),
+        LlamaService.getInstance().generateResponse(fluidFlowPrompt),
+        LlamaService.getInstance().generateResponse(thermodynamicsPrompt),
+        LlamaService.getInstance().generateResponse(massTransferPrompt),
+        LlamaService.getInstance().generateResponse(reactionPrompt),
+        LlamaService.getInstance().generateResponse(safetyPrompt),
+        LlamaService.getInstance().generateResponse(processPrompt),
+        LlamaService.getInstance().generateResponse(utilityPrompt)
+      ]);
+      
+      // Create charts for each analysis
+      const analyses: SubjectAnalysis[] = [
+        {
+          id: "heatTransfer",
+          title: "Heat Transfer Analysis",
+          icon: <Thermometer className="h-5 w-5" />,
+          content: heatTransferAnalysis,
+          charts: (
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={analysisData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="time" label={{ value: 'Time (min)', position: 'insideBottom', offset: -5 }} />
+                <YAxis label={{ value: 'Temperature (K)', angle: -90, position: 'insideLeft' }} />
+                <Tooltip />
+                <Legend />
+                <Line type="monotone" dataKey="temperature" stroke="#ff7300" name="Temperature" />
+              </LineChart>
+            </ResponsiveContainer>
+          )
+        },
+        {
+          id: "fluidFlow",
+          title: "Fluid Flow Analysis",
+          icon: <Waves className="h-5 w-5" />,
+          content: fluidFlowAnalysis,
+          charts: (
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={analysisData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="time" label={{ value: 'Time (min)', position: 'insideBottom', offset: -5 }} />
+                <YAxis label={{ value: 'Pressure (kPa)', angle: -90, position: 'insideLeft' }} />
+                <Tooltip />
+                <Legend />
+                <Line type="monotone" dataKey="pressure" stroke="#387908" name="Pressure" />
+              </LineChart>
+            </ResponsiveContainer>
+          )
+        },
+        {
+          id: "thermodynamics",
+          title: "Thermodynamic Analysis",
+          icon: <Zap className="h-5 w-5" />,
+          content: thermodynamicsAnalysis,
+          charts: (
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={analysisData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="time" label={{ value: 'Time (min)', position: 'insideBottom', offset: -5 }} />
+                <YAxis yAxisId="left" label={{ value: 'Temperature (K)', angle: -90, position: 'insideLeft' }} />
+                <YAxis yAxisId="right" orientation="right" label={{ value: 'Pressure (kPa)', angle: 90, position: 'insideRight' }} />
+                <Tooltip />
+                <Legend />
+                <Line yAxisId="left" type="monotone" dataKey="temperature" stroke="#ff7300" name="Temperature" />
+                <Line yAxisId="right" type="monotone" dataKey="pressure" stroke="#387908" name="Pressure" />
+              </LineChart>
+            </ResponsiveContainer>
+          )
+        },
+        {
+          id: "massTransfer",
+          title: "Mass Transfer Analysis",
+          icon: <Droplets className="h-5 w-5" />,
+          content: massTransferAnalysis,
+          charts: (
+            <ResponsiveContainer width="100%" height={300}>
+              <AreaChart data={analysisData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="time" label={{ value: 'Time (min)', position: 'insideBottom', offset: -5 }} />
+                <YAxis label={{ value: 'Concentration (%)', angle: -90, position: 'insideLeft' }} />
+                <Tooltip />
+                <Legend />
+                {selectedComponents.slice(0, 4).map((comp, index) => {
+                  const colors = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042'];
+                  return (
+                    <Area 
+                      key={comp} 
+                      type="monotone" 
+                      dataKey={comp} 
+                      stackId="1"
+                      stroke={colors[index % colors.length]} 
+                      fill={colors[index % colors.length]} 
+                    />
+                  );
+                })}
+              </AreaChart>
+            </ResponsiveContainer>
+          )
+        },
+        {
+          id: "reactionEngineering",
+          title: "Reaction Engineering Analysis",
+          icon: <Beaker className="h-5 w-5" />,
+          content: reactionAnalysis,
+          charts: (
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={analysisData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="time" label={{ value: 'Time (min)', position: 'insideBottom', offset: -5 }} />
+                <YAxis label={{ value: 'Conversion', angle: -90, position: 'insideLeft' }} />
+                <Tooltip />
+                <Legend />
+                <Line type="monotone" dataKey="conversion" stroke="#8884d8" activeDot={{ r: 8 }} name="Conversion" />
+              </LineChart>
+            </ResponsiveContainer>
+          )
+        },
+        {
+          id: "safetyAnalysis",
+          title: "Safety Analysis",
+          icon: <Shield className="h-5 w-5" />,
+          content: safetyAnalysis,
+          charts: (
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={analysisData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="time" label={{ value: 'Time (min)', position: 'insideBottom', offset: -5 }} />
+                <YAxis label={{ value: 'Pressure (kPa)', angle: -90, position: 'insideLeft' }} />
+                <Tooltip />
+                <Legend />
+                <Line type="monotone" dataKey="pressure" stroke="#ff0000" name="Pressure" />
+                <Line type="monotone" dataKey={(datum) => datum.pressure ? datum.pressure * 0.9 : 0} stroke="#00ff00" strokeDasharray="5 5" name="Relief Pressure" />
+              </LineChart>
+            </ResponsiveContainer>
+          )
+        },
+        {
+          id: "processSimulation",
+          title: "Process Simulation",
+          icon: <Cpu className="h-5 w-5" />,
+          content: processAnalysis,
+          charts: (
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={[analysisData[analysisData.length - 1]]}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="time" tick={false} />
+                <YAxis label={{ value: 'Concentration (%)', angle: -90, position: 'insideLeft' }} />
+                <Tooltip />
+                <Legend />
+                {selectedComponents.map((comp, index) => {
+                  const colors = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088fe', '#00C49F'];
+                  return (
+                    <Bar 
+                      key={comp} 
+                      dataKey={comp} 
+                      fill={colors[index % colors.length]} 
+                    />
+                  );
+                })}
+              </BarChart>
+            </ResponsiveContainer>
+          )
+        },
+        {
+          id: "utilityEnvironmental",
+          title: "Utility & Environmental Analysis",
+          icon: <Leaf className="h-5 w-5" />,
+          content: utilityAnalysis,
+          charts: (
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={analysisData.filter((_, i) => i % 3 === 0)}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="time" label={{ value: 'Time (min)', position: 'insideBottom', offset: -5 }} />
+                <YAxis label={{ value: 'Resource Usage', angle: -90, position: 'insideLeft' }} />
+                <Tooltip />
+                <Legend />
+                <Line type="monotone" dataKey={(datum) => datum.temperature ? datum.temperature / 10 : 0} stroke="#0088fe" name="Steam Usage" />
+                <Line type="monotone" dataKey={(datum) => datum.pressure ? datum.pressure / 5 : 0} stroke="#00C49F" name="Cooling Water" />
+                <Line type="monotone" dataKey={(datum) => datum.conversion ? datum.conversion * 100 : 0} stroke="#FFBB28" name="Power Usage" />
+              </LineChart>
+            </ResponsiveContainer>
+          )
+        }
+      ];
+      
+      setSubjectAnalyses(analyses);
+      setActiveSubjectAnalysis(analyses[0].id);
+      
+    } catch (error) {
+      console.error("Error generating analyses:", error);
+      toast({
+        title: "Analysis Generation Failed",
+        description: "There was an error generating detailed analyses",
+        variant: "destructive"
+      });
+    }
+  };
   
   // Proceed to next tab automatically when component selection is done
   const handleComponentSelectionDone = () => {
@@ -198,7 +483,7 @@ const CreateSimulation = () => {
       <div className="mt-8">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-2xl font-display font-bold">
-            Simulation Analysis
+            {simulationSubject} Simulation Analysis
           </h2>
           <Button 
             variant="outline" 
@@ -209,86 +494,40 @@ const CreateSimulation = () => {
           </Button>
         </div>
         
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <GlassPanel className="p-6">
-            <h3 className="text-lg font-medium mb-4">Conversion Profile</h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={analysisData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="time" label={{ value: 'Time (min)', position: 'insideBottom', offset: -5 }} />
-                <YAxis label={{ value: 'Conversion', angle: -90, position: 'insideLeft' }} />
-                <Tooltip />
-                <Legend />
-                <Line type="monotone" dataKey="conversion" stroke="#8884d8" activeDot={{ r: 8 }} name="Conversion" />
-              </LineChart>
-            </ResponsiveContainer>
-          </GlassPanel>
-          
-          <GlassPanel className="p-6">
-            <h3 className="text-lg font-medium mb-4">Temperature & Pressure</h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={analysisData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="time" label={{ value: 'Time (min)', position: 'insideBottom', offset: -5 }} />
-                <YAxis yAxisId="left" label={{ value: 'Temperature (K)', angle: -90, position: 'insideLeft' }} />
-                <YAxis yAxisId="right" orientation="right" label={{ value: 'Pressure (kPa)', angle: 90, position: 'insideRight' }} />
-                <Tooltip />
-                <Legend />
-                <Line yAxisId="left" type="monotone" dataKey="temperature" stroke="#ff7300" name="Temperature" />
-                <Line yAxisId="right" type="monotone" dataKey="pressure" stroke="#387908" name="Pressure" />
-              </LineChart>
-            </ResponsiveContainer>
-          </GlassPanel>
-          
-          <GlassPanel className="p-6">
-            <h3 className="text-lg font-medium mb-4">Component Concentrations</h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={analysisData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="time" label={{ value: 'Time (min)', position: 'insideBottom', offset: -5 }} />
-                <YAxis label={{ value: 'Concentration (%)', angle: -90, position: 'insideLeft' }} />
-                <Tooltip />
-                <Legend />
-                {selectedComponents.map((comp, index) => {
-                  const colors = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088fe', '#00C49F'];
-                  return (
-                    <Area 
-                      key={comp} 
-                      type="monotone" 
-                      dataKey={comp} 
-                      stackId="1"
-                      stroke={colors[index % colors.length]} 
-                      fill={colors[index % colors.length]} 
-                    />
-                  );
-                })}
-              </AreaChart>
-            </ResponsiveContainer>
-          </GlassPanel>
-          
-          <GlassPanel className="p-6">
-            <h3 className="text-lg font-medium mb-4">Final Composition</h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={[analysisData[analysisData.length - 1]]}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="time" tick={false} />
-                <YAxis label={{ value: 'Concentration (%)', angle: -90, position: 'insideLeft' }} />
-                <Tooltip />
-                <Legend />
-                {selectedComponents.map((comp, index) => {
-                  const colors = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088fe', '#00C49F'];
-                  return (
-                    <Bar 
-                      key={comp} 
-                      dataKey={comp} 
-                      fill={colors[index % colors.length]} 
-                    />
-                  );
-                })}
-              </BarChart>
-            </ResponsiveContainer>
-          </GlassPanel>
+        <div className="border-b border-gray-200 mb-6">
+          <div className="flex space-x-2 overflow-x-auto pb-2">
+            {subjectAnalyses.map(analysis => (
+              <button
+                key={analysis.id}
+                className={`py-2 px-4 flex items-center rounded-t-lg text-sm font-medium transition-colors ${
+                  activeSubjectAnalysis === analysis.id
+                    ? 'bg-white border-x border-t border-gray-200 text-flow-blue' 
+                    : 'bg-gray-50 text-gray-500 hover:text-gray-700'
+                }`}
+                onClick={() => setActiveSubjectAnalysis(analysis.id)}
+              >
+                {analysis.icon}
+                <span className="ml-2">{analysis.title}</span>
+              </button>
+            ))}
+          </div>
         </div>
+        
+        {activeSubjectAnalysis && (
+          <GlassPanel className="p-6">
+            {subjectAnalyses.find(a => a.id === activeSubjectAnalysis)?.charts}
+            
+            <div className="mt-6 prose dark:prose-invert max-w-none">
+              <div
+                dangerouslySetInnerHTML={{ 
+                  __html: subjectAnalyses.find(a => a.id === activeSubjectAnalysis)?.content
+                    .replace(/\n/g, '<br>')
+                    .replace(/#{1,6}\s?(.*)/g, '<h4>$1</h4>') || ''
+                }}
+              />
+            </div>
+          </GlassPanel>
+        )}
         
         <div className="mt-6 flex justify-between">
           <Button 
