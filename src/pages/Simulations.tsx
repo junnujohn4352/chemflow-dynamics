@@ -178,20 +178,24 @@ const Simulations = () => {
                   
                   <div className="mb-4">
                     <h4 className="text-sm font-medium mb-2 dark:text-gray-200">Components</h4>
-                    {sim.components.map((comp, idx) => (
-                      <div key={idx} className="mb-2">
-                        <div className="flex justify-between text-sm mb-1 dark:text-gray-300">
-                          <span>{comp.name}</span>
-                          <span>{comp.percentage}%</span>
+                    {sim.components && Array.isArray(sim.components) ? (
+                      sim.components.map((comp, idx) => (
+                        <div key={idx} className="mb-2">
+                          <div className="flex justify-between text-sm mb-1 dark:text-gray-300">
+                            <span>{typeof comp === 'string' ? comp : comp.name}</span>
+                            <span>{typeof comp === 'string' ? '' : `${comp.percentage}%`}</span>
+                          </div>
+                          <div className="w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full">
+                            <div 
+                              className="h-1.5 rounded-full bg-flow-blue"
+                              style={{ width: typeof comp === 'string' ? '100%' : `${comp.percentage}%` }}
+                            ></div>
+                          </div>
                         </div>
-                        <div className="w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full">
-                          <div 
-                            className="h-1.5 rounded-full bg-flow-blue"
-                            style={{ width: `${comp.percentage}%` }}
-                          ></div>
-                        </div>
-                      </div>
-                    ))}
+                      ))
+                    ) : (
+                      <p className="text-sm text-gray-500">No components available</p>
+                    )}
                   </div>
                   
                   {sim.thermodynamicModel && (
@@ -220,66 +224,57 @@ const Simulations = () => {
                       <span className="text-gray-500 dark:text-gray-400">Efficiency:</span>
                       <span className="ml-2 font-medium text-flow-blue">{sim.efficiency}%</span>
                     </div>
-                  </div>
-                  
-                  <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
                     <div className="flex space-x-2">
-                      <Button 
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleEditSimulation(sim)}
-                        className="dark:border-gray-600 dark:text-gray-200"
-                      >
-                        <Edit className="h-3.5 w-3.5 mr-1" />
-                        Edit
-                      </Button>
-                      <Button 
-                        size="sm"
-                        variant="outline"
-                        onClick={() => exportSimulation(sim)}
-                        className="dark:border-gray-600 dark:text-gray-200"
-                      >
-                        <Download className="h-3.5 w-3.5 mr-1" />
-                        Export
-                      </Button>
-                      <Button 
-                        size="sm"
-                        variant="outline"
-                        className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20 dark:border-gray-600"
+                      <button
                         onClick={() => handleDeleteSimulation(sim.id)}
+                        className="p-1.5 rounded-lg hover:bg-red-50 text-red-500"
+                        title="Delete simulation"
                       >
-                        <Trash2 className="h-3.5 w-3.5 mr-1" />
-                        Delete
-                      </Button>
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => exportSimulation(sim)}
+                        className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-500"
+                        title="Export simulation"
+                      >
+                        <Download className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => handleEditSimulation(sim)}
+                        className="p-1.5 rounded-lg hover:bg-amber-50 text-amber-500"
+                        title="Edit simulation"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => handleRunSimulation(sim)}
+                        className="p-1.5 rounded-lg hover:bg-green-50 text-green-500"
+                        title="Run simulation"
+                      >
+                        <Play className="h-4 w-4" />
+                      </button>
                     </div>
-                    <Button 
-                      size="sm"
-                      onClick={() => handleRunSimulation(sim)}
-                    >
-                      <Play className="h-3.5 w-3.5 mr-1" />
-                      Run
-                    </Button>
                   </div>
                 </GlassPanel>
               ))}
             </div>
           ) : (
-            <GlassPanel className="p-12 text-center bg-white dark:bg-gray-800 dark:border-gray-700">
+            <GlassPanel className="p-8 text-center">
               <div className="flex justify-center mb-4">
-                <div className="p-4 rounded-full bg-blue-50 dark:bg-blue-900 text-flow-blue dark:text-blue-200">
-                  <FlaskConical className="h-8 w-8" />
+                <div className="p-3 rounded-full bg-blue-50 dark:bg-blue-900">
+                  <FlaskConical className="h-6 w-6 text-flow-blue dark:text-blue-200" />
                 </div>
               </div>
-              <h3 className="text-xl font-medium mb-2 dark:text-white">No simulations found</h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
-                Create your first simulation to start modeling chemical processes with ChemFlow
+              <h3 className="text-xl font-medium mb-2 dark:text-white">No Simulations Yet</h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">
+                Create your first simulation to get started with chemical process modeling
               </p>
               <Link 
                 to="/create-simulation"
-                className="inline-flex items-center px-5 py-2.5 rounded-lg bg-flow-blue text-white font-medium shadow-sm hover:bg-flow-blue/90 transition-colors"
+                className="inline-flex items-center px-5 py-2.5 rounded-lg bg-flow-blue text-white font-medium hover:bg-flow-blue/90 transition-colors"
               >
                 <PlusCircle className="mr-2 h-4 w-4" />
-                Create Your First Simulation
+                Create New Simulation
               </Link>
             </GlassPanel>
           )}
