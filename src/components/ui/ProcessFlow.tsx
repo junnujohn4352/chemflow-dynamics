@@ -217,6 +217,19 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
     }
   };
 
+  // Function to safely render metric values
+  const renderMetricValue = (metric: any): string => {
+    if (metric === null || metric === undefined) {
+      return '';
+    }
+    
+    if (typeof metric === 'object') {
+      return JSON.stringify(metric);
+    }
+    
+    return String(metric);
+  };
+
   const renderEquipmentGrid = () => {
     const grid = Array(5).fill(0).map(() => Array(3).fill(null));
     

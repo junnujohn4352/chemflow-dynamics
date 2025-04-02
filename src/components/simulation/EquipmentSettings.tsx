@@ -40,6 +40,19 @@ const EquipmentSettings: React.FC<EquipmentSettingsProps> = ({
     onSave(equipment.id, { ...settings, _equipmentName: equipmentName });
   };
 
+  // Helper function to safely render values
+  const renderValue = (value: any): string => {
+    if (value === null || value === undefined) {
+      return '';
+    }
+    
+    if (typeof value === 'object') {
+      return JSON.stringify(value);
+    }
+    
+    return String(value);
+  };
+
   const renderSettingsFields = () => {
     return Object.entries(settings).map(([key, value]) => {
       // Skip rendering composition for now as it's a complex nested object
@@ -110,6 +123,20 @@ const EquipmentSettings: React.FC<EquipmentSettingsProps> = ({
               onChange={(e) => handleChange(key, e.target.checked)}
               className="rounded text-flow-blue focus:ring-flow-blue h-4 w-4"
             />
+          </div>
+        );
+      } else if (typeof value === 'object' && value !== null) {
+        // Render complex objects as read-only text
+        return (
+          <div key={key} className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1 capitalize">
+              {key.replace(/([A-Z])/g, ' $1').trim()}
+            </label>
+            <div className="p-2 bg-gray-50 border border-gray-200 rounded-md">
+              <pre className="text-xs overflow-auto">
+                {JSON.stringify(value, null, 2)}
+              </pre>
+            </div>
           </div>
         );
       }
