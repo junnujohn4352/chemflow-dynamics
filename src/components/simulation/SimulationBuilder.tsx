@@ -386,7 +386,7 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     }
   };
   
-  const startConnection = (e: React.MouseEvent, equipmentId: string) => {
+  const startConnectionWithEvent = (e: React.MouseEvent, equipmentId: string) => {
     e.stopPropagation();
     setIsConnecting(equipmentId);
     toast({
@@ -396,8 +396,8 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
   
   const startDragging = (e: React.MouseEvent, equipmentId: string) => {
     e.stopPropagation();
-    const equipment = equipmentList.find(eq => eq.id === equipmentId);
-    if (!equipment) return;
+    const equipmentItem = equipmentList.find(eq => eq.id === equipmentId);
+    if (!equipmentItem) return;
     
     setDraggedEquipment(equipmentId);
     setDragStartPos({ x: e.clientX, y: e.clientY });
@@ -947,8 +947,9 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
       {editingEquipment && (
         <EquipmentSettings 
           equipment={editingEquipment}
-          onSave={(newSettings) => updateEquipmentSettings(editingEquipment.id, newSettings)}
-          onCancel={() => setEditingEquipment(null)}
+          equipmentTypes={equipmentList}
+          onClose={() => setEditingEquipment(null)}
+          onSave={updateEquipmentSettings}
         />
       )}
       
