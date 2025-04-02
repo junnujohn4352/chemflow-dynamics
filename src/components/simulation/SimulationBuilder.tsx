@@ -551,7 +551,7 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
           <div className="flex items-center gap-2">
             {renderEquipmentIcon(eq.type)}
             <div>
-              <h4 className="font-medium text-sm">{safeStringify(eq.name)}</h4>
+              <h4 className="font-medium text-sm">{typeof eq.name === 'string' ? eq.name : String(eq.name)}</h4>
               <span className="text-xs text-gray-500">{eq.type}{eq.subType ? ` (${eq.subType})` : ''}</span>
             </div>
           </div>
@@ -818,9 +818,9 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
                }}
           />
           
-          {streams.map(renderStream)}
+          {streams.map(stream => renderStream(stream))}
           
-          {equipment.map(renderEquipmentCard)}
+          {equipment.map(eq => renderEquipmentCard(eq))}
           
           {isConnecting && (
             <div className="fixed bottom-4 right-4 bg-amber-100 text-amber-700 p-3 rounded-lg shadow-md text-sm flex items-center gap-2">

@@ -248,7 +248,7 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
     const eq = equipment.find(e => e.id === id);
     if (eq) {
       setEditingName(id);
-      setTempName(eq.name);
+      setTempName(typeof eq.name === 'string' ? eq.name : String(eq.name));
     }
   };
 
