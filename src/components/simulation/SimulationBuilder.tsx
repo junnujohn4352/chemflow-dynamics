@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Plus, Minus, Thermometer, Droplets, Settings2, Container, FlaskConical, Columns, Gauge, Save, Trash2, X, Sliders, Move, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -560,7 +559,12 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     setEquipment(prev => 
       prev.map(eq => {
         if (eq.id === equipmentId) {
-          return {...eq, settings: newSettings};
+          const { _equipmentName, ...restSettings } = newSettings;
+          return { 
+            ...eq, 
+            name: _equipmentName || eq.name,
+            settings: restSettings
+          };
         }
         return eq;
       })
@@ -913,11 +917,11 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
                 <div className="absolute top-4 right-4 bg-blue-50 text-blue-800 p-3 rounded-lg shadow-sm">
                   <div className="flex items-center">
                     <span>Click on the canvas to place {
-                      activeSubType 
+                      activeSubType && equipmentList.find(e => e.id === activeEquipment)?.subTypes
                         ? `${equipmentList.find(e => e.id === activeEquipment)?.name} (${
-                            equipmentList.find(e => e.id === activeEquipment)?.subTypes?.find(st => st.id === activeSubType)?.name
+                            equipmentList.find(e => e.id === activeEquipment)?.subTypes?.find(st => st.id === activeSubType)?.name || activeSubType
                           })` 
-                        : equipmentList.find(e => e.id === activeEquipment)?.name
+                        : equipmentList.find(e => e.id === activeEquipment)?.name || activeEquipment
                     }</span>
                     <button 
                       className="ml-2 p-1 rounded-full hover:bg-blue-200"
@@ -933,8 +937,8 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
                 </div>
               )}
               
-              {streams.map(renderStream)}
-              {equipment.map(renderEquipment)}
+              {streams.map(stream => renderStream(stream))}
+              {equipment.map(item => renderEquipment(item))}
             </div>
           </div>
         </div>
