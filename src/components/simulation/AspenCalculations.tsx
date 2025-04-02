@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import GlassPanel from "@/components/ui/GlassPanel";
-import { Calculator, Droplets, Flask, Thermometer, Waves, Zap, Shield, Cpu, Leaf } from "lucide-react";
+import { Calculator, Droplets, Beaker, Thermometer, Waves, Zap, Shield, Cpu, Leaf } from "lucide-react";
 
 interface CalculationCategory {
   id: string;
@@ -87,7 +87,7 @@ const AspenCalculations: React.FC = () => {
     {
       id: "reactionEngineering",
       title: "Reaction Engineering",
-      icon: <Flask className="h-5 w-5" />,
+      icon: <Beaker className="h-5 w-5" />,
       calculations: [
         "Conversion, Yield, and Selectivity Calculations",
         "Batch, CSTR, and PFR Reactor Sizing",
