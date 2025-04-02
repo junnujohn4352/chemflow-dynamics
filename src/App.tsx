@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -14,8 +13,11 @@ import AISimulation from "./pages/AISimulation";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import Analysis from "./pages/Analysis";
+import Components from "./pages/Components";
+import HysysCalculations from "./pages/HysysCalculations";
+import SignIn from "./pages/SignIn";
+import SignUp from "./pages/SignUp";
 
-// Create a query client
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -25,34 +27,26 @@ const queryClient = new QueryClient({
   },
 });
 
-// Save simulation data to localStorage
 const saveSimulation = (simulationData: any) => {
   try {
     if (!simulationData || !simulationData.name) return;
     
-    // Generate a unique ID if not present
     const simId = simulationData.id || `sim-${Date.now()}`;
     simulationData.id = simId;
     
-    // Update the lastUpdated timestamp
     simulationData.lastUpdated = new Date().toISOString();
     
-    // Get existing simulations
     const existingSimsStr = localStorage.getItem('chemflow-simulations') || '[]';
     const existingSims = JSON.parse(existingSimsStr);
     
-    // Check if this simulation already exists
     const simIndex = existingSims.findIndex((s: any) => s.id === simId);
     
     if (simIndex >= 0) {
-      // Update existing simulation
       existingSims[simIndex] = simulationData;
     } else {
-      // Add new simulation
       existingSims.push(simulationData);
     }
     
-    // Save updated simulations
     localStorage.setItem('chemflow-simulations', JSON.stringify(existingSims));
     console.log('Simulation saved', simulationData.name);
   } catch (error) {
@@ -60,8 +54,7 @@ const saveSimulation = (simulationData: any) => {
   }
 };
 
-const App: React.FC = () => {
-  // Initialize dark mode from localStorage
+function App() {
   useEffect(() => {
     const savedMode = localStorage.getItem('darkMode');
     if (savedMode === 'dark') {
@@ -71,7 +64,6 @@ const App: React.FC = () => {
     }
   }, []);
 
-  // Set up a listener for saving simulation data on page unload
   useEffect(() => {
     const handleBeforeUnload = () => {
       const activeSimulation = localStorage.getItem('chemflow-active-simulation');
@@ -81,15 +73,14 @@ const App: React.FC = () => {
           try {
             const simData = JSON.parse(simDataStr);
             if (simData && simData.name) {
-              // Add some default values for a new simulation if not present
               const fullSimData = {
                 ...simData,
                 description: simData.description || `${simData.name} process simulation`,
-                efficiency: simData.efficiency || Math.floor(Math.random() * 30) + 70, // Random 70-99%
+                efficiency: simData.efficiency || Math.floor(Math.random() * 30) + 70,
                 components: Array.isArray(simData.components) 
                   ? simData.components.map((c: string) => ({
                       name: c,
-                      percentage: Math.floor(Math.random() * 50) + 50 // Random 50-99%
+                      percentage: Math.floor(Math.random() * 50) + 50
                     }))
                   : [],
                 equipment: simData.equipment || 0,
@@ -105,10 +96,7 @@ const App: React.FC = () => {
       }
     };
 
-    // Add event listener for page unload
     window.addEventListener('beforeunload', handleBeforeUnload);
-    
-    // Also save every 30 seconds
     const saveInterval = setInterval(handleBeforeUnload, 30000);
     
     return () => {
@@ -118,33 +106,31 @@ const App: React.FC = () => {
   }, []);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            {/* Landing page */}
-            <Route path="/" element={<LandingPage />} />
-            
-            {/* Main application routes */}
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/simulations" element={<Simulations />} />
-            <Route path="/create-simulation" element={<CreateSimulation />} />
-            <Route path="/ai-simulation" element={<AISimulation />} />
-            <Route path="/analysis" element={<Analysis />} />
-            <Route path="/settings" element={<Settings />} />
-            
-            {/* Legacy index page */}
-            <Route path="/home" element={<Index />} />
-            
-            {/* Catch-all route */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
+    <div className="app">
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/simulations" element={<Simulations />} />
+              <Route path="/create-simulation" element={<CreateSimulation />} />
+              <Route path="/ai-simulation" element={<AISimulation />} />
+              <Route path="/analysis" element={<Analysis />} />
+              <Route path="/components" element={<Components />} />
+              <Route path="/hysys-calculations" element={<HysysCalculations />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="/sign-in" element={<SignIn />} />
+              <Route path="/sign-up" element={<SignUp />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </div>
   );
-};
+}
 
 export default App;

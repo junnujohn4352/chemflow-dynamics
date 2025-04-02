@@ -20,6 +20,15 @@ interface ProcessFlowProps {
   onStartSimulation?: () => void;
 }
 
+interface Equipment {
+  id: string;
+  type: string;
+  name: string;
+  status: string;
+  metrics: any;
+  position: { x: number; y: number };
+}
+
 const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation }) => {
   const [isRunning, setIsRunning] = useState(false);
   const [simulationData, setSimulationData] = useState({
@@ -28,9 +37,70 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
     systemEfficiency: 0
   });
   
+  const [equipment, setEquipment] = useState<Equipment[]>([
+    { 
+      id: 'feed-tank', 
+      type: 'tank', 
+      name: 'Feed Tank', 
+      status: 'stopped', 
+      metrics: { level: 75, temperature: 25 },
+      position: { x: 0, y: 0 }
+    },
+    { 
+      id: 'feed-pump', 
+      type: 'pump', 
+      name: 'Feed Pump', 
+      status: 'stopped', 
+      metrics: { flow: 120 },
+      position: { x: 2, y: 0 }
+    },
+    { 
+      id: 'preheater', 
+      type: 'heater', 
+      name: 'Preheater', 
+      status: 'stopped', 
+      metrics: { temperature: 25 },
+      position: { x: 0, y: 2 }
+    },
+    { 
+      id: 'distillation-column', 
+      type: 'column', 
+      name: 'Distillation Column', 
+      status: 'stopped', 
+      metrics: { pressure: 150, temperature: 30 },
+      position: { x: 2, y: 2 }
+    },
+    { 
+      id: 'product-tank', 
+      type: 'tank', 
+      name: 'Product Tank', 
+      status: 'stopped', 
+      metrics: { level: 10, temperature: 25 },
+      position: { x: 0, y: 4 }
+    },
+    { 
+      id: 'condenser', 
+      type: 'condenser', 
+      name: 'Condenser', 
+      status: 'stopped', 
+      metrics: { temperature: 25 },
+      position: { x: 2, y: 4 }
+    }
+  ]);
+
+  const [selectedEquipment, setSelectedEquipment] = useState<string | null>(null);
+  const [editingName, setEditingName] = useState<string | null>(null);
+  const [tempName, setTempName] = useState("");
+  
   const toggleSimulation = () => {
     const newState = !isRunning;
     setIsRunning(newState);
+    
+    // Update equipment status
+    setEquipment(equipment.map(eq => ({
+      ...eq,
+      status: newState ? 'running' : 'stopped'
+    })));
     
     if (newState && onStartSimulation) {
       onStartSimulation();
@@ -53,6 +123,29 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
           componentB: Math.min(45, (45 * progress) / 100),
           systemEfficiency: Math.min(92, (92 * progress) / 100)
         });
+        
+        // Update equipment metrics based on running state
+        setEquipment(prev => prev.map(eq => {
+          const updatedMetrics = { ...eq.metrics };
+          
+          if (eq.type === 'heater' || eq.type === 'column') {
+            updatedMetrics.temperature = Math.min(85, 25 + (60 * progress) / 100);
+          }
+          
+          if (eq.type === 'tank' && eq.id === 'product-tank') {
+            updatedMetrics.level = Math.min(45, 10 + (35 * progress) / 100);
+            updatedMetrics.temperature = Math.min(60, 25 + (35 * progress) / 100);
+          }
+          
+          if (eq.type === 'condenser') {
+            updatedMetrics.temperature = Math.min(40, 25 + (15 * progress) / 100);
+          }
+          
+          return {
+            ...eq,
+            metrics: updatedMetrics
+          };
+        }));
       } else {
         clearInterval(updateInterval);
       }
@@ -69,6 +162,158 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
       setIsRunning(false);
     };
   }, []);
+
+  const handleEquipmentDragStart = (id: string) => {
+    setSelectedEquipment(id);
+  };
+
+  const handleEquipmentDragEnd = () => {
+    setSelectedEquipment(null);
+  };
+
+  const handleEquipmentMove = (id: string, direction: 'up' | 'down' | 'left' | 'right') => {
+    setEquipment(prev => prev.map(eq => {
+      if (eq.id === id) {
+        const newPosition = { ...eq.position };
+        
+        switch (direction) {
+          case 'up':
+            newPosition.y = Math.max(0, newPosition.y - 1);
+            break;
+          case 'down':
+            newPosition.y = Math.min(4, newPosition.y + 1);
+            break;
+          case 'left':
+            newPosition.x = Math.max(0, newPosition.x - 1);
+            break;
+          case 'right':
+            newPosition.x = Math.min(2, newPosition.x + 1);
+            break;
+        }
+        
+        return { ...eq, position: newPosition };
+      }
+      return eq;
+    }));
+  };
+
+  const startEditingName = (id: string) => {
+    const eq = equipment.find(e => e.id === id);
+    if (eq) {
+      setEditingName(id);
+      setTempName(eq.name);
+    }
+  };
+
+  const saveEquipmentName = () => {
+    if (editingName && tempName.trim()) {
+      setEquipment(prev => prev.map(eq => {
+        if (eq.id === editingName) {
+          return { ...eq, name: tempName.trim() };
+        }
+        return eq;
+      }));
+    }
+    setEditingName(null);
+  };
+
+  const renderEquipmentGrid = () => {
+    const grid = Array(5).fill(0).map(() => Array(3).fill(null));
+    
+    // Place equipment on the grid
+    equipment.forEach(eq => {
+      const { x, y } = eq.position;
+      grid[y][x] = eq;
+    });
+    
+    return (
+      <div className="grid grid-cols-3 gap-4">
+        {grid.map((row, rowIndex) => (
+          <React.Fragment key={`row-${rowIndex}`}>
+            {row.map((eq, colIndex) => (
+              <div key={`cell-${rowIndex}-${colIndex}`} className="min-h-[120px] flex items-center justify-center">
+                {eq ? (
+                  <div className="relative group">
+                    {editingName === eq.id ? (
+                      <div className="absolute -top-10 left-0 right-0 flex">
+                        <input
+                          type="text"
+                          value={tempName}
+                          onChange={(e) => setTempName(e.target.value)}
+                          onBlur={saveEquipmentName}
+                          onKeyDown={(e) => e.key === 'Enter' && saveEquipmentName()}
+                          autoFocus
+                          className="w-full px-2 py-1 text-sm border rounded"
+                        />
+                      </div>
+                    ) : null}
+                    
+                    <div className="absolute -top-8 left-0 right-0 hidden group-hover:flex justify-center">
+                      <button 
+                        onClick={() => handleEquipmentMove(eq.id, 'up')}
+                        disabled={eq.position.y === 0}
+                        className="p-1 bg-gray-200 rounded-full mx-1 disabled:opacity-50"
+                      >
+                        ↑
+                      </button>
+                    </div>
+                    
+                    <div className="absolute top-1/2 -right-8 -translate-y-1/2 hidden group-hover:flex flex-col">
+                      <button 
+                        onClick={() => handleEquipmentMove(eq.id, 'right')}
+                        disabled={eq.position.x === 2}
+                        className="p-1 bg-gray-200 rounded-full my-1 disabled:opacity-50"
+                      >
+                        →
+                      </button>
+                    </div>
+                    
+                    <div className="absolute -bottom-8 left-0 right-0 hidden group-hover:flex justify-center">
+                      <button 
+                        onClick={() => handleEquipmentMove(eq.id, 'down')}
+                        disabled={eq.position.y === 4}
+                        className="p-1 bg-gray-200 rounded-full mx-1 disabled:opacity-50"
+                      >
+                        ↓
+                      </button>
+                    </div>
+                    
+                    <div className="absolute top-1/2 -left-8 -translate-y-1/2 hidden group-hover:flex flex-col">
+                      <button 
+                        onClick={() => handleEquipmentMove(eq.id, 'left')}
+                        disabled={eq.position.x === 0}
+                        className="p-1 bg-gray-200 rounded-full my-1 disabled:opacity-50"
+                      >
+                        ←
+                      </button>
+                    </div>
+                    
+                    <div 
+                      className="cursor-move"
+                      onMouseDown={() => handleEquipmentDragStart(eq.id)}
+                      onMouseUp={handleEquipmentDragEnd}
+                      onDoubleClick={() => startEditingName(eq.id)}
+                    >
+                      <EquipmentCard 
+                        type={eq.type} 
+                        name={eq.name} 
+                        status={isRunning ? "running" : "stopped"} 
+                        metrics={eq.metrics}
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="w-full h-full min-h-[120px] border border-dashed border-gray-300 rounded-xl flex items-center justify-center">
+                    <span className="text-gray-400 text-xs">Empty</span>
+                  </div>
+                )}
+              </div>
+            ))}
+          </React.Fragment>
+        ))}
+      </div>
+    );
+  };
 
   return (
     <div className={cn("w-full", className)}>
@@ -116,82 +361,7 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
         <div className="grid grid-cols-3 gap-6 mb-6">
           <div className="col-span-2">
             <div className="flex flex-col gap-4">
-              <div className="grid grid-cols-3 gap-4">
-                <EquipmentCard 
-                  type="tank" 
-                  name="Feed Tank" 
-                  status={isRunning ? "running" : "stopped"} 
-                  metrics={{ level: 75, temperature: 25 }}
-                />
-                <div className="flex items-center justify-center">
-                  <div className="h-0.5 w-full bg-gradient-to-r from-flow-blue to-flow-cyan"></div>
-                  <ArrowRight className="text-flow-blue" />
-                </div>
-                <EquipmentCard 
-                  type="pump" 
-                  name="Feed Pump" 
-                  status={isRunning ? "running" : "stopped"} 
-                  metrics={{ flow: 120 }}
-                />
-              </div>
-              
-              <div className="grid grid-cols-3 gap-4">
-                <div className="flex items-center justify-center">
-                  <div className="h-10 w-0.5 bg-gradient-to-b from-flow-blue to-flow-cyan"></div>
-                </div>
-                <div></div>
-                <div className="flex items-center justify-center">
-                  <div className="h-10 w-0.5 bg-gradient-to-b from-flow-blue to-flow-cyan"></div>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-3 gap-4">
-                <EquipmentCard 
-                  type="heater" 
-                  name="Preheater" 
-                  status={isRunning ? "running" : "stopped"} 
-                  metrics={{ temperature: isRunning ? 85 : 25 }}
-                />
-                <div className="flex items-center justify-center">
-                  <div className="h-0.5 w-full bg-gradient-to-r from-flow-blue to-flow-cyan"></div>
-                  <ArrowRight className="text-flow-blue" />
-                </div>
-                <EquipmentCard 
-                  type="column" 
-                  name="Distillation Column" 
-                  status={isRunning ? "running" : "stopped"} 
-                  metrics={{ pressure: 150, temperature: isRunning ? 95 : 30 }}
-                />
-              </div>
-              
-              <div className="grid grid-cols-3 gap-4">
-                <div className="flex items-center justify-center">
-                  <div className="h-10 w-0.5 bg-gradient-to-b from-flow-blue to-flow-cyan"></div>
-                </div>
-                <div></div>
-                <div className="flex items-center justify-center">
-                  <div className="h-10 w-0.5 bg-gradient-to-b from-flow-blue to-flow-cyan"></div>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-3 gap-4">
-                <EquipmentCard 
-                  type="tank" 
-                  name="Product Tank" 
-                  status={isRunning ? "running" : "stopped"} 
-                  metrics={{ level: isRunning ? 45 : 10, temperature: isRunning ? 60 : 25 }}
-                />
-                <div className="flex items-center justify-center">
-                  <div className="h-0.5 w-full bg-gradient-to-r from-flow-blue to-flow-cyan"></div>
-                  <ArrowRight className="text-flow-blue" />
-                </div>
-                <EquipmentCard 
-                  type="condenser" 
-                  name="Condenser" 
-                  status={isRunning ? "running" : "stopped"} 
-                  metrics={{ temperature: isRunning ? 40 : 25 }}
-                />
-              </div>
+              {renderEquipmentGrid()}
             </div>
           </div>
           

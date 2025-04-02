@@ -10,7 +10,8 @@ import {
   Database,
   Brain,
   ArrowRight,
-  Info
+  Info,
+  Calculator
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import LearnMoreModal from "@/components/ui/LearnMoreModal";
@@ -60,6 +61,28 @@ const Dashboard = () => {
               icon={<Brain className="h-6 w-6" />}
               linkTo="/ai-simulation"
               color="bg-amber-500"
+              isNew={true}
+            />
+            <DashboardCard 
+              title="Process Analysis"
+              description="Analyze your simulation results with powerful tools"
+              icon={<BarChart3 className="h-6 w-6" />}
+              linkTo="/analysis"
+              color="bg-green-500"
+            />
+            <DashboardCard 
+              title="Component Library"
+              description="Browse and manage chemical components"
+              icon={<Database className="h-6 w-6" />}
+              linkTo="/components"
+              color="bg-red-500"
+            />
+            <DashboardCard 
+              title="HYSYS Calculations"
+              description="Access comprehensive Aspen HYSYS calculations library"
+              icon={<Calculator className="h-6 w-6" />}
+              linkTo="/hysys-calculations"
+              color="bg-indigo-500"
               isNew={true}
             />
           </div>

@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, ChevronRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import ChemFlowLogo from "@/assets/icons/ChemFlowLogo";
 import { Button } from "@/components/ui/button";
 
@@ -63,16 +63,9 @@ const LandingPage = () => {
               Enter Dashboard
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
-            <Button
-              variant="outline"
-              className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-transparent border border-gray-600 text-gray-300 font-medium hover:bg-white/5 transition-colors"
-            >
-              Learn More
-              <ChevronRight className="ml-2 h-4 w-4" />
-            </Button>
           </div>
           <div className="mt-16 text-gray-400 text-sm">
-            © {new Date().getFullYear()} LOL Group | Chemical Process Simulation Reimagined
+            © {new Date().getFullYear()} LOL GROUP | Chemical Process Simulation Reimagined
           </div>
         </div>
       )}
