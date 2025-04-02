@@ -5,7 +5,8 @@ import {
   Menu, X, ChevronDown, 
   LayoutDashboard, FileText, 
   BarChart3, Database, Settings,
-  Brain, Beaker, Moon, Sun
+  Brain, Beaker, Moon, Sun,
+  Info
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -33,6 +34,11 @@ const Navbar = () => {
       label: "AI Assistant", 
       href: "/ai-simulation", 
       icon: <Brain className="h-4 w-4 mr-2" />
+    },
+    {
+      label: "About",
+      href: "/about",
+      icon: <Info className="h-4 w-4 mr-2" />
     },
     { 
       label: "Settings", 
