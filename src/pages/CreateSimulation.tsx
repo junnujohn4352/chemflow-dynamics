@@ -7,7 +7,7 @@ import GlassPanel from "@/components/ui/GlassPanel";
 import { 
   Save, ArrowLeft, Layers, Database, Settings2, 
   Thermometer, GitBranch, Play, Check, 
-  BarChart3, ChevronDown, ChevronUp, Beaker, Waves, Zap, Droplets, Shield, Cpu, Leaf
+  BarChart3, ChevronDown, ChevronUp, FlaskConical, Waves, Zap, Droplets, Shield, Cpu, Leaf
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import SimulationBuilder from "@/components/simulation/SimulationBuilder";
@@ -15,6 +15,7 @@ import ComponentSelector from "@/components/simulation/ComponentSelector";
 import ThermodynamicsSelector from "@/components/simulation/ThermodynamicsSelector";
 import { Button } from "@/components/ui/button";
 import LlamaService from "@/services/LlamaService";
+import HysysIntegration from "@/components/simulation/HysysIntegration";
 import {
   AreaChart,
   Area,
@@ -494,7 +495,15 @@ const CreateSimulation = () => {
           </Button>
         </div>
         
-        <div className="border-b border-gray-200 mb-6">
+        {/* Include our HYSYS integration component */}
+        <div className="mt-4">
+          <HysysIntegration 
+            selectedComponents={selectedComponents}
+            thermodynamicModel={selectedModel}
+          />
+        </div>
+        
+        <div className="border-b border-gray-200 mb-6 mt-6">
           <div className="flex space-x-2 overflow-x-auto pb-2">
             {subjectAnalyses.map(analysis => (
               <button
