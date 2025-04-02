@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { Plus, Minus, Thermometer, Droplets, Settings2, Container, FlaskConical, Columns, Gauge, Save, Trash2, X, Sliders, Move, ArrowLeft, Play } from "lucide-react";
+import { Plus, Minus, Thermometer, Droplets, Settings2, Container, FlaskConical, Columns, Gauge, Save, Trash2, X, Sliders, Move, ArrowLeft, Play, ChevronsUpDown, Circle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import EquipmentSettings from "./EquipmentSettings";
@@ -20,12 +20,15 @@ export interface Equipment {
   connections: string[];
   settings: Record<string, any>;
   subType?: string;
+  ports?: { id: string; type: "input" | "output"; position: string }[];
 }
 
 export interface Stream {
   id: string;
   from: string;
+  fromPort?: string;
   to: string;
+  toPort?: string;
   type: "material" | "energy" | "signal";
   properties: Record<string, any>;
 }
@@ -57,7 +60,7 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
   const [activeSubType, setActiveSubType] = useState<string | null>(null);
   const [equipment, setEquipment] = useState<Equipment[]>([]);
   const [streams, setStreams] = useState<Stream[]>([]);
-  const [isConnecting, setIsConnecting] = useState<string | null>(null);
+  const [isConnecting, setIsConnecting] = useState<{ id: string; portId?: string } | null>(null);
   const [selectedElement, setSelectedElement] = useState<string | null>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
   const [showSettings, setShowSettings] = useState(false);
@@ -70,7 +73,115 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
   const [showSubTypes, setShowSubTypes] = useState(false);
   const [isMoving, setIsMoving] = useState(false);
   const [canvasOffset, setCanvasOffset] = useState({ x: 0, y: 0 });
-  const [canvasDimensions, setCanvasDimensions] = useState({ width: 3000, height: 3000 });
+  const [canvasDimensions, setCanvasDimensions] = useState({ width: 6000, height: 6000 });
+  const [streamAnimations, setStreamAnimations] = useState<Record<string, boolean>>({});
+  
+  // Default parameters for different equipment types
+  const defaultParameters = {
+    feed: {
+      temperature: 25, // °C
+      pressure: 101.325, // kPa
+      flowRate: 100, // kg/h
+      phase: "Liquid",
+      composition: selectedComponents.reduce((acc, comp) => {
+        acc[comp] = 0;
+        return acc;
+      }, {} as Record<string, number>)
+    },
+    reactor: {
+      temperature: 80, // °C
+      pressure: 200, // kPa
+      volume: 10, // m³
+      conversionRate: 85, // %
+      reactionType: "CSTR"
+    },
+    column: {
+      temperature: 65, // °C
+      pressure: 150, // kPa
+      numberOfTrays: 20,
+      refluxRatio: 1.5,
+      feedTray: 10,
+      bottomsRate: 50, // kg/h
+      distillateRate: 50 // kg/h
+    },
+    heater: {
+      inletTemperature: 25, // °C
+      outletTemperature: 80, // °C
+      pressure: 101.325, // kPa
+      heatDuty: 100, // kW
+      efficiency: 85 // %
+    },
+    cooler: {
+      inletTemperature: 80, // °C
+      outletTemperature: 25, // °C
+      pressure: 101.325, // kPa
+      heatDuty: 100, // kW
+      efficiency: 85 // %
+    },
+    mixer: {
+      pressure: 101.325, // kPa
+      temperature: 25, // °C
+      efficiency: 95 // %
+    },
+    valve: {
+      inletPressure: 200, // kPa
+      outletPressure: 101.325, // kPa
+      flowCoefficient: 0.75,
+      valveType: "linear"
+    },
+    pump: {
+      inletPressure: 101.325, // kPa
+      outletPressure: 300, // kPa
+      efficiency: 75, // %
+      power: 5 // kW
+    },
+    product: {
+      temperature: 25, // °C
+      pressure: 101.325, // kPa
+      flowRate: 100, // kg/h
+      purity: 95 // %
+    }
+  };
+  
+  // Equipment port configuration
+  const equipmentPorts = {
+    feed: [
+      { id: 'out', type: 'output', position: 'right' }
+    ],
+    reactor: [
+      { id: 'in', type: 'input', position: 'left' },
+      { id: 'out', type: 'output', position: 'right' }
+    ],
+    column: [
+      { id: 'in', type: 'input', position: 'left' },
+      { id: 'top', type: 'output', position: 'top' },
+      { id: 'bottom', type: 'output', position: 'bottom' }
+    ],
+    heater: [
+      { id: 'in', type: 'input', position: 'left' },
+      { id: 'out', type: 'output', position: 'right' }
+    ],
+    cooler: [
+      { id: 'in', type: 'input', position: 'left' },
+      { id: 'out', type: 'output', position: 'right' }
+    ],
+    mixer: [
+      { id: 'in1', type: 'input', position: 'left' },
+      { id: 'in2', type: 'input', position: 'top' },
+      { id: 'out', type: 'output', position: 'right' }
+    ],
+    valve: [
+      { id: 'in', type: 'input', position: 'left' },
+      { id: 'out', type: 'output', position: 'right' }
+    ],
+    pump: [
+      { id: 'in', type: 'input', position: 'left' },
+      { id: 'out', type: 'output', position: 'right' }
+    ],
+    product: [
+      { id: 'in', type: 'input', position: 'left' }
+    ]
+  };
   
   useEffect(() => {
     const savedEquipment = localStorage.getItem('chemflow-equipment');
@@ -91,7 +202,25 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
         console.error("Error loading saved streams:", e);
       }
     }
-  }, []);
+    
+    // Start stream animations
+    const intervalId = setInterval(() => {
+      if (streams.length > 0) {
+        setStreamAnimations(prevAnimations => {
+          const newAnimations = { ...prevAnimations };
+          
+          streams.forEach(stream => {
+            // Toggle animation state for each stream
+            newAnimations[stream.id] = !prevAnimations[stream.id];
+          });
+          
+          return newAnimations;
+        });
+      }
+    }, 1500);
+    
+    return () => clearInterval(intervalId);
+  }, [streams.length]);
   
   const equipmentList = [
     { id: "feed", name: "Feed Stream", icon: <Droplets className="h-5 w-5" /> },
@@ -170,14 +299,22 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
 
   const handleAddEquipment = (type: string, subType?: string) => {
     const id = `${type}-${Date.now()}`;
+    
+    // Add appropriate ports for the equipment type
+    const ports = equipmentPorts[type as keyof typeof equipmentPorts] || [];
+    
+    // Get the default parameters for this equipment type
+    const settings = defaultParameters[type as keyof typeof defaultParameters] || {};
+    
     const newEquipment: Equipment = {
       id,
       type,
       name: `${type.charAt(0).toUpperCase() + type.slice(1)} ${equipment.filter(e => e.type === type).length + 1}`,
       position: { x: 500, y: 500 },
       connections: [],
-      settings: {},
-      subType
+      settings,
+      subType,
+      ports: ports as Equipment['ports']
     };
     
     setEquipment(prev => [...prev, newEquipment]);
@@ -367,8 +504,8 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
       const scale = zoom / 100;
       
       // Calculate position within the canvas, accounting for zoom and pan
-      const x = (e.clientX - rect.left) / scale - dragStartPos.x;
-      const y = (e.clientY - rect.top) / scale - dragStartPos.y;
+      const x = (e.clientX - rect.left) / scale - canvasOffset.x;
+      const y = (e.clientY - rect.top) / scale - canvasOffset.y;
       
       setEquipment(prev => prev.map(eq => {
         if (eq.id === draggedEquipment) {
@@ -384,44 +521,73 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
 
   const handleEquipmentClick = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
-    
-    if (isConnecting && isConnecting !== id) {
-      const newStream: Stream = {
-        id: `stream-${Date.now()}`,
-        from: isConnecting,
-        to: id,
-        type: "material",
-        properties: {}
-      };
-      
-      setStreams(prev => [...prev, newStream]);
-      
-      setEquipment(prev => prev.map(eq => {
-        if (eq.id === isConnecting || eq.id === id) {
-          return {
-            ...eq,
-            connections: [...eq.connections, newStream.id]
-          };
-        }
-        return eq;
-      }));
-      
-      localStorage.setItem('chemflow-streams', JSON.stringify([...streams, newStream]));
-      
-      toast({
-        title: "Connection created",
-        description: "Equipment connected successfully"
-      });
-      
-      setIsConnecting(null);
-    } else {
-      setSelectedElement(id);
-    }
+    setSelectedElement(id);
   };
 
-  const handleStartConnection = (e: React.MouseEvent, id: string) => {
+  const handlePortClick = (e: React.MouseEvent, equipmentId: string, portId: string) => {
     e.stopPropagation();
-    setIsConnecting(id);
+    
+    if (isConnecting && isConnecting.id !== equipmentId) {
+      // Find the source equipment and port
+      const sourceEquipment = equipment.find(eq => eq.id === isConnecting.id);
+      const sourcePort = sourceEquipment?.ports?.find(port => port.id === isConnecting.portId);
+      
+      // Find the target equipment and port
+      const targetEquipment = equipment.find(eq => eq.id === equipmentId);
+      const targetPort = targetEquipment?.ports?.find(port => port.id === portId);
+      
+      // Only connect if it's a valid connection (output to input)
+      if (sourceEquipment && targetEquipment && sourcePort && targetPort) {
+        if (sourcePort.type === 'output' && targetPort.type === 'input') {
+          const newStream: Stream = {
+            id: `stream-${Date.now()}`,
+            from: isConnecting.id,
+            fromPort: isConnecting.portId,
+            to: equipmentId,
+            toPort: portId,
+            type: "material",
+            properties: {}
+          };
+          
+          setStreams(prev => [...prev, newStream]);
+          
+          setEquipment(prev => prev.map(eq => {
+            if (eq.id === isConnecting.id || eq.id === equipmentId) {
+              return {
+                ...eq,
+                connections: [...eq.connections, newStream.id]
+              };
+            }
+            return eq;
+          }));
+          
+          localStorage.setItem('chemflow-streams', JSON.stringify([...streams, newStream]));
+          
+          toast({
+            title: "Connection created",
+            description: "Stream connection established successfully"
+          });
+        } else {
+          toast({
+            title: "Invalid connection",
+            description: "You can only connect from an output port to an input port",
+            variant: "destructive"
+          });
+        }
+      }
+      
+      setIsConnecting(null);
+    } else if (!isConnecting) {
+      // Start connection from this port
+      setIsConnecting({ id: equipmentId, portId });
+    } else {
+      setIsConnecting(null);
+    }
+  };
+  
+  const handleStartConnection = (e: React.MouseEvent, id: string, portId?: string) => {
+    e.stopPropagation();
+    setIsConnecting({ id, portId });
   };
   
   const handleEquipmentDragStart = (e: React.MouseEvent, id: string) => {
@@ -435,9 +601,12 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
       const scale = zoom / 100;
       
       // Calculate the offset within the equipment item
+      const offsetX = (e.clientX - rect.left) / scale - canvasOffset.x - equipmentItem.position.x;
+      const offsetY = (e.clientY - rect.top) / scale - canvasOffset.y - equipmentItem.position.y;
+      
       setDragStartPos({
-        x: (e.clientX - rect.left) / scale - equipmentItem.position.x,
-        y: (e.clientY - rect.top) / scale - equipmentItem.position.y
+        x: offsetX,
+        y: offsetY
       });
     }
   };
@@ -514,9 +683,50 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     });
   };
 
+  const renderPort = (eq: Equipment, port: { id: string; type: string; position: string }) => {
+    const isPortConnecting = isConnecting?.id === eq.id && isConnecting?.portId === port.id;
+    const isConnected = streams.some(
+      stream => (stream.from === eq.id && stream.fromPort === port.id) || 
+               (stream.to === eq.id && stream.toPort === port.id)
+    );
+    
+    let positionClass = '';
+    switch (port.position) {
+      case 'top':
+        positionClass = 'top-0 left-1/2 -translate-x-1/2 -translate-y-1/2';
+        break;
+      case 'right':
+        positionClass = 'right-0 top-1/2 translate-x-1/2 -translate-y-1/2';
+        break;
+      case 'bottom':
+        positionClass = 'bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2';
+        break;
+      case 'left':
+        positionClass = 'left-0 top-1/2 -translate-x-1/2 -translate-y-1/2';
+        break;
+    }
+    
+    return (
+      <div
+        key={`${eq.id}-${port.id}`}
+        className={`absolute ${positionClass} w-3 h-3 rounded-full cursor-pointer z-20 flex items-center justify-center ${
+          isPortConnecting 
+            ? 'bg-amber-500 ring-2 ring-amber-200 transform scale-125' 
+            : isConnected 
+              ? 'bg-flow-blue ring-2 ring-blue-200' 
+              : 'bg-gray-200 hover:bg-flow-blue/70 hover:ring-2 hover:ring-blue-200'
+        }`}
+        onClick={(e) => handlePortClick(e, eq.id, port.id)}
+        title={`${port.type === 'input' ? 'Input' : 'Output'} port: ${port.id}`}
+      >
+        <Circle className="h-2 w-2 text-white" />
+      </div>
+    );
+  };
+
   const renderEquipmentCard = (eq: Equipment) => {
     const isSelected = selectedElement === eq.id;
-    const isSource = isConnecting === eq.id;
+    const isSource = isConnecting?.id === eq.id;
     const isBeingMoved = isMoving && selectedElement === eq.id;
     
     const equipmentType = equipmentList.find(e => e.id === eq.type);
@@ -524,14 +734,14 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     return (
       <div 
         key={eq.id}
-        className={`absolute p-2 rounded-lg shadow-xl bg-white border-2 transition-all backdrop-blur-sm hover:shadow-blue-200/50 animate-fade-in ${
+        className={`absolute p-2 rounded-lg shadow-xl backdrop-blur-sm hover:shadow-blue-200/50 animate-fade-in transition-all ${
           isSelected 
-            ? 'border-flow-blue shadow-lg' 
+            ? 'border-[3px] border-flow-blue shadow-lg bg-gradient-to-b from-white to-blue-50' 
             : isSource 
-              ? 'border-amber-500'
+              ? 'border-[3px] border-amber-500 bg-white'
               : isBeingMoved
-                ? 'border-green-500'
-                : 'border-gray-200'
+                ? 'border-[3px] border-green-500 bg-white'
+                : 'border-2 border-gray-200 bg-white hover:border-flow-blue/50'
         }`}
         style={{
           left: `${eq.position.x}px`,
@@ -547,7 +757,10 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
           onMouseDown={(e) => handleEquipmentDragStart(e, eq.id)}
           onMouseUp={handleEquipmentDragEnd}
         >
-          <div className="text-flow-blue flex items-center justify-center w-12 h-12 bg-blue-50 rounded-full transition-all hover:scale-105">
+          {/* Render ports */}
+          {eq.ports?.map(port => renderPort(eq, port))}
+          
+          <div className="text-flow-blue flex items-center justify-center w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-50 rounded-full transition-all hover:scale-105">
             {equipmentType?.icon || <Container className="h-8 w-8 text-flow-blue" />}
           </div>
           <span className="text-xs text-center font-medium">{eq.name}</span>
@@ -602,26 +815,89 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
       return null;
     }
     
-    const sourceX = sourceEq.position.x + 10;
-    const sourceY = sourceEq.position.y + 10;
-    const targetX = targetEq.position.x + 10;
-    const targetY = targetEq.position.y + 10;
+    // Find the position of the ports
+    let sourceX = sourceEq.position.x + 10;
+    let sourceY = sourceEq.position.y + 10;
+    let targetX = targetEq.position.x + 10;
+    let targetY = targetEq.position.y + 10;
+    
+    if (stream.fromPort && stream.toPort) {
+      const sourcePort = sourceEq.ports?.find(p => p.id === stream.fromPort);
+      const targetPort = targetEq.ports?.find(p => p.id === stream.toPort);
+      
+      if (sourcePort && targetPort) {
+        // Adjust positions based on port positions
+        switch (sourcePort.position) {
+          case 'top':
+            sourceX = sourceEq.position.x + 10;
+            sourceY = sourceEq.position.y - 5;
+            break;
+          case 'right':
+            sourceX = sourceEq.position.x + 25;
+            sourceY = sourceEq.position.y + 10;
+            break;
+          case 'bottom':
+            sourceX = sourceEq.position.x + 10;
+            sourceY = sourceEq.position.y + 25;
+            break;
+          case 'left':
+            sourceX = sourceEq.position.x - 5;
+            sourceY = sourceEq.position.y + 10;
+            break;
+        }
+        
+        switch (targetPort.position) {
+          case 'top':
+            targetX = targetEq.position.x + 10;
+            targetY = targetEq.position.y - 5;
+            break;
+          case 'right':
+            targetX = targetEq.position.x + 25;
+            targetY = targetEq.position.y + 10;
+            break;
+          case 'bottom':
+            targetX = targetEq.position.x + 10;
+            targetY = targetEq.position.y + 25;
+            break;
+          case 'left':
+            targetX = targetEq.position.x - 5;
+            targetY = targetEq.position.y + 10;
+            break;
+        }
+      }
+    }
     
     const dx = targetX - sourceX;
     const dy = targetY - sourceY;
     const angle = Math.atan2(dy, dx);
     
+    // Calculate control points for a bezier curve
+    const length = Math.sqrt(dx * dx + dy * dy);
+    const controlPointX = sourceX + dx * 0.5;
+    const controlPointY = sourceY + dy * 0.5;
+    
+    // Determine arrow points
+    const arrowSize = 8;
+    const arrowX = targetX - arrowSize * Math.cos(angle);
+    const arrowY = targetY - arrowSize * Math.sin(angle);
+    
     let streamColor = "stroke-blue-500";
-    let streamGlow = "";
+    let streamGlow = "filter drop-shadow(0 0 2px rgba(59, 130, 246, 0.5))";
     
     if (stream.type === "energy") {
       streamColor = "stroke-red-500";
+      streamGlow = "filter drop-shadow(0 0 2px rgba(239, 68, 68, 0.5))";
     } else if (stream.type === "signal") {
       streamColor = "stroke-green-500";
-    } else {
-      // Material stream with glow effect
-      streamGlow = "filter drop-shadow(0 0 2px rgba(59, 130, 246, 0.5))";
+      streamGlow = "filter drop-shadow(0 0 2px rgba(34, 197, 94, 0.5))";
     }
+    
+    // Animated dots along the stream
+    const isAnimating = streamAnimations[stream.id];
+    const dotPosition = isAnimating ? 0.7 : 0.3; // Alternate between two positions
+    
+    const dotX = sourceX + dx * dotPosition;
+    const dotY = sourceY + dy * dotPosition;
     
     return (
       <svg 
@@ -644,13 +920,20 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
             />
           </marker>
         </defs>
-        <line
-          x1={sourceX + 10}
-          y1={sourceY + 10}
-          x2={targetX + 10}
-          y2={targetY + 10}
-          className={`${streamColor} stroke-2 ${streamGlow}`}
+        
+        {/* Bezier Curve for the stream */}
+        <path
+          d={`M ${sourceX} ${sourceY} Q ${controlPointX} ${controlPointY} ${targetX} ${targetY}`}
+          className={`${streamColor} stroke-2 ${streamGlow} fill-none`}
           markerEnd={`url(#arrowhead-${stream.id})`}
+        />
+        
+        {/* Animated Dot */}
+        <circle
+          cx={dotX}
+          cy={dotY}
+          r="3"
+          className={`${streamColor.replace('stroke-', 'fill-')} animate-pulse`}
         />
       </svg>
     );
@@ -749,7 +1032,7 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
               className="p-1.5 rounded-lg text-gray-500 hover:bg-blue-50 hover:text-blue-600 transition-all"
               title="Reset view"
             >
-              <Settings2 className="h-4 w-4" />
+              <ChevronsUpDown className="h-4 w-4" />
             </button>
             <span className="text-xs text-gray-500 ml-2">
               Tip: Use middle mouse button to pan around
@@ -807,7 +1090,7 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
           
           {isConnecting && (
             <div className="fixed bottom-4 right-4 bg-amber-100 text-amber-700 p-3 rounded-lg shadow-md text-sm flex items-center gap-2 animate-pulse-subtle">
-              <span>Select an equipment to connect</span>
+              <span>Select a port to connect</span>
               <button 
                 onClick={() => setIsConnecting(null)}
                 className="p-1 rounded-full bg-amber-200 text-amber-700 hover:bg-amber-300 transition-all"

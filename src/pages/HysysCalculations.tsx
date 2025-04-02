@@ -16,7 +16,7 @@ const HysysCalculations = () => {
             <div className="absolute -top-20 -left-20 w-64 h-64 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float"></div>
             <div className="absolute -bottom-8 -right-8 w-48 h-48 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float" style={{ animationDelay: "2s" }}></div>
             
-            <h1 className="text-4xl font-display font-bold mb-4 bg-gradient-to-r from-flow-blue to-blue-600 bg-clip-text text-transparent relative z-10">
+            <h1 className="text-4xl font-display font-bold mb-4 bg-gradient-to-r from-blue-500 to-blue-700 bg-clip-text text-transparent relative z-10">
               Aspen HYSYS Calculations
             </h1>
             <p className="text-gray-600 dark:text-gray-300 max-w-3xl relative z-10">
@@ -24,7 +24,7 @@ const HysysCalculations = () => {
               and modern visualization tools that enhance your workflow.
             </p>
             <div className="mt-4 flex flex-wrap gap-3 relative z-10">
-              <span className="inline-flex items-center px-3 py-1 text-xs font-medium rounded-full bg-flow-blue/10 text-flow-blue shadow-sm hover:shadow transform hover:scale-105 transition-all">
+              <span className="inline-flex items-center px-3 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700 shadow-sm hover:shadow transform hover:scale-105 transition-all">
                 Real-time Analysis
               </span>
               <span className="inline-flex items-center px-3 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300 shadow-sm hover:shadow transform hover:scale-105 transition-all">

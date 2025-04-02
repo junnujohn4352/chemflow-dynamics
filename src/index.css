@@ -43,6 +43,10 @@
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    --flow-blue: #0074e4;
+    --flow-teal: #00b4d8;
+    --flow-cyan: #00d4f5;
   }
 
   .dark {
@@ -82,6 +86,10 @@
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    --flow-blue: #1a91ff;
+    --flow-teal: #0fd0f2;
+    --flow-cyan: #22e8ff;
   }
 }
 
@@ -131,6 +139,30 @@
   
   .card-gradient {
     @apply bg-gradient-to-b from-white to-blue-50 border border-blue-100;
+  }
+  
+  .equipment-card {
+    @apply bg-white/80 backdrop-blur-sm border-2 border-gray-200 rounded-lg shadow-md transition-all duration-200 hover:shadow-lg hover:border-blue-300;
+  }
+  
+  .equipment-card-selected {
+    @apply border-2 border-blue-500 shadow-md shadow-blue-200/50;
+  }
+  
+  .connect-dot {
+    @apply w-3 h-3 rounded-full bg-gray-200 hover:bg-blue-500 transition-all cursor-pointer;
+  }
+  
+  .connect-dot-active {
+    @apply bg-blue-500 ring-2 ring-blue-200;
+  }
+  
+  .stream-path {
+    @apply stroke-blue-500 stroke-2 fill-none;
+  }
+  
+  .stream-dot {
+    @apply fill-blue-500 animate-pulse;
   }
 }
 
@@ -215,9 +247,114 @@
   animation: fade-in-up 0.5s ease-out forwards;
 }
 
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.5s ease-out forwards;
+}
+
+@keyframes slide-in {
+  0% {
+    transform: translateX(-10px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in {
+  animation: slide-in 0.3s ease-out forwards;
+}
+
+@keyframes flow-animation {
+  0% {
+    stroke-dashoffset: 200;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+.animate-flow {
+  stroke-dasharray: 20, 10;
+  animation: flow-animation 3s linear infinite;
+}
+
 .infinite-canvas {
   width: 100%;
   height: 100%;
   position: relative;
   overflow: visible;
+}
+
+/* 3D effects for cards */
+.card-3d {
+  transform-style: preserve-3d;
+  transition: transform 0.3s ease-out;
+  perspective: 1000px;
+}
+
+.card-3d:hover {
+  transform: translateY(-5px) rotateX(5deg) rotateY(5deg);
+}
+
+.card-3d-shadow {
+  box-shadow: 
+    0 5px 15px rgba(0, 0, 0, 0.05),
+    0 15px 35px rgba(0, 116, 228, 0.1);
+  transition: box-shadow 0.3s ease-out;
+}
+
+.card-3d-shadow:hover {
+  box-shadow: 
+    0 10px 25px rgba(0, 0, 0, 0.08),
+    0 20px 48px rgba(0, 116, 228, 0.15);
+}
+
+/* Blue radial gradient backgrounds */
+.blue-radial-gradient {
+  background: radial-gradient(circle at top right, rgba(0, 116, 228, 0.1), rgba(0, 180, 216, 0.05) 60%, transparent);
+}
+
+/* Glow effects */
+.blue-glow {
+  box-shadow: 0 0 15px rgba(0, 116, 228, 0.2), 0 0 30px rgba(0, 116, 228, 0.1);
+}
+
+.text-glow {
+  text-shadow: 0 0 10px rgba(0, 116, 228, 0.3);
+}
+
+/* Animated background gradient for sections */
+.gradient-animate {
+  background-size: 400% 400%;
+  animation: gradient-shift 15s ease infinite;
+  background-image: linear-gradient(
+    -45deg,
+    rgba(0, 116, 228, 0.1),
+    rgba(0, 180, 216, 0.1),
+    rgba(0, 212, 245, 0.1),
+    rgba(255, 255, 255, 0.1)
+  );
+}
+
+@keyframes gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
