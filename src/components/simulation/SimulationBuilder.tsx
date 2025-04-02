@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Plus, Minus, Thermometer, Droplets, Settings2, Container, FlaskConical, Columns, Gauge, Save, Trash2, X, Sliders, Move, ArrowLeft, Play } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -516,7 +517,7 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
   
   const renderEquipmentCard = (eq: Equipment) => {
     const isSelected = selectedElement === eq.id;
-    const isConnecting = isConnecting === eq.id;
+    const isConnectingThis = isConnecting === eq.id;
     
     const displaySettings: Record<string, string> = {};
     
@@ -537,7 +538,7 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
         key={eq.id}
         className={`absolute bg-white p-4 rounded-lg shadow-md transition-all ${
           isSelected ? 'ring-2 ring-flow-blue' : ''
-        } ${isConnecting ? 'ring-2 ring-amber-500' : ''}`}
+        } ${isConnectingThis ? 'ring-2 ring-amber-500' : ''}`}
         style={{
           left: eq.position.x,
           top: eq.position.y,
