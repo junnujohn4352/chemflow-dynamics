@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import EquipmentCard from "./EquipmentCard";
@@ -190,14 +189,12 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
     setIsDragging(false);
   };
 
-  // Fix the mouse move handler to properly update equipment positions
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!isDragging || !selectedEquipment) return;
     
     const deltaX = e.clientX - dragStartPos.x;
     const deltaY = e.clientY - dragStartPos.y;
     
-    // Update the equipment position directly based on the mouse movement
     setEquipment(prev => prev.map(eq => {
       if (eq.id === selectedEquipment) {
         return {
@@ -211,7 +208,6 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
       return eq;
     }));
     
-    // Reset drag start position for continuous movement
     setDragStartPos({
       x: e.clientX,
       y: e.clientY

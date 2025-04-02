@@ -80,7 +80,7 @@ const Simulations = () => {
         const simName = simData.name;
         
         const deletedSim = simulations.find(sim => sim.id === id);
-        if (deletedSim && deletedSim.name === simName) {
+        if (deletedSim && safeStringify(deletedSim.name) === simName) {
           localStorage.removeItem('chemflow-active-simulation');
           localStorage.removeItem('chemflow-simulation-running');
         }
