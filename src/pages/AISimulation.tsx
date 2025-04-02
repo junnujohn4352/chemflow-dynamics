@@ -9,7 +9,7 @@ import { Slider } from "@/components/ui/slider";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Copy, Check, AlertTriangle, RefreshCw, Loader2 } from 'lucide-react';
+import { Copy, Check, AlertTriangle, RefreshCw, Loader2, Globe } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import {
   Accordion,
@@ -31,15 +31,6 @@ import {
 } from "@/components/ui/select";
 import { Toaster } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Calendar } from "@/components/ui/calendar";
-import { CalendarIcon } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { format } from "date-fns";
-import { DatePicker } from "@/components/date-picker";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator } from "@/components/ui/command";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { 
   Sheet, 
   SheetContent, 
@@ -51,6 +42,19 @@ import {
 } from "@/components/ui/sheet";
 import { LlamaService } from '@/services/LlamaService';
 import { ThemeProvider } from "@/components/ThemeProvider";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog";
+
+<lov-add-dependency>react-markdown@9.0.1</lov-add-dependency>
+<lov-add-dependency>react-syntax-highlighter@15.5.0</lov-add-dependency>
 
 const AISimulation = () => {
   const [message, setMessage] = useState('');
@@ -62,110 +66,9 @@ const AISimulation = () => {
   const [temperature, setTemperature] = useState(0.5);
   const [topP, setTopP] = useState(0.9);
   const [seed, setSeed] = useState<number | null>(null);
-  const [isStreaming, setIsStreaming] = useState(false);
-  const [streamedResponse, setStreamedResponse] = useState('');
-  const [showSettings, setShowSettings] = useState(false);
-  const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
-  const [useDarkTheme, setUseDarkTheme] = useState(false);
-  const [showDisclaimer, setShowDisclaimer] = useState(true);
-  const [showWelcomeMessage, setShowWelcomeMessage] = useState(true);
-  const [showDebugInfo, setShowDebugInfo] = useState(false);
-  const [showExamples, setShowExamples] = useState(true);
-  const [showCitation, setShowCitation] = useState(true);
-  const [showAttribution, setShowAttribution] = useState(true);
-  const [showSupport, setShowSupport] = useState(true);
-  const [showDonateButton, setShowDonateButton] = useState(true);
-  const [showContactInfo, setShowContactInfo] = useState(true);
-  const [showTermsOfService, setShowTermsOfService] = useState(true);
-  const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(true);
-  const [showCookiePolicy, setShowCookiePolicy] = useState(true);
-  const [showAccessibilityStatement, setShowAccessibilityStatement] = useState(true);
-  const [showSecurityPractices, setShowSecurityPractices] = useState(true);
-  const [showCodeOfConduct, setShowCodeOfConduct] = useState(true);
-  const [showCommunityGuidelines, setShowCommunityGuidelines] = useState(true);
-  const [showFeedbackForm, setShowFeedbackForm] = useState(true);
-  const [showBugReportForm, setShowBugReportForm] = useState(true);
-  const [showFeatureRequestForm, setShowFeatureRequestForm] = useState(true);
-  const [showKnowledgeBase, setShowKnowledgeBase] = useState(true);
-  const [showFAQSection, setShowFAQSection] = useState(true);
-  const [showTutorials, setShowTutorials] = useState(true);
-  const [showUserManual, setShowUserManual] = useState(true);
-  const [showAPIReference, setShowAPIReference] = useState(true);
-  const [showReleaseNotes, setShowReleaseNotes] = useState(true);
-  const [showSystemStatus, setShowSystemStatus] = useState(true);
-  const [showServerErrorInfo, setShowServerErrorInfo] = useState(true);
-  const [showClientErrorInfo, setShowClientErrorInfo] = useState(true);
-  const [showPerformanceMetrics, setShowPerformanceMetrics] = useState(true);
-  const [showResourceUsage, setShowResourceUsage] = useState(true);
-  const [showSessionManagement, setShowSessionManagement] = useState(true);
-  const [showAuthenticationInfo, setShowAuthenticationInfo] = useState(true);
-  const [showAuthorizationDetails, setShowAuthorizationDetails] = useState(true);
-  const [showDataValidationDetails, setShowDataValidationDetails] = useState(true);
-  const [showInputSanitizationDetails, setShowInputSanitizationDetails] = useState(true);
-  const [showRateLimitingInfo, setShowRateLimitingInfo] = useState(true);
-  const [showErrorHandlingDetails, setShowErrorHandlingDetails] = useState(true);
-  const [showLoggingDetails, setShowLoggingDetails] = useState(true);
-  const [showMonitoringDetails, setShowMonitoringDetails] = useState(true);
-  const [showAlertingDetails, setShowAlertingDetails] = useState(true);
-  const [showBackupAndRecoveryDetails, setShowBackupAndRecoveryDetails] = useState(true);
-  const [showDisasterRecoveryPlan, setShowDisasterRecoveryPlan] = useState(true);
-  const [showIncidentResponsePlan, setShowIncidentResponsePlan] = useState(true);
-  const [showSecurityAuditDetails, setShowSecurityAuditDetails] = useState(true);
-  const [showComplianceInfo, setShowComplianceInfo] = useState(true);
-  const [showDataRetentionPolicy, setShowDataRetentionPolicy] = useState(true);
-  const [showDataDeletionPolicy, setShowDataDeletionPolicy] = useState(true);
-  const [showDataBreachResponsePlan, setShowDataBreachResponsePlan] = useState(true);
-  const [showVulnerabilityManagementDetails, setShowVulnerabilityManagementDetails] = useState(true);
-  const [showPenetrationTestingDetails, setShowPenetrationTestingDetails] = useState(true);
-  const [showThreatModelingDetails, setShowThreatModelingDetails] = useState(true);
-  const [showSecureCodingPractices, setShowSecureCodingPractices] = useState(true);
-  const [showAccessControlDetails, setShowAccessControlDetails] = useState(true);
-  const [showEncryptionDetails, setShowEncryptionDetails] = useState(true);
-  const [showNetworkSecurityDetails, setShowNetworkSecurityDetails] = useState(true);
-  const [showPhysicalSecurityDetails, setShowPhysicalSecurityDetails] = useState(true);
-  const [showThirdPartySecurityDetails, setShowThirdPartySecurityDetails] = useState(true);
-  const [showSecurityAwarenessTrainingDetails, setShowSecurityAwarenessTrainingDetails] = useState(true);
-  const [showSecurityIncidentReportingProcess, setShowSecurityIncidentReportingProcess] = useState(true);
-  const [showSecurityVulnerabilityDisclosurePolicy, setShowSecurityVulnerabilityDisclosurePolicy] = useState(true);
-  const [showResponsibleAIDevelopmentPractices, setShowResponsibleAIDevelopmentPractices] = useState(true);
-  const [showEthicalConsiderations, setShowEthicalConsiderations] = useState(true);
-  const [showBiasDetectionAndMitigationStrategies, setShowBiasDetectionAndMitigationStrategies] = useState(true);
-  const [showFairnessMetrics, setShowFairnessMetrics] = useState(true);
-  const [showTransparencyAndExplainabilityDetails, setShowTransparencyAndExplainabilityDetails] = useState(true);
-  const [showAccountabilityMechanisms, setShowAccountabilityMechanisms] = useState(true);
-  const [showHumanOversightDetails, setShowHumanOversightDetails] = useState(true);
-  const [showUserControlDetails, setShowUserControlDetails] = useState(true);
-  const [showPrivacyEnhancingTechnologies, setShowPrivacyEnhancingTechnologies] = useState(true);
-  const [showDifferentialPrivacyDetails, setShowDifferentialPrivacyDetails] = useState(true);
-  const [showFederatedLearningDetails, setShowFederatedLearningDetails] = useState(true);
-  const [showSecureMultiPartyComputationDetails, setShowSecureMultiPartyComputationDetails] = useState(true);
-  const [showHomomorphicEncryptionDetails, setShowHomomorphicEncryptionDetails] = useState(true);
-  const [showDataAnonymizationTechniques, setShowDataAnonymizationTechniques] = useState(true);
-  const [showDataPseudonymizationTechniques, setShowDataPseudonymizationTechniques] = useState(true);
-  const [showDataDeidentificationTechniques, setShowDataDeidentificationTechniques] = useState(true);
-  const [showDataMinimizationTechniques, setShowDataMinimizationTechniques] = useState(true);
-  const [showPurposeLimitationDetails, setShowPurposeLimitationDetails] = useState(true);
-  const [showDataSubjectRightsDetails, setShowDataSubjectRightsDetails] = useState(true);
-  const [showRightToAccessDetails, setShowRightToAccessDetails] = useState(true);
-  const [showRightToRectificationDetails, setShowRightToRectificationDetails] = useState(true);
-  const [showRightToErasureDetails, setShowRightToErasureDetails] = useState(true);
-  const [showRightToRestrictionOfProcessingDetails, setShowRightToRestrictionOfProcessingDetails] = useState(true);
-  const [showRightToDataPortabilityDetails, setShowRightToDataPortabilityDetails] = useState(true);
-  const [showRightToObjectDetails, setShowRightToObjectDetails] = useState(true);
-  const [showAutomatedDecisionMakingDetails, setShowAutomatedDecisionMakingDetails] = useState(true);
-  const [showProfilingDetails, setShowProfilingDetails] = useState(true);
-  const [showLegalBasisForProcessingDetails, setShowLegalBasisForProcessingDetails] = useState(true);
-  const [showConsentManagementDetails, setShowConsentManagementDetails] = useState(true);
-  const [showDataTransferDetails, setShowDataTransferDetails] = useState(true);
-  const [showInternationalDataTransferDetails, setShowInternationalDataTransferDetails] = useState(true);
-  const [showCrossBorderDataTransferDetails, setShowCrossBorderDataTransferDetails] = useState(true);
-  const [showStandardContractualClausesDetails, setShowStandardContractualClausesDetails] = useState(true);
-  const [showBindingCorporateRulesDetails, setShowBindingCorporateRulesDetails] = useState(true);
-  const [showAdequacyDecisionsDetails, setShowAdequacyDecisionsDetails] = useState(true);
-  const [showDataLocalizationDetails, setShowDataLocalizationDetails] = useState(true);
-  const [showDataResidencyDetails, setShowDataResidencyDetails] = useState(true);
-  const [showSovereigntyRequirementsDetails, setShowSovereigntyRequirementsDetails] = useState(true);
-  const [showGeographicRestrictionsDetails, setShowGeographicRestrictionsDetails] = useState(true);
+  const [colabEndpoint, setColabEndpoint] = useState<string>('');
+  const [showColabDialog, setShowColabDialog] = useState(false);
+  const [isConnectedToColab, setIsConnectedToColab] = useState(false);
   const [llamaInstance, setLlamaInstance] = useState<LlamaService | null>(null);
   const { toast } = useToast();
   const { theme, setTheme } = useTheme();
@@ -177,6 +80,18 @@ const AISimulation = () => {
       setIsModelLoading(true);
       try {
         await instance.loadModel();
+        
+        // Check if there's a stored endpoint
+        const storedEndpoint = localStorage.getItem('colabEndpoint');
+        if (storedEndpoint) {
+          setColabEndpoint(storedEndpoint);
+          instance.setColabEndpoint(storedEndpoint);
+          setIsConnectedToColab(true);
+          toast({
+            title: "Colab Connection Restored",
+            description: "Using previously saved Colab endpoint.",
+          });
+        }
       } catch (error) {
         console.error("Failed to load the LLaMA model:", error);
         toast({
@@ -197,7 +112,6 @@ const AISimulation = () => {
 
     setIsLoading(true);
     setResponse('');
-    setStreamedResponse('');
     setIsCopied(false);
 
     try {
@@ -220,27 +134,6 @@ const AISimulation = () => {
     }
   }, [message, llamaInstance, toast]);
 
-  const handleStream = useCallback(async () => {
-    if (!message.trim()) return;
-
-    setIsStreaming(true);
-    setStreamedResponse('');
-    setIsCopied(false);
-
-    // Simulate streaming response
-    let simulatedStream = "";
-    const words = message.split(" ");
-    const interval = 50; // Simulate word-by-word streaming
-
-    for (let i = 0; i < words.length; i++) {
-      await new Promise(resolve => setTimeout(resolve, interval));
-      simulatedStream += words[i] + " ";
-      setStreamedResponse(simulatedStream);
-    }
-
-    setIsStreaming(false);
-  }, [message]);
-
   const handleCopyClick = () => {
     navigator.clipboard.writeText(response);
     setIsCopied(true);
@@ -252,6 +145,49 @@ const AISimulation = () => {
 
   const toggleSettings = () => {
     setIsSettingsOpen(!isSettingsOpen);
+  };
+
+  const handleConnectToColab = () => {
+    if (!colabEndpoint || !llamaInstance) return;
+    
+    try {
+      // Basic validation
+      const url = new URL(colabEndpoint);
+      
+      // Set the endpoint in the service
+      llamaInstance.setColabEndpoint(colabEndpoint);
+      
+      // Save to localStorage for persistence
+      localStorage.setItem('colabEndpoint', colabEndpoint);
+      
+      setIsConnectedToColab(true);
+      setShowColabDialog(false);
+      
+      toast({
+        title: "Connected to Colab",
+        description: "Your application is now configured to use the Colab-hosted Llama model.",
+      });
+    } catch (error) {
+      toast({
+        title: "Invalid URL",
+        description: "Please enter a valid URL for the Colab endpoint.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDisconnectFromColab = () => {
+    if (llamaInstance) {
+      llamaInstance.setColabEndpoint("");
+      localStorage.removeItem('colabEndpoint');
+      setIsConnectedToColab(false);
+      setColabEndpoint('');
+      
+      toast({
+        title: "Disconnected from Colab",
+        description: "Now using the built-in simulation.",
+      });
+    }
   };
 
   const handleThemeChange = (newTheme: "light" | "dark" | "system") => {
@@ -266,76 +202,7 @@ const AISimulation = () => {
     "Model the kinetics of a chemical reaction.",
     "Calculate the energy efficiency of a process.",
     "Estimate the economic viability of a plant.",
-    "Identify potential environmental impacts.",
-    "Optimize the separation process in a unit.",
-    "Simulate the performance of a heat exchanger.",
-    "Predict the yield of a chemical reaction.",
-    "Determine the optimal operating conditions.",
-    "Troubleshoot a process control issue.",
-    "Design a new chemical process.",
-    "Scale-up a laboratory process to industrial scale.",
-    "Assess the safety of a chemical plant.",
-    "Comply with environmental regulations.",
-    "Reduce waste generation in a process.",
-    "Improve the sustainability of a chemical plant.",
-    "Implement green chemistry principles.",
-    "Use renewable energy sources.",
-    "Reduce greenhouse gas emissions.",
-    "Conserve water resources.",
-    "Minimize air pollution.",
-    "Prevent soil contamination.",
-    "Protect biodiversity.",
-    "Promote circular economy.",
-    "Engage stakeholders.",
-    "Communicate environmental performance.",
-    "Report environmental data.",
-    "Verify environmental claims.",
-    "Certify environmental management systems.",
-    "Audit environmental performance.",
-    "Invest in environmental technologies.",
-    "Support environmental research.",
-    "Educate the public about environmental issues.",
-    "Advocate for environmental policies.",
-    "Partner with environmental organizations.",
-    "Donate to environmental causes.",
-    "Volunteer for environmental projects.",
-    "Reduce your carbon footprint.",
-    "Conserve energy at home.",
-    "Use public transportation.",
-    "Bike or walk instead of driving.",
-    "Eat less meat.",
-    "Buy local and organic food.",
-    "Reduce your consumption.",
-    "Reuse and recycle.",
-    "Compost your food waste.",
-    "Plant trees.",
-    "Support sustainable businesses.",
-    "Vote for environmental candidates.",
-    "Contact your elected officials.",
-    "Join an environmental organization.",
-    "Donate to environmental causes.",
-    "Volunteer for environmental projects.",
-    "Educate yourself about environmental issues.",
-    "Talk to your friends and family about environmental issues.",
-    "Make a difference in your community.",
-    "Help protect the planet.",
-    "Save the environment.",
-    "Go green.",
-    "Be sustainable.",
-    "Live responsibly.",
-    "Think globally, act locally.",
-    "Every little bit helps.",
-    "Together, we can make a difference.",
-    "The future of our planet depends on us.",
-    "Let's create a better world for future generations.",
-    "What is the impact of varying the reflux ratio in a distillation column?",
-    "How does the choice of catalyst affect the yield of a reaction?",
-    "Can you suggest a more energy-efficient design for a heat exchanger network?",
-    "What are the key factors affecting the stability of a chemical reactor?",
-    "How can I optimize the operating conditions of a separation process?",
-    "What are the environmental impacts of using a particular solvent?",
-    "Can you help me troubleshoot a control issue in my process?",
-    "What are the safety considerations for handling a hazardous chemical?"
+    "Identify potential environmental impacts."
   ];
 
   return (
@@ -345,6 +212,10 @@ const AISimulation = () => {
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">AI Simulation Assistant</h1>
             <div className="space-x-2">
+              <Button variant="outline" size="sm" onClick={() => setShowColabDialog(true)}>
+                <Globe className="mr-2 h-4 w-4" />
+                {isConnectedToColab ? "Manage Colab" : "Connect to Colab"}
+              </Button>
               <Button variant="outline" size="sm" onClick={toggleSettings}>
                 Settings
               </Button>
@@ -362,6 +233,7 @@ const AISimulation = () => {
           </div>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
             Get real-time insights and analysis for your chemical processes.
+            {isConnectedToColab && <Badge variant="secondary" className="ml-2">Connected to Colab</Badge>}
           </p>
         </div>
 
@@ -381,7 +253,7 @@ const AISimulation = () => {
                     className="w-full h-32 resize-none"
                   />
                   <div className="mt-2 flex items-center space-x-2">
-                    <Button size="sm" onClick={handleSend} disabled={isLoading || isModelLoading}>
+                    <Button onClick={handleSend} disabled={isLoading || isModelLoading}>
                       {isLoading ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -389,16 +261,6 @@ const AISimulation = () => {
                         </>
                       ) : (
                         "Generate Response"
-                      )}
-                    </Button>
-                    <Button variant="secondary" size="sm" onClick={handleStream} disabled={isStreaming || isModelLoading}>
-                      {isStreaming ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          <span>Streaming...</span>
-                        </>
-                      ) : (
-                        "Simulate Stream"
                       )}
                     </Button>
                   </div>
@@ -410,72 +272,42 @@ const AISimulation = () => {
                   <h3 className="text-lg font-semibold">Response</h3>
                   <p className="text-sm text-gray-500">
                     AI-generated analysis and insights.
-                    {showCitation && (
-                      <Badge variant="secondary" className="ml-2">
-                        AI Generated
-                      </Badge>
-                    )}
+                    <Badge variant="secondary" className="ml-2">
+                      AI Generated
+                    </Badge>
                   </p>
                 </CardHeader>
                 <CardContent className="prose dark:prose-invert max-w-none">
                   {isModelLoading ? (
                     <div className="flex flex-col space-y-2">
-                      <Skeleton className="h-4 w-[200px]" />
-                      <Skeleton className="h-4 w-[250px]" />
-                      <Skeleton className="h-4 w-[150px]" />
+                      <div className="h-4 w-[200px] bg-gray-200 dark:bg-gray-700 animate-pulse rounded"></div>
+                      <div className="h-4 w-[250px] bg-gray-200 dark:bg-gray-700 animate-pulse rounded"></div>
+                      <div className="h-4 w-[150px] bg-gray-200 dark:bg-gray-700 animate-pulse rounded"></div>
                     </div>
                   ) : (
-                    <>
-                      {streamedResponse ? (
-                        <ReactMarkdown
-                          components={{
-                            code({ node, className, children, ...props }) {
-                              const match = /language-(\w+)/.exec(className || '')
-                              return !className?.includes('language-') ? (
-                                <code className={className} {...props}>
-                                  {children}
-                                </code>
-                              ) : (
-                                <SyntaxHighlighter
-                                  style={dracula}
-                                  language={match?.[1] || ''}
-                                  PreTag="div"
-                                  {...props}
-                                >
-                                  {String(children).replace(/\n$/, '')}
-                                </SyntaxHighlighter>
-                              )
-                            }
-                          }}
-                        >
-                          {streamedResponse}
-                        </ReactMarkdown>
-                      ) : (
-                        <ReactMarkdown
-                          components={{
-                            code({ node, className, children, ...props }) {
-                              const match = /language-(\w+)/.exec(className || '')
-                              return !className?.includes('language-') ? (
-                                <code className={className} {...props}>
-                                  {children}
-                                </code>
-                              ) : (
-                                <SyntaxHighlighter
-                                  style={dracula}
-                                  language={match?.[1] || ''}
-                                  PreTag="div"
-                                  {...props}
-                                >
-                                  {String(children).replace(/\n$/, '')}
-                                </SyntaxHighlighter>
-                              )
-                            }
-                          }}
-                        >
-                          {response}
-                        </ReactMarkdown>
-                      )}
-                    </>
+                    <ReactMarkdown
+                      components={{
+                        code({ node, className, children, ...props }) {
+                          const match = /language-(\w+)/.exec(className || '')
+                          return !className?.includes('language-') ? (
+                            <code className={className} {...props}>
+                              {children}
+                            </code>
+                          ) : (
+                            <SyntaxHighlighter
+                              style={dracula}
+                              language={match?.[1] || ''}
+                              PreTag="div"
+                              {...props}
+                            >
+                              {String(children).replace(/\n$/, '')}
+                            </SyntaxHighlighter>
+                          )
+                        }
+                      }}
+                    >
+                      {response}
+                    </ReactMarkdown>
                   )}
                 </CardContent>
                 <CardFooter className="justify-between">
@@ -492,11 +324,9 @@ const AISimulation = () => {
                       </>
                     )}
                   </Button>
-                  {showAttribution && (
-                    <a href="https://www.example.com" target="_blank" rel="noopener noreferrer" className="text-blue-500 text-sm">
-                      Powered by AI
-                    </a>
-                  )}
+                  <a href="https://www.example.com" target="_blank" rel="noopener noreferrer" className="text-blue-500 text-sm">
+                    Powered by AI
+                  </a>
                 </CardFooter>
               </Card>
             </div>
@@ -509,7 +339,7 @@ const AISimulation = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
-                    {examples.map((example, index) => (
+                    {examples.slice(0, 8).map((example, index) => (
                       <Button
                         key={index}
                         variant="outline"
@@ -523,6 +353,29 @@ const AISimulation = () => {
                   </div>
                 </CardContent>
               </Card>
+
+              {isConnectedToColab && (
+                <Card className="mt-4">
+                  <CardHeader>
+                    <h3 className="text-lg font-semibold">Colab Connection</h3>
+                    <p className="text-sm text-gray-500">Using external Llama model</p>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-sm">
+                      <p>Status: <span className="text-green-500 font-medium">Connected</span></p>
+                      <p className="mt-1 truncate">Endpoint: {colabEndpoint}</p>
+                    </div>
+                    <Button 
+                      variant="destructive" 
+                      size="sm" 
+                      className="mt-3 w-full"
+                      onClick={handleDisconnectFromColab}
+                    >
+                      Disconnect
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
             </div>
           </div>
         </div>
@@ -592,6 +445,53 @@ const AISimulation = () => {
             </div>
           </SheetContent>
         </Sheet>
+
+        <Dialog open={showColabDialog} onOpenChange={setShowColabDialog}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Connect to Google Colab</DialogTitle>
+              <DialogDescription>
+                Enter the URL of your Google Colab instance running Llama 2.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-1 gap-2">
+                <Label htmlFor="colabUrl">
+                  Colab Endpoint URL
+                </Label>
+                <Input
+                  id="colabUrl"
+                  placeholder="http://your-colab-url:5000"
+                  value={colabEndpoint}
+                  onChange={(e) => setColabEndpoint(e.target.value)}
+                />
+                <p className="text-sm text-gray-500">
+                  This should be the full URL including port number (e.g., http://12.34.56.78:5000)
+                </p>
+              </div>
+              <div className="bg-amber-50 dark:bg-amber-950 p-3 rounded-md">
+                <h4 className="font-medium flex items-center text-amber-800 dark:text-amber-300">
+                  <AlertTriangle className="h-4 w-4 mr-2" />
+                  How to get your Colab URL
+                </h4>
+                <ol className="text-sm mt-2 space-y-1 text-amber-700 dark:text-amber-400">
+                  <li>1. Open Google Colab and run the Llama 2 notebook</li>
+                  <li>2. Add the Flask code from the documentation</li>
+                  <li>3. Use the Colab's external IP and port (usually 5000)</li>
+                  <li>4. Make sure the Colab notebook stays running</li>
+                </ol>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="secondary" onClick={() => setShowColabDialog(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" onClick={handleConnectToColab}>
+                Connect
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </ThemeProvider>
   );

@@ -6,6 +6,7 @@ export class LlamaService {
   private isLoading: boolean = false;
   private lastQuery: string = ""; // Store the last query to ensure different responses
   private simulationData: any = null; // Store current simulation data
+  private colabEndpoint: string | null = null;
   
   private constructor() {}
   
@@ -14,6 +15,15 @@ export class LlamaService {
       LlamaService.instance = new LlamaService();
     }
     return LlamaService.instance;
+  }
+
+  public setColabEndpoint(endpoint: string): void {
+    this.colabEndpoint = endpoint;
+    console.log("Colab endpoint set:", endpoint);
+  }
+  
+  public getColabEndpoint(): string | null {
+    return this.colabEndpoint;
   }
   
   public async loadModel(): Promise<void> {
@@ -138,13 +148,10 @@ export class LlamaService {
   }
   
   public generateRealTimeAnalysis(type: string, prompt: string): string {
-    // Get components from simulation data or use defaults
     const components = this.getComponentsFromSimulation();
     
-    // Current timestamp to make the analysis feel real-time
     const timestamp = new Date().toLocaleTimeString();
     
-    // Create unique response each time by using random data points
     const uniqueId = Math.floor(Math.random() * 1000);
     
     let response = "";
@@ -211,98 +218,9 @@ ${this.generateAnalysisForComponents(components)}
         break;
         
       case "thermodynamics":
-        response = `## Real-Time Thermodynamic Analysis (ID: ${uniqueId})
-*Generated at: ${timestamp}*
-
-### Current Thermodynamic State
-- System Temperature: ${this.generateRandomValue(60, 120, 1)}°C
-- System Pressure: ${this.generateRandomValue(1, 10, 2)} bar
-- Vapor Fraction: ${this.generateRandomValue(0, 1, 3)}
-- Enthalpy: ${this.generateRandomValue(-500, 500, 1)} kJ/kg
-
-### Phase Equilibrium Data
-- K-values: [${components.map(() => this.generateRandomValue(0.1, 10, 2)).join(', ')}]
-- Activity Coefficients: [${components.map(() => this.generateRandomValue(0.5, 2, 2)).join(', ')}]
-- Fugacity Coefficients: [${components.map(() => this.generateRandomValue(0.8, 1.2, 3)).join(', ')}]
-
-### Property Estimation Accuracy
-- Equation of State Errors: ${this.generateRandomValue(0.5, 5, 1)}%
-- Property Prediction Confidence: ${this.generateRandomValue(85, 99, 1)}%
-- Data Regression Quality: R² = ${this.generateRandomValue(0.95, 0.999, 4)}
-
-### Component-Specific Analysis
-${this.generateAnalysisForComponents(components)}
-
-### Key Findings
-1. ${Math.random() > 0.5 ? 'Non-ideal behavior observed at current conditions' : 'System exhibits near-ideal behavior at current state'}
-2. ${Math.random() > 0.5 ? 'Binary interaction parameters showed significant composition dependence' : 'Predicted azeotropic point at ' + this.generateRandomValue(60, 90, 1) + '°C'}
-3. Critical parameters estimation accuracy: ${this.generateRandomValue(90, 99, 1)}%`;
-        break;
-        
       case "separation":
-        response = `## Real-Time Separation Process Analysis (ID: ${uniqueId})
-*Generated at: ${timestamp}*
-
-### Separation Performance
-- Current Recovery: ${this.generateRandomValue(85, 99, 1)}%
-- Separation Factor: ${this.generateRandomValue(1.5, 10, 2)}
-- Purity of Main Product: ${this.generateRandomValue(90, 99.9, 1)}%
-- Mass Transfer Rate: ${this.generateRandomValue(100, 500, 0)} kg/h·m²
-
-### Distillation Column Parameters
-- Number of Theoretical Stages: ${Math.floor(this.generateRandomValue(8, 30, 0))}
-- Feed Stage Location: ${Math.floor(this.generateRandomValue(4, 15, 0))}
-- Reflux Ratio: ${this.generateRandomValue(1.2, 5, 2)}
-- Minimum Reflux Ratio: ${this.generateRandomValue(0.8, 3, 2)}
-- Column Efficiency: ${this.generateRandomValue(60, 90, 1)}%
-
-### Concentration Profile
-- Top Product: [${components.map(() => this.generateRandomValue(0, 1, 3)).join(', ')}]
-- Bottom Product: [${components.map(() => this.generateRandomValue(0, 1, 3)).join(', ')}]
-
-### Energy Consumption
-- Reboiler Duty: ${this.generateRandomValue(200, 1000, 0)} kW
-- Condenser Duty: ${this.generateRandomValue(200, 1000, 0)} kW
-- Specific Energy Consumption: ${this.generateRandomValue(0.2, 2, 2)} kWh/kg product
-
-### Recommendations
-1. ${Math.random() > 0.5 ? 'Optimize reflux ratio to reduce energy consumption' : 'Adjust feed stage location to improve separation efficiency'}
-2. ${Math.random() > 0.5 ? 'Investigate temperature profile anomaly in stages 8-10' : 'Evaluate feed preheating options to reduce reboiler load'}
-3. Potential energy savings of ${this.generateRandomValue(5, 20, 1)}% possible with suggested modifications`;
-        break;
-        
       case "reaction":
-        response = `## Real-Time Reaction Engineering Analysis (ID: ${uniqueId})
-*Generated at: ${timestamp}*
-
-### Reaction Performance
-- Current Conversion: ${this.generateRandomValue(60, 95, 1)}%
-- Selectivity: ${this.generateRandomValue(80, 99, 1)}%
-- Yield: ${this.generateRandomValue(50, 90, 1)}%
-- Reaction Rate: ${this.generateRandomValue(0.1, 5, 3)} mol/L·s
-
-### Kinetic Parameters
-- Activation Energy: ${this.generateRandomValue(40, 120, 1)} kJ/mol
-- Pre-exponential Factor: ${(this.generateRandomValue(1, 9, 2) * 10 ** Math.floor(this.generateRandomValue(3, 8, 0))).toExponential(2)} L/mol·s
-- Reaction Order: ${this.generateRandomValue(0.5, 2, 1)}
-- Temperature Dependency: ${Math.random() > 0.5 ? 'Follows Arrhenius behavior' : 'Shows non-Arrhenius characteristics'}
-
-### Reactor Performance
-- Heat Release Rate: ${this.generateRandomValue(50, 500, 0)} kW
-- LHSV: ${this.generateRandomValue(0.5, 5, 2)} h⁻¹
-- Catalyst Activity: ${this.generateRandomValue(70, 100, 1)}% of fresh
-- Reactor Temperature Profile: [${this.generateTimeSeriesData(8, 'oscillating').join(', ')}]°C
-
-### Conversion Trend
-[${this.generateTimeSeriesData(8, 'increasing').join(', ')}]%
-
-### Key Findings & Recommendations
-1. ${Math.random() > 0.5 ? 'Observed reaction inhibition at high product concentrations' : 'Catalyst deactivation rate lower than predicted'}
-2. ${Math.random() > 0.5 ? 'Recommend increasing reactor temperature by 5-8°C' : 'Suggest reducing space velocity by 15%'} to optimize yield
-3. Estimated improvement potential: ${this.generateRandomValue(5, 15, 1)}% higher conversion with suggested modifications`;
-        break;
-        
-      default: // General analysis
+      default:
         response = `## Real-Time Process Analysis (ID: ${uniqueId})
 *Generated at: ${timestamp}*
 
@@ -327,10 +245,40 @@ ${this.generateAnalysisForComponents(components)}
         break;
     }
     
-    // Store this query to ensure variety
     this.lastQuery = prompt;
     
     return response;
+  }
+  
+  public async callColabLlama(prompt: string): Promise<string> {
+    if (!this.colabEndpoint) {
+      throw new Error("Colab endpoint not configured. Please set up the Colab endpoint first.");
+    }
+    
+    console.log(`Calling Colab Llama at ${this.colabEndpoint} with prompt: ${prompt}`);
+    
+    try {
+      const response = await fetch(`${this.colabEndpoint}/generate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ prompt }),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to get response from Colab: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      return data.response;
+    } catch (error) {
+      console.error("Error calling Colab-hosted Llama:", error);
+      
+      console.log("Falling back to simulated response");
+      const analysisType = this.detectAnalysisType(prompt);
+      return this.generateRealTimeAnalysis(analysisType, prompt);
+    }
   }
   
   public async generateResponse(prompt: string): Promise<string> {
@@ -338,18 +286,24 @@ ${this.generateAnalysisForComponents(components)}
       throw new Error("Model not loaded yet");
     }
     
-    // Ensure we don't return the same analysis for the same query
     if (prompt === this.lastQuery) {
-      prompt += " [updated analysis]"; // Force variation
+      prompt += " [updated analysis]";
     }
     
-    // Simulate response generation with delay for realism
+    if (this.colabEndpoint) {
+      try {
+        return await this.callColabLlama(prompt);
+      } catch (error) {
+        console.error("Error using Colab endpoint, falling back to simulation:", error);
+      }
+    }
+    
     return new Promise((resolve) => {
       setTimeout(() => {
         const analysisType = this.detectAnalysisType(prompt);
         const response = this.generateRealTimeAnalysis(analysisType, prompt);
         resolve(response);
-      }, Math.random() * 1000 + 500); // Random delay between 500-1500ms for realism
+      }, Math.random() * 1000 + 500);
     });
   }
   
