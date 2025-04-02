@@ -156,177 +156,6 @@ const AISimulation = () => {
   const [showDataResidencyDetails, setShowDataResidencyDetails] = useState(true);
   const [showSovereigntyRequirementsDetails, setShowSovereigntyRequirementsDetails] = useState(true);
   const [showGeographicRestrictionsDetails, setShowGeographicRestrictionsDetails] = useState(true);
-  const [showDataGovernanceFrameworkDetails, setShowDataGovernanceFrameworkDetails] = useState(true);
-  const [showDataStewardshipDetails, setShowDataStewardshipDetails] = useState(true);
-  const [showDataQualityManagementDetails, setShowDataQualityManagementDetails] = useState(true);
-  const [showMetadataManagementDetails, setShowMetadataManagementDetails] = useState(true);
-  const [showDataCatalogDetails, setShowDataCatalogDetails] = useState(true);
-  const [showDataDictionaryDetails, setShowDataDictionaryDetails] = useState(true);
-  const [showDataLineageDetails, setShowDataLineageDetails] = useState(true);
-  const [showDataDiscoveryDetails, setShowDataDiscoveryDetails] = useState(true);
-  const [showDataClassificationDetails, setShowDataClassificationDetails] = useState(true);
-  const [showDataTaggingDetails, setShowDataTaggingDetails] = useState(true);
-  const [showDataVersioningDetails, setShowDataVersioningDetails] = useState(true);
-  const [showDataArchivingDetails, setShowDataArchivingDetails] = useState(true);
-  const [showDataLifecycleManagementDetails, setShowDataLifecycleManagementDetails] = useState(true);
-  const [showDataSecurityDetails, setShowDataSecurityDetails] = useState(true);
-  const [showDataEncryptionDetails, setShowDataEncryptionDetails] = useState(true);
-  const [showDataMaskingDetails, setShowDataMaskingDetails] = useState(true);
-  const [showDataTokenizationDetails, setShowDataTokenizationDetails] = useState(true);
-  const [showDataLossPreventionDetails, setShowDataLossPreventionDetails] = useState(true);
-  const [showDataAccessControlsDetails, setShowDataAccessControlsDetails] = useState(true);
-  const [showDataBreachPreventionDetails, setShowDataBreachPreventionDetails] = useState(true);
-  const [showDataResilienceDetails, setShowDataResilienceDetails] = useState(true);
-  const [showDataBackupAndRecoveryDetails, setShowDataBackupAndRecoveryDetails] = useState(true);
-  const [showDataDisasterRecoveryDetails, setShowDataDisasterRecoveryDetails] = useState(true);
-  const [showDataIncidentResponseDetails, setShowDataIncidentResponseDetails] = useState(true);
-  const [showDataPrivacyDetails, setShowDataPrivacyDetails] = useState(true);
-  const [showDataConsentDetails, setShowDataConsentDetails] = useState(true);
-  const [showDataTransparencyDetails, setShowDataTransparencyDetails] = useState(true);
-  const [showDataAccountabilityDetails, setShowDataAccountabilityDetails] = useState(true);
-  const [showDataEthicsDetails, setShowDataEthicsDetails] = useState(true);
-  const [showDataBiasDetails, setShowDataBiasDetails] = useState(true);
-  const [showDataFairnessDetails, setShowDataFairnessDetails] = useState(true);
-  const [showDataExplainabilityDetails, setShowDataExplainabilityDetails] = useState(true);
-  const [showDataHumanOversightDetails, setShowDataHumanOversightDetails] = useState(true);
-  const [showDataUserControlDetails, setShowDataUserControlDetails] = useState(true);
-  const [showDataPrivacyEnhancingTechnologiesDetails, setShowDataPrivacyEnhancingTechnologiesDetails] = useState(true);
-  const [showDataDifferentialPrivacyDetails, setShowDataDifferentialPrivacyDetails] = useState(true);
-  const [showDataFederatedLearningDetails, setShowDataFederatedLearningDetails] = useState(true);
-  const [showDataSecureMultiPartyComputationDetails, setShowDataSecureMultiPartyComputationDetails] = useState(true);
-  const [showDataHomomorphicEncryptionDetails, setShowHomomorphicEncryptionDetails] = useState(true);
-  const [showDataAnonymizationTechniques, setShowDataAnonymizationTechniques] = useState(true);
-  const [showDataPseudonymizationTechniques, setShowDataPseudonymizationTechniques] = useState(true);
-  const [showDataDeidentificationTechniques, setShowDataDeidentificationTechniques] = useState(true);
-  const [showDataMinimizationTechniques, setShowDataMinimizationTechniques] = useState(true);
-  const [showPurposeLimitationDetails, setShowPurposeLimitationDetails] = useState(true);
-  const [showDataSubjectRightsDetails, setShowDataSubjectRightsDetails] = useState(true);
-  const [showRightToAccessDetails, setShowRightToAccessDetails] = useState(true);
-  const [showRightToRectificationDetails, setShowRightToRectificationDetails] = useState(true);
-  const [showRightToErasureDetails, setShowRightToErasureDetails] = useState(true);
-  const [showRightToRestrictionOfProcessingDetails, setShowRightToRestrictionOfProcessingDetails] = useState(true);
-  const [showRightToDataPortabilityDetails, setShowRightToDataPortabilityDetails] = useState(true);
-  const [showRightToObjectDetails, setShowRightToObjectDetails] = useState(true);
-  const [showAutomatedDecisionMakingDetails, setShowAutomatedDecisionMakingDetails] = useState(true);
-  const [showProfilingDetails, setShowProfilingDetails] = useState(true);
-  const [showLegalBasisForProcessingDetails, setShowLegalBasisForProcessingDetails] = useState(true);
-  const [showConsentManagementDetails, setShowConsentManagementDetails] = useState(true);
-  const [showDataTransferDetails, setShowDataTransferDetails] = useState(true);
-  const [showInternationalDataTransferDetails, setShowInternationalDataTransferDetails] = useState(true);
-  const [showCrossBorderDataTransferDetails, setShowCrossBorderDataTransferDetails] = useState(true);
-  const [showStandardContractualClausesDetails, setShowStandardContractualClausesDetails] = useState(true);
-  const [showBindingCorporateRulesDetails, setShowBindingCorporateRulesDetails] = useState(true);
-  const [showAdequacyDecisionsDetails, setShowAdequacyDecisionsDetails] = useState(true);
-  const [showDataLocalizationDetails, setShowDataLocalizationDetails] = useState(true);
-  const [showDataResidencyDetails, setShowDataResidencyDetails] = useState(true);
-  const [showSovereigntyRequirementsDetails, setShowSovereigntyRequirementsDetails] = useState(true);
-  const [showGeographicRestrictionsDetails, setShowGeographicRestrictionsDetails] = useState(true);
-  const [showDataGovernanceDetails, setShowDataGovernanceDetails] = useState(true);
-  const [showDataStewardshipDetails, setShowDataStewardshipDetails] = useState(true);
-  const [showDataQualityDetails, setShowDataQualityDetails] = useState(true);
-  const [showDataMetadataDetails, setShowDataMetadataDetails] = useState(true);
-  const [showDataCatalogDetails, setShowDataCatalogDetails] = useState(true);
-  const [showDataDictionaryDetails, setShowDataDictionaryDetails] = useState(true);
-  const [showDataLineageDetails, setShowDataLineageDetails] = useState(true);
-  const [showDataDiscoveryDetails, setShowDataDiscoveryDetails] = useState(true);
-  const [showDataClassificationDetails, setShowDataClassificationDetails] = useState(true);
-  const [showDataTaggingDetails, setShowDataTaggingDetails] = useState(true);
-  const [showDataVersioningDetails, setShowDataVersioningDetails] = useState(true);
-  const [showDataArchivingDetails, setShowDataArchivingDetails] = useState(true);
-  const [showDataLifecycleDetails, setShowDataLifecycleDetails] = useState(true);
-  const [showDataSecurityMeasuresDetails, setShowDataSecurityMeasuresDetails] = useState(true);
-  const [showDataPrivacyPracticesDetails, setShowDataPrivacyPracticesDetails] = useState(true);
-  const [showDataEthicalConsiderationsDetails, setShowDataEthicalConsiderationsDetails] = useState(true);
-  const [showDataBiasMitigationDetails, setShowDataBiasMitigationDetails] = useState(true);
-  const [showDataFairnessMetricsDetails, setShowDataFairnessMetricsDetails] = useState(true);
-  const [showDataTransparencyDetailsDetails, setShowDataTransparencyDetailsDetails] = useState(true);
-  const [showDataAccountabilityDetailsDetails, setShowDataAccountabilityDetailsDetails] = useState(true);
-  const [showDataHumanOversightDetailsDetails, setShowDataHumanOversightDetailsDetails] = useState(true);
-  const [showDataUserControlDetailsDetails, setShowDataUserControlDetailsDetails] = useState(true);
-  const [showDataPrivacyEnhancingTechnologiesDetailsDetails, setShowDataPrivacyEnhancingTechnologiesDetailsDetails] = useState(true);
-  const [showDataDifferentialPrivacyDetailsDetails, setShowDataDifferentialPrivacyDetailsDetails] = useState(true);
-  const [showDataFederatedLearningDetailsDetails, setShowDataFederatedLearningDetailsDetails] = useState(true);
-  const [showDataSecureMultiPartyComputationDetailsDetails, setShowDataSecureMultiPartyComputationDetailsDetails] = useState(true);
-  const [showDataHomomorphicEncryptionDetailsDetails, setShowDataHomomorphicEncryptionDetailsDetails] = useState(true);
-  const [showDataAnonymizationTechniquesDetails, setShowDataAnonymizationTechniquesDetails] = useState(true);
-  const [showDataPseudonymizationTechniquesDetails, setShowDataPseudonymizationTechniquesDetails] = useState(true);
-  const [showDataDeidentificationTechniquesDetails, setShowDataDeidentificationTechniquesDetails] = useState(true);
-  const [showDataMinimizationTechniquesDetails, setShowDataMinimizationTechniquesDetails] = useState(true);
-  const [showDataPurposeLimitationDetailsDetails, setShowDataPurposeLimitationDetailsDetails] = useState(true);
-  const [showDataSubjectRightsDetailsDetails, setShowDataSubjectRightsDetailsDetails] = useState(true);
-  const [showDataRightToAccessDetailsDetails, setShowDataRightToAccessDetailsDetails] = useState(true);
-  const [showDataRightToRectificationDetailsDetails, setShowDataRightToRectificationDetailsDetails] = useState(true);
-  const [showDataRightToErasureDetailsDetails, setShowDataRightToErasureDetailsDetails] = useState(true);
-  const [showDataRightToRestrictionOfProcessingDetailsDetails, setShowDataRightToRestrictionOfProcessingDetailsDetails] = useState(true);
-  const [showDataRightToDataPortabilityDetailsDetails, setShowDataRightToDataPortabilityDetailsDetails] = useState(true);
-  const [showDataRightToObjectDetailsDetails, setShowDataRightToObjectDetailsDetails] = useState(true);
-  const [showDataAutomatedDecisionMakingDetailsDetails, setShowDataAutomatedDecisionMakingDetailsDetails] = useState(true);
-  const [showDataProfilingDetailsDetails, setShowDataProfilingDetailsDetails] = useState(true);
-  const [showDataLegalBasisForProcessingDetailsDetails, setShowDataLegalBasisForProcessingDetailsDetails] = useState(true);
-  const [showDataConsentManagementDetailsDetails, setShowDataConsentManagementDetailsDetails] = useState(true);
-  const [showDataTransferDetailsDetails, setShowDataTransferDetailsDetails] = useState(true);
-  const [showDataInternationalDataTransferDetailsDetails, setShowDataInternationalDataTransferDetailsDetails] = useState(true);
-  const [showDataCrossBorderDataTransferDetailsDetails, setShowDataCrossBorderDataTransferDetailsDetails] = useState(true);
-  const [showDataStandardContractualClausesDetailsDetails, setShowDataStandardContractualClausesDetailsDetails] = useState(true);
-  const [showDataBindingCorporateRulesDetailsDetails, setShowDataBindingCorporateRulesDetailsDetails] = useState(true);
-  const [showDataAdequacyDecisionsDetailsDetails, setShowDataAdequacyDecisionsDetailsDetails] = useState(true);
-  const [showDataLocalizationDetailsDetails, setShowDataLocalizationDetailsDetails] = useState(true);
-  const [showDataResidencyDetailsDetails, setShowDataResidencyDetailsDetails] = useState(true);
-  const [showDataSovereigntyRequirementsDetailsDetails, setShowDataSovereigntyRequirementsDetailsDetails] = useState(true);
-  const [showDataGeographicRestrictionsDetailsDetails, setShowDataGeographicRestrictionsDetailsDetails] = useState(true);
-  const [showDataGovernanceFrameworkDetailsDetails, setShowDataGovernanceFrameworkDetailsDetails] = useState(true);
-  const [showDataStewardshipDetailsDetails, setShowDataStewardshipDetailsDetails] = useState(true);
-  const [showDataQualityManagementDetailsDetails, setShowDataQualityManagementDetailsDetails] = useState(true);
-  const [showDataMetadataManagementDetailsDetails, setShowDataMetadataManagementDetailsDetails] = useState(true);
-  const [showDataCatalogDetailsDetails, setShowDataCatalogDetailsDetails] = useState(true);
-  const [showDataDictionaryDetailsDetails, setShowDataDictionaryDetailsDetails] = useState(true);
-  const [showDataLineageDetailsDetails, setShowDataLineageDetailsDetails] = useState(true);
-  const [showDataDiscoveryDetailsDetails, setShowDataDiscoveryDetailsDetails] = useState(true);
-  const [showDataClassificationDetailsDetails, setShowDataClassificationDetailsDetails] = useState(true);
-  const [showDataTaggingDetailsDetails, setShowDataTaggingDetailsDetails] = useState(true);
-  const [showDataVersioningDetailsDetails, setShowDataVersioningDetailsDetails] = useState(true);
-  const [showDataArchivingDetailsDetails, setShowDataArchivingDetailsDetails] = useState(true);
-  const [showDataLifecycleManagementDetailsDetails, setShowDataLifecycleManagementDetailsDetails] = useState(true);
-  const [showDataSecurityMeasuresDetailsDetails, setShowDataSecurityMeasuresDetailsDetails] = useState(true);
-  const [showDataPrivacyPracticesDetailsDetails, setShowDataPrivacyPracticesDetailsDetails] = useState(true);
-  const [showDataEthicalConsiderationsDetailsDetails, setShowDataEthicalConsiderationsDetailsDetails] = useState(true);
-  const [showDataBiasMitigationDetailsDetails, setShowDataBiasMitigationDetailsDetails] = useState(true);
-  const [showDataFairnessMetricsDetailsDetails, setShowDataFairnessMetricsDetailsDetails] = useState(true);
-  const [showDataTransparencyDetailsDetailsDetails, setShowDataTransparencyDetailsDetailsDetails] = useState(true);
-  const [showDataAccountabilityDetailsDetailsDetails, setShowDataAccountabilityDetailsDetailsDetails] = useState(true);
-  const [showDataHumanOversightDetailsDetailsDetails, setShowDataHumanOversightDetailsDetailsDetails] = useState(true);
-  const [showDataUserControlDetailsDetailsDetails, setShowDataUserControlDetailsDetailsDetails] = useState(true);
-  const [showDataPrivacyEnhancingTechnologiesDetailsDetailsDetails, setShowDataPrivacyEnhancingTechnologiesDetailsDetailsDetails] = useState(true);
-  const [showDataDifferentialPrivacyDetailsDetailsDetails, setShowDataDifferentialPrivacyDetailsDetailsDetails] = useState(true);
-  const [showDataFederatedLearningDetailsDetailsDetails, setShowDataFederatedLearningDetailsDetailsDetails] = useState(true);
-  const [showDataSecureMultiPartyComputationDetailsDetailsDetails, setShowDataSecureMultiPartyComputationDetailsDetailsDetails] = useState(true);
-  const [showDataHomomorphicEncryptionDetailsDetailsDetails, setShowDataHomomorphicEncryptionDetailsDetailsDetails] = useState(true);
-  const [showDataAnonymizationTechniquesDetailsDetails, setShowDataAnonymizationTechniquesDetailsDetails] = useState(true);
-  const [showDataPseudonymizationTechniquesDetailsDetails, setShowDataPseudonymizationTechniquesDetailsDetails] = useState(true);
-  const [showDataDeidentificationTechniquesDetailsDetails, setShowDataDeidentificationTechniquesDetailsDetails] = useState(true);
-  const [showDataMinimizationTechniquesDetailsDetails, setShowDataMinimizationTechniquesDetailsDetails] = useState(true);
-  const [showDataPurposeLimitationDetailsDetailsDetails, setShowDataPurposeLimitationDetailsDetailsDetails] = useState(true);
-  const [showDataSubjectRightsDetailsDetailsDetails, setShowDataSubjectRightsDetailsDetailsDetails] = useState(true);
-  const [showDataRightToAccessDetailsDetailsDetails, setShowDataRightToAccessDetailsDetailsDetails] = useState(true);
-  const [showDataRightToRectificationDetailsDetailsDetails, setShowDataRightToRectificationDetailsDetailsDetails] = useState(true);
-  const [showDataRightToErasureDetailsDetailsDetails, setShowDataRightToErasureDetailsDetailsDetails] = useState(true);
-  const [showDataRightToRestrictionOfProcessingDetailsDetailsDetails, setShowDataRightToRestrictionOfProcessingDetailsDetailsDetails] = useState(true);
-  const [showDataRightToDataPortabilityDetailsDetailsDetails, setShowDataRightToDataPortabilityDetailsDetailsDetails] = useState(true);
-  const [showDataRightToObjectDetailsDetailsDetails, setShowDataRightToObjectDetailsDetailsDetails] = useState(true);
-  const [showDataAutomatedDecisionMakingDetailsDetailsDetails, setShowDataAutomatedDecisionMakingDetailsDetailsDetails] = useState(true);
-  const [showDataProfilingDetailsDetailsDetails, setShowDataProfilingDetailsDetailsDetails] = useState(true);
-  const [showDataLegalBasisForProcessingDetailsDetailsDetails, setShowDataLegalBasisForProcessingDetailsDetailsDetails] = useState(true);
-  const [showDataConsentManagementDetailsDetailsDetails, setShowDataConsentManagementDetailsDetailsDetails] = useState(true);
-  const [showDataTransferDetailsDetailsDetails, setShowDataTransferDetailsDetailsDetails] = useState(true);
-  const [showDataInternationalDataTransferDetailsDetailsDetails, setShowDataInternationalDataTransferDetailsDetailsDetails] = useState(true);
-  const [showDataCrossBorderDataTransferDetailsDetailsDetails, setShowDataCrossBorderDataTransferDetailsDetailsDetails] = useState(true);
-  const [showDataStandardContractualClausesDetailsDetailsDetails, setShowDataStandardContractualClausesDetailsDetailsDetails] = useState(true);
-  const [showDataBindingCorporateRulesDetailsDetailsDetails, setShowDataBindingCorporateRulesDetailsDetailsDetails] = useState(true);
-  const [showDataAdequacyDecisionsDetailsDetailsDetails, setShowDataAdequacyDecisionsDetailsDetailsDetails] = useState(true);
-  const [showDataLocalizationDetailsDetailsDetails, setShowDataLocalizationDetailsDetailsDetails] = useState(true);
-  const [showDataResidencyDetailsDetailsDetails, setShowDataResidencyDetailsDetailsDetails] = useState(true);
-  const [showDataSovereigntyRequirementsDetailsDetailsDetails, setShowDataSovereigntyRequirementsDetailsDetailsDetails] = useState(true);
-  const [showDataGeographicRestrictionsDetailsDetailsDetails, setShowDataGeographicRestrictionsDetailsDetailsDetails] = useState(true);
   const [llamaInstance, setLlamaInstance] = useState<LlamaService | null>(null);
   const { toast } = useToast();
   const { theme, setTheme } = useTheme();
@@ -501,4 +330,261 @@ const AISimulation = () => {
 
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-      <div className="flex flex-col h-screen
+      <div className="flex flex-col h-screen">
+        <div className="bg-gray-50 dark:bg-gray-900 py-6 px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between">
+            <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">AI Simulation Assistant</h1>
+            <div className="space-x-2">
+              <Button variant="outline" size="sm" onClick={toggleSettings}>
+                Settings
+              </Button>
+              <Button size="sm" onClick={handleSend} disabled={isLoading || isModelLoading}>
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <span>Generating...</span>
+                  </>
+                ) : (
+                  "Generate Response"
+                )}
+              </Button>
+            </div>
+          </div>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            Get real-time insights and analysis for your chemical processes.
+          </p>
+        </div>
+
+        <div className="flex-grow overflow-auto p-4 sm:p-6 lg:p-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="md:col-span-2">
+              <Card>
+                <CardHeader>
+                  <h3 className="text-lg font-semibold">Input Message</h3>
+                  <p className="text-sm text-gray-500">Enter your query or process details here.</p>
+                </CardHeader>
+                <CardContent>
+                  <Textarea
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    placeholder="e.g., Analyze the heat transfer in a reactor."
+                    className="w-full h-32 resize-none"
+                  />
+                  <div className="mt-2 flex items-center space-x-2">
+                    <Button size="sm" onClick={handleSend} disabled={isLoading || isModelLoading}>
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          <span>Generating...</span>
+                        </>
+                      ) : (
+                        "Generate Response"
+                      )}
+                    </Button>
+                    <Button variant="secondary" size="sm" onClick={handleStream} disabled={isStreaming || isModelLoading}>
+                      {isStreaming ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          <span>Streaming...</span>
+                        </>
+                      ) : (
+                        "Simulate Stream"
+                      )}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="mt-6">
+                <CardHeader>
+                  <h3 className="text-lg font-semibold">Response</h3>
+                  <p className="text-sm text-gray-500">
+                    AI-generated analysis and insights.
+                    {showCitation && (
+                      <Badge variant="secondary" className="ml-2">
+                        AI Generated
+                      </Badge>
+                    )}
+                  </p>
+                </CardHeader>
+                <CardContent className="prose dark:prose-invert max-w-none">
+                  {isModelLoading ? (
+                    <div className="flex flex-col space-y-2">
+                      <Skeleton className="h-4 w-[200px]" />
+                      <Skeleton className="h-4 w-[250px]" />
+                      <Skeleton className="h-4 w-[150px]" />
+                    </div>
+                  ) : (
+                    <>
+                      {streamedResponse ? (
+                        <ReactMarkdown
+                          components={{
+                            code({ node, inline, className, children, ...props }) {
+                              const match = /language-(\w+)/.exec(className || '')
+                              return !inline && match ? (
+                                <SyntaxHighlighter
+                                  style={dracula}
+                                  language={match[1]}
+                                  PreTag="div"
+                                  {...props}
+                                >
+                                  {String(children).replace(/\n$/, '')}
+                                </SyntaxHighlighter>
+                              ) : (
+                                <code className={className} {...props}>
+                                  {children}
+                                </code>
+                              )
+                            }
+                          }}
+                        >
+                          {streamedResponse}
+                        </ReactMarkdown>
+                      ) : (
+                        <ReactMarkdown
+                          components={{
+                            code({ node, inline, className, children, ...props }) {
+                              const match = /language-(\w+)/.exec(className || '')
+                              return !inline && match ? (
+                                <SyntaxHighlighter
+                                  style={dracula}
+                                  language={match[1]}
+                                  PreTag="div"
+                                  {...props}
+                                >
+                                  {String(children).replace(/\n$/, '')}
+                                </SyntaxHighlighter>
+                              ) : (
+                                <code className={className} {...props}>
+                                  {children}
+                                </code>
+                              )
+                            }
+                          }}
+                        >
+                          {response}
+                        </ReactMarkdown>
+                      )}
+                    </>
+                  )}
+                </CardContent>
+                <CardFooter className="justify-between">
+                  <Button size="sm" variant="ghost" onClick={handleCopyClick} disabled={isCopied}>
+                    {isCopied ? (
+                      <>
+                        <Check className="mr-2 h-4 w-4" />
+                        <span>Copied</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="mr-2 h-4 w-4" />
+                        <span>Copy</span>
+                      </>
+                    )}
+                  </Button>
+                  {showAttribution && (
+                    <a href="https://www.example.com" target="_blank" rel="noopener noreferrer" className="text-blue-500 text-sm">
+                      Powered by AI
+                    </a>
+                  )}
+                </CardFooter>
+              </Card>
+            </div>
+
+            <div>
+              <Card>
+                <CardHeader>
+                  <h3 className="text-lg font-semibold">Examples</h3>
+                  <p className="text-sm text-gray-500">Try these prompts to get started.</p>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    {examples.map((example, index) => (
+                      <Button
+                        key={index}
+                        variant="outline"
+                        size="sm"
+                        className="w-full justify-start text-left font-normal"
+                        onClick={() => setMessage(example)}
+                      >
+                        {example}
+                      </Button>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
+
+        <Sheet open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
+          <SheetContent className="sm:max-w-sm" side="right">
+            <SheetHeader>
+              <SheetTitle>Settings</SheetTitle>
+              <SheetDescription>
+                Customize the AI Simulation Assistant to fit your needs.
+              </SheetDescription>
+            </SheetHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="theme" className="text-right">
+                  Theme
+                </Label>
+                <Select onValueChange={handleThemeChange} defaultValue={theme}>
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Select a theme" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="light">Light</SelectItem>
+                    <SelectItem value="dark">Dark</SelectItem>
+                    <SelectItem value="system">System</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="temperature" className="text-right">
+                  Temperature
+                </Label>
+                <Slider
+                  id="temperature"
+                  defaultValue={[temperature]}
+                  max={1}
+                  step={0.1}
+                  onValueChange={(value) => setTemperature(value[0])}
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="topP" className="text-right">
+                  Top P
+                </Label>
+                <Slider
+                  id="topP"
+                  defaultValue={[topP]}
+                  max={1}
+                  step={0.1}
+                  onValueChange={(value) => setTopP(value[0])}
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="seed" className="text-right">
+                  Seed
+                </Label>
+                <Input
+                  type="number"
+                  id="seed"
+                  placeholder="Optional"
+                  onChange={(e) => setSeed(e.target.value ? parseInt(e.target.value, 10) : null)}
+                  className="col-span-3"
+                />
+              </div>
+            </div>
+          </SheetContent>
+        </Sheet>
+      </div>
+    </ThemeProvider>
+  );
+};
+
+export default AISimulation;
