@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Plus, Minus, Thermometer, Droplets, Settings2, Container, FlaskConical, Columns, Gauge, Save, Trash2, X, Sliders, Move, ArrowLeft, Play } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -68,6 +69,8 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
   const [simulationRunning, setSimulationRunning] = useState(false);
   const [showSubTypes, setShowSubTypes] = useState(false);
   const [isMoving, setIsMoving] = useState(false);
+  const [canvasOffset, setCanvasOffset] = useState({ x: 0, y: 0 });
+  const [canvasDimensions, setCanvasDimensions] = useState({ width: 3000, height: 3000 });
   
   useEffect(() => {
     const savedEquipment = localStorage.getItem('chemflow-equipment');
@@ -158,13 +161,20 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     setZoom(prev => Math.max(prev - 10, 50));
   };
 
+  const handlePanCanvas = (dx: number, dy: number) => {
+    setCanvasOffset(prev => ({
+      x: prev.x + dx,
+      y: prev.y + dy
+    }));
+  };
+
   const handleAddEquipment = (type: string, subType?: string) => {
     const id = `${type}-${Date.now()}`;
     const newEquipment: Equipment = {
       id,
       type,
       name: `${type.charAt(0).toUpperCase() + type.slice(1)} ${equipment.filter(e => e.type === type).length + 1}`,
-      position: { x: 200, y: 200 },
+      position: { x: 500, y: 500 },
       connections: [],
       settings: {},
       subType
@@ -266,24 +276,14 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
   };
 
   const handleCanvasClick = (e: React.MouseEvent) => {
-    if (isConnecting) {
-      setIsConnecting(null);
-    } else {
-      setSelectedElement(null);
-    }
-    setIsMoving(false);
-  };
-
-  const handleEquipmentClick = (e: React.MouseEvent, id: string) => {
-    e.stopPropagation();
-    
-    if (isMoving) {
-      if (canvasRef.current) {
-        const rect = canvasRef.current.getBoundingClientRect();
+    if (isMoving && selectedElement) {
+      const rect = canvasRef.current?.getBoundingClientRect();
+      if (rect) {
         const scale = zoom / 100;
         
-        const x = (e.clientX - rect.left) / scale;
-        const y = (e.clientY - rect.top) / scale;
+        // Calculate position within the canvas, accounting for zoom and pan
+        const x = (e.clientX - rect.left) / scale - canvasOffset.x;
+        const y = (e.clientY - rect.top) / scale - canvasOffset.y;
         
         setEquipment(prev => prev.map(eq => {
           if (eq.id === selectedElement) {
@@ -295,9 +295,21 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
           return eq;
         }));
         
-        localStorage.setItem('chemflow-equipment', JSON.stringify(equipment));
+        localStorage.setItem('chemflow-equipment', JSON.stringify(
+          equipment.map(eq => {
+            if (eq.id === selectedElement) {
+              return {
+                ...eq,
+                position: { x, y }
+              };
+            }
+            return eq;
+          })
+        ));
         
         setIsMoving(false);
+        setSelectedElement(null);
+        
         toast({
           title: "Equipment moved",
           description: "New position saved"
@@ -305,6 +317,73 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
       }
       return;
     }
+    
+    if (isConnecting) {
+      setIsConnecting(null);
+    } else {
+      setSelectedElement(null);
+    }
+    setIsMoving(false);
+  };
+
+  // Middle mouse button panning
+  const [isPanning, setIsPanning] = useState(false);
+  const [lastPanPoint, setLastPanPoint] = useState({ x: 0, y: 0 });
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    // Middle mouse button (wheel) pressed for panning
+    if (e.button === 1) {
+      e.preventDefault();
+      setIsPanning(true);
+      setLastPanPoint({ x: e.clientX, y: e.clientY });
+    }
+  };
+
+  const handleMouseUp = (e: React.MouseEvent) => {
+    if (e.button === 1) {
+      setIsPanning(false);
+    }
+    
+    if (isDragging) {
+      handleEquipmentDragEnd();
+    }
+  };
+
+  const handleCanvasMouseMove = (e: React.MouseEvent) => {
+    // Handle panning with middle mouse button
+    if (isPanning) {
+      const dx = (e.clientX - lastPanPoint.x) / (zoom / 100);
+      const dy = (e.clientY - lastPanPoint.y) / (zoom / 100);
+      
+      handlePanCanvas(dx, dy);
+      setLastPanPoint({ x: e.clientX, y: e.clientY });
+      return;
+    }
+    
+    // Handle equipment dragging
+    if (isDragging && draggedEquipment && canvasRef.current) {
+      e.preventDefault();
+      const rect = canvasRef.current.getBoundingClientRect();
+      const scale = zoom / 100;
+      
+      // Calculate position within the canvas, accounting for zoom and pan
+      const x = (e.clientX - rect.left) / scale - dragStartPos.x;
+      const y = (e.clientY - rect.top) / scale - dragStartPos.y;
+      
+      setEquipment(prev => prev.map(eq => {
+        if (eq.id === draggedEquipment) {
+          return {
+            ...eq,
+            position: { x, y }
+          };
+        }
+        return eq;
+      }));
+    }
+  };
+
+  const handleEquipmentClick = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
     
     if (isConnecting && isConnecting !== id) {
       const newStream: Stream = {
@@ -350,40 +429,26 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     setIsDragging(true);
     setDraggedEquipment(id);
     
-    const eq = equipment.find(item => item.id === id);
-    if (eq) {
+    const equipmentItem = equipment.find(item => item.id === id);
+    if (equipmentItem && canvasRef.current) {
+      const rect = canvasRef.current.getBoundingClientRect();
+      const scale = zoom / 100;
+      
+      // Calculate the offset within the equipment item
       setDragStartPos({
-        x: e.clientX - eq.position.x,
-        y: e.clientY - eq.position.y
+        x: (e.clientX - rect.left) / scale - equipmentItem.position.x,
+        y: (e.clientY - rect.top) / scale - equipmentItem.position.y
       });
     }
   };
   
   const handleEquipmentDragEnd = () => {
+    if (isDragging && draggedEquipment) {
+      localStorage.setItem('chemflow-equipment', JSON.stringify(equipment));
+    }
+    
     setIsDragging(false);
     setDraggedEquipment(null);
-    
-    localStorage.setItem('chemflow-equipment', JSON.stringify(equipment));
-  };
-  
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (isDragging && draggedEquipment && canvasRef.current) {
-      const rect = canvasRef.current.getBoundingClientRect();
-      const scale = zoom / 100;
-      
-      const x = (e.clientX - rect.left) / scale - dragStartPos.x;
-      const y = (e.clientY - rect.top) / scale - dragStartPos.y;
-      
-      setEquipment(prev => prev.map(eq => {
-        if (eq.id === draggedEquipment) {
-          return {
-            ...eq,
-            position: { x, y }
-          };
-        }
-        return eq;
-      }));
-    }
   };
   
   const handleStartMove = (e: React.MouseEvent, id: string) => {
@@ -459,9 +524,9 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     return (
       <div 
         key={eq.id}
-        className={`absolute p-2 rounded-lg shadow-md bg-white border-2 transition-all ${
+        className={`absolute p-2 rounded-lg shadow-xl bg-white border-2 transition-all backdrop-blur-sm hover:shadow-blue-200/50 animate-fade-in ${
           isSelected 
-            ? 'border-flow-blue' 
+            ? 'border-flow-blue shadow-lg' 
             : isSource 
               ? 'border-amber-500'
               : isBeingMoved
@@ -472,7 +537,8 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
           left: `${eq.position.x}px`,
           top: `${eq.position.y}px`,
           zIndex: isSelected ? 10 : 1,
-          cursor: isDragging && draggedEquipment === eq.id ? 'grabbing' : 'grab'
+          cursor: isDragging && draggedEquipment === eq.id ? 'grabbing' : 'grab',
+          transform: 'translate3d(0, 0, 0)', // Force GPU acceleration
         }}
         onClick={(e) => handleEquipmentClick(e, eq.id)}
       >
@@ -481,7 +547,9 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
           onMouseDown={(e) => handleEquipmentDragStart(e, eq.id)}
           onMouseUp={handleEquipmentDragEnd}
         >
-          {equipmentType?.icon || <Container className="h-8 w-8 text-gray-500" />}
+          <div className="text-flow-blue flex items-center justify-center w-12 h-12 bg-blue-50 rounded-full transition-all hover:scale-105">
+            {equipmentType?.icon || <Container className="h-8 w-8 text-flow-blue" />}
+          </div>
           <span className="text-xs text-center font-medium">{eq.name}</span>
           {eq.subType && (
             <span className="text-xs text-gray-500">{
@@ -492,28 +560,28 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
           {isSelected && (
             <div className="absolute -top-1 -right-1 flex gap-1">
               <button 
-                className="p-1 rounded-full bg-amber-100 hover:bg-amber-200 text-amber-600"
+                className="p-1 rounded-full bg-amber-100 hover:bg-amber-200 text-amber-600 shadow-sm hover:scale-110 transition-all"
                 onClick={(e) => handleStartConnection(e, eq.id)}
                 title="Connect to another equipment"
               >
                 <Play className="h-3 w-3" />
               </button>
               <button 
-                className="p-1 rounded-full bg-green-100 hover:bg-green-200 text-green-600"
+                className="p-1 rounded-full bg-green-100 hover:bg-green-200 text-green-600 shadow-sm hover:scale-110 transition-all"
                 onClick={(e) => handleStartMove(e, eq.id)}
                 title="Move to specific location"
               >
                 <Move className="h-3 w-3" />
               </button>
               <button 
-                className="p-1 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600"
+                className="p-1 rounded-full bg-blue-100 hover:bg-blue-200 text-blue-600 shadow-sm hover:scale-110 transition-all"
                 onClick={(e) => handleOpenSettings(e, eq.id)}
                 title="Equipment settings"
               >
                 <Settings2 className="h-3 w-3" />
               </button>
               <button 
-                className="p-1 rounded-full bg-red-100 hover:bg-red-200 text-red-600"
+                className="p-1 rounded-full bg-red-100 hover:bg-red-200 text-red-600 shadow-sm hover:scale-110 transition-all"
                 onClick={(e) => handleDeleteEquipment(e, eq.id)}
                 title="Delete equipment"
               >
@@ -544,10 +612,15 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     const angle = Math.atan2(dy, dx);
     
     let streamColor = "stroke-blue-500";
+    let streamGlow = "";
+    
     if (stream.type === "energy") {
       streamColor = "stroke-red-500";
     } else if (stream.type === "signal") {
       streamColor = "stroke-green-500";
+    } else {
+      // Material stream with glow effect
+      streamGlow = "filter drop-shadow(0 0 2px rgba(59, 130, 246, 0.5))";
     }
     
     return (
@@ -576,7 +649,7 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
           y1={sourceY + 10}
           x2={targetX + 10}
           y2={targetY + 10}
-          className={`${streamColor} stroke-2`}
+          className={`${streamColor} stroke-2 ${streamGlow}`}
           markerEnd={`url(#arrowhead-${stream.id})`}
         />
       </svg>
@@ -586,26 +659,26 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
   return (
     <div className="flex flex-col">
       <div className="mb-6">
-        <h3 className="text-lg font-medium mb-2">Flowsheet Builder</h3>
+        <h3 className="text-lg font-medium mb-2 bg-gradient-to-r from-flow-blue to-blue-600 bg-clip-text text-transparent">Flowsheet Builder</h3>
         <p className="text-gray-600 text-sm">
           Build your process flowsheet by adding and connecting equipment from the palette below.
         </p>
       </div>
       
-      <div className="p-4 border rounded-lg bg-gray-50 mb-6">
+      <div className="p-4 border rounded-lg bg-gradient-to-b from-white to-blue-50 mb-6 shadow-md animate-fade-in">
         <div className="flex items-center justify-between mb-4">
-          <h4 className="font-medium">Equipment Palette</h4>
+          <h4 className="font-medium bg-gradient-to-r from-flow-blue to-blue-600 bg-clip-text text-transparent">Equipment Palette</h4>
           <div className="flex items-center gap-2">
             <button 
               onClick={handleZoomIn}
-              className="p-1.5 rounded-lg bg-white text-gray-500 border hover:bg-gray-50"
+              className="p-1.5 rounded-lg bg-white text-gray-500 border hover:bg-blue-50 hover:text-blue-600 transition-all shadow-sm"
             >
               <Plus className="h-4 w-4" />
             </button>
-            <span className="text-sm">{zoom}%</span>
+            <span className="text-sm font-medium">{zoom}%</span>
             <button 
               onClick={handleZoomOut}
-              className="p-1.5 rounded-lg bg-white text-gray-500 border hover:bg-gray-50"
+              className="p-1.5 rounded-lg bg-white text-gray-500 border hover:bg-blue-50 hover:text-blue-600 transition-all shadow-sm"
             >
               <Minus className="h-4 w-4" />
             </button>
@@ -625,15 +698,15 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
                   }
                 }}
                 className={`p-2 rounded-lg ${
-                  activeEquipment === item.id ? 'bg-flow-blue/10 text-flow-blue' : 'bg-white text-gray-600 hover:bg-gray-50'
-                } flex items-center gap-2 border transition-colors`}
+                  activeEquipment === item.id ? 'bg-flow-blue/10 text-flow-blue' : 'bg-white text-gray-600 hover:bg-blue-50 hover:text-blue-600'
+                } flex items-center gap-2 border border-gray-200 transition-all hover:shadow-md shadow-sm`}
               >
-                <span>{item.icon}</span>
+                <span className="transition-transform hover:scale-110">{item.icon}</span>
                 <span className="text-sm font-medium">{item.name}</span>
               </button>
               
               {activeEquipment === item.id && showSubTypes && item.subTypes && (
-                <div className="w-full mt-2 mb-1 ml-4 pl-4 border-l-2 border-flow-blue/20">
+                <div className="w-full mt-2 mb-1 ml-4 pl-4 border-l-2 border-blue-200 animate-fade-in-up">
                   <div className="flex flex-wrap gap-2">
                     {item.subTypes.map(subType => (
                       <button
@@ -644,8 +717,8 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
                         className={`px-3 py-1.5 rounded-lg ${
                           activeSubType === subType.id 
                             ? 'bg-flow-blue/10 text-flow-blue' 
-                            : 'bg-white text-gray-600 hover:bg-gray-50'
-                        } text-xs border transition-colors`}
+                            : 'bg-white text-gray-600 hover:bg-blue-50 hover:text-blue-600'
+                        } text-xs border border-gray-200 transition-all hover:shadow-md shadow-sm`}
                       >
                         {subType.name}
                       </button>
@@ -659,22 +732,28 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
       </div>
       
       <div className="flex-1 relative overflow-hidden">
-        <div className="bg-white border rounded-lg p-1 mb-4 flex items-center justify-between">
+        <div className="bg-gradient-to-r from-white to-blue-50 border rounded-lg p-1 mb-4 flex items-center justify-between shadow-md">
           <div className="flex items-center gap-1">
             <button
               onClick={handleClearCanvas}
-              className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100"
+              className="p-1.5 rounded-lg text-gray-500 hover:bg-red-50 hover:text-red-500 transition-all"
               title="Clear canvas"
             >
               <Trash2 className="h-4 w-4" />
             </button>
             <button
-              onClick={() => setZoom(100)}
-              className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100"
-              title="Reset zoom"
+              onClick={() => {
+                setZoom(100);
+                setCanvasOffset({ x: 0, y: 0 });
+              }}
+              className="p-1.5 rounded-lg text-gray-500 hover:bg-blue-50 hover:text-blue-600 transition-all"
+              title="Reset view"
             >
               <Settings2 className="h-4 w-4" />
             </button>
+            <span className="text-xs text-gray-500 ml-2">
+              Tip: Use middle mouse button to pan around
+            </span>
           </div>
           
           <div className="text-xs text-gray-500">
@@ -683,7 +762,7 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
           
           <button
             onClick={handleStartSimulation}
-            className="px-3 py-1.5 rounded-lg bg-green-500 text-white hover:bg-green-600 text-xs font-medium flex items-center gap-1"
+            className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 text-xs font-medium flex items-center gap-1 shadow-md transition-all hover:shadow-lg transform hover:scale-105"
             disabled={simulationRunning}
           >
             {simulationRunning ? (
@@ -699,33 +778,39 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
         
         <div 
           ref={canvasRef}
-          className="relative border rounded-lg h-[800px] overflow-auto bg-gray-50"
+          className="relative border rounded-lg overflow-auto bg-gradient-to-b from-blue-50/20 to-white shadow-inner"
           style={{ 
-            transform: `scale(${zoom / 100})`, 
-            transformOrigin: 'top left',
-            minWidth: '1200px',
-            width: '100%'
+            height: "800px",
+            maxHeight: "800px",
+            width: "100%",
+            overflow: "hidden"
           }}
           onClick={handleCanvasClick}
-          onMouseMove={handleMouseMove}
+          onMouseDown={handleMouseDown}
+          onMouseUp={handleMouseUp}
+          onMouseMove={handleCanvasMouseMove}
+          onMouseLeave={handleMouseUp}
         >
-          <div className="absolute inset-0 w-full h-full" 
+          <div className="absolute"
                style={{
+                 width: `${canvasDimensions.width}px`,
+                 height: `${canvasDimensions.height}px`,
+                 transform: `scale(${zoom / 100}) translate(${canvasOffset.x}px, ${canvasOffset.y}px)`,
+                 transformOrigin: '0 0',
                  backgroundImage: 'radial-gradient(circle, #d1d5db 1px, transparent 1px)',
                  backgroundSize: '20px 20px'
                }}
-          />
-          
-          {streams.map(stream => renderStream(stream))}
-          
-          {equipment.map(eq => renderEquipmentCard(eq))}
+          >
+            {streams.map(stream => renderStream(stream))}
+            {equipment.map(eq => renderEquipmentCard(eq))}
+          </div>
           
           {isConnecting && (
-            <div className="fixed bottom-4 right-4 bg-amber-100 text-amber-700 p-3 rounded-lg shadow-md text-sm flex items-center gap-2">
+            <div className="fixed bottom-4 right-4 bg-amber-100 text-amber-700 p-3 rounded-lg shadow-md text-sm flex items-center gap-2 animate-pulse-subtle">
               <span>Select an equipment to connect</span>
               <button 
                 onClick={() => setIsConnecting(null)}
-                className="p-1 rounded-full bg-amber-200 text-amber-700 hover:bg-amber-300"
+                className="p-1 rounded-full bg-amber-200 text-amber-700 hover:bg-amber-300 transition-all"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -733,11 +818,11 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
           )}
           
           {isMoving && (
-            <div className="fixed bottom-4 right-4 bg-green-100 text-green-700 p-3 rounded-lg shadow-md text-sm flex items-center gap-2">
+            <div className="fixed bottom-4 right-4 bg-green-100 text-green-700 p-3 rounded-lg shadow-md text-sm flex items-center gap-2 animate-pulse-subtle">
               <span>Click on the canvas to place the equipment</span>
               <button 
                 onClick={() => setIsMoving(false)}
-                className="p-1 rounded-full bg-green-200 text-green-700 hover:bg-green-300"
+                className="p-1 rounded-full bg-green-200 text-green-700 hover:bg-green-300 transition-all"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -759,7 +844,11 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
       )}
       
       <div className="mt-6 flex justify-end">
-        <Button onClick={handleStartSimulation} disabled={simulationRunning}>
+        <Button 
+          onClick={handleStartSimulation} 
+          disabled={simulationRunning}
+          className="bg-gradient-to-r from-flow-blue to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-md hover:shadow-lg transition-all transform hover:scale-105"
+        >
           {simulationRunning ? 'Simulating...' : 'Run Simulation'}
         </Button>
       </div>
