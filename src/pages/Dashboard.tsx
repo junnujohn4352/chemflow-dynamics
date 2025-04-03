@@ -10,7 +10,8 @@ import {
   ArrowRight,
   Info,
   Calculator,
-  Code
+  Code,
+  FlaskConical
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import LearnMoreModal from "@/components/ui/LearnMoreModal";
@@ -50,9 +51,10 @@ const Dashboard = () => {
             <DashboardCard 
               title="Create Simulation"
               description="Start building a new chemical process simulation"
-              icon={<FileText className="h-6 w-6" />}
+              icon={<FlaskConical className="h-6 w-6" />}
               linkTo="/create-simulation"
               color="bg-purple-500"
+              isNew={true}
             />
             <DashboardCard 
               title="Process Analysis"
