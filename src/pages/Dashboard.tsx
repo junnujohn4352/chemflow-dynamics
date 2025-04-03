@@ -78,6 +78,13 @@ const Dashboard = () => {
               color="bg-teal-500"
               isNew={true}
             />
+            <DashboardCard 
+              title="About"
+              description="Learn more about LOL Groups and ChemFlow"
+              icon={<Info className="h-6 w-6" />}
+              linkTo="/about"
+              color="bg-amber-500"
+            />
           </div>
         </div>
       </main>
