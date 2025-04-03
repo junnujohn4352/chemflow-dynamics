@@ -1,11 +1,10 @@
-
 import React, { useState } from "react";
 import Navbar from "@/components/layout/Navbar";
 import AspenCalculations from "@/components/simulation/AspenCalculations";
 import Footer from "@/components/layout/Footer";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { 
-  Thermometer, Gauge, Beaker, Flask, 
+  Thermometer, Gauge, Beaker, FlaskConical, 
   Droplets, Waves, Shield, Zap, DollarSign 
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -61,7 +60,7 @@ const calculationCategories = [
   {
     id: "reaction",
     name: "Reaction Engineering",
-    icon: <Flask className="h-5 w-5" />,
+    icon: <FlaskConical className="h-5 w-5" />,
     description: "Model reactors, analyze kinetics, and optimize reaction conditions",
     calculations: [
       "Reactor modeling (PFR, CSTR, Batch)",
