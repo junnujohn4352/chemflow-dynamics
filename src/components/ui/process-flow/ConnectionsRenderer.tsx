@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Connection, Equipment } from "./types";
 
@@ -22,7 +21,7 @@ const ConnectionsRenderer: React.FC<ConnectionsRendererProps> = ({
           refY="3.5" 
           orient="auto"
         >
-          <polygon points="0 0, 10 3.5, 0 7" fill="#3b82f6" />
+          <polygon points="0 0, 10 3.5, 0 7" fill="#8B5CF6" />
         </marker>
       </defs>
       
@@ -42,31 +41,41 @@ const ConnectionsRenderer: React.FC<ConnectionsRendererProps> = ({
         const targetBaseX = target.position.x * (cellWidth + margin);
         const targetBaseY = target.position.y * (cellHeight + margin);
         
-        // Determine start and end points based on relative positions
+        // Determine connection points based on relative positions
         let sourceX = sourceBaseX + (cellWidth / 2);
         let sourceY = sourceBaseY + (cellHeight / 2);
         let targetX = targetBaseX + (cellWidth / 2);
         let targetY = targetBaseY + (cellHeight / 2);
         
-        // Adjust connection points to the sides
-        if (targetBaseX > sourceBaseX) {
-          // Target is to the right
-          sourceX = sourceBaseX + cellWidth;
-          targetX = targetBaseX;
-        } else if (targetBaseX < sourceBaseX) {
-          // Target is to the left
-          sourceX = sourceBaseX;
-          targetX = targetBaseX + cellWidth;
-        }
-        
-        if (targetBaseY > sourceBaseY) {
-          // Target is below
-          sourceY = sourceBaseY + cellHeight;
-          targetY = targetBaseY;
-        } else if (targetBaseY < sourceBaseY) {
-          // Target is above
-          sourceY = sourceBaseY;
-          targetY = targetBaseY + cellHeight;
+        // Logic to determine which sides to connect from
+        if (Math.abs(targetBaseX - sourceBaseX) > Math.abs(targetBaseY - sourceBaseY)) {
+          // Horizontal connection is dominant
+          if (targetBaseX > sourceBaseX) {
+            // Target is to the right
+            sourceX = sourceBaseX + cellWidth;
+            targetX = targetBaseX;
+          } else {
+            // Target is to the left
+            sourceX = sourceBaseX;
+            targetX = targetBaseX + cellWidth;
+          }
+          // Keep Y at center
+          sourceY = sourceBaseY + (cellHeight / 2);
+          targetY = targetBaseY + (cellHeight / 2);
+        } else {
+          // Vertical connection is dominant
+          if (targetBaseY > sourceBaseY) {
+            // Target is below
+            sourceY = sourceBaseY + cellHeight;
+            targetY = targetBaseY;
+          } else {
+            // Target is above
+            sourceY = sourceBaseY;
+            targetY = targetBaseY + cellHeight;
+          }
+          // Keep X at center
+          sourceX = sourceBaseX + (cellWidth / 2);
+          targetX = targetBaseX + (cellWidth / 2);
         }
         
         const dx = targetX - sourceX;
@@ -74,9 +83,9 @@ const ConnectionsRenderer: React.FC<ConnectionsRendererProps> = ({
         
         // Adjust control points for smoother curves
         const controlX1 = sourceX + dx * 0.3;
-        const controlY1 = sourceY;
+        const controlY1 = sourceY + dy * 0.1;
         const controlX2 = targetX - dx * 0.3;
-        const controlY2 = targetY;
+        const controlY2 = targetY - dy * 0.1;
         
         const pathId = `path-${conn.id}`;
         
@@ -86,7 +95,7 @@ const ConnectionsRenderer: React.FC<ConnectionsRendererProps> = ({
               id={pathId}
               d={`M ${sourceX} ${sourceY} C ${controlX1} ${controlY1}, ${controlX2} ${controlY2}, ${targetX} ${targetY}`} 
               fill="none" 
-              stroke="#3b82f6" 
+              stroke="#8B5CF6" 
               strokeWidth="2" 
               strokeDasharray="5,5"
               markerEnd="url(#arrowhead)"
@@ -95,7 +104,7 @@ const ConnectionsRenderer: React.FC<ConnectionsRendererProps> = ({
             {conn.animated && (
               <circle 
                 r="4" 
-                fill="#3b82f6">
+                fill="#8B5CF6">
                 <animateMotion 
                   dur="3s"
                   repeatCount="indefinite"
@@ -109,7 +118,7 @@ const ConnectionsRenderer: React.FC<ConnectionsRendererProps> = ({
                 x={(sourceX + targetX) / 2}
                 y={(sourceY + targetY) / 2 - 10}
                 textAnchor="middle"
-                fill="#3b82f6"
+                fill="#8B5CF6"
                 fontSize="10"
                 className="pointer-events-none"
               >

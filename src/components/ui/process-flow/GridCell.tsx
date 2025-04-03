@@ -2,7 +2,7 @@
 import React from "react";
 import { Equipment } from "./types";
 import { Button } from "@/components/ui/button";
-import { Link, Info } from "lucide-react";
+import { Info } from "lucide-react";
 import EquipmentCard from "@/components/ui/EquipmentCard";
 import EquipmentController from "./EquipmentController";
 import EquipmentDetail from "./EquipmentDetail";
@@ -50,26 +50,26 @@ const GridCell: React.FC<GridCellProps> = ({
 
   return (
     <div className="relative group">
-      {/* Connection points with improved visibility */}
-      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-flow-blue/70 hover:bg-flow-blue rounded-full opacity-30 group-hover:opacity-100 transition-all duration-300 cursor-pointer z-10"
+      {/* Connection points with enhanced visibility */}
+      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 bg-violet-500/70 hover:bg-violet-500 rounded-full opacity-40 group-hover:opacity-100 transition-all duration-300 cursor-pointer z-10"
            onClick={(e) => {
              e.stopPropagation();
              onConnect(equipment.id);
            }}
       />
-      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-flow-blue/70 hover:bg-flow-blue rounded-full opacity-30 group-hover:opacity-100 transition-all duration-300 cursor-pointer z-10"
+      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 bg-violet-500/70 hover:bg-violet-500 rounded-full opacity-40 group-hover:opacity-100 transition-all duration-300 cursor-pointer z-10"
            onClick={(e) => {
              e.stopPropagation();
              onConnect(equipment.id);
            }}
       />
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3 h-3 bg-flow-blue/70 hover:bg-flow-blue rounded-full opacity-30 group-hover:opacity-100 transition-all duration-300 cursor-pointer z-10"
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-4 h-4 bg-violet-500/70 hover:bg-violet-500 rounded-full opacity-40 group-hover:opacity-100 transition-all duration-300 cursor-pointer z-10"
            onClick={(e) => {
              e.stopPropagation();
              onConnect(equipment.id);
            }}
       />
-      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-3 h-3 bg-flow-blue/70 hover:bg-flow-blue rounded-full opacity-30 group-hover:opacity-100 transition-all duration-300 cursor-pointer z-10"
+      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-4 bg-violet-500/70 hover:bg-violet-500 rounded-full opacity-40 group-hover:opacity-100 transition-all duration-300 cursor-pointer z-10"
            onClick={(e) => {
              e.stopPropagation();
              onConnect(equipment.id);
@@ -99,7 +99,7 @@ const GridCell: React.FC<GridCellProps> = ({
       <div 
         className={`cursor-move hover:scale-105 transition-transform ${
           connectMode && connectMode !== equipment.id 
-            ? 'ring-2 ring-blue-400 ring-offset-2 cursor-pointer' 
+            ? 'ring-2 ring-violet-400 ring-offset-2 cursor-pointer' 
             : ''
         }`}
         onMouseDown={(e) => onDragStart(equipment.id, e)}
@@ -120,21 +120,6 @@ const GridCell: React.FC<GridCellProps> = ({
         )}
         
         <div className="mt-2 flex space-x-2 justify-center">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className={`text-xs px-2 py-1 h-auto ${
-              connectMode === equipment.id ? 'bg-blue-100 border-blue-400' : ''
-            }`}
-            onClick={(e) => {
-              e.stopPropagation(); 
-              onConnect(equipment.id);
-            }}
-          >
-            <Link className="h-3 w-3 mr-1" />
-            {connectMode === equipment.id ? 'Cancel' : 'Connect'}
-          </Button>
-          
           <Button 
             variant="outline" 
             size="sm" 
