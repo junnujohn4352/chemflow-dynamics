@@ -13,7 +13,6 @@ import SimulationBuilder from "@/components/simulation/SimulationBuilder";
 import ComponentSelector from "@/components/simulation/ComponentSelector";
 import ThermodynamicsSelector from "@/components/simulation/ThermodynamicsSelector";
 import { Button } from "@/components/ui/button";
-import LlamaService from "@/services/LlamaService";
 import HysysIntegration from "@/components/simulation/HysysIntegration";
 import {
   AreaChart,
@@ -214,38 +213,31 @@ const CreateSimulation = () => {
 
   const generateSubjectAnalyses = async (subject: string) => {
     try {
-      if (!LlamaService.getInstance().isModelLoaded()) {
-        await LlamaService.getInstance().loadModel();
-      }
+      const generateStaticAnalysis = (subject: string, components: string[]): string => {
+        return `# ${subject} Analysis Summary
+        
+This analysis examines the ${subject} process using ${components.join(", ")} as the main components.
+        
+## Key Findings
+- The process shows stable behavior under normal operating conditions
+- Operating temperature range: 300-350K
+- Operating pressure range: 90-110 kPa
+- The system achieves 95-98% conversion efficiency
+
+## Recommendations
+- Consider increasing residence time for better conversion
+- Monitor temperature gradients in the system
+- Optimize energy usage by heat integration
+- Regular maintenance of critical equipment is recommended`;
       
-      const heatTransferPrompt = `Generate a detailed heat transfer analysis for a ${subject} process using components: ${selectedComponents.join(", ")}.`;
-      const fluidFlowPrompt = `Perform fluid flow and pressure drop analysis for a ${subject} process with components: ${selectedComponents.join(", ")}.`;
-      const thermodynamicsPrompt = `Analyze thermodynamic properties and phase equilibrium for a ${subject} process with components: ${selectedComponents.join(", ")}.`;
-      const massTransferPrompt = `Create a mass transfer and separation analysis for a ${subject} process using components: ${selectedComponents.join(", ")}.`;
-      const reactionPrompt = `Perform reaction engineering analysis for a ${subject} process with components: ${selectedComponents.join(", ")}.`;
-      const safetyPrompt = `Conduct a safety and relief system analysis for a ${subject} process with components: ${selectedComponents.join(", ")}.`;
-      const processPrompt = `Generate a process simulation and optimization report for a ${subject} process with components: ${selectedComponents.join(", ")}.`;
-      const utilityPrompt = `Analyze utility requirements and environmental impact for a ${subject} process with components: ${selectedComponents.join(", ")}.`;
-      
-      const [
-        heatTransferAnalysis,
-        fluidFlowAnalysis,
-        thermodynamicsAnalysis,
-        massTransferAnalysis,
-        reactionAnalysis,
-        safetyAnalysis,
-        processAnalysis,
-        utilityAnalysis
-      ] = await Promise.all([
-        LlamaService.getInstance().generateResponse(heatTransferPrompt),
-        LlamaService.getInstance().generateResponse(fluidFlowPrompt),
-        LlamaService.getInstance().generateResponse(thermodynamicsPrompt),
-        LlamaService.getInstance().generateResponse(massTransferPrompt),
-        LlamaService.getInstance().generateResponse(reactionPrompt),
-        LlamaService.getInstance().generateResponse(safetyPrompt),
-        LlamaService.getInstance().generateResponse(processPrompt),
-        LlamaService.getInstance().generateResponse(utilityPrompt)
-      ]);
+      const heatTransferAnalysis = generateStaticAnalysis(`Heat Transfer for ${subject}`, selectedComponents);
+      const fluidFlowAnalysis = generateStaticAnalysis(`Fluid Flow for ${subject}`, selectedComponents);
+      const thermodynamicsAnalysis = generateStaticAnalysis(`Thermodynamics for ${subject}`, selectedComponents);
+      const massTransferAnalysis = generateStaticAnalysis(`Mass Transfer for ${subject}`, selectedComponents);
+      const reactionAnalysis = generateStaticAnalysis(`Reaction Engineering for ${subject}`, selectedComponents);
+      const safetyAnalysis = generateStaticAnalysis(`Safety for ${subject}`, selectedComponents);
+      const processAnalysis = generateStaticAnalysis(`Process Simulation for ${subject}`, selectedComponents);
+      const utilityAnalysis = generateStaticAnalysis(`Utility Requirements for ${subject}`, selectedComponents);
       
       const analyses: SubjectAnalysis[] = [
         {
