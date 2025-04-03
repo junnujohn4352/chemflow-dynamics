@@ -43,44 +43,67 @@ const ConnectionsRenderer: React.FC<ConnectionsRendererProps> = ({
         const targetBaseX = target.position.x * (cellWidth + margin);
         const targetBaseY = target.position.y * (cellHeight + margin);
         
-        // Determine connection points
-        let sourceX = sourceBaseX + (cellWidth / 2);
-        let sourceY = sourceBaseY + (cellHeight / 2);
-        let targetX = targetBaseX + (cellWidth / 2);
-        let targetY = targetBaseY + (cellHeight / 2);
+        // Calculate cell centers
+        const sourceCenterX = sourceBaseX + (cellWidth / 2);
+        const sourceCenterY = sourceBaseY + (cellHeight / 2);
+        const targetCenterX = targetBaseX + (cellWidth / 2);
+        const targetCenterY = targetBaseY + (cellHeight / 2);
         
-        // Adjust connection points based on relative positions
-        if (Math.abs(targetBaseX - sourceBaseX) > Math.abs(targetBaseY - sourceBaseY)) {
-          // Horizontal connection
-          if (targetBaseX > sourceBaseX) {
-            sourceX = sourceBaseX + cellWidth + dotOffset;
-            targetX = targetBaseX - dotOffset;
-          } else {
-            sourceX = sourceBaseX - dotOffset;
-            targetX = targetBaseX + cellWidth + dotOffset;
-          }
-          sourceY = sourceBaseY + (cellHeight / 2);
-          targetY = targetBaseY + (cellHeight / 2);
+        // Determine connection points based on relative positions
+        let sourceX, sourceY, targetX, targetY;
+        
+        // Calculate angle between centers
+        const angleRad = Math.atan2(targetCenterY - sourceCenterY, targetCenterX - sourceCenterX);
+        const angleDeg = (angleRad * 180) / Math.PI;
+        
+        // Determine which side of the source to connect from
+        if (angleDeg >= -45 && angleDeg < 45) {
+          // Connect from right side of source
+          sourceX = sourceBaseX + cellWidth + dotOffset;
+          sourceY = sourceCenterY;
+        } else if (angleDeg >= 45 && angleDeg < 135) {
+          // Connect from bottom of source
+          sourceX = sourceCenterX;
+          sourceY = sourceBaseY + cellHeight + dotOffset;
+        } else if ((angleDeg >= 135 && angleDeg <= 180) || (angleDeg >= -180 && angleDeg < -135)) {
+          // Connect from left side of source
+          sourceX = sourceBaseX - dotOffset;
+          sourceY = sourceCenterY;
         } else {
-          // Vertical connection
-          if (targetBaseY > sourceBaseY) {
-            sourceY = sourceBaseY + cellHeight + dotOffset;
-            targetY = targetBaseY - dotOffset;
-          } else {
-            sourceY = sourceBaseY - dotOffset;
-            targetY = targetBaseY + cellHeight + dotOffset;
-          }
-          sourceX = sourceBaseX + (cellWidth / 2);
-          targetX = targetBaseX + (cellWidth / 2);
+          // Connect from top of source
+          sourceX = sourceCenterX;
+          sourceY = sourceBaseY - dotOffset;
+        }
+        
+        // Determine which side of the target to connect to
+        // We use the opposite angle for the target
+        const targetAngleDeg = (angleDeg + 180) % 360;
+        
+        if (targetAngleDeg >= -45 && targetAngleDeg < 45) {
+          // Connect to right side of target
+          targetX = targetBaseX + cellWidth + dotOffset;
+          targetY = targetCenterY;
+        } else if (targetAngleDeg >= 45 && targetAngleDeg < 135) {
+          // Connect to bottom of target
+          targetX = targetCenterX;
+          targetY = targetBaseY + cellHeight + dotOffset;
+        } else if ((targetAngleDeg >= 135 && targetAngleDeg <= 180) || (targetAngleDeg >= -180 && targetAngleDeg < -135)) {
+          // Connect to left side of target
+          targetX = targetBaseX - dotOffset;
+          targetY = targetCenterY;
+        } else {
+          // Connect to top of target
+          targetX = targetCenterX;
+          targetY = targetBaseY - dotOffset;
         }
         
         // Calculate control points for curved paths
         const dx = targetX - sourceX;
         const dy = targetY - sourceY;
-        const controlX1 = sourceX + dx * 0.25;
-        const controlY1 = sourceY + dy * 0.25;
-        const controlX2 = targetX - dx * 0.25;
-        const controlY2 = targetY - dy * 0.25;
+        const controlX1 = sourceX + dx * 0.4;
+        const controlY1 = sourceY + dy * 0.4;
+        const controlX2 = targetX - dx * 0.4;
+        const controlY2 = targetY - dy * 0.4;
         
         const pathId = `path-${conn.id}`;
         
