@@ -36,26 +36,52 @@ const ConnectionsRenderer: React.FC<ConnectionsRendererProps> = ({
         const cellHeight = 120;
         const margin = 12;
         
-        const sourceX = (source.position.x * (cellWidth + margin)) + (cellWidth / 2);
-        const sourceY = (source.position.y * (cellHeight + margin)) + (cellHeight / 2);
+        // Calculate base positions
+        const sourceBaseX = source.position.x * (cellWidth + margin);
+        const sourceBaseY = source.position.y * (cellHeight + margin);
+        const targetBaseX = target.position.x * (cellWidth + margin);
+        const targetBaseY = target.position.y * (cellHeight + margin);
         
-        const targetX = (target.position.x * (cellWidth + margin)) + (cellWidth / 2);
-        const targetY = (target.position.y * (cellHeight + margin)) + (cellHeight / 2);
+        // Determine start and end points based on relative positions
+        let sourceX = sourceBaseX + (cellWidth / 2);
+        let sourceY = sourceBaseY + (cellHeight / 2);
+        let targetX = targetBaseX + (cellWidth / 2);
+        let targetY = targetBaseY + (cellHeight / 2);
+        
+        // Adjust connection points to the sides
+        if (targetBaseX > sourceBaseX) {
+          // Target is to the right
+          sourceX = sourceBaseX + cellWidth;
+          targetX = targetBaseX;
+        } else if (targetBaseX < sourceBaseX) {
+          // Target is to the left
+          sourceX = sourceBaseX;
+          targetX = targetBaseX + cellWidth;
+        }
+        
+        if (targetBaseY > sourceBaseY) {
+          // Target is below
+          sourceY = sourceBaseY + cellHeight;
+          targetY = targetBaseY;
+        } else if (targetBaseY < sourceBaseY) {
+          // Target is above
+          sourceY = sourceBaseY;
+          targetY = targetBaseY + cellHeight;
+        }
         
         const dx = targetX - sourceX;
         const dy = targetY - sourceY;
         
+        // Adjust control points for smoother curves
         const controlX1 = sourceX + dx * 0.3;
         const controlY1 = sourceY;
         const controlX2 = targetX - dx * 0.3;
         const controlY2 = targetY;
         
-        // Create a unique ID for each path for animation reference
         const pathId = `path-${conn.id}`;
         
         return (
           <g key={conn.id}>
-            {/* Path for the connection */}
             <path 
               id={pathId}
               d={`M ${sourceX} ${sourceY} C ${controlX1} ${controlY1}, ${controlX2} ${controlY2}, ${targetX} ${targetY}`} 
@@ -66,7 +92,6 @@ const ConnectionsRenderer: React.FC<ConnectionsRendererProps> = ({
               markerEnd="url(#arrowhead)"
             />
             
-            {/* Animated dot along the path */}
             {conn.animated && (
               <circle 
                 r="4" 
@@ -79,7 +104,6 @@ const ConnectionsRenderer: React.FC<ConnectionsRendererProps> = ({
               </circle>
             )}
             
-            {/* Connection label if provided */}
             {conn.label && (
               <text
                 x={(sourceX + targetX) / 2}

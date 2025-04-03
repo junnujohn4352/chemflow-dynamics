@@ -50,6 +50,32 @@ const GridCell: React.FC<GridCellProps> = ({
 
   return (
     <div className="relative group">
+      {/* Connection points */}
+      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-2 h-2 bg-blue-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+           onClick={(e) => {
+             e.stopPropagation();
+             onConnect(equipment.id);
+           }}
+      />
+      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 bg-blue-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+           onClick={(e) => {
+             e.stopPropagation();
+             onConnect(equipment.id);
+           }}
+      />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-2 bg-blue-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+           onClick={(e) => {
+             e.stopPropagation();
+             onConnect(equipment.id);
+           }}
+      />
+      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-2 h-2 bg-blue-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+           onClick={(e) => {
+             e.stopPropagation();
+             onConnect(equipment.id);
+           }}
+      />
+
       {editingName === equipment.id ? (
         <div className="absolute -top-10 left-0 right-0 flex z-50">
           <input
@@ -87,7 +113,6 @@ const GridCell: React.FC<GridCellProps> = ({
           metrics={equipment.metrics}
         />
         
-        {/* Basic information display */}
         {equipment.description && (
           <div className="mt-1 text-xs text-gray-500 max-w-[120px] truncate">
             {equipment.description}
