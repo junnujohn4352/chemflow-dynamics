@@ -13,6 +13,7 @@ export interface Equipment {
   };
   position: { x: number; y: number };
   connections?: string[];
+  description?: string; // Added description for basic information
 }
 
 export interface Connection {
@@ -20,6 +21,7 @@ export interface Connection {
   source: string;
   target: string;
   animated: boolean;
+  label?: string; // Added label for connection information
 }
 
 export interface SimulationData {

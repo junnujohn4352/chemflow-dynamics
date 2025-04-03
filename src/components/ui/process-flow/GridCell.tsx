@@ -2,7 +2,7 @@
 import React from "react";
 import { Equipment } from "./types";
 import { Button } from "@/components/ui/button";
-import { Link } from "lucide-react";
+import { Link, Info } from "lucide-react";
 import EquipmentCard from "@/components/ui/EquipmentCard";
 import EquipmentController from "./EquipmentController";
 import EquipmentDetail from "./EquipmentDetail";
@@ -87,6 +87,13 @@ const GridCell: React.FC<GridCellProps> = ({
           metrics={equipment.metrics}
         />
         
+        {/* Basic information display */}
+        {equipment.description && (
+          <div className="mt-1 text-xs text-gray-500 max-w-[120px] truncate">
+            {equipment.description}
+          </div>
+        )}
+        
         <div className="mt-2 flex space-x-2 justify-center">
           <Button 
             variant="outline" 
@@ -114,6 +121,7 @@ const GridCell: React.FC<GridCellProps> = ({
               onToggleDetails(equipment.id);
             }}
           >
+            <Info className="h-3 w-3 mr-1" />
             {showDetails === equipment.id ? 'Hide' : 'Info'}
           </Button>
         </div>

@@ -50,6 +50,7 @@ const ConnectionsRenderer: React.FC<ConnectionsRendererProps> = ({
         const controlX2 = targetX - dx * 0.3;
         const controlY2 = targetY;
         
+        // Using dashed strokes for the connections
         const dashArray = "5,5";
         
         return (
@@ -64,6 +65,7 @@ const ConnectionsRenderer: React.FC<ConnectionsRendererProps> = ({
               className={conn.animated ? "animate-dash" : ""}
             />
             
+            {/* Animated dot along the path */}
             <circle 
               r="3" 
               fill="#3b82f6" 
@@ -74,6 +76,20 @@ const ConnectionsRenderer: React.FC<ConnectionsRendererProps> = ({
                 path={`M ${sourceX} ${sourceY} C ${controlX1} ${controlY1}, ${controlX2} ${controlY2}, ${targetX} ${targetY}`}
               />
             </circle>
+            
+            {/* Connection label if provided */}
+            {conn.label && (
+              <text
+                x={(sourceX + targetX) / 2}
+                y={(sourceY + targetY) / 2 - 10}
+                textAnchor="middle"
+                fill="#3b82f6"
+                fontSize="10"
+                className="pointer-events-none"
+              >
+                {conn.label}
+              </text>
+            )}
           </g>
         );
       })}

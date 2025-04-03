@@ -30,7 +30,8 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
       status: 'stopped', 
       metrics: { level: 75, temperature: 25 },
       position: { x: 0, y: 0 },
-      connections: []
+      connections: [],
+      description: 'Raw material storage'
     },
     { 
       id: 'feed-pump', 
@@ -39,7 +40,8 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
       status: 'stopped', 
       metrics: { flow: 120 },
       position: { x: 2, y: 0 },
-      connections: []
+      connections: [],
+      description: 'Flow rate: 120 L/min'
     },
     { 
       id: 'preheater', 
@@ -48,7 +50,8 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
       status: 'stopped', 
       metrics: { temperature: 25 },
       position: { x: 0, y: 2 },
-      connections: []
+      connections: [],
+      description: 'Heat to 80°C'
     },
     { 
       id: 'distillation-column', 
@@ -57,7 +60,8 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
       status: 'stopped', 
       metrics: { pressure: 150, temperature: 30 },
       position: { x: 2, y: 2 },
-      connections: []
+      connections: [],
+      description: '20 stages, 150 kPa'
     },
     { 
       id: 'product-tank', 
@@ -66,7 +70,8 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
       status: 'stopped', 
       metrics: { level: 10, temperature: 25 },
       position: { x: 0, y: 4 },
-      connections: []
+      connections: [],
+      description: 'Final product storage'
     },
     { 
       id: 'condenser', 
@@ -75,7 +80,8 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
       status: 'stopped', 
       metrics: { temperature: 25 },
       position: { x: 2, y: 4 },
-      connections: []
+      connections: [],
+      description: 'Cooling to 25°C'
     }
   ]);
   
@@ -256,31 +262,39 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
 
   const handleConnectionSelect = (id: string) => {
     if (connectMode && connectMode !== id) {
-      const newConnection: Connection = {
-        id: `conn-${Date.now()}`,
-        source: connectMode,
-        target: id,
-        animated: true
-      };
+      const sourceEquipment = equipment.find(e => e.id === connectMode);
+      const targetEquipment = equipment.find(e => e.id === id);
       
-      setConnections(prev => [...prev, newConnection]);
-      
-      setEquipment(prev => 
-        prev.map(eq => {
-          if (eq.id === connectMode) {
-            return {
-              ...eq,
-              connections: [...(eq.connections || []), id]
-            };
-          }
-          return eq;
-        })
-      );
-      
-      toast({
-        title: "Connection Created",
-        description: `Connected ${equipment.find(e => e.id === connectMode)?.name} to ${equipment.find(e => e.id === id)?.name}`,
-      });
+      if (sourceEquipment && targetEquipment) {
+        const connectionLabel = `${sourceEquipment.type} → ${targetEquipment.type}`;
+        
+        const newConnection: Connection = {
+          id: `conn-${Date.now()}`,
+          source: connectMode,
+          target: id,
+          animated: true,
+          label: connectionLabel
+        };
+        
+        setConnections(prev => [...prev, newConnection]);
+        
+        setEquipment(prev => 
+          prev.map(eq => {
+            if (eq.id === connectMode) {
+              return {
+                ...eq,
+                connections: [...(eq.connections || []), id]
+              };
+            }
+            return eq;
+          })
+        );
+        
+        toast({
+          title: "Connection Created",
+          description: `Connected ${sourceEquipment.name} to ${targetEquipment.name}`,
+        });
+      }
       
       setConnectMode(null);
     }
