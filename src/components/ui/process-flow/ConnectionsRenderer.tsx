@@ -18,7 +18,7 @@ const ConnectionsRenderer: React.FC<ConnectionsRendererProps> = ({
           id="arrowhead" 
           markerWidth="10" 
           markerHeight="7" 
-          refX="0" 
+          refX="9" 
           refY="3.5" 
           orient="auto"
         >
@@ -50,32 +50,34 @@ const ConnectionsRenderer: React.FC<ConnectionsRendererProps> = ({
         const controlX2 = targetX - dx * 0.3;
         const controlY2 = targetY;
         
-        // Using dashed strokes for the connections
-        const dashArray = "5,5";
+        // Create a unique ID for each path for animation reference
+        const pathId = `path-${conn.id}`;
         
         return (
           <g key={conn.id}>
+            {/* Path for the connection */}
             <path 
+              id={pathId}
               d={`M ${sourceX} ${sourceY} C ${controlX1} ${controlY1}, ${controlX2} ${controlY2}, ${targetX} ${targetY}`} 
               fill="none" 
               stroke="#3b82f6" 
               strokeWidth="2" 
-              strokeDasharray={dashArray}
+              strokeDasharray="5,5"
               markerEnd="url(#arrowhead)"
-              className={conn.animated ? "animate-dash" : ""}
             />
             
             {/* Animated dot along the path */}
-            <circle 
-              r="3" 
-              fill="#3b82f6" 
-              className="animate-pulse">
-              <animateMotion 
-                dur="3s"
-                repeatCount="indefinite"
-                path={`M ${sourceX} ${sourceY} C ${controlX1} ${controlY1}, ${controlX2} ${controlY2}, ${targetX} ${targetY}`}
-              />
-            </circle>
+            {conn.animated && (
+              <circle 
+                r="4" 
+                fill="#3b82f6">
+                <animateMotion 
+                  dur="3s"
+                  repeatCount="indefinite"
+                  path={`M ${sourceX} ${sourceY} C ${controlX1} ${controlY1}, ${controlX2} ${controlY2}, ${targetX} ${targetY}`}
+                />
+              </circle>
+            )}
             
             {/* Connection label if provided */}
             {conn.label && (
