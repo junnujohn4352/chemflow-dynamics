@@ -1,3 +1,4 @@
+
 import React, { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -61,7 +62,31 @@ function App() {
                 streams: simData.streams || 0,
               };
               
-              saveSimulation(fullSimData);
+              // Save simulation function inline
+              try {
+                if (!fullSimData || !fullSimData.name) return;
+                
+                const simId = fullSimData.id || `sim-${Date.now()}`;
+                fullSimData.id = simId;
+                
+                fullSimData.lastUpdated = new Date().toISOString();
+                
+                const existingSimsStr = localStorage.getItem('chemflow-simulations') || '[]';
+                const existingSims = JSON.parse(existingSimsStr);
+                
+                const simIndex = existingSims.findIndex((s: any) => s.id === simId);
+                
+                if (simIndex >= 0) {
+                  existingSims[simIndex] = fullSimData;
+                } else {
+                  existingSims.push(fullSimData);
+                }
+                
+                localStorage.setItem('chemflow-simulations', JSON.stringify(existingSims));
+                console.log('Simulation saved', fullSimData.name);
+              } catch (error) {
+                console.error('Error saving simulation:', error);
+              }
             }
           } catch (e) {
             console.error("Error parsing simulation data:", e);

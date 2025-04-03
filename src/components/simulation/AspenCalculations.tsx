@@ -1,10 +1,8 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import GlassPanel from "@/components/ui/GlassPanel";
 import { Calculator, Droplets, Beaker, Thermometer, Waves, Zap, Shield, Cpu, Leaf } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import LlamaService from "@/services/LlamaService";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 
@@ -156,18 +154,6 @@ const AspenCalculations: React.FC = () => {
   ];
 
   useEffect(() => {
-    // Load the LLaMA model on component mount
-    const loadModel = async () => {
-      try {
-        await LlamaService.getInstance().loadModel();
-      } catch (error) {
-        console.error("Error loading model:", error);
-      }
-    };
-    
-    loadModel();
-    
-    // Check if there's a subject from URL params or localStorage
     const storedSubject = localStorage.getItem('chemflow-simulation-subject');
     if (storedSubject) {
       switch (storedSubject.toLowerCase()) {
@@ -208,7 +194,6 @@ const AspenCalculations: React.FC = () => {
       }
     }
 
-    // Clean up any progress interval on unmount
     return () => {
       if (progressInterval.current) {
         window.clearInterval(progressInterval.current);
@@ -216,7 +201,6 @@ const AspenCalculations: React.FC = () => {
     };
   }, []);
 
-  // Function to get default inputs based on calculation type
   const getDefaultInputs = (calculation: string): CalculationInput[] => {
     switch (calculation) {
       case "LMTD (Log Mean Temperature Difference)":
@@ -250,13 +234,11 @@ const AspenCalculations: React.FC = () => {
           { id: "fouling_hot", label: "Hot Side Fouling Resistance", value: "0.0001", unit: "m²·K/W", placeholder: "e.g., 0.0001" },
           { id: "fouling_cold", label: "Cold Side Fouling Resistance", value: "0.0002", unit: "m²·K/W", placeholder: "e.g., 0.0002" }
         ];
-      // These are just a few examples - more calculation types would be added with their specific inputs
       default:
         return [];
     }
   };
 
-  // Calculate LMTD
   const calculateLMTD = (inputs: CalculationInput[]): string => {
     const t1_hot = parseFloat(inputs.find(i => i.id === "t1_hot")?.value || "0");
     const t2_hot = parseFloat(inputs.find(i => i.id === "t2_hot")?.value || "0");
@@ -266,7 +248,6 @@ const AspenCalculations: React.FC = () => {
     const dt1 = t1_hot - t2_cold;
     const dt2 = t2_hot - t1_cold;
     
-    // Check for calculation errors
     if (dt1 <= 0 || dt2 <= 0) {
       return `## Error in LMTD Calculation
       
@@ -279,7 +260,6 @@ Please adjust input temperatures to ensure proper temperature driving forces.`;
     }
     
     if (Math.abs(dt1 - dt2) < 0.001) {
-      // For nearly equal temperature differences
       const lmtd = dt1;
       return `## LMTD Calculation Results
 
@@ -347,7 +327,6 @@ Typical correction factor values:
 - Shell-and-tube (one shell pass, two or more tube passes): 0.8 < F < 0.9`;
   };
 
-  // Calculate Heat Exchanger Effectiveness
   const calculateEffectiveness = (inputs: CalculationInput[]): string => {
     const c_min = parseFloat(inputs.find(i => i.id === "c_min")?.value || "0");
     const c_max = parseFloat(inputs.find(i => i.id === "c_max")?.value || "0");
@@ -355,26 +334,21 @@ Typical correction factor values:
     const t_hot_in = parseFloat(inputs.find(i => i.id === "t_hot_in")?.value || "0");
     const t_cold_in = parseFloat(inputs.find(i => i.id === "t_cold_in")?.value || "0");
     
-    // Calculate NTU
     const ntu = ua / c_min;
     
-    // Calculate capacity ratio
     const c_ratio = c_min / c_max;
     
-    // Calculate effectiveness for counter-current flow
     let effectiveness = 0;
     
-    if (c_ratio < 0.99) { // Not equal capacity rates
+    if (c_ratio < 0.99) {
       effectiveness = (1 - Math.exp(-ntu * (1 - c_ratio))) / (1 - c_ratio * Math.exp(-ntu * (1 - c_ratio)));
-    } else { // Equal capacity rates
+    } else {
       effectiveness = ntu / (1 + ntu);
     }
     
-    // Calculate actual heat transfer
     const q_max = c_min * (t_hot_in - t_cold_in);
     const q_actual = effectiveness * q_max;
     
-    // Calculate outlet temperatures
     const t_hot_out = t_hot_in - q_actual / (c_ratio < 1 ? c_max : c_min);
     const t_cold_out = t_cold_in + q_actual / (c_ratio < 1 ? c_min : c_max);
     
@@ -404,18 +378,15 @@ Typical correction factor values:
 This heat exchanger is operating at ${(effectiveness * 100).toFixed(2)}% of its theoretical maximum performance for the given flow conditions. ${effectiveness > 0.8 ? "This indicates a well-designed and efficient exchanger." : effectiveness > 0.6 ? "This indicates a reasonably efficient exchanger with some room for improvement." : "This indicates a heat exchanger that could benefit from design optimization."}`;
   };
 
-  // Calculate Heat Duty
   const calculateHeatDuty = (inputs: CalculationInput[]): string => {
     const mass_flow = parseFloat(inputs.find(i => i.id === "mass_flow")?.value || "0");
     const cp = parseFloat(inputs.find(i => i.id === "cp")?.value || "0");
     const t_in = parseFloat(inputs.find(i => i.id === "t_in")?.value || "0");
     const t_out = parseFloat(inputs.find(i => i.id === "t_out")?.value || "0");
     
-    // Calculate heat duty
     const delta_t = t_out - t_in;
     const heat_duty = mass_flow * cp * delta_t;
     
-    // Convert to different units
     const heat_duty_kw = heat_duty;
     const heat_duty_mw = heat_duty / 1000;
     const heat_duty_btu_hr = heat_duty * 3412.14;
@@ -452,7 +423,6 @@ This heat duty can be used to:
 - For phase change processes, latent heat must also be considered`;
   };
 
-  // Calculate U-value (Overall Heat Transfer Coefficient)
   const calculateUValue = (inputs: CalculationInput[]): string => {
     const h_hot = parseFloat(inputs.find(i => i.id === "h_hot")?.value || "0");
     const h_cold = parseFloat(inputs.find(i => i.id === "h_cold")?.value || "0");
@@ -461,17 +431,14 @@ This heat duty can be used to:
     const fouling_hot = parseFloat(inputs.find(i => i.id === "fouling_hot")?.value || "0");
     const fouling_cold = parseFloat(inputs.find(i => i.id === "fouling_cold")?.value || "0");
     
-    // Calculate thermal resistances
     const r_hot = 1 / h_hot;
     const r_wall = thickness / k_wall;
     const r_cold = 1 / h_cold;
     const r_fouling = fouling_hot + fouling_cold;
     const r_total = r_hot + r_wall + r_cold + r_fouling;
     
-    // Calculate overall heat transfer coefficient
     const u_value = 1 / r_total;
     
-    // Calculate percentage contribution of each resistance
     const pct_hot = (r_hot / r_total) * 100;
     const pct_wall = (r_wall / r_total) * 100;
     const pct_cold = (r_cold / r_total) * 100;
@@ -520,7 +487,6 @@ ${pct_fouling > 50 ? "Fouling dominates the heat transfer resistance. Cleaning o
 - Gas to gas: 10-50 W/m²·K`;
   };
 
-  // Function to calculate results based on calculation type
   const calculateResults = (calculation: string, inputs: CalculationInput[]): string => {
     switch (calculation) {
       case "LMTD (Log Mean Temperature Difference)":
@@ -532,8 +498,6 @@ ${pct_fouling > 50 ? "Fouling dominates the heat transfer resistance. Cleaning o
       case "Overall Heat Transfer Coefficient (U-value)":
         return calculateUValue(inputs);
       default:
-        // For calculations not yet implemented with direct formulas,
-        // we'll still use the LlamaService
         return "Calculation not implemented with direct formulas yet. Using AI assistance instead.";
     }
   };
@@ -543,11 +507,9 @@ ${pct_fouling > 50 ? "Fouling dominates the heat transfer resistance. Cleaning o
     setIsLoading(true);
     setCalculationProgress(0);
     
-    // Get default inputs for this calculation type
     const inputs = getDefaultInputs(calculation);
     setCalculationInputs(inputs);
     
-    // Start progress animation
     if (progressInterval.current) {
       window.clearInterval(progressInterval.current);
     }
@@ -560,11 +522,9 @@ ${pct_fouling > 50 ? "Fouling dominates the heat transfer resistance. Cleaning o
     }, 100);
     
     try {
-      // First check if we have direct calculation implemented
       const directResult = calculateResults(calculation, inputs);
       
       if (directResult !== "Calculation not implemented with direct formulas yet. Using AI assistance instead.") {
-        // Allow the progress to run a bit more before completing
         setTimeout(() => {
           setCalculationResult(directResult);
           setCalculationProgress(100);
@@ -585,14 +545,9 @@ ${pct_fouling > 50 ? "Fouling dominates the heat transfer resistance. Cleaning o
         return;
       }
       
-      // If no direct calculation, use LlamaService
-      const categoryName = calculationCategories.find(cat => cat.id === activeTab)?.title || "";
-      const prompt = `Explain how to calculate ${calculation} in ${categoryName}. Show step by step methodology and include an example calculation.`;
+      const defaultResponse = `# ${calculation}\n\nThis calculation requires more advanced processing which is currently unavailable.\n\nPlease try one of the implemented calculations like LMTD, Heat Exchanger Effectiveness, Heat Duty Calculation, or Overall Heat Transfer Coefficient.`;
+      setCalculationResult(defaultResponse);
       
-      const response = await LlamaService.getInstance().generateResponse(prompt);
-      setCalculationResult(response);
-      
-      // Complete the progress
       setCalculationProgress(100);
       
       if (progressInterval.current) {
@@ -601,8 +556,8 @@ ${pct_fouling > 50 ? "Fouling dominates the heat transfer resistance. Cleaning o
       }
       
       toast({
-        title: "Calculation Completed",
-        description: `Analysis for ${calculation} is ready`
+        title: "Calculation Notice",
+        description: `This calculation requires advanced processing which is currently unavailable.`
       });
     } catch (error) {
       console.error("Error generating calculation:", error);
@@ -628,7 +583,6 @@ ${pct_fouling > 50 ? "Fouling dominates the heat transfer resistance. Cleaning o
       )
     );
     
-    // Recalculate if we have direct calculation method
     if (selectedCalculation && calculationInputs.length > 0) {
       const directResult = calculateResults(selectedCalculation, 
         calculationInputs.map(input => 
