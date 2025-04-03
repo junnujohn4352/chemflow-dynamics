@@ -4,7 +4,7 @@ import GlassPanel from "@/components/ui/GlassPanel";
 import { cn } from "@/lib/utils";
 import { 
   Calculator, Droplets, Beaker, Thermometer, Waves, Zap, 
-  Shield, Cpu, Leaf, DollarSign, Flask, Gauge, ArrowRight, 
+  Shield, Cpu, Leaf, DollarSign, FlaskConical, Gauge, ArrowRight, 
   BookOpen, FileText, DownloadCloud 
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
