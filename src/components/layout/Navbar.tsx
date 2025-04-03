@@ -1,7 +1,6 @@
-
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { ChemFlowLogo } from "@/assets/icons/ChemFlowLogo";
+import ChemFlowLogo from "@/assets/icons/ChemFlowLogo";
 import { Menu, X, Moon, Sun, Search, User, BarChart3, Settings, FileText, FlaskConical } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
 import { Button } from "@/components/ui/button";

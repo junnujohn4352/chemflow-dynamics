@@ -6,7 +6,7 @@ interface ChemFlowLogoProps {
   className?: string;
 }
 
-const ChemFlowLogo: React.FC<ChemFlowLogoProps> = ({ className }) => {
+export const ChemFlowLogo: React.FC<ChemFlowLogoProps> = ({ className }) => {
   return (
     <div className={`flex items-center ${className}`}>
       <div className="relative mr-2">
