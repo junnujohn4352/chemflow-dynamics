@@ -4,14 +4,12 @@ import { Link } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
 import GlassPanel from "@/components/ui/GlassPanel";
 import { 
-  LayoutGrid, 
   FileText, 
-  BarChart3,
-  ArrowRight,
-  Info,
   Calculator,
   Code,
-  FlaskConical
+  FlaskConical,
+  Info,
+  Book
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import LearnMoreModal from "@/components/ui/LearnMoreModal";
@@ -50,19 +48,27 @@ const Dashboard = () => {
               isNew={true}
             />
             <DashboardCard 
-              title="Process Analysis"
-              description="Analyze your simulation results with powerful tools"
-              icon={<BarChart3 className="h-6 w-6" />}
-              linkTo="/analysis"
-              color="bg-green-500"
-            />
-            <DashboardCard 
               title="HYSYS Calculations"
               description="Access comprehensive Aspen HYSYS calculations library"
               icon={<Calculator className="h-6 w-6" />}
               linkTo="/hysys-calculations"
               color="bg-indigo-500"
               isNew={true}
+            />
+            <DashboardCard 
+              title="Engineering Formulas"
+              description="Comprehensive collection of chemical engineering formulas"
+              icon={<Book className="h-6 w-6" />}
+              linkTo="/formulas"
+              color="bg-green-500"
+              isNew={true}
+            />
+            <DashboardCard 
+              title="Unit Converter"
+              description="Convert between different engineering units"
+              icon={<FileText className="h-6 w-6" />}
+              linkTo="/unit-converter"
+              color="bg-blue-500"
             />
             <DashboardCard 
               title="Code Converter"

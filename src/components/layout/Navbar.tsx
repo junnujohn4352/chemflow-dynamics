@@ -1,7 +1,7 @@
+
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import ChemFlowLogo from "@/assets/icons/ChemFlowLogo";
-import { Menu, X, Moon, Sun, Search, User, BarChart3, Settings, FileText, FlaskConical } from "lucide-react";
+import { Menu, X, Moon, Sun, Settings, FileText, FlaskConical, Calculator, Book, Code } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
 import { Button } from "@/components/ui/button";
 
@@ -18,7 +18,7 @@ const Navbar = () => {
     {
       label: "Dashboard",
       href: "/dashboard",
-      icon: <BarChart3 className="h-4 w-4 mr-2" />,
+      icon: <FlaskConical className="h-4 w-4 mr-2" />,
     },
     {
       label: "Create Simulation",
@@ -26,19 +26,24 @@ const Navbar = () => {
       icon: <FlaskConical className="h-4 w-4 mr-2" />,
     },
     {
-      label: "Analysis",
-      href: "/analysis",
-      icon: <BarChart3 className="h-4 w-4 mr-2" />,
-    },
-    {
       label: "HYSYS Calculations",
       href: "/hysys-calculations",
+      icon: <Calculator className="h-4 w-4 mr-2" />,
+    },
+    {
+      label: "Engineering Formulas",
+      href: "/formulas",
+      icon: <Book className="h-4 w-4 mr-2" />,
+    },
+    {
+      label: "Unit Converter",
+      href: "/unit-converter",
       icon: <FileText className="h-4 w-4 mr-2" />,
     },
     {
       label: "Code Converter",
       href: "/code-converter",
-      icon: <FileText className="h-4 w-4 mr-2" />,
+      icon: <Code className="h-4 w-4 mr-2" />,
     },
     {
       label: "Settings",
@@ -53,7 +58,6 @@ const Navbar = () => {
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
             <Link to="/" className="flex-shrink-0 flex items-center">
-              <ChemFlowLogo className="h-8 w-8 mr-2" />
               <span className="text-xl font-display font-bold text-gray-900 dark:text-white">
                 Chem<span className="text-flow-blue">Flow</span>
               </span>
@@ -91,14 +95,6 @@ const Navbar = () => {
               >
                 {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
               </Button>
-              
-              <div className="ml-3 relative">
-                <Link to="/settings">
-                  <div className="flex items-center justify-center h-8 w-8 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600">
-                    <User className="h-4 w-4" />
-                  </div>
-                </Link>
-              </div>
             </div>
           </div>
           

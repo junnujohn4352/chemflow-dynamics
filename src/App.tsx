@@ -10,10 +10,11 @@ import Dashboard from "./pages/Dashboard";
 import CreateSimulation from "./pages/CreateSimulation";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
-import Analysis from "./pages/Analysis";
+import UnitConverter from "./pages/UnitConverter";
 import HysysCalculations from "./pages/HysysCalculations";
 import About from "./pages/About";
 import CodeConverter from "./pages/CodeConverter";
+import Formulas from "./pages/Formulas";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -110,8 +111,9 @@ function App() {
               <Route path="/" element={<LandingPage />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/create-simulation" element={<CreateSimulation />} />
-              <Route path="/analysis" element={<Analysis />} />
+              <Route path="/unit-converter" element={<UnitConverter />} />
               <Route path="/hysys-calculations" element={<HysysCalculations />} />
+              <Route path="/formulas" element={<Formulas />} />
               <Route path="/code-converter" element={<CodeConverter />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/about" element={<About />} />
