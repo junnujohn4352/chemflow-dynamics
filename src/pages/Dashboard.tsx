@@ -40,7 +40,6 @@ const Dashboard = () => {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            {/* Dashboard Cards */}
             <DashboardCard 
               title="Simulations"
               description="Create and manage chemical process simulations"

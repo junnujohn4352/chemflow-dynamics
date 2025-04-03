@@ -68,7 +68,6 @@ const Navbar = () => {
     localStorage.setItem('darkMode', newMode ? 'dark' : 'light');
   };
 
-  // Check for saved dark mode preference when component mounts
   React.useEffect(() => {
     const savedMode = localStorage.getItem('darkMode');
     if (savedMode === 'dark') {
@@ -81,7 +80,6 @@ const Navbar = () => {
     <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-30">
       <div className="max-w-screen-xl mx-auto px-4 sm:px-6">
         <div className="flex justify-between items-center h-16">
-          {/* Brand text only */}
           <div className="flex items-center">
             <Link to="/dashboard" className="flex items-center">
               <span className="text-xl font-display font-bold tracking-tight dark:text-white">
@@ -90,7 +88,6 @@ const Navbar = () => {
             </Link>
           </div>
           
-          {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-1">
             {navigationItems.map((item, index) => (
               <Link
@@ -131,7 +128,6 @@ const Navbar = () => {
             </Button>
           </nav>
           
-          {/* Mobile menu button */}
           <div className="md:hidden flex items-center">
             <Button
               variant="ghost"
@@ -154,7 +150,6 @@ const Navbar = () => {
         </div>
       </div>
       
-      {/* Mobile Menu */}
       {isOpen && (
         <div className="md:hidden">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white dark:bg-gray-800">

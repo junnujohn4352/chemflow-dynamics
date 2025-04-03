@@ -28,33 +28,6 @@ const queryClient = new QueryClient({
   },
 });
 
-const saveSimulation = (simulationData: any) => {
-  try {
-    if (!simulationData || !simulationData.name) return;
-    
-    const simId = simulationData.id || `sim-${Date.now()}`;
-    simulationData.id = simId;
-    
-    simulationData.lastUpdated = new Date().toISOString();
-    
-    const existingSimsStr = localStorage.getItem('chemflow-simulations') || '[]';
-    const existingSims = JSON.parse(existingSimsStr);
-    
-    const simIndex = existingSims.findIndex((s: any) => s.id === simId);
-    
-    if (simIndex >= 0) {
-      existingSims[simIndex] = simulationData;
-    } else {
-      existingSims.push(simulationData);
-    }
-    
-    localStorage.setItem('chemflow-simulations', JSON.stringify(existingSims));
-    console.log('Simulation saved', simulationData.name);
-  } catch (error) {
-    console.error('Error saving simulation:', error);
-  }
-};
-
 function App() {
   React.useEffect(() => {
     const savedMode = localStorage.getItem('darkMode');
