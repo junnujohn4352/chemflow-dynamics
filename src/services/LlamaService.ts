@@ -1,10 +1,11 @@
-// This is a mock implementation of the LLaMA model service
-// In a real implementation, you would use WebAssembly to run LLaMA locally in the browser
+
+// LlamaService to connect to Llama 2 running in Google Colab or locally
 
 export class LlamaService {
   private static instance: LlamaService;
   private isLoaded: boolean = false;
   private isLoading: boolean = false;
+  private apiEndpoint: string | null = null;
   private calculationCategories: Record<string, string[]> = {
     "heat transfer": [
       "LMTD (Log Mean Temperature Difference)",
@@ -70,21 +71,65 @@ export class LlamaService {
     }
     return LlamaService.instance;
   }
+
+  public setApiEndpoint(endpoint: string): void {
+    this.apiEndpoint = endpoint;
+    localStorage.setItem('chemflow-llama-endpoint', endpoint);
+    console.log(`LLaMA API endpoint set to: ${endpoint}`);
+  }
+
+  public getApiEndpoint(): string | null {
+    if (!this.apiEndpoint) {
+      // Try to load from localStorage
+      const savedEndpoint = localStorage.getItem('chemflow-llama-endpoint');
+      if (savedEndpoint) {
+        this.apiEndpoint = savedEndpoint;
+      }
+    }
+    return this.apiEndpoint;
+  }
   
   public async loadModel(): Promise<void> {
     if (this.isLoaded || this.isLoading) return;
     
     this.isLoading = true;
     
-    // Simulate model loading time
-    return new Promise((resolve) => {
-      setTimeout(() => {
+    try {
+      // Check if we have an API endpoint configured
+      const endpoint = this.getApiEndpoint();
+      
+      if (endpoint) {
+        // Try to ping the endpoint to see if it's available
+        try {
+          const response = await fetch(`${endpoint}/health`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            // Short timeout to check if endpoint is responsive
+            signal: AbortSignal.timeout(3000)
+          });
+          
+          if (response.ok) {
+            console.log("LLaMA API endpoint is available");
+            this.isLoaded = true;
+          } else {
+            console.warn("LLaMA API endpoint returned an error");
+            throw new Error("API endpoint not available");
+          }
+        } catch (error) {
+          console.warn("Could not connect to LLaMA API endpoint", error);
+          throw error;
+        }
+      } else {
+        // Fallback to simulated loading for demo purposes
+        await new Promise((resolve) => setTimeout(resolve, 2000));
         this.isLoaded = true;
-        this.isLoading = false;
-        console.log("LLaMA model loaded");
-        resolve();
-      }, 2000);
-    });
+        console.log("LLaMA model loaded in simulation mode");
+      }
+    } finally {
+      this.isLoading = false;
+    }
   }
   
   private detectCalculationCategory(prompt: string): string | null {
@@ -550,18 +595,48 @@ Key results:
       throw new Error("Model not loaded yet");
     }
     
-    // Simulate response generation
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const category = this.detectCalculationCategory(prompt);
-        
-        let response = "";
-        
-        if (category) {
-          response = this.generateStepByStepResponse(category, prompt);
-        } else {
-          // General response if category not detected
-          response = `# Chemical Engineering Analysis
+    try {
+      const endpoint = this.getApiEndpoint();
+      
+      // If we have a configured API endpoint, use it
+      if (endpoint) {
+        try {
+          console.log("Sending request to LLaMA API:", prompt);
+          
+          const response = await fetch(`${endpoint}/generate`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ prompt }),
+            signal: AbortSignal.timeout(30000) // 30 second timeout
+          });
+          
+          if (!response.ok) {
+            throw new Error(`API returned status code ${response.status}`);
+          }
+          
+          const data = await response.json();
+          return data.response;
+        } catch (error) {
+          console.error("Error calling LLaMA API:", error);
+          throw error;
+        }
+      }
+      
+      // Fallback to simulated response
+      console.log("Using simulated LLaMA response");
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          const category = this.detectCalculationCategory(prompt);
+          
+          let response = "";
+          
+          if (category) {
+            response = this.generateStepByStepResponse(category, prompt);
+          } else {
+            // General response if category not detected
+            response = `# Chemical Engineering Analysis
 
 ## Step-by-Step Approach:
 
@@ -584,15 +659,23 @@ The solution requires a systematic approach using established methods.
 After calculations, I'll interpret the results in terms of practical implications.
 
 Would you like me to focus on a specific aspect like heat transfer, fluid flow, thermodynamics, mass transfer, reaction engineering, process safety, or something else?`;
-        }
-        
-        resolve(response);
-      }, 1000);
-    });
+          }
+          
+          resolve(response);
+        }, 1000);
+      });
+    } catch (error) {
+      console.error("Error in LlamaService.generateResponse:", error);
+      throw error;
+    }
   }
   
   public isModelLoaded(): boolean {
     return this.isLoaded;
+  }
+  
+  public hasConfiguredEndpoint(): boolean {
+    return this.getApiEndpoint() !== null;
   }
 }
 

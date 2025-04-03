@@ -11,7 +11,9 @@ import {
   Info, 
   FileText,
   ArrowRight,
-  Github
+  Github,
+  Settings,
+  ExternalLink
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -19,6 +21,10 @@ import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useNavigate } from "react-router-dom";
 import LlamaService from "@/services/LlamaService";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const AISimulation = () => {
   const { toast } = useToast();
@@ -28,13 +34,15 @@ const AISimulation = () => {
   const [messages, setMessages] = useState<{role: string, content: string, includesImage?: boolean}[]>([
     {
       role: "assistant",
-      content: "Hello! I'm your ChemFlow AI assistant powered by Meta's LLaMA model running locally in your browser. I can help you with chemical process simulations, calculations, and engineering questions. How can I help you today?"
+      content: "Hello! I'm your ChemFlow AI assistant powered by Meta's LLaMA model. I can help you with chemical process simulations, calculations, and engineering questions. How can I help you today?"
     }
   ]);
   const [llamaLoaded, setLlamaLoaded] = useState(false);
   const [showFlowsheet, setShowFlowsheet] = useState(false);
   const [flowsheetProblem, setFlowsheetProblem] = useState("");
-
+  const [apiEndpoint, setApiEndpoint] = useState("");
+  const [showSetupDialog, setShowSetupDialog] = useState(false);
+  
   // Load LLaMA model
   useEffect(() => {
     const loadLlama = async () => {
@@ -42,10 +50,18 @@ const AISimulation = () => {
       try {
         await llamaService.loadModel();
         setLlamaLoaded(true);
-        toast({
-          title: "LLaMA Model Loaded",
-          description: "The AI model is ready to answer your chemical engineering questions",
-        });
+        
+        if (llamaService.hasConfiguredEndpoint()) {
+          toast({
+            title: "LLaMA Model Connected",
+            description: "Connected to external LLaMA API endpoint",
+          });
+        } else {
+          toast({
+            title: "LLaMA Model Loaded",
+            description: "Using simulated responses. Set up external LLaMA API for real model responses.",
+          });
+        }
       } catch (error) {
         console.error("Error loading LLaMA model:", error);
         toast({
@@ -59,6 +75,13 @@ const AISimulation = () => {
     };
 
     loadLlama();
+    
+    // Check if we have a saved endpoint
+    const llamaService = LlamaService.getInstance();
+    const savedEndpoint = llamaService.getApiEndpoint();
+    if (savedEndpoint) {
+      setApiEndpoint(savedEndpoint);
+    }
   }, [toast]);
 
   const handleSendMessage = async () => {
@@ -100,15 +123,10 @@ const AISimulation = () => {
       
       // Try to use the actual LLaMA service
       const llamaService = LlamaService.getInstance();
-      if (llamaService.isModelLoaded()) {
-        try {
-          responseText = await llamaService.generateResponse(input);
-        } catch (error) {
-          console.error("Error generating response from LLaMA:", error);
-          // Fall back to simulated response
-          responseText = getSimulatedResponse(input);
-        }
-      } else {
+      try {
+        responseText = await llamaService.generateResponse(input);
+      } catch (error) {
+        console.error("Error generating response from LLaMA:", error);
         // Fall back to simulated response
         responseText = getSimulatedResponse(input);
       }
@@ -216,6 +234,41 @@ const AISimulation = () => {
       handleSendMessage();
     }
   };
+  
+  const handleSaveApiEndpoint = () => {
+    if (apiEndpoint.trim()) {
+      const llamaService = LlamaService.getInstance();
+      llamaService.setApiEndpoint(apiEndpoint.trim());
+      
+      toast({
+        title: "API Endpoint Saved",
+        description: "The LLaMA API endpoint has been configured.",
+      });
+      
+      // Reload the model with the new endpoint
+      setLlamaLoaded(false);
+      llamaService.loadModel()
+        .then(() => {
+          setLlamaLoaded(true);
+          setShowSetupDialog(false);
+          
+          toast({
+            title: "Connected to LLaMA API",
+            description: "Successfully connected to the external LLaMA model.",
+          });
+        })
+        .catch((error) => {
+          console.error("Failed to connect to LLaMA API:", error);
+          setLlamaLoaded(true); // Still allow chat to work in simulation mode
+          
+          toast({
+            title: "Connection Failed",
+            description: "Could not connect to the LLaMA API. Using simulation mode.",
+            variant: "destructive",
+          });
+        });
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -223,9 +276,19 @@ const AISimulation = () => {
       
       <main className="flex-1 py-16 px-6 bg-gray-50 dark:bg-gray-900">
         <div className="max-w-screen-xl mx-auto">
-          <div className="mb-8">
-            <h1 className="text-3xl font-display font-bold mb-2 dark:text-white">AI Simulation Assistant</h1>
-            <p className="text-gray-600 dark:text-gray-400">Get intelligent assistance with your chemical process simulations</p>
+          <div className="flex justify-between items-center mb-8">
+            <div>
+              <h1 className="text-3xl font-display font-bold mb-2 dark:text-white">AI Simulation Assistant</h1>
+              <p className="text-gray-600 dark:text-gray-400">Get intelligent assistance with your chemical process simulations</p>
+            </div>
+            <Button 
+              variant="outline"
+              onClick={() => setShowSetupDialog(true)}
+              className="flex items-center gap-2"
+            >
+              <Settings className="h-4 w-4" />
+              Configure LLaMA
+            </Button>
           </div>
           
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -326,7 +389,7 @@ const AISimulation = () => {
                       <Loader2 className="h-4 w-4 animate-spin mr-2" />
                       <AlertTitle>Loading LLaMA Model</AlertTitle>
                       <AlertDescription>
-                        The AI model is being loaded locally in your browser. This may take a moment...
+                        The AI model is being loaded. This may take a moment...
                       </AlertDescription>
                     </Alert>
                   </div>
@@ -338,7 +401,7 @@ const AISimulation = () => {
               <GlassPanel className="p-6 mb-6">
                 <h3 className="text-lg font-medium mb-4 dark:text-white">About AI Assistant</h3>
                 <p className="text-gray-600 dark:text-gray-400 mb-4">
-                  This AI assistant is powered by Meta's LLaMA model running locally in your browser. It can help with:
+                  This AI assistant is powered by Meta's LLaMA model. It can help with:
                 </p>
                 <ul className="space-y-2">
                   <li className="flex items-start">
@@ -357,36 +420,219 @@ const AISimulation = () => {
                 <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
                   <div className="flex items-center text-amber-600 dark:text-amber-400">
                     <Info className="h-5 w-5 mr-2" />
-                    <span className="text-sm font-medium">Running 100% locally in your browser</span>
+                    <span className="text-sm font-medium">
+                      {LlamaService.getInstance().hasConfiguredEndpoint() 
+                        ? "Connected to external LLaMA API" 
+                        : "Running in simulation mode"}
+                    </span>
                   </div>
                 </div>
               </GlassPanel>
               
               <GlassPanel className="p-6">
-                <h3 className="text-lg font-medium mb-4 dark:text-white">Open Source LLaMA</h3>
+                <h3 className="text-lg font-medium mb-4 dark:text-white">Run LLaMA 2 for Free</h3>
                 <p className="text-gray-600 dark:text-gray-400 mb-4">
-                  This assistant uses Meta's LLaMA model, an open-source large language model optimized for chemical engineering applications.
+                  Use Google Colab to run LLaMA 2 for free and connect it to ChemFlow.
                 </p>
                 <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg mb-4">
-                  <div className="flex items-center text-sm text-gray-600 dark:text-gray-400 mb-2">
+                  <div className="flex items-center text-sm font-medium mb-2">
                     <Github className="h-4 w-4 mr-2" />
-                    <span className="font-medium">llama.cpp</span>
+                    <span>Meta's LLaMA 2 Model</span>
                   </div>
                   <div className="text-xs text-gray-500 dark:text-gray-500">
-                    Inference runs locally in WASM - no data leaves your browser
+                    Follow the setup instructions to connect to LLaMA
                   </div>
                 </div>
                 <Button 
                   className="w-full"
-                  onClick={() => navigate('/create-simulation')}
+                  onClick={() => setShowSetupDialog(true)}
                 >
-                  Create New Simulation <ArrowRight className="ml-2 h-4 w-4" />
+                  Setup LLaMA Connection <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </GlassPanel>
             </div>
           </div>
         </div>
       </main>
+      
+      {/* LLaMA Setup Dialog */}
+      <Dialog open={showSetupDialog} onOpenChange={setShowSetupDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>LLaMA 2 Setup Instructions</DialogTitle>
+            <DialogDescription>
+              Connect ChemFlow to LLaMA 2 running on Google Colab for powerful AI capabilities.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <Tabs defaultValue="setup">
+            <TabsList className="grid grid-cols-2 w-full">
+              <TabsTrigger value="setup">Setup Guide</TabsTrigger>
+              <TabsTrigger value="configure">Configure Connection</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="setup" className="mt-4 space-y-4">
+              <div className="space-y-6">
+                <div>
+                  <h4 className="font-medium text-lg">Step 1: Open Google Colab Notebook</h4>
+                  <div className="flex items-center gap-2 mt-2">
+                    <Button variant="outline" className="flex items-center gap-2" asChild>
+                      <a href="https://colab.research.google.com/github/facebookresearch/llama/blob/main/llama.ipynb" target="_blank" rel="noopener noreferrer">
+                        Open LLaMA 2 on Colab <ExternalLink className="h-4 w-4" />
+                      </a>
+                    </Button>
+                  </div>
+                </div>
+                
+                <div>
+                  <h4 className="font-medium text-lg">Step 2: Enable GPU (For Faster Execution)</h4>
+                  <p className="text-muted-foreground mt-1 text-sm">
+                    In Colab, go to <strong>Runtime → Change runtime type</strong> and select <strong>GPU</strong> as the hardware accelerator.
+                  </p>
+                </div>
+                
+                <div>
+                  <h4 className="font-medium text-lg">Step 3: Run the Notebook</h4>
+                  <p className="text-muted-foreground mt-1 text-sm">
+                    Click <strong>"Run all"</strong> or execute each cell step by step to download and load LLaMA 2 into memory.
+                  </p>
+                </div>
+                
+                <div>
+                  <h4 className="font-medium text-lg">Step 4: Set Up an API Endpoint</h4>
+                  <p className="text-muted-foreground mt-1 mb-2 text-sm">
+                    Add this code at the end of the notebook to create an API endpoint:
+                  </p>
+                  <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded-md overflow-auto text-xs font-mono">
+                    <pre>{`from flask import Flask, request, jsonify
+import torch
+from transformers import AutoModelForCausalLM, AutoTokenizer
+from flask_cors import CORS
+import gc
+
+app = Flask(__name__)
+CORS(app)  # Enable CORS for all routes
+
+# Load LLaMA 2 Model
+model_name = "meta-llama/Llama-2-7b-chat-hf"
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16, device_map="auto")
+
+@app.route('/health', methods=['GET'])
+def health_check():
+    return jsonify({"status": "ok"})
+
+@app.route('/generate', methods=['POST'])
+def generate_response():
+    try:
+        data = request.json
+        prompt = data.get("prompt", "")
+        
+        # Format prompt for LLaMA 2 Chat
+        formatted_prompt = f"<s>[INST] {prompt} [/INST]"
+        
+        # Generate response
+        inputs = tokenizer(formatted_prompt, return_tensors="pt").to(model.device)
+        
+        # Generate with more appropriate parameters
+        with torch.no_grad():
+            outputs = model.generate(
+                **inputs,
+                max_new_tokens=500,  # Generate longer responses
+                temperature=0.7,     # Control randomness
+                top_p=0.9,           # Nucleus sampling
+                repetition_penalty=1.2  # Reduce repetition
+            )
+        
+        # Decode and extract only the response part
+        full_response = tokenizer.decode(outputs[0], skip_special_tokens=True)
+        response_text = full_response.split("[/INST]")[-1].strip()
+        
+        # Clear CUDA cache to prevent memory issues
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+            gc.collect()
+            
+        return jsonify({"response": response_text})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)`}</pre>
+                  </div>
+                </div>
+                
+                <div>
+                  <h4 className="font-medium text-lg">Step 5: Install Required Packages</h4>
+                  <p className="text-muted-foreground mt-1 mb-2 text-sm">
+                    Run this in a new cell to install Flask-CORS:
+                  </p>
+                  <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded-md overflow-auto text-xs font-mono">
+                    <pre>!pip install flask-cors</pre>
+                  </div>
+                </div>
+                
+                <div>
+                  <h4 className="font-medium text-lg">Step 6: Make API Accessible</h4>
+                  <p className="text-muted-foreground mt-1 mb-2 text-sm">
+                    Run this in a new cell to create a public URL:
+                  </p>
+                  <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded-md overflow-auto text-xs font-mono">
+                    <pre>!npm install -g localtunnel
+!lt --port 5000</pre>
+                  </div>
+                  <p className="text-muted-foreground mt-2 text-sm">
+                    The command will output a URL like <code>https://xxxx-yyyy-zzzz.loca.lt</code> - use this in the "Configure Connection" tab.
+                  </p>
+                </div>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="configure" className="mt-4 space-y-4">
+              <div className="space-y-6">
+                <div>
+                  <h4 className="font-medium text-lg">Connect to LLaMA API</h4>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Enter the URL provided by localtunnel from the previous step.
+                  </p>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="api-endpoint">LLaMA API Endpoint URL</Label>
+                  <Input 
+                    id="api-endpoint"
+                    placeholder="https://xxxx-yyyy-zzzz.loca.lt"
+                    value={apiEndpoint}
+                    onChange={(e) => setApiEndpoint(e.target.value)}
+                    className="w-full"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    This URL should be the one provided by localtunnel in the previous step.
+                  </p>
+                </div>
+                
+                <Alert>
+                  <Info className="h-4 w-4" />
+                  <AlertTitle>Important Note</AlertTitle>
+                  <AlertDescription>
+                    The localtunnel URL will change each time you restart your Colab notebook. 
+                    You'll need to update the connection settings whenever you start a new Colab session.
+                  </AlertDescription>
+                </Alert>
+              </div>
+            </TabsContent>
+          </Tabs>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowSetupDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSaveApiEndpoint}>
+              Save Connection
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       
       <Footer />
     </div>
