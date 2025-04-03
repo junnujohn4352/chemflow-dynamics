@@ -50,26 +50,26 @@ const GridCell: React.FC<GridCellProps> = ({
 
   return (
     <div className="relative group">
-      {/* Connection points */}
-      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-2 h-2 bg-blue-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+      {/* Connection points with improved visibility */}
+      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-flow-blue/70 hover:bg-flow-blue rounded-full opacity-30 group-hover:opacity-100 transition-all duration-300 cursor-pointer z-10"
            onClick={(e) => {
              e.stopPropagation();
              onConnect(equipment.id);
            }}
       />
-      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 bg-blue-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-flow-blue/70 hover:bg-flow-blue rounded-full opacity-30 group-hover:opacity-100 transition-all duration-300 cursor-pointer z-10"
            onClick={(e) => {
              e.stopPropagation();
              onConnect(equipment.id);
            }}
       />
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-2 bg-blue-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3 h-3 bg-flow-blue/70 hover:bg-flow-blue rounded-full opacity-30 group-hover:opacity-100 transition-all duration-300 cursor-pointer z-10"
            onClick={(e) => {
              e.stopPropagation();
              onConnect(equipment.id);
            }}
       />
-      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-2 h-2 bg-blue-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-3 h-3 bg-flow-blue/70 hover:bg-flow-blue rounded-full opacity-30 group-hover:opacity-100 transition-all duration-300 cursor-pointer z-10"
            onClick={(e) => {
              e.stopPropagation();
              onConnect(equipment.id);
