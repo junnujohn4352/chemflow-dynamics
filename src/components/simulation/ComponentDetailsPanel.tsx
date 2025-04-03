@@ -1,14 +1,18 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import GlassPanel from "@/components/ui/GlassPanel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Thermometer, Droplets, Waves, Activity, Percent, BarChart3 } from "lucide-react";
+import { Thermometer, Droplets, Waves, Activity, Percent, BarChart3, ConnectIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { toast } from "@/components/ui/use-toast";
 
 interface ComponentDetailsProps {
   component: string;
 }
 
 const ComponentDetailsPanel: React.FC<ComponentDetailsProps> = ({ component }) => {
+  const [connectMode, setConnectMode] = useState<boolean>(false);
+
   // HYSYS-like property data for components
   const componentProperties = {
     "Methane": {
@@ -373,11 +377,71 @@ const ComponentDetailsPanel: React.FC<ComponentDetailsProps> = ({ component }) =
 
   const props = componentProperties[component as keyof typeof componentProperties] || defaultProps;
 
+  const handleConnect = () => {
+    setConnectMode(!connectMode);
+    if (!connectMode) {
+      toast({
+        title: "Connect Mode Enabled",
+        description: "Click on another component to create a connection",
+      });
+    } else {
+      toast({
+        title: "Connect Mode Disabled",
+        description: "Connection canceled",
+      });
+    }
+  };
+
   return (
     <GlassPanel className="mt-4 p-4">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold">{component} Properties</h3>
         <div className="text-sm text-blue-600 font-mono">{props.formula}</div>
+      </div>
+
+      {/* Basic Component Information Card */}
+      <div className="mb-4 bg-white p-4 rounded-md shadow-sm">
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <p className="text-sm text-gray-500">Formula</p>
+            <p className="font-semibold">{props.formula}</p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-500">Molar Weight</p>
+            <p className="font-semibold">{props.molarWeight} g/mol</p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-500">Boiling Point</p>
+            <p className="font-semibold">{props.boilingPoint} K</p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-500">Critical Temp</p>
+            <p className="font-semibold">{props.criticalTemp} K</p>
+          </div>
+        </div>
+        
+        <Button 
+          variant="outline" 
+          className="w-full mt-4 border-dashed border-blue-300 hover:bg-blue-50"
+          onClick={handleConnect}
+        >
+          <svg 
+            xmlns="http://www.w3.org/2000/svg" 
+            width="16" 
+            height="16" 
+            viewBox="0 0 24 24" 
+            fill="none" 
+            stroke="currentColor" 
+            strokeWidth="2" 
+            strokeLinecap="round" 
+            strokeLinejoin="round" 
+            className="mr-2"
+          >
+            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+          </svg>
+          {connectMode ? "Cancel Connection" : "Connect Component"}
+        </Button>
       </div>
 
       <Tabs defaultValue="physical">
