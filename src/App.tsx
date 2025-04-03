@@ -58,7 +58,8 @@ const saveSimulation = (simulationData: any) => {
 };
 
 function App() {
-  useEffect(() => {
+  // Ensure useEffect is properly used with React imported
+  React.useEffect(() => {
     const savedMode = localStorage.getItem('darkMode');
     if (savedMode === 'dark') {
       document.documentElement.classList.add('dark');
@@ -67,7 +68,7 @@ function App() {
     }
   }, []);
 
-  useEffect(() => {
+  React.useEffect(() => {
     const handleBeforeUnload = () => {
       const activeSimulation = localStorage.getItem('chemflow-active-simulation');
       if (activeSimulation === 'true') {

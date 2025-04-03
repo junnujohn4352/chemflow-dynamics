@@ -1,10 +1,12 @@
-import { useTheme } from "next-themes"
+
+import React from 'react'
 import { Toaster as Sonner } from "sonner"
 
 type ToasterProps = React.ComponentProps<typeof Sonner>
 
 const Toaster = ({ ...props }: ToasterProps) => {
-  const { theme = "system" } = useTheme()
+  // Use regular theme instead of next-themes
+  const theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light'
 
   return (
     <Sonner
