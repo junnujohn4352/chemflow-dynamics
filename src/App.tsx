@@ -8,12 +8,10 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Index from "./pages/Index";
 import LandingPage from "./pages/LandingPage";
 import Dashboard from "./pages/Dashboard";
-import Simulations from "./pages/Simulations";
 import CreateSimulation from "./pages/CreateSimulation";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import Analysis from "./pages/Analysis";
-import Components from "./pages/Components";
 import HysysCalculations from "./pages/HysysCalculations";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
@@ -114,10 +112,8 @@ function App() {
             <Routes>
               <Route path="/" element={<LandingPage />} />
               <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/simulations" element={<Simulations />} />
               <Route path="/create-simulation" element={<CreateSimulation />} />
               <Route path="/analysis" element={<Analysis />} />
-              <Route path="/components" element={<Components />} />
               <Route path="/hysys-calculations" element={<HysysCalculations />} />
               <Route path="/code-converter" element={<CodeConverter />} />
               <Route path="/settings" element={<Settings />} />

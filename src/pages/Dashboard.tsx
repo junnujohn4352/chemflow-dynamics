@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
@@ -5,8 +6,7 @@ import GlassPanel from "@/components/ui/GlassPanel";
 import { 
   LayoutGrid, 
   FileText, 
-  BarChart3, 
-  Database,
+  BarChart3,
   ArrowRight,
   Info,
   Calculator,
@@ -42,13 +42,6 @@ const Dashboard = () => {
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             <DashboardCard 
-              title="Simulations"
-              description="Create and manage chemical process simulations"
-              icon={<LayoutGrid className="h-6 w-6" />}
-              linkTo="/simulations"
-              color="bg-flow-blue"
-            />
-            <DashboardCard 
               title="Create Simulation"
               description="Start building a new chemical process simulation"
               icon={<FlaskConical className="h-6 w-6" />}
@@ -62,13 +55,6 @@ const Dashboard = () => {
               icon={<BarChart3 className="h-6 w-6" />}
               linkTo="/analysis"
               color="bg-green-500"
-            />
-            <DashboardCard 
-              title="Component Library"
-              description="Browse and manage chemical components"
-              icon={<Database className="h-6 w-6" />}
-              linkTo="/components"
-              color="bg-red-500"
             />
             <DashboardCard 
               title="HYSYS Calculations"
