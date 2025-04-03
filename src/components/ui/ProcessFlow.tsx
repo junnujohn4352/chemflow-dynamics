@@ -11,8 +11,11 @@ import {
   Play, 
   Square,
   Settings2, 
-  Share2
+  Share2,
+  Link
 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
 
 interface ProcessFlowProps {
   className?: string;
@@ -26,9 +29,16 @@ interface Equipment {
   status: string;
   metrics: any;
   position: { x: number; y: number };
+  connections?: string[];
 }
 
-// Helper function to safely render metric values
+interface Connection {
+  id: string;
+  source: string;
+  target: string;
+  animated: boolean;
+}
+
 const renderMetricValue = (metric: any): string => {
   if (metric === null || metric === undefined) {
     return '';
@@ -46,6 +56,7 @@ const renderMetricValue = (metric: any): string => {
 };
 
 const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation }) => {
+  const { toast } = useToast();
   const [isRunning, setIsRunning] = useState(false);
   const [simulationData, setSimulationData] = useState({
     componentA: 0,
@@ -60,7 +71,8 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
       name: 'Feed Tank', 
       status: 'stopped', 
       metrics: { level: 75, temperature: 25 },
-      position: { x: 0, y: 0 }
+      position: { x: 0, y: 0 },
+      connections: []
     },
     { 
       id: 'feed-pump', 
@@ -68,7 +80,8 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
       name: 'Feed Pump', 
       status: 'stopped', 
       metrics: { flow: 120 },
-      position: { x: 2, y: 0 }
+      position: { x: 2, y: 0 },
+      connections: []
     },
     { 
       id: 'preheater', 
@@ -76,7 +89,8 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
       name: 'Preheater', 
       status: 'stopped', 
       metrics: { temperature: 25 },
-      position: { x: 0, y: 2 }
+      position: { x: 0, y: 2 },
+      connections: []
     },
     { 
       id: 'distillation-column', 
@@ -84,7 +98,8 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
       name: 'Distillation Column', 
       status: 'stopped', 
       metrics: { pressure: 150, temperature: 30 },
-      position: { x: 2, y: 2 }
+      position: { x: 2, y: 2 },
+      connections: []
     },
     { 
       id: 'product-tank', 
@@ -92,7 +107,8 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
       name: 'Product Tank', 
       status: 'stopped', 
       metrics: { level: 10, temperature: 25 },
-      position: { x: 0, y: 4 }
+      position: { x: 0, y: 4 },
+      connections: []
     },
     { 
       id: 'condenser', 
@@ -100,15 +116,19 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
       name: 'Condenser', 
       status: 'stopped', 
       metrics: { temperature: 25 },
-      position: { x: 2, y: 4 }
+      position: { x: 2, y: 4 },
+      connections: []
     }
   ]);
-
+  
+  const [connections, setConnections] = useState<Connection[]>([]);
   const [selectedEquipment, setSelectedEquipment] = useState<string | null>(null);
   const [editingName, setEditingName] = useState<string | null>(null);
   const [tempName, setTempName] = useState("");
   const [dragStartPos, setDragStartPos] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
+  const [connectMode, setConnectMode] = useState<string | null>(null);
+  const [showDetails, setShowDetails] = useState<string | null>(null);
   
   const toggleSimulation = () => {
     const newState = !isRunning;
@@ -260,6 +280,58 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
     }
   };
 
+  const startConnectMode = (id: string) => {
+    if (connectMode === id) {
+      setConnectMode(null);
+      toast({
+        title: "Connection Cancelled",
+        description: "Connection mode disabled",
+      });
+    } else {
+      setConnectMode(id);
+      toast({
+        title: "Connect Mode Enabled",
+        description: `Select another equipment to connect from ${equipment.find(e => e.id === id)?.name}`,
+      });
+    }
+  };
+
+  const handleConnectionSelect = (id: string) => {
+    if (connectMode && connectMode !== id) {
+      const newConnection: Connection = {
+        id: `conn-${Date.now()}`,
+        source: connectMode,
+        target: id,
+        animated: true
+      };
+      
+      setConnections(prev => [...prev, newConnection]);
+      
+      setEquipment(prev => 
+        prev.map(eq => {
+          if (eq.id === connectMode) {
+            return {
+              ...eq,
+              connections: [...(eq.connections || []), id]
+            };
+          }
+          return eq;
+        })
+      );
+      
+      toast({
+        title: "Connection Created",
+        description: `Connected ${equipment.find(e => e.id === connectMode)?.name} to ${equipment.find(e => e.id === id)?.name}`,
+      });
+      
+      setConnectMode(null);
+    }
+  };
+
+  const toggleDetails = (id: string) => {
+    setShowDetails(showDetails === id ? null : id);
+  };
+
   const renderEquipmentGrid = () => {
     const grid = Array(5).fill(0).map(() => Array(3).fill(null));
     
@@ -336,9 +408,14 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
                     </div>
                     
                     <div 
-                      className="cursor-move hover:scale-105 transition-transform"
+                      className={`cursor-move hover:scale-105 transition-transform ${
+                        connectMode && connectMode !== eq.id 
+                          ? 'ring-2 ring-blue-400 ring-offset-2 cursor-pointer' 
+                          : ''
+                      }`}
                       onMouseDown={(e) => handleEquipmentDragStart(eq.id, e)}
                       onDoubleClick={() => startEditingName(eq.id)}
+                      onClick={() => connectMode && connectMode !== eq.id ? handleConnectionSelect(eq.id) : null}
                     >
                       <EquipmentCard 
                         type={eq.type} 
@@ -346,6 +423,75 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
                         status={isRunning ? "running" : "stopped"} 
                         metrics={eq.metrics}
                       />
+                      
+                      <div className="mt-2 flex space-x-2 justify-center">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className={`text-xs px-2 py-1 h-auto ${
+                            connectMode === eq.id ? 'bg-blue-100 border-blue-400' : ''
+                          }`}
+                          onClick={(e) => {
+                            e.stopPropagation(); 
+                            startConnectMode(eq.id);
+                          }}
+                        >
+                          <Link className="h-3 w-3 mr-1" />
+                          {connectMode === eq.id ? 'Cancel' : 'Connect'}
+                        </Button>
+                        
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className={`text-xs px-2 py-1 h-auto ${
+                            showDetails === eq.id ? 'bg-gray-100 border-gray-400' : ''
+                          }`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleDetails(eq.id);
+                          }}
+                        >
+                          {showDetails === eq.id ? 'Hide' : 'Info'}
+                        </Button>
+                      </div>
+                      
+                      {showDetails === eq.id && (
+                        <div className="absolute top-full left-0 right-0 mt-2 bg-white p-3 rounded-lg shadow-lg z-10 border border-gray-200 text-left animate-fade-in">
+                          <h4 className="font-medium text-sm text-blue-700 mb-2">{eq.name} Details</h4>
+                          <div className="space-y-1 text-xs">
+                            <div className="flex justify-between">
+                              <span className="text-gray-500">Type:</span>
+                              <span className="font-medium">{eq.type}</span>
+                            </div>
+                            {Object.entries(eq.metrics).map(([key, value]) => (
+                              <div key={key} className="flex justify-between">
+                                <span className="text-gray-500">{key}:</span>
+                                <span className="font-medium">
+                                  {renderMetricValue(value)}
+                                  {key === 'temperature' ? '°C' : 
+                                   key === 'pressure' ? ' kPa' : 
+                                   key === 'level' ? '%' : 
+                                   key === 'flow' ? ' kg/h' : ''}
+                                </span>
+                              </div>
+                            ))}
+                            <div className="flex justify-between">
+                              <span className="text-gray-500">Status:</span>
+                              <span className={`font-medium ${
+                                isRunning ? 'text-green-600' : 'text-gray-600'
+                              }`}>
+                                {isRunning ? 'Running' : 'Stopped'}
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-500">Connections:</span>
+                              <span className="font-medium">
+                                {eq.connections?.length || 0}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 ) : (
@@ -357,6 +503,73 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
             ))}
           </React.Fragment>
         ))}
+        
+        <svg className="absolute top-0 left-0 w-full h-full pointer-events-none">
+          <defs>
+            <marker 
+              id="arrowhead" 
+              markerWidth="10" 
+              markerHeight="7" 
+              refX="0" 
+              refY="3.5" 
+              orient="auto"
+            >
+              <polygon points="0 0, 10 3.5, 0 7" fill="#3b82f6" />
+            </marker>
+          </defs>
+          
+          {connections.map(conn => {
+            const source = equipment.find(e => e.id === conn.source);
+            const target = equipment.find(e => e.id === conn.target);
+            
+            if (!source || !target) return null;
+            
+            const cellWidth = 120;
+            const cellHeight = 120;
+            const margin = 12;
+            
+            const sourceX = (source.position.x * (cellWidth + margin)) + (cellWidth / 2);
+            const sourceY = (source.position.y * (cellHeight + margin)) + (cellHeight / 2);
+            
+            const targetX = (target.position.x * (cellWidth + margin)) + (cellWidth / 2);
+            const targetY = (target.position.y * (cellHeight + margin)) + (cellHeight / 2);
+            
+            const dx = targetX - sourceX;
+            const dy = targetY - sourceY;
+            
+            const controlX1 = sourceX + dx * 0.3;
+            const controlY1 = sourceY;
+            const controlX2 = targetX - dx * 0.3;
+            const controlY2 = targetY;
+            
+            const dashArray = "5,5";
+            
+            return (
+              <g key={conn.id}>
+                <path 
+                  d={`M ${sourceX} ${sourceY} C ${controlX1} ${controlY1}, ${controlX2} ${controlY2}, ${targetX} ${targetY}`} 
+                  fill="none" 
+                  stroke="#3b82f6" 
+                  strokeWidth="2" 
+                  strokeDasharray={dashArray}
+                  markerEnd="url(#arrowhead)"
+                  className={conn.animated ? "animate-dash" : ""}
+                />
+                
+                <circle 
+                  r="3" 
+                  fill="#3b82f6" 
+                  className="animate-pulse">
+                  <animateMotion 
+                    dur="3s"
+                    repeatCount="indefinite"
+                    path={`M ${sourceX} ${sourceY} C ${controlX1} ${controlY1}, ${controlX2} ${controlY2}, ${targetX} ${targetY}`}
+                  />
+                </circle>
+              </g>
+            );
+          })}
+        </svg>
       </div>
     );
   };
