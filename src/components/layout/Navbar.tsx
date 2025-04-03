@@ -5,8 +5,8 @@ import {
   Menu, X, ChevronDown, 
   LayoutDashboard, FileText, 
   BarChart3, Database, Settings,
-  Brain, Beaker, Moon, Sun,
-  Info
+  Brain, FlaskConical, Moon, Sun,
+  Info, Calculator
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -29,6 +29,21 @@ const Navbar = () => {
       label: "Simulations", 
       href: "/simulations", 
       icon: <FileText className="h-4 w-4 mr-2" />
+    },
+    { 
+      label: "Component Library", 
+      href: "/components", 
+      icon: <Database className="h-4 w-4 mr-2" />
+    },
+    {
+      label: "Process Analysis",
+      href: "/analysis",
+      icon: <BarChart3 className="h-4 w-4 mr-2" />
+    },
+    {
+      label: "HYSYS Calculations",
+      href: "/hysys-calculations",
+      icon: <Calculator className="h-4 w-4 mr-2" />
     },
     { 
       label: "AI Assistant", 
@@ -102,7 +117,7 @@ const Navbar = () => {
               className="dark:border-gray-600 dark:text-gray-200"
             >
               <Link to="/create-simulation">
-                <Beaker className="h-4 w-4 mr-2" />
+                <FlaskConical className="h-4 w-4 mr-2" />
                 Create Simulation
               </Link>
             </Button>
@@ -168,7 +183,7 @@ const Navbar = () => {
               onClick={() => setIsOpen(false)}
             >
               <div className="flex items-center">
-                <Beaker className="h-4 w-4 mr-2" />
+                <FlaskConical className="h-4 w-4 mr-2" />
                 Create Simulation
               </div>
             </Link>
