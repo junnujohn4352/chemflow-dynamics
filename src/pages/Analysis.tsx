@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -6,7 +5,6 @@ import GlassPanel from "@/components/ui/GlassPanel";
 import { Button } from "@/components/ui/button";
 import { BarChart3, Droplets, Zap, Activity, ChartPie, ArrowRight } from "lucide-react";
 import UnitConverter from "@/components/tools/UnitConverter";
-import ProcessFlow from "@/components/ui/ProcessFlow";
 import { toast } from "sonner";
 
 const Analysis = () => {
@@ -47,7 +45,6 @@ const Analysis = () => {
     }
   });
 
-  // Calculate mass balance totals
   const inputTotal = Object.values(massBalanceData.input).reduce((acc, val) => acc + val, 0);
   const outputTotal = Object.values(massBalanceData.output).reduce((acc, val) => acc + val, 0);
   const massBalance = ((outputTotal / inputTotal) * 100).toFixed(1);
@@ -467,16 +464,6 @@ const Analysis = () => {
               )}
             </GlassPanel>
             
-            {/* Optional: Add a process flow visualization */}
-            <ProcessFlow 
-              onStartSimulation={() => {
-                toast.success("Simulation started", {
-                  description: "Processing data in real-time"
-                });
-              }}
-            />
-            
-            {/* Unit Converter Component */}
             <UnitConverter />
           </div>
         </div>
