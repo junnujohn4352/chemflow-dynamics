@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
@@ -55,7 +54,6 @@ const CreateSimulation = () => {
   const [activeSubjectAnalysis, setActiveSubjectAnalysis] = useState<string | null>(null);
   
   useEffect(() => {
-    // Load previous simulation if available
     const savedSimData = localStorage.getItem('chemflow-simulation-data');
     if (savedSimData) {
       try {
@@ -78,11 +76,9 @@ const CreateSimulation = () => {
     }
   }, []);
   
-  // Validation checks
   const componentsValid = selectedComponents.length > 0;
   const allStepsValid = componentsValid && selectedModel !== '';
   
-  // Handle save simulation
   const handleSaveSimulation = () => {
     if (simulationName.trim() === '') {
       toast({
@@ -102,7 +98,6 @@ const CreateSimulation = () => {
       return;
     }
     
-    // Here you would save the simulation data to your backend
     localStorage.setItem('chemflow-simulation-name', simulationName);
     localStorage.setItem('chemflow-selected-components', JSON.stringify(selectedComponents));
     localStorage.setItem('chemflow-selected-model', selectedModel);
@@ -117,9 +112,7 @@ const CreateSimulation = () => {
     });
   };
 
-  // Detect simulation subject based on components and equipment
   const detectSimulationSubject = () => {
-    // Example detection logic - could be more sophisticated
     const hasAromatic = selectedComponents.some(c => 
       ['Benzene', 'Toluene', 'Xylene', 'Styrene'].includes(c));
     
@@ -149,7 +142,6 @@ const CreateSimulation = () => {
     }
   };
 
-  // Handle run simulation
   const handleRunSimulation = async () => {
     if (!allStepsValid) {
       toast({
@@ -162,18 +154,14 @@ const CreateSimulation = () => {
 
     setIsSimulationRunning(true);
     
-    // Determine the type of simulation based on components
     const subject = detectSimulationSubject();
     setSimulationSubject(subject);
     localStorage.setItem('chemflow-simulation-subject', subject);
     
-    // Generate synthetic data for analysis
     generateAnalysisData();
     
-    // Generate subject-specific analyses
     await generateSubjectAnalyses(subject);
     
-    // Simulate a processing delay
     setTimeout(() => {
       setIsSimulationRunning(false);
       setIsSimulationComplete(true);
@@ -187,11 +175,9 @@ const CreateSimulation = () => {
   };
   
   const generateAnalysisData = () => {
-    // Generate synthetic data based on components and simulation
     const timePoints = Array.from({ length: 25 }, (_, i) => i);
     
     const data = timePoints.map(time => {
-      // Create a base object with type definition to satisfy TypeScript
       const baseObj: { 
         time: number; 
         temperature?: number; 
@@ -200,9 +186,7 @@ const CreateSimulation = () => {
         [key: string]: number | undefined; 
       } = { time };
       
-      // Add data for each component
       selectedComponents.forEach(comp => {
-        // Create some realistic looking component behavior
         if (comp === 'Ethanol') {
           baseObj[comp] = 100 - 100 * Math.exp(-0.05 * time);
         } else if (comp === 'Water') {
@@ -215,11 +199,9 @@ const CreateSimulation = () => {
           baseObj[comp] = 80 - 80 * Math.exp(-0.04 * time);
         }
         
-        // Add some randomness
         baseObj[comp] *= (0.9 + Math.random() * 0.2);
       });
       
-      // Add temperature, pressure, and conversion data
       baseObj.temperature = 300 + 50 * Math.sin(time / 5);
       baseObj.pressure = 100 - 10 * Math.cos(time / 3);
       baseObj.conversion = Math.min(0.98, 1 - Math.exp(-0.15 * time));
@@ -232,12 +214,10 @@ const CreateSimulation = () => {
 
   const generateSubjectAnalyses = async (subject: string) => {
     try {
-      // Initialize LLaMA service if not already loaded
       if (!LlamaService.getInstance().isModelLoaded()) {
         await LlamaService.getInstance().loadModel();
       }
       
-      // Create prompts based on simulation subject
       const heatTransferPrompt = `Generate a detailed heat transfer analysis for a ${subject} process using components: ${selectedComponents.join(", ")}.`;
       const fluidFlowPrompt = `Perform fluid flow and pressure drop analysis for a ${subject} process with components: ${selectedComponents.join(", ")}.`;
       const thermodynamicsPrompt = `Analyze thermodynamic properties and phase equilibrium for a ${subject} process with components: ${selectedComponents.join(", ")}.`;
@@ -247,7 +227,6 @@ const CreateSimulation = () => {
       const processPrompt = `Generate a process simulation and optimization report for a ${subject} process with components: ${selectedComponents.join(", ")}.`;
       const utilityPrompt = `Analyze utility requirements and environmental impact for a ${subject} process with components: ${selectedComponents.join(", ")}.`;
       
-      // Generate analyses using the LLaMA service (in parallel)
       const [
         heatTransferAnalysis,
         fluidFlowAnalysis,
@@ -268,7 +247,6 @@ const CreateSimulation = () => {
         LlamaService.getInstance().generateResponse(utilityPrompt)
       ]);
       
-      // Create charts for each analysis
       const analyses: SubjectAnalysis[] = [
         {
           id: "heatTransfer",
@@ -359,7 +337,7 @@ const CreateSimulation = () => {
         {
           id: "reactionEngineering",
           title: "Reaction Engineering Analysis",
-          icon: <Beaker className="h-5 w-5" />,
+          icon: <FlaskConical className="h-5 w-5" />,
           content: reactionAnalysis,
           charts: (
             <ResponsiveContainer width="100%" height={300}>
@@ -455,7 +433,6 @@ const CreateSimulation = () => {
     }
   };
   
-  // Proceed to next tab automatically when component selection is done
   const handleComponentSelectionDone = () => {
     if (componentsValid && activeTab === 'components') {
       toast({
@@ -466,7 +443,6 @@ const CreateSimulation = () => {
     }
   };
   
-  // Proceed to builder when thermodynamic model is selected
   const handleModelSelectionDone = () => {
     if (activeTab === 'thermodynamics') {
       toast({
@@ -495,7 +471,6 @@ const CreateSimulation = () => {
           </Button>
         </div>
         
-        {/* Include our HYSYS integration component */}
         <div className="mt-4">
           <HysysIntegration 
             selectedComponents={selectedComponents}
@@ -559,7 +534,6 @@ const CreateSimulation = () => {
       
       <main className="flex-1 py-6 px-6 bg-gradient-to-b from-gray-50 to-white">
         <div className="max-w-screen-xl mx-auto">
-          {/* Header with navigation */}
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center">
               <button 
@@ -596,7 +570,6 @@ const CreateSimulation = () => {
             </div>
           </div>
           
-          {/* Progress indicator */}
           <div className="mb-6">
             <div className="flex items-center">
               <div className={`rounded-full h-8 w-8 flex items-center justify-center ${
@@ -623,7 +596,6 @@ const CreateSimulation = () => {
             </div>
           </div>
           
-          {/* Tabs navigation */}
           <div className="mb-6 border-b border-gray-200">
             <div className="flex space-x-4">
               <button
@@ -677,7 +649,6 @@ const CreateSimulation = () => {
             </div>
           </div>
           
-          {/* Tab content */}
           <GlassPanel className="p-6">
             {activeTab === 'components' && (
               <div className="flex flex-col">
@@ -728,10 +699,8 @@ const CreateSimulation = () => {
             )}
           </GlassPanel>
           
-          {/* Analysis section */}
           {renderAnalysisSection()}
           
-          {/* Footer actions */}
           <div className="mt-6 flex justify-between">
             <div className="flex items-center gap-3">
               <Button variant="outline" size="sm">

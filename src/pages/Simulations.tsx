@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
@@ -74,7 +73,6 @@ interface SimulationCard {
   };
 }
 
-// Helper function to safely convert objects to strings
 const safeStringify = (value: any): string => {
   if (value === null || value === undefined) {
     return '';
@@ -97,7 +95,6 @@ const Simulations = () => {
   const [simulations, setSimulations] = useState<SimulationCard[]>([]);
   const [activeSimId, setActiveSimId] = useState<string | null>(null);
   
-  // Load simulations when component mounts
   useEffect(() => {
     loadSimulations();
   }, []);
@@ -108,13 +105,11 @@ const Simulations = () => {
       try {
         const parsedSimulations = JSON.parse(saved);
         
-        // Add HYSYS-like data if not present
         const enhancedSimulations = parsedSimulations.map((sim: SimulationCard) => {
           if (!Array.isArray(sim.components) || typeof sim.components[0] === 'string') {
-            // If components are just strings, convert them to objects with properties
             const enhancedComponents = (sim.components as string[]).map(name => ({
               name,
-              percentage: Math.floor(Math.random() * 70) + 30, // Random percentage for demo
+              percentage: Math.floor(Math.random() * 70) + 30,
               properties: generateDummyComponentProperties(name)
             }));
             
@@ -142,9 +137,7 @@ const Simulations = () => {
     }
   };
 
-  // Generate realistic component properties based on component name
   const generateDummyComponentProperties = (name: string): ComponentProperties => {
-    // Define common properties for well-known components
     const commonProperties: {[key: string]: ComponentProperties} = {
       'Water': {
         criticalTemp: 647.1,
@@ -212,7 +205,6 @@ const Simulations = () => {
       return commonProperties[name];
     }
     
-    // For unknown components, generate random but realistic values
     return {
       criticalTemp: Math.floor(Math.random() * 500) + 200,
       criticalPressure: Math.floor(Math.random() * 6000) + 2000,
@@ -226,8 +218,7 @@ const Simulations = () => {
       heatOfVaporization: Math.floor(Math.random() * 40) + 5
     };
   };
-  
-  // Generate dummy equipment data
+
   const generateDummyEquipment = (): EquipmentData[] => {
     return [
       {
@@ -255,12 +246,10 @@ const Simulations = () => {
       }
     ];
   };
-  
-  // Generate dummy stream data
+
   const generateDummyStreams = (components: string[]): StreamData[] => {
     const streams: StreamData[] = [];
     
-    // Feed stream
     const feedComposition: {[component: string]: number} = {};
     components.forEach(comp => {
       if (typeof comp === 'string') {
@@ -279,7 +268,6 @@ const Simulations = () => {
       composition: feedComposition
     });
     
-    // Product streams
     streams.push({
       name: "Product-Vapor",
       temperature: 380,
@@ -300,8 +288,7 @@ const Simulations = () => {
     
     return streams;
   };
-  
-  // Generate dummy reaction data
+
   const generateDummyReactions = () => {
     return [
       {
@@ -318,12 +305,10 @@ const Simulations = () => {
   };
 
   const handleDeleteSimulation = (id: string) => {
-    // Update the simulations list
     const updatedSimulations = simulations.filter(sim => sim.id !== id);
     setSimulations(updatedSimulations);
     localStorage.setItem('chemflow-simulations', JSON.stringify(updatedSimulations));
     
-    // If active simulation was deleted, clear active simulation flag
     const activeSimData = localStorage.getItem('chemflow-simulation-data');
     if (activeSimData) {
       try {
@@ -345,13 +330,11 @@ const Simulations = () => {
       description: "The simulation has been removed successfully."
     });
   };
-  
+
   const handleClearAllSimulations = () => {
-    // Clear all simulations
     setSimulations([]);
     localStorage.removeItem('chemflow-simulations');
     
-    // Clear active simulation as well
     localStorage.removeItem('chemflow-active-simulation');
     localStorage.removeItem('chemflow-simulation-running');
     localStorage.removeItem('chemflow-simulation-data');
@@ -361,13 +344,11 @@ const Simulations = () => {
       description: "All simulations have been removed successfully."
     });
   };
-  
+
   const handleRunSimulation = (simulation: SimulationCard) => {
-    // Load the saved equipment and streams if available
     localStorage.setItem('chemflow-active-simulation', 'true');
     localStorage.setItem('chemflow-simulation-running', 'true');
     
-    // Create simulation data object
     const simulationData = {
       name: safeStringify(simulation.name),
       components: Array.isArray(simulation.components) ? 
@@ -383,17 +364,14 @@ const Simulations = () => {
       description: "Navigating to analysis..."
     });
     
-    // Navigate to analysis page
     setTimeout(() => {
       navigate('/analysis');
     }, 1000);
   };
-  
+
   const handleEditSimulation = (simulation: SimulationCard) => {
-    // Set this simulation as active and navigate to create-simulation
     localStorage.setItem('chemflow-active-simulation', 'true');
     
-    // Create simulation data object
     const simulationData = {
       name: safeStringify(simulation.name),
       components: Array.isArray(simulation.components) ? 
@@ -406,7 +384,7 @@ const Simulations = () => {
     
     navigate('/create-simulation');
   };
-  
+
   const exportSimulation = (simulation: SimulationCard) => {
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(simulation));
     const downloadAnchorNode = document.createElement('a');
@@ -422,14 +400,12 @@ const Simulations = () => {
     });
   };
 
-  // Helper function to safely render components
   const renderComponents = (components: any[]) => {
     if (!components || !Array.isArray(components)) {
       return <p className="text-sm text-gray-500">No components available</p>;
     }
 
     return components.map((comp, idx) => {
-      // Ensure we're properly handling the component, whether it's a string or object
       const compName = typeof comp === 'string' ? comp : (comp.name ? safeStringify(comp.name) : 'Unknown');
       const percentage = typeof comp === 'string' ? 100 : (comp.percentage || 0);
       
@@ -450,12 +426,10 @@ const Simulations = () => {
     });
   };
 
-  // Show detailed component properties when a simulation is expanded
   const toggleSimulationDetails = (id: string) => {
     setActiveSimId(activeSimId === id ? null : id);
   };
 
-  // Render detailed component properties
   const renderComponentProperties = (component: SimulationComponent) => {
     if (!component.properties) return null;
     
@@ -479,7 +453,6 @@ const Simulations = () => {
     );
   };
 
-  // Render streams information
   const renderStreams = (streams: StreamData[]) => {
     return (
       <div className="mt-3 border-t border-gray-200 dark:border-gray-700 pt-3">
@@ -503,7 +476,6 @@ const Simulations = () => {
     );
   };
 
-  // Render equipment information
   const renderEquipment = (equipment: EquipmentData[]) => {
     return (
       <div className="mt-3 border-t border-gray-200 dark:border-gray-700 pt-3">
@@ -539,7 +511,6 @@ const Simulations = () => {
     );
   };
 
-  // Render reactions information
   const renderReactions = (reactions: {name: string, type: string, rate?: number, conversion?: number}[]) => {
     if (!reactions || reactions.length === 0) return null;
     
@@ -567,7 +538,6 @@ const Simulations = () => {
     );
   };
 
-  // Render energy information
   const renderEnergy = (energy: {totalHeatingDuty?: number, totalCoolingDuty?: number, netEnergy?: number}) => {
     if (!energy) return null;
     
@@ -672,7 +642,7 @@ const Simulations = () => {
                   
                   <div className="mb-4">
                     <h4 className="text-sm font-medium mb-2 flex items-center dark:text-gray-200">
-                      <Beaker className="h-4 w-4 mr-1 text-green-500" />
+                      <FlaskConical className="h-4 w-4 mr-1 text-green-500" />
                       Components
                     </h4>
                     {sim.components && Array.isArray(sim.components) ? (
@@ -682,10 +652,8 @@ const Simulations = () => {
                     )}
                   </div>
                   
-                  {/* Expanded details section */}
                   {activeSimId === sim.id && (
                     <div className="mt-4 pt-2 border-t border-gray-200 dark:border-gray-700">
-                      {/* Detailed component properties */}
                       <div className="mb-3">
                         <h4 className="text-sm font-medium mb-2 flex items-center dark:text-gray-200">
                           <Thermometer className="h-4 w-4 mr-1 text-green-600" />
@@ -706,7 +674,6 @@ const Simulations = () => {
                         </div>
                       </div>
                       
-                      {/* Thermodynamics */}
                       <div className="mb-3 border-t border-gray-200 dark:border-gray-700 pt-3">
                         <h4 className="text-sm font-medium flex items-center dark:text-gray-200">
                           <BarChart3 className="h-4 w-4 mr-1 text-indigo-500" />
@@ -718,22 +685,18 @@ const Simulations = () => {
                         </div>
                       </div>
                       
-                      {/* Equipment data */}
                       {sim.equipment && Array.isArray(sim.equipment) && (
                         renderEquipment(sim.equipment as EquipmentData[])
                       )}
                       
-                      {/* Stream data */}
                       {sim.streams && Array.isArray(sim.streams) && (
                         renderStreams(sim.streams as StreamData[])
                       )}
                       
-                      {/* Reactions data */}
                       {sim.reactions && Array.isArray(sim.reactions) && (
                         renderReactions(sim.reactions)
                       )}
                       
-                      {/* Energy Analysis */}
                       {sim.energy && (
                         renderEnergy(sim.energy)
                       )}
