@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Connection, Equipment } from "./types";
 
@@ -34,6 +35,7 @@ const ConnectionsRenderer: React.FC<ConnectionsRendererProps> = ({
         const cellWidth = 120;
         const cellHeight = 120;
         const margin = 12;
+        const dotOffset = 8; // Offset for the connection dots
         
         // Calculate base positions
         const sourceBaseX = source.position.x * (cellWidth + margin);
@@ -41,51 +43,44 @@ const ConnectionsRenderer: React.FC<ConnectionsRendererProps> = ({
         const targetBaseX = target.position.x * (cellWidth + margin);
         const targetBaseY = target.position.y * (cellHeight + margin);
         
-        // Determine connection points based on relative positions
+        // Determine connection points
         let sourceX = sourceBaseX + (cellWidth / 2);
         let sourceY = sourceBaseY + (cellHeight / 2);
         let targetX = targetBaseX + (cellWidth / 2);
         let targetY = targetBaseY + (cellHeight / 2);
         
-        // Logic to determine which sides to connect from
+        // Adjust connection points based on relative positions
         if (Math.abs(targetBaseX - sourceBaseX) > Math.abs(targetBaseY - sourceBaseY)) {
-          // Horizontal connection is dominant
+          // Horizontal connection
           if (targetBaseX > sourceBaseX) {
-            // Target is to the right
-            sourceX = sourceBaseX + cellWidth;
-            targetX = targetBaseX;
+            sourceX = sourceBaseX + cellWidth + dotOffset;
+            targetX = targetBaseX - dotOffset;
           } else {
-            // Target is to the left
-            sourceX = sourceBaseX;
-            targetX = targetBaseX + cellWidth;
+            sourceX = sourceBaseX - dotOffset;
+            targetX = targetBaseX + cellWidth + dotOffset;
           }
-          // Keep Y at center
           sourceY = sourceBaseY + (cellHeight / 2);
           targetY = targetBaseY + (cellHeight / 2);
         } else {
-          // Vertical connection is dominant
+          // Vertical connection
           if (targetBaseY > sourceBaseY) {
-            // Target is below
-            sourceY = sourceBaseY + cellHeight;
-            targetY = targetBaseY;
+            sourceY = sourceBaseY + cellHeight + dotOffset;
+            targetY = targetBaseY - dotOffset;
           } else {
-            // Target is above
-            sourceY = sourceBaseY;
-            targetY = targetBaseY + cellHeight;
+            sourceY = sourceBaseY - dotOffset;
+            targetY = targetBaseY + cellHeight + dotOffset;
           }
-          // Keep X at center
           sourceX = sourceBaseX + (cellWidth / 2);
           targetX = targetBaseX + (cellWidth / 2);
         }
         
+        // Calculate control points for curved paths
         const dx = targetX - sourceX;
         const dy = targetY - sourceY;
-        
-        // Adjust control points for smoother curves
-        const controlX1 = sourceX + dx * 0.3;
-        const controlY1 = sourceY + dy * 0.1;
-        const controlX2 = targetX - dx * 0.3;
-        const controlY2 = targetY - dy * 0.1;
+        const controlX1 = sourceX + dx * 0.25;
+        const controlY1 = sourceY + dy * 0.25;
+        const controlX2 = targetX - dx * 0.25;
+        const controlY2 = targetY - dy * 0.25;
         
         const pathId = `path-${conn.id}`;
         

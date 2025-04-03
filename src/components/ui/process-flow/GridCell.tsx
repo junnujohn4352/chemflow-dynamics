@@ -50,30 +50,28 @@ const GridCell: React.FC<GridCellProps> = ({
 
   return (
     <div className="relative group">
-      {/* Connection points with enhanced visibility */}
-      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 bg-violet-500/70 hover:bg-violet-500 rounded-full opacity-40 group-hover:opacity-100 transition-all duration-300 cursor-pointer z-10"
-           onClick={(e) => {
-             e.stopPropagation();
-             onConnect(equipment.id);
-           }}
+      {/* Left connection dot */}
+      <div 
+        className="absolute left-0 top-1/2 -translate-x-2 -translate-y-1/2 w-4 h-4 bg-violet-500 hover:bg-violet-600 rounded-full opacity-100 cursor-pointer z-10 transition-all duration-200"
+        onClick={() => onConnect(equipment.id)}
       />
-      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 bg-violet-500/70 hover:bg-violet-500 rounded-full opacity-40 group-hover:opacity-100 transition-all duration-300 cursor-pointer z-10"
-           onClick={(e) => {
-             e.stopPropagation();
-             onConnect(equipment.id);
-           }}
+      
+      {/* Right connection dot */}
+      <div 
+        className="absolute right-0 top-1/2 translate-x-2 -translate-y-1/2 w-4 h-4 bg-violet-500 hover:bg-violet-600 rounded-full opacity-100 cursor-pointer z-10 transition-all duration-200"
+        onClick={() => onConnect(equipment.id)}
       />
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-4 h-4 bg-violet-500/70 hover:bg-violet-500 rounded-full opacity-40 group-hover:opacity-100 transition-all duration-300 cursor-pointer z-10"
-           onClick={(e) => {
-             e.stopPropagation();
-             onConnect(equipment.id);
-           }}
+      
+      {/* Top connection dot */}
+      <div 
+        className="absolute top-0 left-1/2 -translate-y-2 -translate-x-1/2 w-4 h-4 bg-violet-500 hover:bg-violet-600 rounded-full opacity-100 cursor-pointer z-10 transition-all duration-200"
+        onClick={() => onConnect(equipment.id)}
       />
-      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-4 bg-violet-500/70 hover:bg-violet-500 rounded-full opacity-40 group-hover:opacity-100 transition-all duration-300 cursor-pointer z-10"
-           onClick={(e) => {
-             e.stopPropagation();
-             onConnect(equipment.id);
-           }}
+      
+      {/* Bottom connection dot */}
+      <div 
+        className="absolute bottom-0 left-1/2 translate-y-2 -translate-x-1/2 w-4 h-4 bg-violet-500 hover:bg-violet-600 rounded-full opacity-100 cursor-pointer z-10 transition-all duration-200"
+        onClick={() => onConnect(equipment.id)}
       />
 
       {editingName === equipment.id ? (
