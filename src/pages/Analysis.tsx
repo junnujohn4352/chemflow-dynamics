@@ -450,7 +450,6 @@ const Analysis = () => {
               
               {!activePanel && (
                 <div className="text-center py-8">
-                  <p className="text-gray-500 dark:text-gray-400 mb-4">Select an analysis option above to view detailed metrics</p>
                   <Button 
                     variant="default" 
                     onClick={() => {
