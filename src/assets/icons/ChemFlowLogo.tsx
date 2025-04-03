@@ -18,4 +18,5 @@ export const ChemFlowLogo: React.FC<ChemFlowLogoProps> = ({ className }) => {
   );
 };
 
+// Export as default as well to support both import styles
 export default ChemFlowLogo;
