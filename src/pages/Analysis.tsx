@@ -447,20 +447,6 @@ const Analysis = () => {
               {activePanel === 'metrics' && renderMetricsPanel()}
               {activePanel === 'energy' && renderEnergyPanel()}
               {activePanel === 'massBalance' && renderMassBalancePanel()}
-              
-              {!activePanel && (
-                <div className="text-center py-8">
-                  <Button 
-                    variant="default" 
-                    onClick={() => {
-                      const options = ['metrics', 'energy', 'massBalance'];
-                      setActivePanel(options[Math.floor(Math.random() * options.length)]);
-                    }}
-                  >
-                    Run Sample Analysis
-                  </Button>
-                </div>
-              )}
             </GlassPanel>
             
             <UnitConverter />

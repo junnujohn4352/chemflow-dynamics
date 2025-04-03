@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -13,8 +12,6 @@ import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import Analysis from "./pages/Analysis";
 import HysysCalculations from "./pages/HysysCalculations";
-import SignIn from "./pages/SignIn";
-import SignUp from "./pages/SignUp";
 import About from "./pages/About";
 import CodeConverter from "./pages/CodeConverter";
 
@@ -117,8 +114,6 @@ function App() {
               <Route path="/hysys-calculations" element={<HysysCalculations />} />
               <Route path="/code-converter" element={<CodeConverter />} />
               <Route path="/settings" element={<Settings />} />
-              <Route path="/sign-in" element={<SignIn />} />
-              <Route path="/sign-up" element={<SignUp />} />
               <Route path="/about" element={<About />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
