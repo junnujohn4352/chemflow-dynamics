@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
@@ -230,7 +229,6 @@ This analysis examines the ${subject} process using ${components.join(", ")} as 
 - Monitor temperature gradients in the system
 - Optimize energy usage by heat integration
 - Regular maintenance of critical equipment is recommended`;
-      };
       
       const heatTransferAnalysis = generateStaticAnalysis(`Heat Transfer for ${subject}`, selectedComponents);
       const fluidFlowAnalysis = generateStaticAnalysis(`Fluid Flow for ${subject}`, selectedComponents);
@@ -724,4 +722,3 @@ This analysis examines the ${subject} process using ${components.join(", ")} as 
 };
 
 export default CreateSimulation;
-
