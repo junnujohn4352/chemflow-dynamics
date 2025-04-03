@@ -1,11 +1,10 @@
-
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { 
   Menu, X, ChevronDown, 
   LayoutDashboard, FileText, 
   BarChart3, Database, Settings,
-  Brain, FlaskConical, Moon, Sun,
+  FlaskConical, Moon, Sun,
   Info, Calculator, Code
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -49,11 +48,6 @@ const Navbar = () => {
       label: "Code Converter",
       href: "/code-converter",
       icon: <Code className="h-4 w-4 mr-2" />
-    },
-    { 
-      label: "AI Assistant", 
-      href: "/ai-simulation", 
-      icon: <Brain className="h-4 w-4 mr-2" />
     },
     {
       label: "About",

@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
@@ -8,7 +7,6 @@ import {
   FileText, 
   BarChart3, 
   Database,
-  Brain,
   ArrowRight,
   Info,
   Calculator,
@@ -56,14 +54,6 @@ const Dashboard = () => {
               icon={<FileText className="h-6 w-6" />}
               linkTo="/create-simulation"
               color="bg-purple-500"
-            />
-            <DashboardCard 
-              title="AI Assistant"
-              description="Get AI-powered simulation assistance and problem-solving"
-              icon={<Brain className="h-6 w-6" />}
-              linkTo="/ai-simulation"
-              color="bg-amber-500"
-              isNew={true}
             />
             <DashboardCard 
               title="Process Analysis"

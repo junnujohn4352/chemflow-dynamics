@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -10,7 +9,6 @@ import LandingPage from "./pages/LandingPage";
 import Dashboard from "./pages/Dashboard";
 import Simulations from "./pages/Simulations";
 import CreateSimulation from "./pages/CreateSimulation";
-import AISimulation from "./pages/AISimulation";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import Analysis from "./pages/Analysis";
@@ -58,7 +56,6 @@ const saveSimulation = (simulationData: any) => {
 };
 
 function App() {
-  // Ensure useEffect is properly used with React imported
   React.useEffect(() => {
     const savedMode = localStorage.getItem('darkMode');
     if (savedMode === 'dark') {
@@ -121,7 +118,6 @@ function App() {
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/simulations" element={<Simulations />} />
               <Route path="/create-simulation" element={<CreateSimulation />} />
-              <Route path="/ai-simulation" element={<AISimulation />} />
               <Route path="/analysis" element={<Analysis />} />
               <Route path="/components" element={<Components />} />
               <Route path="/hysys-calculations" element={<HysysCalculations />} />
