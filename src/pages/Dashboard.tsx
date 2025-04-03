@@ -11,7 +11,8 @@ import {
   Brain,
   ArrowRight,
   Info,
-  Calculator
+  Calculator,
+  Code
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import LearnMoreModal from "@/components/ui/LearnMoreModal";
@@ -83,6 +84,14 @@ const Dashboard = () => {
               icon={<Calculator className="h-6 w-6" />}
               linkTo="/hysys-calculations"
               color="bg-indigo-500"
+              isNew={true}
+            />
+            <DashboardCard 
+              title="Code Converter"
+              description="Convert MATLAB to Python and compile Python code"
+              icon={<Code className="h-6 w-6" />}
+              linkTo="/code-converter"
+              color="bg-teal-500"
               isNew={true}
             />
           </div>

@@ -6,7 +6,7 @@ import {
   LayoutDashboard, FileText, 
   BarChart3, Database, Settings,
   Brain, FlaskConical, Moon, Sun,
-  Info, Calculator
+  Info, Calculator, Code
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -44,6 +44,11 @@ const Navbar = () => {
       label: "HYSYS Calculations",
       href: "/hysys-calculations",
       icon: <Calculator className="h-4 w-4 mr-2" />
+    },
+    {
+      label: "Code Converter",
+      href: "/code-converter",
+      icon: <Code className="h-4 w-4 mr-2" />
     },
     { 
       label: "AI Assistant", 
