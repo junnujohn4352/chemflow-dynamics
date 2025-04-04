@@ -1,6 +1,6 @@
 
-import React from "react";
-import { Equipment, Connection } from "./types";
+import React, { useState } from "react";
+import { Equipment, Connection, ConnectionPoint } from "./types";
 import EquipmentDetail from "./EquipmentDetail";
 import { 
   Container, 
@@ -18,7 +18,8 @@ import {
   ArrowRight,
   Plus,
   Minus,
-  Info
+  Info,
+  Circle
 } from "lucide-react";
 
 interface GridCellProps {
@@ -34,14 +35,14 @@ interface GridCellProps {
   onNameChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onSaveName: () => void;
   onConnect: (id: string) => void;
-  onConnectionSelect: (id: string) => void;
+  onConnectionSelect: (id: string, handleId?: string) => void;
   onToggleDetails: (id: string) => void;
   onMove: (id: string, direction: 'up' | 'down' | 'left' | 'right') => void;
   onRotate?: (id: string, degrees: number) => void;
   onResize?: (id: string, scaleFactor: number) => void;
 }
 
-const EquipmentGrid: React.FC<GridCellProps> = ({
+const GridCell: React.FC<GridCellProps> = ({
   equipment,
   selectedEquipment,
   connectMode,
@@ -60,6 +61,18 @@ const EquipmentGrid: React.FC<GridCellProps> = ({
   onRotate,
   onResize
 }) => {
+  const [hoveredConnector, setHoveredConnector] = useState<string | null>(null);
+
+  // Default connection points if not specified in equipment
+  const defaultConnectionPoints: ConnectionPoint[] = [
+    { id: 'top', position: 'top' },
+    { id: 'right', position: 'right' },
+    { id: 'bottom', position: 'bottom' },
+    { id: 'left', position: 'left' }
+  ];
+
+  const connectionPoints = equipment.connectionPoints || defaultConnectionPoints;
+
   const handleRotate = (id: string, degrees: number) => {
     if (onRotate) {
       onRotate(id, degrees);
@@ -69,6 +82,30 @@ const EquipmentGrid: React.FC<GridCellProps> = ({
   const handleResize = (id: string, scaleFactor: number) => {
     if (onResize) {
       onResize(id, scaleFactor);
+    }
+  };
+
+  const handleConnectorClick = (e: React.MouseEvent, handleId: string) => {
+    e.stopPropagation();
+    if (connectMode) {
+      onConnectionSelect(equipment.id, handleId);
+    } else {
+      onConnect(equipment.id);
+    }
+  };
+
+  const getConnectorPosition = (position: string): { top?: string, right?: string, bottom?: string, left?: string } => {
+    switch (position) {
+      case 'top':
+        return { top: '-5px', left: '50%', transform: 'translateX(-50%)' };
+      case 'right':
+        return { top: '50%', right: '-5px', transform: 'translateY(-50%)' };
+      case 'bottom':
+        return { bottom: '-5px', left: '50%', transform: 'translateX(-50%)' };
+      case 'left':
+        return { top: '50%', left: '-5px', transform: 'translateY(-50%)' };
+      default:
+        return {};
     }
   };
 
@@ -115,6 +152,23 @@ const EquipmentGrid: React.FC<GridCellProps> = ({
             <span className="text-gray-700">{equipmentType}</span>
           )}
         </div>
+        
+        {/* Connection points */}
+        {connectionPoints.map(point => (
+          <div 
+            key={point.id}
+            className={`absolute w-3 h-3 rounded-full cursor-pointer z-10 ${
+              hoveredConnector === point.id 
+                ? 'bg-amber-400 border border-amber-500' 
+                : 'bg-blue-100 border border-blue-300'
+            }`}
+            style={getConnectorPosition(point.position)}
+            onClick={(e) => handleConnectorClick(e, point.id)}
+            onMouseEnter={() => setHoveredConnector(point.id)}
+            onMouseLeave={() => setHoveredConnector(null)}
+            title={`Connect from ${point.position}`}
+          />
+        ))}
         
         {isSelected && (
           <div className="absolute -top-2 -right-2 flex space-x-1">
@@ -249,4 +303,4 @@ const EquipmentGrid: React.FC<GridCellProps> = ({
   return renderEquipment(equipment);
 };
 
-export default EquipmentGrid;
+export default GridCell;

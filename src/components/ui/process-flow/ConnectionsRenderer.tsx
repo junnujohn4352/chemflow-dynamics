@@ -41,12 +41,45 @@ const ConnectionsRenderer: React.FC<ConnectionsRendererProps> = ({
         const sourceBaseY = source.position.y * (cellHeight + margin);
         const targetBaseX = target.position.x * (cellWidth + margin);
         const targetBaseY = target.position.y * (cellHeight + margin);
+
+        // Define connector offsets
+        const getConnectorOffset = (equipment: Equipment, handle: string | undefined) => {
+          if (!handle) return { x: cellWidth / 2, y: cellHeight / 2 };
+
+          // Use custom connection points if defined, otherwise use default positions
+          const connectionPoints = equipment.connectionPoints || [
+            { id: 'top', position: 'top' },
+            { id: 'right', position: 'right' },
+            { id: 'bottom', position: 'bottom' },
+            { id: 'left', position: 'left' }
+          ];
+
+          const point = connectionPoints.find(p => p.id === handle);
+          if (!point) return { x: cellWidth / 2, y: cellHeight / 2 };
+
+          switch (point.position) {
+            case 'top':
+              return { x: cellWidth / 2, y: 0 };
+            case 'right':
+              return { x: cellWidth, y: cellHeight / 2 };
+            case 'bottom':
+              return { x: cellWidth / 2, y: cellHeight };
+            case 'left':
+              return { x: 0, y: cellHeight / 2 };
+            default:
+              return { x: cellWidth / 2, y: cellHeight / 2 };
+          }
+        };
+
+        // Get source and target connector positions
+        const sourceOffset = getConnectorOffset(source, conn.sourceHandle);
+        const targetOffset = getConnectorOffset(target, conn.targetHandle);
         
-        // Calculate cell centers
-        const sourceCenterX = sourceBaseX + (cellWidth / 2);
-        const sourceCenterY = sourceBaseY + (cellHeight / 2);
-        const targetCenterX = targetBaseX + (cellWidth / 2);
-        const targetCenterY = targetBaseY + (cellHeight / 2);
+        // Calculate final connector positions
+        const sourceCenterX = sourceBaseX + sourceOffset.x;
+        const sourceCenterY = sourceBaseY + sourceOffset.y;
+        const targetCenterX = targetBaseX + targetOffset.x;
+        const targetCenterY = targetBaseY + targetOffset.y;
         
         // Calculate angle between centers for proper arrow rotation
         const angleRad = Math.atan2(targetCenterY - sourceCenterY, targetCenterX - sourceCenterX);

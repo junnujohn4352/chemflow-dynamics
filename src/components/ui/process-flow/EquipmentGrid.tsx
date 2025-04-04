@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Equipment, Connection } from "./types";
 import GridCell from "./GridCell";
@@ -19,7 +20,7 @@ interface EquipmentGridProps {
   onNameChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onSaveName: () => void;
   onConnect: (id: string) => void;
-  onConnectionSelect: (id: string) => void;
+  onConnectionSelect: (id: string, handleId?: string) => void;
   onToggleDetails: (id: string) => void;
   onMove: (id: string, direction: 'up' | 'down' | 'left' | 'right') => void;
   onCellClick: (row: number, col: number) => void;

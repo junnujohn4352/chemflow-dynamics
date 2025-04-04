@@ -1,8 +1,9 @@
+
 import React, { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import GlassPanel from "./GlassPanel";
 import { useToast } from "@/hooks/use-toast";
-import { Equipment, Connection } from "./process-flow/types";
+import { Equipment, Connection, ConnectionPoint } from "./process-flow/types";
 import SimulationControls from "./process-flow/SimulationControls";
 import EquipmentGrid from "./process-flow/EquipmentGrid";
 import ProcessDataPanel from "./process-flow/ProcessDataPanel";
@@ -308,7 +309,7 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
     }
   };
 
-  const handleConnectionSelect = (id: string) => {
+  const handleConnectionSelect = (id: string, handleId?: string) => {
     if (connectMode && connectMode !== id) {
       const sourceEquipment = equipment.find(e => e.id === connectMode);
       const targetEquipment = equipment.find(e => e.id === id);
@@ -320,9 +321,27 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
           id: `conn-${Date.now()}`,
           source: connectMode,
           target: id,
+          sourceHandle: 'right', // Default if not specified
+          targetHandle: 'left',  // Default if not specified
           animated: true,
           label: connectionLabel
         };
+        
+        // Update connection with specific handles if provided
+        if (handleId) {
+          // If a handleId was provided for the target, determine the best matching source handle
+          const targetHandle = handleId;
+          let sourceHandle = 'right';
+          
+          // Determine the best source handle based on the target handle position
+          if (targetHandle === 'right') sourceHandle = 'left';
+          else if (targetHandle === 'left') sourceHandle = 'right';
+          else if (targetHandle === 'top') sourceHandle = 'bottom';
+          else if (targetHandle === 'bottom') sourceHandle = 'top';
+          
+          newConnection.targetHandle = targetHandle;
+          newConnection.sourceHandle = sourceHandle;
+        }
         
         setConnections(prev => [...prev, newConnection]);
         
@@ -377,6 +396,15 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
     }
     
     const newId = `${selectedEquipmentType}-${Date.now()}`;
+    
+    // Define default connection points
+    const connectionPoints: ConnectionPoint[] = [
+      { id: 'top', position: 'top' },
+      { id: 'right', position: 'right' },
+      { id: 'bottom', position: 'bottom' },
+      { id: 'left', position: 'left' }
+    ];
+    
     const newEquipment: Equipment = {
       id: newId,
       type: selectedEquipmentType,
@@ -411,6 +439,7 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
         {},
       position: { x: col, y: row },
       connections: [],
+      connectionPoints: connectionPoints,
       description: 
         selectedEquipmentType === 'tank' ? 'Storage vessel for liquids' :
         selectedEquipmentType === 'pump' ? 'Increases fluid pressure' :
