@@ -22,6 +22,7 @@ export interface Equipment {
   description?: string;
   rotation?: number;
   scale?: number;
+  connectionMode?: boolean;
 }
 
 export interface Stream {
@@ -653,6 +654,10 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     
     const equipmentType = equipmentList.find(e => e.id === eq.type);
     
+    const transformStyle = eq.type === 'arrow' 
+      ? { transform: `rotate(${eq.rotation || 0}deg) scale(${eq.scale || 1})` }
+      : {};
+    
     return (
       <div 
         key={eq.id}
@@ -670,7 +675,7 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
           top: `${eq.position.y}px`,
           zIndex: isSelected ? 10 : 1,
           cursor: isDragging && draggedEquipment === eq.id ? 'grabbing' : 'grab',
-          transform: `translate3d(0, 0, 0) ${eq.type === 'arrow' ? `rotate(${eq.rotation || 0}deg) scale(${eq.scale || 1})` : ''}`,
+          transform: `translate3d(0, 0, 0) ${transformStyle.transform || ''}`
         }}
         onClick={(e) => handleEquipmentClick(e, eq.id)}
       >
@@ -711,7 +716,7 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
           )}
           
           {isSelected && (
-            <div className="absolute -top-1 -right-1 flex gap-1">
+            <div className="absolute -top-2 -right-2 flex gap-1">
               {eq.type === 'arrow' && (
                 <>
                   <button 
