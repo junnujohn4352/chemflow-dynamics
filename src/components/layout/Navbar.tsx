@@ -21,6 +21,18 @@ const Navbar: React.FC = () => {
     navigate("/sign-in");
   };
 
+  // Main navigation items in the requested order
+  const navItems = [
+    { title: "Dashboard", path: "/dashboard" },
+    { title: "Create Simulation", path: "/create-simulation" },
+    { title: "HYSYS Calculations", path: "/hysys-calculations" },
+    { title: "Unit Converter", path: "/unit-converter" },
+    { title: "Code Converter", path: "/code-converter" },
+    { title: "Formulas", path: "/formulas" },
+    { title: "About", path: "/about" },
+    { title: "Settings", path: "/settings" }
+  ];
+
   return (
     <header className="sticky top-0 z-50">
       <nav className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 border-b border-gray-200 px-4 py-2 shadow-sm dark:border-gray-700">
@@ -43,27 +55,15 @@ const Navbar: React.FC = () => {
           
           {/* Desktop Navigation */}
           <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
-            <Link to="/dashboard" className="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium">
-              Dashboard
-            </Link>
-            <Link to="/create-simulation" className="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium">
-              Create Simulation
-            </Link>
-            <Link to="/unit-converter" className="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium">
-              Unit Converter
-            </Link>
-            <Link to="/formulas" className="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium">
-              Formulas
-            </Link>
-            <Link to="/hysys-calculations" className="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium">
-              HYSYS Calculations
-            </Link>
-            <Link to="/about" className="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium">
-              About
-            </Link>
-            <Link to="/code-converter" className="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium">
-              Code Converter
-            </Link>
+            {navItems.map((item) => (
+              <Link 
+                key={item.path}
+                to={item.path} 
+                className="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium"
+              >
+                {item.title}
+              </Link>
+            ))}
           </div>
           
           {/* User Menu */}
@@ -122,63 +122,22 @@ const Navbar: React.FC = () => {
       {isSmallScreen && showMobileMenu && (
         <div className="sm:hidden absolute top-full left-0 right-0 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 border-b border-gray-200 shadow-md z-50">
           <div className="px-2 pt-2 pb-3 space-y-1">
-            <Link
-              to="/dashboard"
-              className="text-white block px-3 py-2 rounded-md text-base font-medium hover:bg-purple-600"
-            >
-              Dashboard
-            </Link>
-            <Link
-              to="/create-simulation"
-              className="text-white block px-3 py-2 rounded-md text-base font-medium hover:bg-purple-600"
-            >
-              Create Simulation
-            </Link>
-            <Link
-              to="/unit-converter"
-              className="text-white block px-3 py-2 rounded-md text-base font-medium hover:bg-purple-600"
-            >
-              Unit Converter
-            </Link>
-             <Link
-              to="/formulas"
-              className="text-white block px-3 py-2 rounded-md text-base font-medium hover:bg-purple-600"
-            >
-              Formulas
-            </Link>
-            <Link
-              to="/hysys-calculations"
-              className="text-white block px-3 py-2 rounded-md text-base font-medium hover:bg-purple-600"
-            >
-              HYSYS Calculations
-            </Link>
-            <Link
-              to="/about"
-              className="text-white block px-3 py-2 rounded-md text-base font-medium hover:bg-purple-600"
-            >
-              About
-            </Link>
-            <Link
-              to="/code-converter"
-              className="text-white block px-3 py-2 rounded-md text-base font-medium hover:bg-purple-600"
-            >
-              Code Converter
-            </Link>
+            {navItems.map((item) => (
+              <Link
+                key={item.path}
+                to={item.path}
+                className="text-white block px-3 py-2 rounded-md text-base font-medium hover:bg-purple-600"
+              >
+                {item.title}
+              </Link>
+            ))}
             {isAuthenticated && (
-              <>
-                <Link
-                  to="/settings"
-                  className="text-white block px-3 py-2 rounded-md text-base font-medium hover:bg-purple-600"
-                >
-                  Settings
-                </Link>
-                <button
-                  onClick={handleSignOut}
-                  className="w-full text-left text-white block px-3 py-2 rounded-md text-base font-medium hover:bg-purple-600"
-                >
-                  Sign out
-                </button>
-              </>
+              <button
+                onClick={handleSignOut}
+                className="w-full text-left text-white block px-3 py-2 rounded-md text-base font-medium hover:bg-purple-600"
+              >
+                Sign out
+              </button>
             )}
           </div>
         </div>

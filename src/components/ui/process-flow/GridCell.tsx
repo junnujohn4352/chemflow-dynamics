@@ -2,6 +2,7 @@
 import React from "react";
 import { Equipment } from "./types";
 import EquipmentDetail from "./EquipmentDetail";
+import ConnectionPoint from "./ConnectionPoint";
 
 interface GridCellProps {
   cell: Equipment | null;
@@ -25,6 +26,8 @@ interface GridCellProps {
   onResize?: (id: string, scaleFactor: number) => void;
   allEquipment?: Equipment[];
   onConnectEquipment?: (id: string, handleId?: string) => void;
+  onConnectionPointClick?: (equipmentId: string, pointId: string) => void;
+  onParameterChange?: (equipmentId: string, parameterId: string, value: any) => void;
 }
 
 const GridCell: React.FC<GridCellProps> = ({
@@ -48,7 +51,9 @@ const GridCell: React.FC<GridCellProps> = ({
   onRotate,
   onResize,
   allEquipment,
-  onConnectEquipment
+  onConnectEquipment,
+  onConnectionPointClick,
+  onParameterChange
 }) => {
   if (!cell) {
     return (
@@ -103,9 +108,37 @@ const GridCell: React.FC<GridCellProps> = ({
   }
   
   cardClasses += ` ${bgColorClass}`;
+
+  // Default connection points if none are provided
+  const connectionPoints = cell.connectionPoints || [
+    { id: 'top', position: 'top' },
+    { id: 'right', position: 'right' },
+    { id: 'bottom', position: 'bottom' },
+    { id: 'left', position: 'left' }
+  ];
+  
+  // Handle connection point click
+  const handleConnectionPointClick = (equipmentId: string, pointId: string) => {
+    if (onConnectionPointClick) {
+      onConnectionPointClick(equipmentId, pointId);
+    } else if (onConnectEquipment) {
+      onConnectEquipment(equipmentId, pointId);
+    }
+  };
   
   return (
     <div className={cardClasses}>
+      {/* Connection Points */}
+      {connectionPoints.map(point => (
+        <ConnectionPoint
+          key={point.id}
+          point={point}
+          equipmentId={cell.id}
+          onClick={handleConnectionPointClick}
+          isConnecting={isConnecting}
+        />
+      ))}
+      
       {/* Equipment Image/Icon */}
       <div 
         className="w-full cursor-move" 
@@ -176,6 +209,7 @@ const GridCell: React.FC<GridCellProps> = ({
           onResize={onResize}
           allEquipment={allEquipment || []}
           onConnectEquipment={onConnectEquipment}
+          onParameterChange={onParameterChange}
         />
       )}
     </div>

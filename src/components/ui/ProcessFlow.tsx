@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import GlassPanel from "./GlassPanel";
 import { useToast } from "@/hooks/use-toast";
-import { Equipment, Connection, ConnectionPoint } from "./process-flow/types";
+import { Equipment, Connection, ConnectionPoint, EquipmentParameter } from "./process-flow/types";
 import SimulationControls from "./process-flow/SimulationControls";
 import EquipmentGrid from "./process-flow/EquipmentGrid";
 import ProcessDataPanel from "./process-flow/ProcessDataPanel";
@@ -72,6 +72,7 @@ const equipmentTypes = [
 const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation }) => {
   const { toast } = useToast();
   const [isRunning, setIsRunning] = useState(false);
+  const [simulationTime, setSimulationTime] = useState(0);
   const [simulationData, setSimulationData] = useState({
     componentA: 0,
     componentB: 0,
@@ -87,7 +88,14 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
       metrics: { level: 75, temperature: 25 },
       position: { x: 0, y: 0 },
       connections: [],
-      description: 'Raw material storage'
+      description: 'Raw material storage',
+      connectionPoints: [
+        { id: 'top', position: 'top' },
+        { id: 'right', position: 'right' },
+        { id: 'bottom', position: 'bottom' },
+        { id: 'left', position: 'left' }
+      ],
+      icon: 'https://cdn-icons-png.flaticon.com/512/5165/5165922.png'
     },
     { 
       id: 'feed-pump', 
@@ -96,7 +104,14 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
       metrics: { flow: 120 },
       position: { x: 2, y: 0 },
       connections: [],
-      description: 'Flow rate: 120 L/min'
+      description: 'Flow rate: 120 L/min',
+      connectionPoints: [
+        { id: 'top', position: 'top' },
+        { id: 'right', position: 'right' },
+        { id: 'bottom', position: 'bottom' },
+        { id: 'left', position: 'left' }
+      ],
+      icon: 'https://cdn-icons-png.flaticon.com/512/1585/1585428.png'
     },
     { 
       id: 'preheater', 
@@ -105,7 +120,14 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
       metrics: { temperature: 25 },
       position: { x: 0, y: 2 },
       connections: [],
-      description: 'Heat to 80°C'
+      description: 'Heat to 80°C',
+      connectionPoints: [
+        { id: 'top', position: 'top' },
+        { id: 'right', position: 'right' },
+        { id: 'bottom', position: 'bottom' },
+        { id: 'left', position: 'left' }
+      ],
+      icon: 'https://cdn-icons-png.flaticon.com/512/995/995777.png'
     },
     { 
       id: 'distillation-column', 
@@ -114,7 +136,14 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
       metrics: { pressure: 150, temperature: 30 },
       position: { x: 2, y: 2 },
       connections: [],
-      description: '20 stages, 150 kPa'
+      description: '20 stages, 150 kPa',
+      connectionPoints: [
+        { id: 'top', position: 'top' },
+        { id: 'right', position: 'right' },
+        { id: 'bottom', position: 'bottom' },
+        { id: 'left', position: 'left' }
+      ],
+      icon: 'https://cdn-icons-png.flaticon.com/512/1995/1995573.png'
     },
     { 
       id: 'product-tank', 
@@ -123,7 +152,14 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
       metrics: { level: 10, temperature: 25 },
       position: { x: 0, y: 4 },
       connections: [],
-      description: 'Final product storage'
+      description: 'Final product storage',
+      connectionPoints: [
+        { id: 'top', position: 'top' },
+        { id: 'right', position: 'right' },
+        { id: 'bottom', position: 'bottom' },
+        { id: 'left', position: 'left' }
+      ],
+      icon: 'https://cdn-icons-png.flaticon.com/512/5165/5165922.png'
     },
     { 
       id: 'condenser', 
@@ -132,7 +168,14 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
       metrics: { temperature: 25 },
       position: { x: 2, y: 4 },
       connections: [],
-      description: 'Cooling to 25°C'
+      description: 'Cooling to 25°C',
+      connectionPoints: [
+        { id: 'top', position: 'top' },
+        { id: 'right', position: 'right' },
+        { id: 'bottom', position: 'bottom' },
+        { id: 'left', position: 'left' }
+      ],
+      icon: 'https://cdn-icons-png.flaticon.com/512/3143/3143636.png'
     }
   ]);
   
@@ -143,9 +186,24 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
   const [dragStartPos, setDragStartPos] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [connectMode, setConnectMode] = useState<string | null>(null);
+  const [connectingPointId, setConnectingPointId] = useState<string | null>(null);
   const [showDetails, setShowDetails] = useState<string | null>(null);
   
-  const toggleSimulation = () => {
+  useEffect(() => {
+    let timerId: number | undefined;
+    
+    if (isRunning) {
+      timerId = window.setInterval(() => {
+        setSimulationTime(prev => prev + 0.1);
+      }, 100);
+    }
+    
+    return () => {
+      if (timerId) window.clearInterval(timerId);
+    };
+  }, [isRunning]);
+  
+  const toggleSimulation = useCallback(() => {
     const newState = !isRunning;
     setIsRunning(newState);
     
@@ -160,10 +218,13 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
     
     if (newState) {
       startDataUpdates();
+    } else {
+      // Reset simulation time if stopping
+      // setSimulationTime(0);
     }
-  };
+  }, [isRunning, equipment, onStartSimulation]);
 
-  const startDataUpdates = () => {
+  const startDataUpdates = useCallback(() => {
     let progress = 0;
     const updateInterval = setInterval(() => {
       progress += 5;
@@ -201,7 +262,7 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
     }, 200);
     
     return () => clearInterval(updateInterval);
-  };
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -209,7 +270,7 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
     };
   }, []);
 
-  const handleEquipmentDragStart = (id: string, e: React.MouseEvent) => {
+  const handleEquipmentDragStart = useCallback((id: string, e: React.MouseEvent) => {
     e.preventDefault();
     setSelectedEquipment(id);
     setIsDragging(true);
@@ -217,14 +278,14 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
       x: e.clientX,
       y: e.clientY
     });
-  };
+  }, []);
 
-  const handleEquipmentDragEnd = () => {
+  const handleEquipmentDragEnd = useCallback(() => {
     setSelectedEquipment(null);
     setIsDragging(false);
-  };
+  }, []);
 
-  const handleMouseMove = (e: React.MouseEvent) => {
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
     if (!isDragging || !selectedEquipment) return;
     
     const deltaX = e.clientX - dragStartPos.x;
@@ -247,9 +308,9 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
       x: e.clientX,
       y: e.clientY
     });
-  };
+  }, [isDragging, selectedEquipment, dragStartPos]);
 
-  const handleEquipmentMove = (id: string, direction: 'up' | 'down' | 'left' | 'right') => {
+  const handleEquipmentMove = useCallback((id: string, direction: 'up' | 'down' | 'left' | 'right') => {
     setEquipment(prev => prev.map(eq => {
       if (eq.id === id) {
         const newPosition = { ...eq.position };
@@ -273,17 +334,17 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
       }
       return eq;
     }));
-  };
+  }, []);
 
-  const startEditingName = (id: string) => {
+  const startEditingName = useCallback((id: string) => {
     const eq = equipment.find(e => e.id === id);
     if (eq) {
       setEditingName(id);
       setTempName(typeof eq.name === 'string' ? eq.name : String(eq.name));
     }
-  };
+  }, [equipment]);
 
-  const saveEquipmentName = () => {
+  const saveEquipmentName = useCallback(() => {
     if (editingName && tempName.trim()) {
       setEquipment(prev => prev.map(eq => {
         if (eq.id === editingName) {
@@ -293,11 +354,12 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
       }));
       setEditingName(null);
     }
-  };
+  }, [editingName, tempName]);
 
-  const startConnectMode = (id: string) => {
+  const startConnectMode = useCallback((id: string) => {
     if (connectMode === id) {
       setConnectMode(null);
+      setConnectingPointId(null);
       toast({
         title: "Connection Cancelled",
         description: "Connection mode disabled",
@@ -309,79 +371,100 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
         description: `Select another equipment to connect from ${equipment.find(e => e.id === id)?.name}`,
       });
     }
-  };
+  }, [connectMode, equipment, toast]);
 
-  const handleConnectionSelect = (id: string, handleId?: string) => {
-    if (connectMode && connectMode !== id) {
-      const sourceEquipment = equipment.find(e => e.id === connectMode);
-      const targetEquipment = equipment.find(e => e.id === id);
+  const handleConnectionPointClick = useCallback((equipmentId: string, pointId: string) => {
+    if (!connectMode) {
+      setConnectMode(equipmentId);
+      setConnectingPointId(pointId);
+      toast({
+        title: "Connection Started",
+        description: "Now click on another connection point to complete the connection",
+      });
+      return;
+    }
+    
+    if (connectMode === equipmentId) {
+      setConnectMode(null);
+      setConnectingPointId(null);
+      toast({
+        title: "Connection Cancelled",
+        description: "Cannot connect equipment to itself",
+      });
+      return;
+    }
+    
+    const sourceEquipment = equipment.find(e => e.id === connectMode);
+    const targetEquipment = equipment.find(e => e.id === equipmentId);
+    
+    if (sourceEquipment && targetEquipment) {
+      const connectionId = `conn-${Date.now()}`;
       
-      if (sourceEquipment && targetEquipment) {
-        const connectionLabel = `${sourceEquipment.type} → ${targetEquipment.type}`;
-        
-        const newConnection: Connection = {
-          id: `conn-${Date.now()}`,
-          source: connectMode,
-          target: id,
-          sourceHandle: 'right', // Default if not specified
-          targetHandle: 'left',  // Default if not specified
-          animated: true,
-          label: connectionLabel
-        };
-        
-        // Update connection with specific handles if provided
-        if (handleId) {
-          // If a handleId was provided for the target, determine the best matching source handle
-          const targetHandle = handleId;
-          let sourceHandle = 'right';
-          
-          // Determine the best source handle based on the target handle position
-          if (targetHandle === 'right') sourceHandle = 'left';
-          else if (targetHandle === 'left') sourceHandle = 'right';
-          else if (targetHandle === 'top') sourceHandle = 'bottom';
-          else if (targetHandle === 'bottom') sourceHandle = 'top';
-          
-          newConnection.targetHandle = targetHandle;
-          newConnection.sourceHandle = sourceHandle;
-        }
-        
-        setConnections(prev => [...prev, newConnection]);
-        
-        setEquipment(prev => 
-          prev.map(eq => {
-            if (eq.id === connectMode) {
-              return {
-                ...eq,
-                connections: [...(eq.connections || []), id]
-              };
-            }
-            return eq;
-          })
-        );
-        
-        toast({
-          title: "Connection Created",
-          description: `Connected ${sourceEquipment.name} to ${targetEquipment.name}`,
-        });
-      }
+      const newConnection: Connection = {
+        id: connectionId,
+        source: connectMode,
+        target: equipmentId,
+        sourceHandle: connectingPointId || 'right',
+        targetHandle: pointId || 'left',
+        animated: true,
+        label: `${sourceEquipment.type} → ${targetEquipment.type}`
+      };
+      
+      setConnections(prev => [...prev, newConnection]);
+      
+      setEquipment(prev => 
+        prev.map(eq => {
+          if (eq.id === connectMode) {
+            return {
+              ...eq,
+              connections: [...(eq.connections || []), equipmentId]
+            };
+          }
+          if (eq.id === connectMode || eq.id === equipmentId) {
+            return {
+              ...eq,
+              connectionPoints: (eq.connectionPoints || []).map(cp => {
+                if ((eq.id === connectMode && cp.id === connectingPointId) || 
+                    (eq.id === equipmentId && cp.id === pointId)) {
+                  return { ...cp, isConnected: true };
+                }
+                return cp;
+              })
+            };
+          }
+          return eq;
+        })
+      );
+      
+      toast({
+        title: "Connection Created",
+        description: `Connected ${sourceEquipment.name} to ${targetEquipment.name}`,
+      });
       
       setConnectMode(null);
+      setConnectingPointId(null);
     }
-  };
+  }, [connectMode, connectingPointId, equipment, toast]);
 
-  const toggleDetails = (id: string) => {
+  const handleConnectionSelect = useCallback((id: string, handleId?: string) => {
+    if (connectMode && connectMode !== id) {
+      handleConnectionPointClick(id, handleId || 'left');
+    }
+  }, [connectMode, handleConnectionPointClick]);
+
+  const toggleDetails = useCallback((id: string) => {
     setShowDetails(showDetails === id ? null : id);
-  };
+  }, [showDetails]);
 
-  const handleEquipmentSelect = (type: string) => {
+  const handleEquipmentSelect = useCallback((type: string) => {
     setSelectedEquipmentType(selectedEquipmentType === type ? null : type);
     toast({
       title: `${type.charAt(0).toUpperCase() + type.slice(1)} Selected`,
       description: "Click on an empty cell to place the equipment",
     });
-  };
+  }, [selectedEquipmentType, toast]);
 
-  const handleCellClick = (row: number, col: number) => {
+  const handleCellClick = useCallback((row: number, col: number) => {
     if (!selectedEquipmentType) return;
     
     const cellOccupied = equipment.some(eq => 
@@ -399,13 +482,14 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
     
     const newId = `${selectedEquipmentType}-${Date.now()}`;
     
-    // Define default connection points
     const connectionPoints: ConnectionPoint[] = [
       { id: 'top', position: 'top' },
       { id: 'right', position: 'right' },
       { id: 'bottom', position: 'bottom' },
       { id: 'left', position: 'left' }
     ];
+    
+    const typeInfo = equipmentTypes.find(t => t.id === selectedEquipmentType);
     
     const newEquipment: Equipment = {
       id: newId,
@@ -466,7 +550,8 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
         selectedEquipmentType === 'coolingTower' ? 'Removes heat from cooling water' :
         selectedEquipmentType === 'product' ? 'Final product output' :
         selectedEquipmentType === 'arrow' ? 'Indicates flow direction' :
-        `New ${selectedEquipmentType} equipment`
+        `New ${selectedEquipmentType} equipment`,
+      icon: `https://cdn-icons-png.flaticon.com/512/4341/4341050.png`
     };
     
     if (selectedEquipmentType === 'arrow') {
@@ -482,9 +567,9 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
     });
     
     setSelectedEquipmentType(null);
-  };
+  }, [selectedEquipmentType, equipment, toast]);
 
-  const handleArrowRotate = (id: string, degrees: number) => {
+  const handleArrowRotate = useCallback((id: string, degrees: number) => {
     setEquipment(prev => prev.map(eq => {
       if (eq.id === id) {
         return {
@@ -494,9 +579,9 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
       }
       return eq;
     }));
-  };
+  }, []);
 
-  const handleArrowResize = (id: string, scaleFactor: number) => {
+  const handleArrowResize = useCallback((id: string, scaleFactor: number) => {
     setEquipment(prev => prev.map(eq => {
       if (eq.id === id) {
         const newScale = Math.max(0.5, Math.min(3, (eq.scale || 1) + scaleFactor));
@@ -507,9 +592,9 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
       }
       return eq;
     }));
-  };
+  }, []);
 
-  const handleArrowAdd = (type: string, rotation: number) => {
+  const handleArrowAdd = useCallback((type: string, rotation: number) => {
     const newId = `${type}-${Date.now()}`;
     
     const newEquipment: Equipment = {
@@ -521,7 +606,8 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
       connections: [],
       description: "Flow direction indicator",
       rotation: rotation,
-      scale: 1
+      scale: 1,
+      connectionPoints: []
     };
     
     setEquipment(prev => [...prev, newEquipment]);
@@ -530,45 +616,33 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
       title: "Arrow Added",
       description: `Added ${rotation}° arrow to the flowsheet`,
     });
-  };
+  }, [toast]);
 
-  const handleConnectFromPanel = (sourceId: string, targetId: string) => {
-    const sourceEquipment = equipment.find(e => e.id === sourceId);
-    const targetEquipment = equipment.find(e => e.id === targetId);
-    
-    if (sourceEquipment && targetEquipment) {
-      const connectionLabel = `${sourceEquipment.type} → ${targetEquipment.type}`;
-      
-      const newConnection: Connection = {
-        id: `conn-${Date.now()}`,
-        source: sourceId,
-        target: targetId,
-        animated: true,
-        label: connectionLabel
-      };
-      
-      setConnections(prev => [...prev, newConnection]);
-      
-      setEquipment(prev => 
-        prev.map(eq => {
-          if (eq.id === sourceId) {
-            return {
-              ...eq,
-              connections: [...(eq.connections || []), targetId]
-            };
-          }
-          return eq;
-        })
-      );
-      
-      toast({
-        title: "Connection Created",
-        description: `Connected ${sourceEquipment.name} to ${targetEquipment.name}`,
-      });
-      
-      setShowDetails(null);
-    }
-  };
+  const handleParameterChange = useCallback((equipmentId: string, parameterId: string, value: any) => {
+    setEquipment(prev => prev.map(eq => {
+      if (eq.id === equipmentId) {
+        const parameters = eq.parameters ? [...eq.parameters] : [];
+        const paramIndex = parameters.findIndex(p => p.id === parameterId);
+        
+        if (paramIndex >= 0) {
+          parameters[paramIndex] = { ...parameters[paramIndex], value };
+        }
+        
+        const updatedMetrics = { ...eq.metrics };
+        const paramName = parameterId.replace('param-', '');
+        if (updatedMetrics && updatedMetrics[paramName] !== undefined) {
+          updatedMetrics[paramName] = value;
+        }
+        
+        return {
+          ...eq,
+          parameters,
+          metrics: updatedMetrics
+        };
+      }
+      return eq;
+    }));
+  }, []);
 
   return (
     <div className={cn("w-full", className)}>
@@ -640,6 +714,8 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
                 onCellClick={handleCellClick}
                 onRotate={handleArrowRotate}
                 onResize={handleArrowResize}
+                onConnectionPointClick={handleConnectionPointClick}
+                onParameterChange={handleParameterChange}
               />
               
               <ConnectionsRenderer 
@@ -664,8 +740,12 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
                           equipment={eq}
                           isRunning={isRunning}
                           onClose={() => setShowDetails(null)}
+                          onMove={handleEquipmentMove}
+                          onRotate={handleArrowRotate}
+                          onResize={handleArrowResize}
                           allEquipment={equipment}
-                          onConnectEquipment={handleConnectFromPanel}
+                          onConnectEquipment={handleConnectionSelect}
+                          onParameterChange={handleParameterChange}
                         />
                       </div>
                     )
@@ -680,6 +760,8 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
               <ProcessDataPanel 
                 simulationData={simulationData}
                 equipment={equipment}
+                isRunning={isRunning}
+                simulationTime={simulationTime}
               />
             </div>
           </div>

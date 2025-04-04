@@ -25,6 +25,8 @@ interface EquipmentGridProps {
   onCellClick: (row: number, col: number) => void;
   onRotate?: (id: string, degrees: number) => void;
   onResize?: (id: string, scaleFactor: number) => void;
+  onConnectionPointClick?: (equipmentId: string, pointId: string) => void;
+  onParameterChange?: (equipmentId: string, parameterId: string, value: any) => void;
 }
 
 const EquipmentGrid: React.FC<EquipmentGridProps> = ({
@@ -48,7 +50,9 @@ const EquipmentGrid: React.FC<EquipmentGridProps> = ({
   onMove,
   onCellClick,
   onRotate,
-  onResize
+  onResize,
+  onConnectionPointClick,
+  onParameterChange
 }) => {
   // Create a 5x3 grid
   const rows = 5;
@@ -102,6 +106,8 @@ const EquipmentGrid: React.FC<EquipmentGridProps> = ({
                 onResize={onResize}
                 allEquipment={equipment}
                 onConnectEquipment={onConnectionSelect}
+                onConnectionPointClick={onConnectionPointClick}
+                onParameterChange={onParameterChange}
               />
             </div>
           ))

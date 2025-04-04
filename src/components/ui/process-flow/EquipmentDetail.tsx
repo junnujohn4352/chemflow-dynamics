@@ -3,6 +3,7 @@ import React from "react";
 import { X, Settings2, Link as LinkIcon, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Equipment } from "./types";
+import ParametersPanel from "./ParametersPanel";
 
 interface EquipmentDetailProps {
   equipment: Equipment;
@@ -13,6 +14,7 @@ interface EquipmentDetailProps {
   onResize?: (id: string, scaleFactor: number) => void;
   allEquipment?: Equipment[];
   onConnectEquipment?: (sourceId: string, targetId?: string) => void;
+  onParameterChange?: (equipmentId: string, parameterId: string, value: any) => void;
 }
 
 const EquipmentDetail: React.FC<EquipmentDetailProps> = ({
@@ -23,7 +25,8 @@ const EquipmentDetail: React.FC<EquipmentDetailProps> = ({
   onRotate,
   onResize,
   allEquipment = [],
-  onConnectEquipment
+  onConnectEquipment,
+  onParameterChange
 }) => {
   // Function to safely render metric values
   const renderMetricValue = (metric: any): string => {
@@ -45,8 +48,15 @@ const EquipmentDetail: React.FC<EquipmentDetailProps> = ({
   // Get other equipment (for connection options)
   const otherEquipment = allEquipment?.filter(eq => eq.id !== equipment.id) || [];
 
+  // Handle parameter changes
+  const handleParameterChange = (parameterId: string, value: any) => {
+    if (onParameterChange) {
+      onParameterChange(equipment.id, parameterId, value);
+    }
+  };
+
   return (
-    <div className="absolute z-10 p-4 rounded-lg shadow-xl w-64 min-h-[200px] bg-white glass-card border-2 border-blue-200 animate-fade-in">
+    <div className="absolute z-10 p-4 rounded-lg shadow-xl w-64 bg-white glass-card border-2 border-blue-200 animate-fade-in">
       <div className="flex justify-between items-center mb-3">
         <h3 className="text-md font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
           {equipment.name}
@@ -65,7 +75,7 @@ const EquipmentDetail: React.FC<EquipmentDetailProps> = ({
       
       {equipment.metrics && Object.keys(equipment.metrics).length > 0 && (
         <>
-          <div className="text-sm font-medium text-gray-700 mb-2">Parameters:</div>
+          <div className="text-sm font-medium text-gray-700 mb-2">Current Values:</div>
           <div className="mb-4 space-y-2">
             {Object.entries(equipment.metrics).map(([key, value]) => (
               <div key={key} className="flex justify-between items-center py-1 px-2 rounded-md bg-blue-50">
@@ -189,6 +199,13 @@ const EquipmentDetail: React.FC<EquipmentDetailProps> = ({
           )}
         </div>
       )}
+      
+      {/* Equipment Parameters Panel */}
+      <ParametersPanel 
+        equipment={equipment}
+        onParameterChange={handleParameterChange}
+        isRunning={isRunning}
+      />
       
       <div className="mt-4 pt-3 border-t border-blue-100 flex justify-end">
         <button className="text-xs font-medium text-indigo-600 flex items-center">

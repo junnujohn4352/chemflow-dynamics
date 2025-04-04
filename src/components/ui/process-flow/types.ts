@@ -18,6 +18,21 @@ export interface ConnectionPoint {
     x: number;
     y: number;
   };
+  isConnected?: boolean;
+  label?: string;
+}
+
+export interface EquipmentParameter {
+  id: string;
+  name: string;
+  value: any;
+  unit?: string;
+  min?: number;
+  max?: number;
+  type: 'number' | 'string' | 'boolean' | 'select';
+  category: 'basic' | 'advanced';
+  options?: string[];
+  description?: string;
 }
 
 export interface Equipment {
@@ -38,6 +53,7 @@ export interface Equipment {
   subType?: string; // Added subType for more specific equipment categories
   connectionPoints?: ConnectionPoint[]; // Added connection points
   icon?: string; // Added icon property
+  parameters?: EquipmentParameter[]; // Added structured parameters
 }
 
 export interface GridCell {
