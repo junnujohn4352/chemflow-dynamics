@@ -108,8 +108,7 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
   description, 
   icon, 
   linkTo, 
-  color, 
-  isNew = false 
+  color
 }) => {
   return (
     <Link 
@@ -120,11 +119,6 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
         <div className={`p-3 rounded-xl ${color} text-white`}>
           {icon}
         </div>
-        {isNew && (
-          <span className="px-2 py-1 bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-200 text-xs font-medium rounded-full">
-            NEW
-          </span>
-        )}
       </div>
       <h3 className="text-xl font-medium mb-2 dark:text-white">{title}</h3>
       <p className="text-gray-600 dark:text-gray-400 text-sm">{description}</p>
