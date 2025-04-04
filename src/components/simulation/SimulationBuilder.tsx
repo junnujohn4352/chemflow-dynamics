@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Plus, Minus, Thermometer, Droplets, Settings2, Container, FlaskConical, Columns, Gauge, Save, Trash2, X, Sliders, Move, ArrowLeft, Play, ChevronsUpDown, ArrowRight, Info } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -893,4 +894,209 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
   return (
     <div className="flex flex-col">
       <div className="mb-6">
-        <h3 className="
+        <h3 className="text-lg font-medium mb-2">Process Flowsheet</h3>
+        <p className="text-sm text-gray-500">
+          Design your process by adding equipment and connecting them together.
+        </p>
+      </div>
+      
+      {showSettings && editingEquipment && (
+        <EquipmentSettings
+          equipment={editingEquipment}
+          onSave={handleSaveSettings}
+          onClose={() => {
+            setShowSettings(false);
+            setEditingEquipment(null);
+          }}
+        />
+      )}
+      
+      <div className="flex flex-wrap gap-2 mb-4">
+        {activeEquipment === null ? (
+          <>
+            {equipmentList.map((eq) => (
+              <Button
+                key={eq.id}
+                onClick={() => {
+                  if (eq.subTypes && eq.subTypes.length > 0) {
+                    setActiveEquipment(eq.id);
+                    setShowSubTypes(true);
+                  } else {
+                    handleAddEquipment(eq.id);
+                  }
+                }}
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-1"
+              >
+                {eq.icon}
+                <span>{eq.name}</span>
+              </Button>
+            ))}
+          </>
+        ) : showSubTypes ? (
+          <>
+            <div className="flex flex-col w-full">
+              <div className="flex items-center mb-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setActiveEquipment(null);
+                    setShowSubTypes(false);
+                  }}
+                  className="mr-2"
+                >
+                  <ArrowLeft className="h-4 w-4 mr-1" />
+                  Back
+                </Button>
+                <h4 className="text-sm font-medium">
+                  Select {equipmentList.find(e => e.id === activeEquipment)?.name} Type
+                </h4>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleAddEquipment(activeEquipment)}
+                >
+                  Standard
+                </Button>
+                {equipmentList
+                  .find(e => e.id === activeEquipment)
+                  ?.subTypes?.map(subType => (
+                    <Button
+                      key={subType.id}
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleAddEquipment(activeEquipment, subType.id)}
+                    >
+                      {subType.name}
+                    </Button>
+                  ))}
+              </div>
+            </div>
+          </>
+        ) : null}
+      </div>
+      
+      <div className="relative border border-gray-200 rounded-lg bg-gray-50 h-[500px] overflow-hidden mb-4">
+        <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
+          <Button 
+            variant="outline" 
+            size="icon"
+            onClick={handleZoomIn}
+            className="bg-white"
+          >
+            <Plus className="h-4 w-4" />
+          </Button>
+          <Button 
+            variant="outline" 
+            size="icon"
+            onClick={handleZoomOut}
+            className="bg-white"
+          >
+            <Minus className="h-4 w-4" />
+          </Button>
+        </div>
+        
+        <div className="absolute top-4 right-4 z-10 flex gap-2">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={handleClearCanvas}
+            className="bg-white text-red-500 border-red-200 hover:bg-red-50"
+          >
+            <Trash2 className="h-4 w-4 mr-1" />
+            Clear
+          </Button>
+          <Button 
+            variant={simulationRunning ? "outline" : "default"}
+            size="sm"
+            onClick={handleStartSimulation}
+            disabled={simulationRunning}
+            className={simulationRunning ? "bg-white" : ""}
+          >
+            <Play className="h-4 w-4 mr-1" />
+            {simulationRunning ? "Running..." : "Run Simulation"}
+          </Button>
+        </div>
+        
+        <div
+          ref={canvasRef}
+          className="absolute inset-0 w-full h-full overflow-auto"
+          style={{
+            transform: `scale(${zoom / 100})`,
+            transformOrigin: "0 0",
+          }}
+          onClick={handleCanvasClick}
+          onMouseDown={handleMouseDown}
+          onMouseUp={handleMouseUp}
+          onMouseMove={handleCanvasMouseMove}
+          onMouseLeave={() => {
+            setIsPanning(false);
+            handleEquipmentDragEnd();
+          }}
+        >
+          <div
+            className="relative"
+            style={{
+              width: `${canvasDimensions.width}px`,
+              height: `${canvasDimensions.height}px`,
+              transform: `translate(${canvasOffset.x}px, ${canvasOffset.y}px)`,
+            }}
+          >
+            {/* Grid background */}
+            <div
+              className="absolute inset-0"
+              style={{
+                backgroundImage:
+                  "radial-gradient(circle, #ddd 1px, transparent 1px)",
+                backgroundSize: "40px 40px",
+              }}
+            />
+            
+            {streams.map(stream => renderStream(stream))}
+            
+            {equipment.map(eq => renderEquipmentCard(eq))}
+            
+            {isConnecting && (
+              <div className="fixed bottom-4 left-4 right-4 bg-amber-100 text-amber-800 p-3 rounded-lg text-sm">
+                <p className="flex items-center">
+                  <Info className="h-4 w-4 mr-2" />
+                  Connection mode active. Click on another equipment to connect or click empty space to cancel.
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+      
+      <div className="flex justify-between items-center">
+        <div className="text-sm text-gray-500">
+          {equipment.length} Equipment | {streams.length} Connections
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              localStorage.setItem('chemflow-equipment', JSON.stringify(equipment));
+              localStorage.setItem('chemflow-streams', JSON.stringify(streams));
+              
+              toast({
+                title: "Flowsheet saved",
+                description: "Your process flowsheet has been saved"
+              });
+            }}
+          >
+            <Save className="h-4 w-4 mr-1" />
+            Save
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default SimulationBuilder;
