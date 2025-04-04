@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Plus, Minus, Thermometer, Droplets, Settings2, Container, FlaskConical, Columns, Gauge, Save, Trash2, X, Sliders, Move, ArrowLeft, Play, ChevronsUpDown, Circle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -423,7 +422,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     }
   };
 
-  // Define equipmentList by flattening the equipment categories
   const equipmentList = equipmentCategories.flatMap(category => 
     category.items.map(item => ({
       id: item.id,
@@ -902,7 +900,9 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
           </div>
           <span className="text-xs text-center font-medium">{eq.name}</span>
           {eq.subType && (
-            <span className="text-xs text-gray-500">{eq.subType}</span>
+            <span className="text-xs text-gray-500">{
+              equipmentType?.subTypes?.find(sub => sub.id === eq.subType)?.name || eq.subType
+            }</span>
           )}
           
           {isSelected && (
