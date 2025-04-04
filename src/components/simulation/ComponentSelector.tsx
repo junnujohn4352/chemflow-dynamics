@@ -10,7 +10,102 @@ interface ComponentSelectorProps {
 }
 
 const availableComponents = [
-  // ... keep existing data
+  {
+    id: "Nitrogen",
+    name: "Nitrogen",
+    formula: "N₂",
+    mw: 28.02,
+    cas: "7727-37-9",
+    phase: "Gas"
+  },
+  {
+    id: "Oxygen",
+    name: "Oxygen",
+    formula: "O₂",
+    mw: 32.00,
+    cas: "7782-44-7",
+    phase: "Gas"
+  },
+  {
+    id: "Carbon-Dioxide",
+    name: "Carbon Dioxide",
+    formula: "CO₂",
+    mw: 44.01,
+    cas: "124-38-9",
+    phase: "Gas"
+  },
+  {
+    id: "Hydrogen",
+    name: "Hydrogen",
+    formula: "H₂",
+    mw: 2.02,
+    cas: "1333-74-0",
+    phase: "Gas"
+  },
+  {
+    id: "Methane",
+    name: "Methane",
+    formula: "CH₄",
+    mw: 16.04,
+    cas: "74-82-8",
+    phase: "Gas"
+  },
+  {
+    id: "Ethane",
+    name: "Ethane",
+    formula: "C₂H₆",
+    mw: 30.07,
+    cas: "74-84-0",
+    phase: "Gas"
+  },
+  {
+    id: "Propane",
+    name: "Propane",
+    formula: "C₃H₈",
+    mw: 44.10,
+    cas: "74-98-6",
+    phase: "Gas"
+  },
+  {
+    id: "Benzene",
+    name: "Benzene",
+    formula: "C₆H₆",
+    mw: 78.11,
+    cas: "71-43-2",
+    phase: "Liquid"
+  },
+  {
+    id: "Toluene",
+    name: "Toluene",
+    formula: "C₇H₈",
+    mw: 92.14,
+    cas: "108-88-3",
+    phase: "Liquid"
+  },
+  {
+    id: "Methanol",
+    name: "Methanol",
+    formula: "CH₃OH",
+    mw: 32.04,
+    cas: "67-56-1",
+    phase: "Liquid"
+  },
+  {
+    id: "Ethanol",
+    name: "Ethanol",
+    formula: "C₂H₅OH",
+    mw: 46.07,
+    cas: "64-17-5",
+    phase: "Liquid"
+  },
+  {
+    id: "Acetone",
+    name: "Acetone",
+    formula: "C₃H₆O",
+    mw: 58.08,
+    cas: "67-64-1",
+    phase: "Liquid"
+  }
 ];
 
 const ComponentSelector: React.FC<ComponentSelectorProps> = ({ selectedComponents, setSelectedComponents }) => {
