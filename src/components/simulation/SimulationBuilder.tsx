@@ -75,6 +75,7 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
   const [canvasOffset, setCanvasOffset] = useState({ x: 0, y: 0 });
   const [canvasDimensions, setCanvasDimensions] = useState({ width: 6000, height: 6000 });
   const [streamAnimations, setStreamAnimations] = useState<Record<string, boolean>>({});
+  const [expandedCategory, setExpandedCategory] = useState<string | null>("streams");
   
   // Default parameters for different equipment types
   const defaultParameters = {
@@ -222,64 +223,208 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     return () => clearInterval(intervalId);
   }, [streams.length]);
   
-  const equipmentList = [
-    { id: "feed", name: "Feed Stream", icon: <Droplets className="h-5 w-5" /> },
-    { 
-      id: "reactor", 
-      name: "Reactor", 
-      icon: <FlaskConical className="h-5 w-5" />,
-      subTypes: [
-        { id: "cstr", name: "CSTR" },
-        { id: "pfr", name: "PFR" },
-        { id: "batch", name: "Batch Reactor" },
-        { id: "pbr", name: "Packed Bed Reactor" },
-        { id: "fbr", name: "Fluidized Bed Reactor" }
+  const handleExpandCategory = (category: string) => {
+    if (expandedCategory === category) {
+      setExpandedCategory(null);
+    } else {
+      setExpandedCategory(category);
+    }
+  };
+
+  const equipmentCategories = [
+    {
+      id: "streams",
+      name: "Material & Energy Streams",
+      items: [
+        { id: "material-stream", name: "Material Stream", icon: <Droplets className="h-5 w-5" /> },
+        { id: "energy-stream", name: "Energy Stream", icon: <Thermometer className="h-5 w-5" /> },
+        { id: "recycle", name: "Recycle", icon: <Circle className="h-5 w-5" /> },
+        { id: "adjust", name: "Adjust", icon: <Sliders className="h-5 w-5" /> }
       ]
     },
-    { 
-      id: "column", 
-      name: "Distillation Column", 
-      icon: <FlaskConical className="h-5 w-5" />,
-      subTypes: [
-        { id: "tray", name: "Tray Column" },
-        { id: "packed", name: "Packed Column" },
-        { id: "extractive", name: "Extractive Distillation" },
-        { id: "azeotropic", name: "Azeotropic Distillation" }
+    {
+      id: "separators",
+      name: "Separators / Splitters",
+      items: [
+        { id: "flash-separator", name: "Flash Separator", icon: <Container className="h-5 w-5" /> },
+        { id: "three-phase-separator", name: "Three-Phase Separator", icon: <Container className="h-5 w-5" /> },
+        { id: "electrolyte-separator", name: "Electrolyte Separator", icon: <Container className="h-5 w-5" /> },
+        { id: "component-splitter", name: "Component Splitter", icon: <Container className="h-5 w-5" /> },
+        { id: "decanter", name: "Decanter", icon: <Container className="h-5 w-5" /> },
+        { id: "phase-separator", name: "Phase Separator", icon: <Container className="h-5 w-5" /> },
+        { id: "hydrate-separator", name: "Hydrate Separator", icon: <Container className="h-5 w-5" /> },
+        { id: "gravity-separator", name: "Gravity Separator", icon: <Container className="h-5 w-5" /> }
       ]
     },
-    { 
-      id: "heater", 
-      name: "Heater", 
-      icon: <Thermometer className="h-5 w-5" />,
-      subTypes: [
-        { id: "electric", name: "Electric Heater" },
-        { id: "steam", name: "Steam Heater" },
-        { id: "combustion", name: "Fired Heater" }
+    {
+      id: "heat-exchange",
+      name: "Heat Exchange Equipment",
+      items: [
+        { id: "heater", name: "Heater", icon: <Thermometer className="h-5 w-5" /> },
+        { id: "cooler", name: "Cooler", icon: <Thermometer className="h-5 w-5" /> },
+        { id: "general-heat-exchanger", name: "General Heat Exchanger", icon: <Thermometer className="h-5 w-5" /> },
+        { id: "shell-tube-exchanger", name: "Shell & Tube Heat Exchanger", icon: <Thermometer className="h-5 w-5" /> },
+        { id: "lng-heat-exchanger", name: "LNG Heat Exchanger", icon: <Thermometer className="h-5 w-5" /> },
+        { id: "multi-stream-exchanger", name: "Multi-stream Heat Exchanger", icon: <Thermometer className="h-5 w-5" /> },
+        { id: "air-cooler", name: "Air Cooler", icon: <Thermometer className="h-5 w-5" /> },
+        { id: "thermosiphon-reboiler", name: "Thermosiphon Reboiler", icon: <Thermometer className="h-5 w-5" /> },
+        { id: "kettle-reboiler", name: "Kettle Reboiler", icon: <Thermometer className="h-5 w-5" /> },
+        { id: "fired-heater", name: "Fired Heater", icon: <Thermometer className="h-5 w-5" /> },
+        { id: "condenser", name: "Condenser", icon: <Thermometer className="h-5 w-5" /> },
+        { id: "reboiler", name: "Reboiler", icon: <Thermometer className="h-5 w-5" /> },
+        { id: "electric-heater", name: "Electric Heater", icon: <Thermometer className="h-5 w-5" /> }
       ]
     },
-    { 
-      id: "cooler", 
-      name: "Cooler", 
-      icon: <Thermometer className="h-5 w-5" />,
-      subTypes: [
-        { id: "water", name: "Water Cooler" },
-        { id: "air", name: "Air Cooler" },
-        { id: "refrigeration", name: "Refrigeration" }
+    {
+      id: "compressors",
+      name: "Compressors / Expanders",
+      items: [
+        { id: "compressor", name: "Compressor", icon: <Gauge className="h-5 w-5" /> },
+        { id: "expander", name: "Expander", icon: <Gauge className="h-5 w-5" /> },
+        { id: "gas-turbine", name: "Gas Turbine", icon: <Gauge className="h-5 w-5" /> },
+        { id: "steam-turbine", name: "Steam Turbine", icon: <Gauge className="h-5 w-5" /> },
+        { id: "power-recovery-expander", name: "Power Recovery Expander", icon: <Gauge className="h-5 w-5" /> },
+        { id: "electric-motor", name: "Electric Motor", icon: <Gauge className="h-5 w-5" /> },
+        { id: "blower", name: "Blower", icon: <Gauge className="h-5 w-5" /> },
+        { id: "fan", name: "Fan", icon: <Gauge className="h-5 w-5" /> }
       ]
     },
-    { 
-      id: "mixer", 
-      name: "Mixer", 
-      icon: <Columns className="h-5 w-5" />,
-      subTypes: [
-        { id: "static", name: "Static Mixer" },
-        { id: "dynamic", name: "Dynamic Mixer" },
-        { id: "inline", name: "Inline Mixer" }
+    {
+      id: "pumps",
+      name: "Pumps",
+      items: [
+        { id: "centrifugal-pump", name: "Centrifugal Pump", icon: <Gauge className="h-5 w-5" /> },
+        { id: "positive-displacement-pump", name: "Positive Displacement Pump", icon: <Gauge className="h-5 w-5" /> },
+        { id: "multistage-pump", name: "Multistage Pump", icon: <Gauge className="h-5 w-5" /> },
+        { id: "booster-pump", name: "Booster Pump", icon: <Gauge className="h-5 w-5" /> },
+        { id: "submersible-pump", name: "Submersible Pump", icon: <Gauge className="h-5 w-5" /> }
       ]
     },
-    { id: "valve", name: "Valve", icon: <Gauge className="h-5 w-5" /> },
-    { id: "pump", name: "Pump", icon: <Gauge className="h-5 w-5" /> },
-    { id: "product", name: "Product Stream", icon: <Droplets className="h-5 w-5" /> }
+    {
+      id: "valves",
+      name: "Valves & Pressure Control",
+      items: [
+        { id: "valve", name: "Valve", icon: <Gauge className="h-5 w-5" /> },
+        { id: "control-valve", name: "Control Valve", icon: <Gauge className="h-5 w-5" /> },
+        { id: "orifice-plate", name: "Orifice Plate", icon: <Gauge className="h-5 w-5" /> },
+        { id: "joule-thomson", name: "Joule-Thomson Valve", icon: <Gauge className="h-5 w-5" /> },
+        { id: "choke-valve", name: "Choke Valve", icon: <Gauge className="h-5 w-5" /> },
+        { id: "pressure-safety-valve", name: "Pressure Safety Valve", icon: <Gauge className="h-5 w-5" /> },
+        { id: "rupture-disk", name: "Rupture Disk", icon: <Gauge className="h-5 w-5" /> }
+      ]
+    },
+    {
+      id: "reactors",
+      name: "Reactors",
+      items: [
+        { id: "conversion-reactor", name: "Conversion Reactor", icon: <FlaskConical className="h-5 w-5" /> },
+        { id: "equilibrium-reactor", name: "Equilibrium Reactor", icon: <FlaskConical className="h-5 w-5" /> },
+        { id: "gibbs-reactor", name: "Gibbs Reactor", icon: <FlaskConical className="h-5 w-5" /> },
+        { id: "cstr", name: "CSTR", icon: <FlaskConical className="h-5 w-5" /> },
+        { id: "pfr", name: "PFR", icon: <FlaskConical className="h-5 w-5" /> },
+        { id: "batch-reactor", name: "Batch Reactor", icon: <FlaskConical className="h-5 w-5" /> },
+        { id: "fluidized-bed-reactor", name: "Fluidized Bed Reactor", icon: <FlaskConical className="h-5 w-5" /> },
+        { id: "catalytic-reactor", name: "Catalytic Reactor", icon: <FlaskConical className="h-5 w-5" /> },
+        { id: "sru-claus-reactor", name: "SRU Claus Reactor", icon: <FlaskConical className="h-5 w-5" /> }
+      ]
+    },
+    {
+      id: "columns",
+      name: "Columns & Trays",
+      items: [
+        { id: "distillation-column", name: "Distillation Column", icon: <Columns className="h-5 w-5" /> },
+        { id: "absorber", name: "Absorber", icon: <Columns className="h-5 w-5" /> },
+        { id: "stripper", name: "Stripper", icon: <Columns className="h-5 w-5" /> },
+        { id: "extractive-distillation", name: "Extractive Distillation", icon: <Columns className="h-5 w-5" /> },
+        { id: "radfrac-column", name: "RadFrac Column", icon: <Columns className="h-5 w-5" /> },
+        { id: "crude-distillation", name: "Crude Distillation Unit", icon: <Columns className="h-5 w-5" /> },
+        { id: "ngl-fractionation", name: "NGL Fractionation Train", icon: <Columns className="h-5 w-5" /> },
+        { id: "column-section", name: "Column Section", icon: <Columns className="h-5 w-5" /> },
+        { id: "reactive-distillation", name: "Reactive Distillation", icon: <Columns className="h-5 w-5" /> }
+      ]
+    },
+    {
+      id: "mixers",
+      name: "Mixers & Splitters",
+      items: [
+        { id: "mixer", name: "Mixer", icon: <Columns className="h-5 w-5" /> },
+        { id: "splitter", name: "Splitter", icon: <Columns className="h-5 w-5" /> },
+        { id: "tee", name: "Tee", icon: <Columns className="h-5 w-5" /> },
+        { id: "custom-splitter", name: "Custom Splitter", icon: <Columns className="h-5 w-5" /> },
+        { id: "bypass", name: "Bypass", icon: <Columns className="h-5 w-5" /> }
+      ]
+    },
+    {
+      id: "piping",
+      name: "Piping Systems",
+      items: [
+        { id: "pipe-segment", name: "Pipe Segment", icon: <Circle className="h-5 w-5" /> },
+        { id: "pipeline-flow", name: "Pipeline Flow Segment", icon: <Circle className="h-5 w-5" /> },
+        { id: "pipe-junction", name: "Pipe Junction", icon: <Circle className="h-5 w-5" /> },
+        { id: "pipe-fittings", name: "Pipe Fittings", icon: <Circle className="h-5 w-5" /> },
+        { id: "slug-catcher", name: "Slug Catcher", icon: <Circle className="h-5 w-5" /> }
+      ]
+    },
+    {
+      id: "membranes",
+      name: "Membranes & Adsorbers",
+      items: [
+        { id: "membrane-separator", name: "Membrane Separator", icon: <Container className="h-5 w-5" /> },
+        { id: "gas-membrane", name: "Gas Membrane Unit", icon: <Container className="h-5 w-5" /> },
+        { id: "reverse-osmosis", name: "Reverse Osmosis Unit", icon: <Container className="h-5 w-5" /> },
+        { id: "adsorption-column", name: "Adsorption Column", icon: <Container className="h-5 w-5" /> },
+        { id: "molecular-sieve", name: "Molecular Sieve Bed", icon: <Container className="h-5 w-5" /> }
+      ]
+    },
+    {
+      id: "gas-treating",
+      name: "Gas Treating & Sweetening",
+      items: [
+        { id: "amine-contactor", name: "Amine Contactor", icon: <Container className="h-5 w-5" /> },
+        { id: "amine-regenerator", name: "Amine Regenerator", icon: <Container className="h-5 w-5" /> },
+        { id: "sour-water-stripper", name: "Sour Water Stripper", icon: <Container className="h-5 w-5" /> },
+        { id: "dea-mdea-system", name: "DEA/MDEA Systems", icon: <Container className="h-5 w-5" /> },
+        { id: "co2-scrubber", name: "CO₂ Scrubber", icon: <Container className="h-5 w-5" /> },
+        { id: "teg-dehydrator", name: "TEG Dehydrator", icon: <Container className="h-5 w-5" /> }
+      ]
+    },
+    {
+      id: "special-units",
+      name: "Special Units / Utilities",
+      items: [
+        { id: "hydrate-formation", name: "Hydrate Formation Unit", icon: <Container className="h-5 w-5" /> },
+        { id: "sulfur-recovery", name: "Sulfur Recovery Unit", icon: <Container className="h-5 w-5" /> },
+        { id: "tail-gas-treating", name: "Tail Gas Treating Unit", icon: <Container className="h-5 w-5" /> },
+        { id: "flare-system", name: "Flare System", icon: <Container className="h-5 w-5" /> },
+        { id: "knockout-drum", name: "Knockout Drum", icon: <Container className="h-5 w-5" /> },
+        { id: "compressor-surge", name: "Compressor Anti-Surge", icon: <Container className="h-5 w-5" /> },
+        { id: "heat-loss", name: "Heat Loss Segment", icon: <Container className="h-5 w-5" /> }
+      ]
+    },
+    {
+      id: "measurement",
+      name: "Measurement & Analysis Tools",
+      items: [
+        { id: "spreadsheet", name: "Spreadsheet", icon: <Container className="h-5 w-5" /> },
+        { id: "data-analysis", name: "Data Analysis Block", icon: <Container className="h-5 w-5" /> },
+        { id: "measurement-point", name: "Measurement Point", icon: <Container className="h-5 w-5" /> },
+        { id: "sampling-point", name: "Sampling Point", icon: <Container className="h-5 w-5" /> },
+        { id: "logical-operations", name: "Logical Operations Block", icon: <Container className="h-5 w-5" /> },
+        { id: "user-defined", name: "User Defined Subroutine", icon: <Container className="h-5 w-5" /> }
+      ]
+    },
+    {
+      id: "control",
+      name: "Control & Logic",
+      items: [
+        { id: "controller", name: "Controller", icon: <Sliders className="h-5 w-5" /> },
+        { id: "pid-controller", name: "PID Controller", icon: <Sliders className="h-5 w-5" /> },
+        { id: "logical-operator", name: "Logical Operator", icon: <Sliders className="h-5 w-5" /> },
+        { id: "signal-block", name: "Signal Block", icon: <Sliders className="h-5 w-5" /> },
+        { id: "sequence-block", name: "Sequence Block", icon: <Sliders className="h-5 w-5" /> },
+        { id: "interlock-logic", name: "Interlock Logic", icon: <Sliders className="h-5 w-5" /> }
+      ]
+    }
   ];
   
   const handleZoomIn = () => {
@@ -968,48 +1113,36 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
           </div>
         </div>
         
-        <div className="flex flex-wrap gap-3">
-          {equipmentList.map((item) => (
-            <React.Fragment key={item.id}>
+        <div className="flex flex-col gap-3 max-h-80 overflow-y-auto pr-2">
+          {equipmentCategories.map((category) => (
+            <div key={category.id} className="border border-gray-200 rounded-lg overflow-hidden">
               <button
-                onClick={() => {
-                  if (item.subTypes && item.subTypes.length > 0) {
-                    setActiveEquipment(item.id);
-                    setShowSubTypes(!showSubTypes);
-                  } else {
-                    handleAddEquipment(item.id);
-                  }
-                }}
-                className={`p-2 rounded-lg ${
-                  activeEquipment === item.id ? 'bg-flow-blue/10 text-flow-blue' : 'bg-white text-gray-600 hover:bg-blue-50 hover:text-blue-600'
-                } flex items-center gap-2 border border-gray-200 transition-all hover:shadow-md shadow-sm`}
+                onClick={() => handleExpandCategory(category.id)}
+                className={`w-full p-2 flex items-center justify-between ${
+                  expandedCategory === category.id ? 'bg-blue-50 text-blue-600' : 'bg-white text-gray-700'
+                }`}
               >
-                <span className="transition-transform hover:scale-110">{item.icon}</span>
-                <span className="text-sm font-medium">{item.name}</span>
+                <span className="font-medium">{category.name}</span>
+                <span className={`transition-transform ${expandedCategory === category.id ? 'rotate-180' : ''}`}>
+                  <Plus className="h-4 w-4" />
+                </span>
               </button>
               
-              {activeEquipment === item.id && showSubTypes && item.subTypes && (
-                <div className="w-full mt-2 mb-1 ml-4 pl-4 border-l-2 border-blue-200 animate-fade-in-up">
-                  <div className="flex flex-wrap gap-2">
-                    {item.subTypes.map(subType => (
-                      <button
-                        key={subType.id}
-                        onClick={() => {
-                          handleAddEquipment(item.id, subType.id);
-                        }}
-                        className={`px-3 py-1.5 rounded-lg ${
-                          activeSubType === subType.id 
-                            ? 'bg-flow-blue/10 text-flow-blue' 
-                            : 'bg-white text-gray-600 hover:bg-blue-50 hover:text-blue-600'
-                        } text-xs border border-gray-200 transition-all hover:shadow-md shadow-sm`}
-                      >
-                        {subType.name}
-                      </button>
-                    ))}
-                  </div>
+              {expandedCategory === category.id && (
+                <div className="p-2 bg-gray-50 grid grid-cols-2 md:grid-cols-3 gap-2">
+                  {category.items.map((item) => (
+                    <button
+                      key={item.id}
+                      onClick={() => handleAddEquipment(item.id)}
+                      className="p-2 rounded-lg bg-white text-gray-600 hover:bg-blue-50 hover:text-blue-600 flex items-center gap-2 border border-gray-200 transition-all hover:shadow-md shadow-sm text-xs"
+                    >
+                      <span className="transition-transform hover:scale-110">{item.icon}</span>
+                      <span>{item.name}</span>
+                    </button>
+                  ))}
                 </div>
               )}
-            </React.Fragment>
+            </div>
           ))}
         </div>
       </div>
@@ -1059,6 +1192,7 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
           </button>
         </div>
         
+        {/* Canvas Code */}
         <div 
           ref={canvasRef}
           className="relative border rounded-lg overflow-auto bg-gradient-to-b from-blue-50/20 to-white shadow-inner"
@@ -1117,7 +1251,7 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
       {showSettings && editingEquipment && (
         <EquipmentSettings
           equipment={editingEquipment}
-          equipmentTypes={equipmentList}
+          equipmentTypes={equipmentCategories.flatMap(cat => cat.items)}
           onClose={() => {
             setShowSettings(false);
             setEditingEquipment(null);

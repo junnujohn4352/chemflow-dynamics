@@ -28,14 +28,25 @@ const Dashboard = () => {
               <h1 className="text-3xl font-display font-bold mb-2 dark:text-white">Dashboard</h1>
               <p className="text-gray-600 dark:text-gray-400">Welcome to ChemFlow - Your Chemical Process Simulation Platform</p>
             </div>
-            <Button 
-              variant="outline" 
-              className="flex gap-2 items-center"
-              onClick={() => setIsLearnMoreOpen(true)}
-            >
-              <Info className="h-4 w-4" />
-              Learn More
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                className="flex gap-2 items-center"
+                onClick={() => setIsLearnMoreOpen(true)}
+              >
+                <Info className="h-4 w-4" />
+                Learn More
+              </Button>
+              <Link to="/about">
+                <Button
+                  variant="default"
+                  className="flex gap-2 items-center"
+                >
+                  <Info className="h-4 w-4" />
+                  About
+                </Button>
+              </Link>
+            </div>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
@@ -45,7 +56,6 @@ const Dashboard = () => {
               icon={<FlaskConical className="h-6 w-6" />}
               linkTo="/create-simulation"
               color="bg-purple-500"
-              isNew={true}
             />
             <DashboardCard 
               title="HYSYS Calculations"
@@ -53,7 +63,6 @@ const Dashboard = () => {
               icon={<Calculator className="h-6 w-6" />}
               linkTo="/hysys-calculations"
               color="bg-indigo-500"
-              isNew={true}
             />
             <DashboardCard 
               title="Engineering Formulas"
@@ -61,7 +70,6 @@ const Dashboard = () => {
               icon={<Book className="h-6 w-6" />}
               linkTo="/formulas"
               color="bg-green-500"
-              isNew={true}
             />
             <DashboardCard 
               title="Unit Converter"
@@ -76,7 +84,6 @@ const Dashboard = () => {
               icon={<Code className="h-6 w-6" />}
               linkTo="/code-converter"
               color="bg-teal-500"
-              isNew={true}
             />
           </div>
         </div>
@@ -104,8 +111,7 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
   description, 
   icon, 
   linkTo, 
-  color, 
-  isNew = false 
+  color
 }) => {
   return (
     <Link 
@@ -116,11 +122,6 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
         <div className={`p-3 rounded-xl ${color} text-white`}>
           {icon}
         </div>
-        {isNew && (
-          <span className="px-2 py-1 bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-200 text-xs font-medium rounded-full">
-            NEW
-          </span>
-        )}
       </div>
       <h3 className="text-xl font-medium mb-2 dark:text-white">{title}</h3>
       <p className="text-gray-600 dark:text-gray-400 text-sm">{description}</p>
