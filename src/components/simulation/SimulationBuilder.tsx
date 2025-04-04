@@ -4,6 +4,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import EquipmentSettings from "./EquipmentSettings";
 import { useNavigate } from "react-router-dom";
+import { Equipment as EquipmentType } from "@/components/ui/process-flow/types";
 
 interface SimulationBuilderProps {
   selectedComponents: string[];
@@ -153,11 +154,14 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     }
   };
   
-  const [newEquipment, setNewEquipment] = useState<Partial<Equipment>>({
+  const [newEquipment, setNewEquipment] = useState<Partial<EquipmentType>>({
     name: '',
     type: '',
     position: { x: 0, y: 0 },
-    description: ''
+    settings: {},
+    connections: [],
+    description: '',
+    metrics: {}
   });
 
   useEffect(() => {
@@ -712,7 +716,7 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
                 if (key !== 'description' && typeof value !== 'object') {
                   return (
                     <div key={key} className="mt-1">
-                      <span className="font-medium">{key}: </span>
+                      <span className="font-medium">{key}: </span> 
                       <span>{value}</span>
                     </div>
                   );
@@ -889,201 +893,4 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
   return (
     <div className="flex flex-col">
       <div className="mb-6">
-        <h3 className="text-lg font-medium mb-2 bg-gradient-to-r from-flow-blue to-blue-600 bg-clip-text text-transparent">Flowsheet Builder</h3>
-        <p className="text-gray-600 text-sm">
-          Build your process flowsheet by adding and connecting equipment from the palette below.
-        </p>
-      </div>
-      
-      <div className="p-4 border rounded-lg bg-gradient-to-b from-white to-blue-50 mb-6 shadow-md animate-fade-in">
-        <div className="flex items-center justify-between mb-4">
-          <h4 className="font-medium bg-gradient-to-r from-flow-blue to-blue-600 bg-clip-text text-transparent">Equipment Palette</h4>
-          <div className="flex items-center gap-2">
-            <button 
-              onClick={handleZoomIn}
-              className="p-1.5 rounded-lg bg-white text-gray-500 border hover:bg-blue-50 hover:text-blue-600 transition-all shadow-sm"
-            >
-              <Plus className="h-4 w-4" />
-            </button>
-            <span className="text-sm font-medium">{zoom}%</span>
-            <button 
-              onClick={handleZoomOut}
-              className="p-1.5 rounded-lg bg-white text-gray-500 border hover:bg-blue-50 hover:text-blue-600 transition-all shadow-sm"
-            >
-              <Minus className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
-        
-        <div className="flex flex-wrap gap-3">
-          {equipmentList.map((item) => (
-            <React.Fragment key={item.id}>
-              <button
-                onClick={() => {
-                  if (item.subTypes && item.subTypes.length > 0) {
-                    setActiveEquipment(item.id);
-                    setShowSubTypes(!showSubTypes);
-                  } else {
-                    handleAddEquipment(item.id);
-                  }
-                }}
-                className={`p-2 rounded-lg ${
-                  activeEquipment === item.id ? 'bg-flow-blue/10 text-flow-blue' : 'bg-white text-gray-600 hover:bg-blue-50 hover:text-blue-600'
-                } flex items-center gap-2 border border-gray-200 transition-all hover:shadow-md shadow-sm`}
-              >
-                <span className="transition-transform hover:scale-110">{item.icon}</span>
-                <span className="text-sm font-medium">{item.name}</span>
-              </button>
-              
-              {activeEquipment === item.id && showSubTypes && item.subTypes && (
-                <div className="w-full mt-2 mb-1 ml-4 pl-4 border-l-2 border-blue-200 animate-fade-in-up">
-                  <div className="flex flex-wrap gap-2">
-                    {item.subTypes.map(subType => (
-                      <button
-                        key={subType.id}
-                        onClick={() => {
-                          handleAddEquipment(item.id, subType.id);
-                        }}
-                        className={`px-3 py-1.5 rounded-lg ${
-                          activeSubType === subType.id 
-                            ? 'bg-flow-blue/10 text-flow-blue' 
-                            : 'bg-white text-gray-600 hover:bg-blue-50 hover:text-blue-600'
-                        } text-xs border border-gray-200 transition-all hover:shadow-md shadow-sm`}
-                      >
-                        {subType.name}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </React.Fragment>
-          ))}
-        </div>
-      </div>
-      
-      <div className="flex-1 relative overflow-hidden">
-        <div className="bg-gradient-to-r from-white to-blue-50 border rounded-lg p-1 mb-4 flex items-center justify-between shadow-md">
-          <div className="flex items-center gap-1">
-            <button
-              onClick={handleClearCanvas}
-              className="p-1.5 rounded-lg text-gray-500 hover:bg-red-50 hover:text-red-500 transition-all"
-              title="Clear canvas"
-            >
-              <Trash2 className="h-4 w-4" />
-            </button>
-            <button
-              onClick={() => {
-                setZoom(100);
-                setCanvasOffset({ x: 0, y: 0 });
-              }}
-              className="p-1.5 rounded-lg text-gray-500 hover:bg-blue-50 hover:text-blue-600 transition-all"
-              title="Reset view"
-            >
-              <ChevronsUpDown className="h-4 w-4" />
-            </button>
-            <span className="text-xs text-gray-500 ml-2">
-              Tip: Select equipment and use "Connect" button to create connections
-            </span>
-          </div>
-          
-          <div className="text-xs text-gray-500">
-            {equipment.length} equipment · {streams.length} streams
-          </div>
-          
-          <button
-            onClick={handleStartSimulation}
-            className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 text-xs font-medium flex items-center gap-1 shadow-md transition-all hover:shadow-lg transform hover:scale-105"
-            disabled={simulationRunning}
-          >
-            {simulationRunning ? (
-              <>Running...</>
-            ) : (
-              <>
-                <Play className="h-3 w-3" />
-                Run Simulation
-              </>
-            )}
-          </button>
-        </div>
-        
-        <div 
-          ref={canvasRef}
-          className="relative border rounded-lg overflow-auto bg-gradient-to-b from-blue-50/20 to-white shadow-inner"
-          style={{ 
-            height: "800px",
-            maxHeight: "800px",
-            width: "100%",
-            overflow: "hidden"
-          }}
-          onClick={handleCanvasClick}
-          onMouseDown={handleMouseDown}
-          onMouseUp={handleMouseUp}
-          onMouseMove={handleCanvasMouseMove}
-          onMouseLeave={handleMouseUp}
-        >
-          <div className="absolute"
-               style={{
-                 width: `${canvasDimensions.width}px`,
-                 height: `${canvasDimensions.height}px`,
-                 transform: `scale(${zoom / 100}) translate(${canvasOffset.x}px, ${canvasOffset.y}px)`,
-                 transformOrigin: '0 0',
-                 backgroundImage: 'radial-gradient(circle, #d1d5db 1px, transparent 1px)',
-                 backgroundSize: '20px 20px'
-               }}
-          >
-            {streams.map(stream => renderStream(stream))}
-            {equipment.map(eq => renderEquipmentCard(eq))}
-          </div>
-          
-          {isConnecting && (
-            <div className="fixed bottom-4 right-4 bg-amber-100 text-amber-700 p-3 rounded-lg shadow-md text-sm flex items-center gap-2 animate-pulse-subtle">
-              <span>Select another equipment to connect to</span>
-              <button 
-                onClick={() => setIsConnecting(null)}
-                className="p-1 rounded-full bg-amber-200 text-amber-700 hover:bg-amber-300 transition-all"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-          )}
-          
-          {isMoving && (
-            <div className="fixed bottom-4 right-4 bg-green-100 text-green-700 p-3 rounded-lg shadow-md text-sm flex items-center gap-2 animate-pulse-subtle">
-              <span>Click on the canvas to place the equipment</span>
-              <button 
-                onClick={() => setIsMoving(false)}
-                className="p-1 rounded-full bg-green-200 text-green-700 hover:bg-green-300 transition-all"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-      
-      {showSettings && editingEquipment && (
-        <EquipmentSettings
-          equipment={editingEquipment}
-          equipmentTypes={equipmentList}
-          onClose={() => {
-            setShowSettings(false);
-            setEditingEquipment(null);
-          }}
-          onSave={handleSaveSettings}
-        />
-      )}
-      
-      <div className="mt-6 flex justify-end">
-        <Button 
-          onClick={handleStartSimulation} 
-          disabled={simulationRunning}
-          className="bg-gradient-to-r from-flow-blue to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-md hover:shadow-lg transition-all transform hover:scale-105"
-        >
-          {simulationRunning ? 'Simulating...' : 'Run Simulation'}
-        </Button>
-      </div>
-    </div>
-  );
-};
-
-export default SimulationBuilder;
+        <h3 className="
