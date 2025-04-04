@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { X, Link as LinkIcon, Settings2, PlusCircle, AlignJustify } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -40,8 +39,6 @@ const EquipmentSettings: React.FC<EquipmentSettingsProps> = ({
   const [activeTab, setActiveTab] = useState<'basic' | 'advanced' | 'composition' | 'connect'>('basic');
 
   useEffect(() => {
-    // If it's a feed stream and we have components but no composition,
-    // initialize composition to 0 for each component
     if (equipment.type === 'feed' && 
         (!settings.composition || Object.keys(settings.composition).length === 0)) {
       
@@ -72,7 +69,6 @@ const EquipmentSettings: React.FC<EquipmentSettingsProps> = ({
     onSave(equipment.id, { ...settings, _equipmentName: equipmentName });
   };
 
-  // Helper function to safely render values
   const renderValue = (value: any): string => {
     if (value === null || value === undefined) {
       return '';
@@ -97,7 +93,6 @@ const EquipmentSettings: React.FC<EquipmentSettingsProps> = ({
       );
     }
     
-    // Calculate total to ensure it adds up to 100%
     const total = components.reduce((sum, comp) => sum + (parseFloat(composition[comp]) || 0), 0);
     
     return (
@@ -147,7 +142,6 @@ const EquipmentSettings: React.FC<EquipmentSettingsProps> = ({
             variant="outline"
             size="sm"
             onClick={() => {
-              // Normalize to 100%
               if (total > 0) {
                 const normalizedComposition = Object.keys(composition).reduce((acc, comp) => {
                   acc[comp] = (parseFloat(composition[comp]) || 0) * (100 / total);
@@ -232,15 +226,14 @@ const EquipmentSettings: React.FC<EquipmentSettingsProps> = ({
     
     return filteredSettings.map(([key, value]) => {
       if (typeof value === 'number') {
-        // Determine appropriate units based on key name
         let unit = "";
         let min = 0;
         let step = 0.1;
-        let maxValue = 100; // Define maxValue variable instead of max
+        let maxValue = 100;
         
         if (key.includes('temperature')) {
           unit = "°C";
-          min = -273.15; // Absolute zero
+          min = -273.15;
           step = 1;
         } else if (key.includes('pressure')) {
           unit = "kPa";
@@ -253,7 +246,7 @@ const EquipmentSettings: React.FC<EquipmentSettingsProps> = ({
         } else if (key.includes('efficiency')) {
           unit = "%";
           min = 0;
-          maxValue = 100; // Use maxValue instead of max
+          maxValue = 100;
         } else if (key.includes('volume')) {
           unit = "m³";
           min = 0;
@@ -269,7 +262,7 @@ const EquipmentSettings: React.FC<EquipmentSettingsProps> = ({
                 type="number"
                 min={min}
                 step={step}
-                max={key.includes('efficiency') ? maxValue : undefined} // Use maxValue here
+                max={key.includes('efficiency') ? maxValue : undefined}
                 value={value}
                 onChange={(e) => handleChange(key, parseFloat(e.target.value))}
                 className="flex-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-flow-blue/20 focus:border-flow-blue colorful-input"
@@ -398,7 +391,6 @@ const EquipmentSettings: React.FC<EquipmentSettingsProps> = ({
           </div>
         );
       } else if (typeof value === 'object' && value !== null && key !== 'composition') {
-        // Render complex objects as read-only text
         return (
           <div key={key} className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-1 capitalize colorful-border orange">
@@ -525,4 +517,3 @@ const EquipmentSettings: React.FC<EquipmentSettingsProps> = ({
 };
 
 export default EquipmentSettings;
-
