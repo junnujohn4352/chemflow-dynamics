@@ -668,7 +668,7 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
           top: `${eq.position.y}px`,
           zIndex: isSelected ? 10 : 1,
           cursor: isDragging && draggedEquipment === eq.id ? 'grabbing' : 'grab',
-          transform: 'translate3d(0, 0, 0)',
+          transform: `translate3d(0, 0, 0) ${eq.type === 'arrow' ? `rotate(${eq.rotation || 0}deg) scale(${eq.scale || 1})` : ''}`,
         }}
         onClick={(e) => handleEquipmentClick(e, eq.id)}
       >
@@ -678,7 +678,11 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
           onMouseUp={handleEquipmentDragEnd}
         >
           <div className="text-flow-blue flex items-center justify-center w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-50 rounded-full transition-all hover:scale-105">
-            {equipmentType?.icon || <Container className="h-8 w-8 text-flow-blue" />}
+            {eq.type === 'arrow' ? (
+              <ArrowRight className="h-8 w-8 text-flow-blue" />
+            ) : (
+              equipmentType?.icon || <Container className="h-8 w-8 text-flow-blue" />
+            )}
           </div>
           <span className="text-xs text-center font-medium">{eq.name}</span>
           {eq.subType && (
@@ -706,13 +710,54 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
           
           {isSelected && (
             <div className="absolute -top-1 -right-1 flex gap-1">
-              <button 
-                className="p-1 rounded-full bg-amber-100 hover:bg-amber-200 text-amber-600 shadow-sm hover:scale-110 transition-all"
-                onClick={(e) => handleStartConnection(e, eq.id)}
-                title="Connect to another equipment"
-              >
-                <ArrowRight className="h-3 w-3" />
-              </button>
+              {eq.type === 'arrow' && (
+                <>
+                  <button 
+                    className="p-1 rounded-full bg-blue-100 hover:bg-blue-200 text-blue-600 shadow-sm hover:scale-110 transition-all"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEquipment(prev => prev.map(item => 
+                        item.id === eq.id 
+                          ? { ...item, rotation: ((item.rotation || 0) + 45) % 360 }
+                          : item
+                      ));
+                    }}
+                    title="Rotate arrow"
+                  >
+                    <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+                    </svg>
+                  </button>
+                  <button 
+                    className="p-1 rounded-full bg-purple-100 hover:bg-purple-200 text-purple-600 shadow-sm hover:scale-110 transition-all"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEquipment(prev => prev.map(item => 
+                        item.id === eq.id 
+                          ? { ...item, scale: (item.scale || 1) + 0.2 }
+                          : item
+                      ));
+                    }}
+                    title="Increase size"
+                  >
+                    <Plus className="h-3 w-3" />
+                  </button>
+                  <button 
+                    className="p-1 rounded-full bg-indigo-100 hover:bg-indigo-200 text-indigo-600 shadow-sm hover:scale-110 transition-all"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEquipment(prev => prev.map(item => 
+                        item.id === eq.id 
+                          ? { ...item, scale: Math.max(0.5, (item.scale || 1) - 0.2) }
+                          : item
+                      ));
+                    }}
+                    title="Decrease size"
+                  >
+                    <Minus className="h-3 w-3" />
+                  </button>
+                </>
+              )}
               <button 
                 className="p-1 rounded-full bg-green-100 hover:bg-green-200 text-green-600 shadow-sm hover:scale-110 transition-all"
                 onClick={(e) => toggleEquipmentInfo(e, eq.id)}

@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Equipment, Connection } from "./types";
 import GridCell from "./GridCell";
@@ -23,7 +22,9 @@ interface EquipmentGridProps {
   onConnectionSelect: (id: string) => void;
   onToggleDetails: (id: string) => void;
   onMove: (id: string, direction: 'up' | 'down' | 'left' | 'right') => void;
-  onCellClick?: (row: number, col: number) => void; // Add new prop for cell click
+  onCellClick: (row: number, col: number) => void;
+  onRotate?: (id: string, degrees: number) => void;
+  onResize?: (id: string, scaleFactor: number) => void;
 }
 
 const EquipmentGrid: React.FC<EquipmentGridProps> = ({
@@ -45,50 +46,69 @@ const EquipmentGrid: React.FC<EquipmentGridProps> = ({
   onConnectionSelect,
   onToggleDetails,
   onMove,
-  onCellClick, // Add handler to component props
+  onCellClick,
+  onRotate,
+  onResize
 }) => {
-  // Create a 2D grid structure
-  const grid = Array(5).fill(0).map(() => Array(3).fill(null));
-  
-  equipment.forEach(eq => {
-    const { x, y } = eq.position;
-    grid[y][x] = eq;
-  });
+
+  const handleRotate = (id: string, degrees: number) => {
+    if (onRotate) {
+      onRotate(id, degrees);
+    }
+  };
+
+  const handleResize = (id: string, scaleFactor: number) => {
+    if (onResize) {
+      onResize(id, scaleFactor);
+    }
+  };
 
   return (
     <div 
-      className="grid grid-cols-3 gap-4 relative"
+      className="relative border border-gray-200 rounded-lg shadow-inner bg-gray-50"
       onMouseMove={onMouseMove}
       onMouseUp={onMouseUp}
       onMouseLeave={onMouseLeave}
     >
-      {grid.map((row, rowIndex) => (
-        <React.Fragment key={`row-${rowIndex}`}>
-          {row.map((eq, colIndex) => (
-            <div key={`cell-${rowIndex}-${colIndex}`} className="min-h-[120px] flex items-center justify-center">
-              <GridCell 
-                equipment={eq}
-                connectMode={connectMode}
-                editingName={editingName}
-                tempName={tempName}
-                showDetails={showDetails}
-                isRunning={isRunning}
-                onDragStart={onDragStart}
-                onEditName={onEditName}
-                onNameChange={onNameChange}
-                onSaveName={onSaveName}
-                onConnect={onConnect}
-                onConnectionSelect={onConnectionSelect}
-                onToggleDetails={onToggleDetails}
-                onMove={onMove}
-                onDropClick={onCellClick ? () => onCellClick(rowIndex, colIndex) : undefined}
-              />
-            </div>
-          ))}
-        </React.Fragment>
-      ))}
-      
       <ConnectionsRenderer connections={connections} equipment={equipment} />
+      
+      <div className="grid grid-cols-3 gap-3 p-3">
+        {Array.from({ length: 15 }).map((_, index) => {
+          const row = Math.floor(index / 3);
+          const col = index % 3;
+          const eq = equipment.find(e => e.position.x === col && e.position.y === row);
+          
+          return (
+            <div 
+              key={index}
+              className="aspect-square bg-white border border-gray-100 rounded-lg shadow-sm hover:shadow-md transition-shadow"
+              onClick={() => !eq && onCellClick(row, col)}
+            >
+              {eq && (
+                <GridCell 
+                  equipment={eq}
+                  selectedEquipment={connectMode}
+                  connectMode={connectMode}
+                  editingName={editingName}
+                  tempName={tempName}
+                  showDetails={showDetails}
+                  isRunning={isRunning}
+                  onDragStart={onDragStart}
+                  onEditName={onEditName}
+                  onNameChange={onNameChange}
+                  onSaveName={onSaveName}
+                  onConnect={onConnect}
+                  onConnectionSelect={onConnectionSelect}
+                  onToggleDetails={onToggleDetails}
+                  onMove={onMove}
+                  onRotate={handleRotate}
+                  onResize={handleResize}
+                />
+              )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 };

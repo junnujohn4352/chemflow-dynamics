@@ -390,6 +390,31 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
     setSelectedEquipmentType(null);
   };
 
+  const handleArrowRotate = (id: string, degrees: number) => {
+    setEquipment(prev => prev.map(eq => {
+      if (eq.id === id) {
+        return {
+          ...eq,
+          rotation: ((eq.rotation || 0) + degrees) % 360
+        };
+      }
+      return eq;
+    }));
+  };
+
+  const handleArrowResize = (id: string, scaleFactor: number) => {
+    setEquipment(prev => prev.map(eq => {
+      if (eq.id === id) {
+        const newScale = Math.max(0.5, Math.min(3, (eq.scale || 1) + scaleFactor));
+        return {
+          ...eq,
+          scale: newScale
+        };
+      }
+      return eq;
+    }));
+  };
+
   return (
     <div className={cn("w-full", className)}>
       <GlassPanel className="p-6 animate-fade-in shadow-xl border border-white/50 backdrop-blur-sm relative overflow-hidden">
@@ -452,6 +477,8 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
                 onToggleDetails={toggleDetails}
                 onMove={handleEquipmentMove}
                 onCellClick={handleCellClick}
+                onRotate={handleArrowRotate}
+                onResize={handleArrowResize}
               />
             </div>
           </div>

@@ -22,6 +22,8 @@ export interface Equipment {
   status?: string;
   metrics?: Record<string, any>;
   description?: string;
+  rotation?: number; // Added rotation property for arrow direction
+  scale?: number; // Added scale property for arrow size
 }
 
 export interface GridCell {
