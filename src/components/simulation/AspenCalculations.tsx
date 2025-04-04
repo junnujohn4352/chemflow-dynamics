@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import GlassPanel from "@/components/ui/GlassPanel";
 import { cn } from "@/lib/utils";
@@ -97,9 +96,9 @@ const AspenCalculations: React.FC<AspenCalculationsProps> = ({ className, calcul
         ];
       case "reaction":
         return [
-          { id: "pfr", name: "Plug Flow Reactor", icon: Flask },
-          { id: "cstr", name: "Continuous Stirred Tank Reactor", icon: Flask },
-          { id: "batch", name: "Batch Reactor", icon: Flask },
+          { id: "pfr", name: "Plug Flow Reactor", icon: FlaskConical },
+          { id: "cstr", name: "Continuous Stirred Tank Reactor", icon: FlaskConical },
+          { id: "batch", name: "Batch Reactor", icon: FlaskConical },
           { id: "kinetics", name: "Reaction Kinetics", icon: Calculator },
           { id: "equilibrium", name: "Equilibrium Conversion", icon: Calculator }
         ];

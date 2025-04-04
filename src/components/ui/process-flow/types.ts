@@ -1,9 +1,9 @@
 
 export interface Equipment {
   id: string;
-  type: "reactor" | "pump" | "valve" | "heater" | "condenser" | "column" | "tank" | "mixer" | string;
+  type: "reactor" | "pump" | "valve" | "heater" | "condenser" | "column" | "tank" | "mixer";
   name: string;
-  status: "running" | "stopped" | "warning" | "error" | string;
+  status: "running" | "stopped" | "warning" | "error";
   metrics: {
     temperature?: number;
     pressure?: number;
