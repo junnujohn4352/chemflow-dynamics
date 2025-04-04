@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Plus, Minus, Thermometer, Droplets, Settings2, Container, FlaskConical, Columns, Gauge, Save, Trash2, X, Sliders, Move, ArrowLeft, Play, ChevronsUpDown, Circle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -74,8 +75,8 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
   const [canvasOffset, setCanvasOffset] = useState({ x: 0, y: 0 });
   const [canvasDimensions, setCanvasDimensions] = useState({ width: 6000, height: 6000 });
   const [streamAnimations, setStreamAnimations] = useState<Record<string, boolean>>({});
-  const [expandedCategory, setExpandedCategory] = useState<string | null>("streams");
   
+  // Default parameters for different equipment types
   const defaultParameters = {
     feed: {
       temperature: 25, // °C
@@ -142,6 +143,7 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     }
   };
   
+  // Equipment port configuration
   const equipmentPorts = {
     feed: [
       { id: 'out', type: 'output', position: 'right' }
@@ -201,12 +203,14 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
       }
     }
     
+    // Start stream animations
     const intervalId = setInterval(() => {
       if (streams.length > 0) {
         setStreamAnimations(prevAnimations => {
           const newAnimations = { ...prevAnimations };
           
           streams.forEach(stream => {
+            // Toggle animation state for each stream
             newAnimations[stream.id] = !prevAnimations[stream.id];
           });
           
@@ -218,23 +222,66 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     return () => clearInterval(intervalId);
   }, [streams.length]);
   
-  const handleExpandCategory = (category: string) => {
-    if (expandedCategory === category) {
-      setExpandedCategory(null);
-    } else {
-      setExpandedCategory(category);
-    }
-  };
-
-  const equipmentList = equipmentCategories.flatMap(category => 
-    category.items.map(item => ({
-      id: item.id,
-      name: item.name,
-      icon: item.icon,
-      category: category.id
-    }))
-  );
-
+  const equipmentList = [
+    { id: "feed", name: "Feed Stream", icon: <Droplets className="h-5 w-5" /> },
+    { 
+      id: "reactor", 
+      name: "Reactor", 
+      icon: <FlaskConical className="h-5 w-5" />,
+      subTypes: [
+        { id: "cstr", name: "CSTR" },
+        { id: "pfr", name: "PFR" },
+        { id: "batch", name: "Batch Reactor" },
+        { id: "pbr", name: "Packed Bed Reactor" },
+        { id: "fbr", name: "Fluidized Bed Reactor" }
+      ]
+    },
+    { 
+      id: "column", 
+      name: "Distillation Column", 
+      icon: <FlaskConical className="h-5 w-5" />,
+      subTypes: [
+        { id: "tray", name: "Tray Column" },
+        { id: "packed", name: "Packed Column" },
+        { id: "extractive", name: "Extractive Distillation" },
+        { id: "azeotropic", name: "Azeotropic Distillation" }
+      ]
+    },
+    { 
+      id: "heater", 
+      name: "Heater", 
+      icon: <Thermometer className="h-5 w-5" />,
+      subTypes: [
+        { id: "electric", name: "Electric Heater" },
+        { id: "steam", name: "Steam Heater" },
+        { id: "combustion", name: "Fired Heater" }
+      ]
+    },
+    { 
+      id: "cooler", 
+      name: "Cooler", 
+      icon: <Thermometer className="h-5 w-5" />,
+      subTypes: [
+        { id: "water", name: "Water Cooler" },
+        { id: "air", name: "Air Cooler" },
+        { id: "refrigeration", name: "Refrigeration" }
+      ]
+    },
+    { 
+      id: "mixer", 
+      name: "Mixer", 
+      icon: <Columns className="h-5 w-5" />,
+      subTypes: [
+        { id: "static", name: "Static Mixer" },
+        { id: "dynamic", name: "Dynamic Mixer" },
+        { id: "inline", name: "Inline Mixer" }
+      ]
+    },
+    { id: "valve", name: "Valve", icon: <Gauge className="h-5 w-5" /> },
+    { id: "pump", name: "Pump", icon: <Gauge className="h-5 w-5" /> },
+    { id: "product", name: "Product Stream", icon: <Droplets className="h-5 w-5" /> }
+  ];
+  
   const handleZoomIn = () => {
     setZoom(prev => Math.min(prev + 10, 200));
   };
@@ -253,8 +300,10 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
   const handleAddEquipment = (type: string, subType?: string) => {
     const id = `${type}-${Date.now()}`;
     
+    // Add appropriate ports for the equipment type
     const ports = equipmentPorts[type as keyof typeof equipmentPorts] || [];
     
+    // Get the default parameters for this equipment type
     const settings = defaultParameters[type as keyof typeof defaultParameters] || {};
     
     const newEquipment: Equipment = {
@@ -369,6 +418,7 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
       if (rect) {
         const scale = zoom / 100;
         
+        // Calculate position within the canvas, accounting for zoom and pan
         const x = (e.clientX - rect.left) / scale - canvasOffset.x;
         const y = (e.clientY - rect.top) / scale - canvasOffset.y;
         
@@ -413,10 +463,12 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     setIsMoving(false);
   };
 
+  // Middle mouse button panning
   const [isPanning, setIsPanning] = useState(false);
   const [lastPanPoint, setLastPanPoint] = useState({ x: 0, y: 0 });
 
   const handleMouseDown = (e: React.MouseEvent) => {
+    // Middle mouse button (wheel) pressed for panning
     if (e.button === 1) {
       e.preventDefault();
       setIsPanning(true);
@@ -435,6 +487,7 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
   };
 
   const handleCanvasMouseMove = (e: React.MouseEvent) => {
+    // Handle panning with middle mouse button
     if (isPanning) {
       const dx = (e.clientX - lastPanPoint.x) / (zoom / 100);
       const dy = (e.clientY - lastPanPoint.y) / (zoom / 100);
@@ -444,11 +497,13 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
       return;
     }
     
+    // Handle equipment dragging
     if (isDragging && draggedEquipment && canvasRef.current) {
       e.preventDefault();
       const rect = canvasRef.current.getBoundingClientRect();
       const scale = zoom / 100;
       
+      // Calculate position within the canvas, accounting for zoom and pan
       const x = (e.clientX - rect.left) / scale - canvasOffset.x;
       const y = (e.clientY - rect.top) / scale - canvasOffset.y;
       
@@ -473,12 +528,15 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     e.stopPropagation();
     
     if (isConnecting && isConnecting.id !== equipmentId) {
+      // Find the source equipment and port
       const sourceEquipment = equipment.find(eq => eq.id === isConnecting.id);
       const sourcePort = sourceEquipment?.ports?.find(port => port.id === isConnecting.portId);
       
+      // Find the target equipment and port
       const targetEquipment = equipment.find(eq => eq.id === equipmentId);
       const targetPort = targetEquipment?.ports?.find(port => port.id === portId);
       
+      // Only connect if it's a valid connection (output to input)
       if (sourceEquipment && targetEquipment && sourcePort && targetPort) {
         if (sourcePort.type === 'output' && targetPort.type === 'input') {
           const newStream: Stream = {
@@ -520,6 +578,7 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
       
       setIsConnecting(null);
     } else if (!isConnecting) {
+      // Start connection from this port
       setIsConnecting({ id: equipmentId, portId });
     } else {
       setIsConnecting(null);
@@ -541,6 +600,7 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
       const rect = canvasRef.current.getBoundingClientRect();
       const scale = zoom / 100;
       
+      // Calculate the offset within the equipment item
       const offsetX = (e.clientX - rect.left) / scale - canvasOffset.x - equipmentItem.position.x;
       const offsetY = (e.clientY - rect.top) / scale - canvasOffset.y - equipmentItem.position.y;
       
@@ -697,6 +757,7 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
           onMouseDown={(e) => handleEquipmentDragStart(e, eq.id)}
           onMouseUp={handleEquipmentDragEnd}
         >
+          {/* Render ports */}
           {eq.ports?.map(port => renderPort(eq, port))}
           
           <div className="text-flow-blue flex items-center justify-center w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-50 rounded-full transition-all hover:scale-105">
@@ -754,6 +815,7 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
       return null;
     }
     
+    // Find the position of the ports
     let sourceX = sourceEq.position.x + 10;
     let sourceY = sourceEq.position.y + 10;
     let targetX = targetEq.position.x + 10;
@@ -764,6 +826,7 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
       const targetPort = targetEq.ports?.find(p => p.id === stream.toPort);
       
       if (sourcePort && targetPort) {
+        // Adjust positions based on port positions
         switch (sourcePort.position) {
           case 'top':
             sourceX = sourceEq.position.x + 10;
@@ -808,10 +871,12 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     const dy = targetY - sourceY;
     const angle = Math.atan2(dy, dx);
     
+    // Calculate control points for a bezier curve
     const length = Math.sqrt(dx * dx + dy * dy);
     const controlPointX = sourceX + dx * 0.5;
     const controlPointY = sourceY + dy * 0.5;
     
+    // Determine arrow points
     const arrowSize = 8;
     const arrowX = targetX - arrowSize * Math.cos(angle);
     const arrowY = targetY - arrowSize * Math.sin(angle);
@@ -827,8 +892,9 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
       streamGlow = "filter drop-shadow(0 0 2px rgba(34, 197, 94, 0.5))";
     }
     
+    // Animated dots along the stream
     const isAnimating = streamAnimations[stream.id];
-    const dotPosition = isAnimating ? 0.7 : 0.3;
+    const dotPosition = isAnimating ? 0.7 : 0.3; // Alternate between two positions
     
     const dotX = sourceX + dx * dotPosition;
     const dotY = sourceY + dy * dotPosition;
@@ -855,12 +921,14 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
           </marker>
         </defs>
         
+        {/* Bezier Curve for the stream */}
         <path
           d={`M ${sourceX} ${sourceY} Q ${controlPointX} ${controlPointY} ${targetX} ${targetY}`}
           className={`${streamColor} stroke-2 ${streamGlow} fill-none`}
           markerEnd={`url(#arrowhead-${stream.id})`}
         />
         
+        {/* Animated Dot */}
         <circle
           cx={dotX}
           cy={dotY}
@@ -900,36 +968,48 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
           </div>
         </div>
         
-        <div className="flex flex-col gap-3 max-h-80 overflow-y-auto pr-2">
-          {equipmentCategories.map((category) => (
-            <div key={category.id} className="border border-gray-200 rounded-lg overflow-hidden">
+        <div className="flex flex-wrap gap-3">
+          {equipmentList.map((item) => (
+            <React.Fragment key={item.id}>
               <button
-                onClick={() => handleExpandCategory(category.id)}
-                className={`w-full p-2 flex items-center justify-between ${
-                  expandedCategory === category.id ? 'bg-blue-50 text-blue-600' : 'bg-white text-gray-700'
-                }`}
+                onClick={() => {
+                  if (item.subTypes && item.subTypes.length > 0) {
+                    setActiveEquipment(item.id);
+                    setShowSubTypes(!showSubTypes);
+                  } else {
+                    handleAddEquipment(item.id);
+                  }
+                }}
+                className={`p-2 rounded-lg ${
+                  activeEquipment === item.id ? 'bg-flow-blue/10 text-flow-blue' : 'bg-white text-gray-600 hover:bg-blue-50 hover:text-blue-600'
+                } flex items-center gap-2 border border-gray-200 transition-all hover:shadow-md shadow-sm`}
               >
-                <span className="font-medium">{category.name}</span>
-                <span className={`transition-transform ${expandedCategory === category.id ? 'rotate-180' : ''}`}>
-                  <Plus className="h-4 w-4" />
-                </span>
+                <span className="transition-transform hover:scale-110">{item.icon}</span>
+                <span className="text-sm font-medium">{item.name}</span>
               </button>
               
-              {expandedCategory === category.id && (
-                <div className="p-2 bg-gray-50 grid grid-cols-2 md:grid-cols-3 gap-2">
-                  {category.items.map((item) => (
-                    <button
-                      key={item.id}
-                      onClick={() => handleAddEquipment(item.id)}
-                      className="p-2 rounded-lg bg-white text-gray-600 hover:bg-blue-50 hover:text-blue-600 flex items-center gap-2 border border-gray-200 transition-all hover:shadow-md shadow-sm text-xs"
-                    >
-                      <span className="transition-transform hover:scale-110">{item.icon}</span>
-                      <span>{item.name}</span>
-                    </button>
-                  ))}
+              {activeEquipment === item.id && showSubTypes && item.subTypes && (
+                <div className="w-full mt-2 mb-1 ml-4 pl-4 border-l-2 border-blue-200 animate-fade-in-up">
+                  <div className="flex flex-wrap gap-2">
+                    {item.subTypes.map(subType => (
+                      <button
+                        key={subType.id}
+                        onClick={() => {
+                          handleAddEquipment(item.id, subType.id);
+                        }}
+                        className={`px-3 py-1.5 rounded-lg ${
+                          activeSubType === subType.id 
+                            ? 'bg-flow-blue/10 text-flow-blue' 
+                            : 'bg-white text-gray-600 hover:bg-blue-50 hover:text-blue-600'
+                        } text-xs border border-gray-200 transition-all hover:shadow-md shadow-sm`}
+                      >
+                        {subType.name}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               )}
-            </div>
+            </React.Fragment>
           ))}
         </div>
       </div>
@@ -1037,7 +1117,7 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
       {showSettings && editingEquipment && (
         <EquipmentSettings
           equipment={editingEquipment}
-          equipmentTypes={equipmentCategories.flatMap(cat => cat.items)}
+          equipmentTypes={equipmentList}
           onClose={() => {
             setShowSettings(false);
             setEditingEquipment(null);

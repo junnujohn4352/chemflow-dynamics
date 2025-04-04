@@ -638,16 +638,242 @@ const AspenCalculations: React.FC<AspenCalculationsProps> = ({ className, calcul
   };
 
   // Render results based on calculation type and results
-  const renderResults = (results: unknown): React.ReactNode => {
-    if (typeof results === 'string') {
-      return <div dangerouslySetInnerHTML={{ __html: results }} />;
-    } else if (results === null || results === undefined) {
-      return <div>No results available</div>;
-    } else if (React.isValidElement(results)) {
-      return results;
+  const renderResults = () => {
+    if (!results) return <p>No results available.</p>;
+    
+    // Common results display components
+    const renderBasicProperties = () => (
+      <div className="grid grid-cols-2 gap-3 mb-4">
+        <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+          <p className="text-sm text-gray-500 dark:text-gray-400">Temperature</p>
+          <p className="text-lg font-medium">{results.temperature} K</p>
+        </div>
+        <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+          <p className="text-sm text-gray-500 dark:text-gray-400">Pressure</p>
+          <p className="text-lg font-medium">{results.pressure} kPa</p>
+        </div>
+      </div>
+    );
+    
+    // Specific displays based on calculation type
+    if (calculationType === "thermodynamic" && results.components && Array.isArray(results.results)) {
+      return (
+        <div>
+          {renderBasicProperties()}
+          
+          <h4 className="font-semibold mb-2">Phase Equilibrium Results</h4>
+          <table className="w-full border-collapse mb-4">
+            <thead>
+              <tr className="bg-gray-50 dark:bg-gray-800">
+                <th className="border border-gray-200 dark:border-gray-700 p-2 text-left">Component</th>
+                <th className="border border-gray-200 dark:border-gray-700 p-2 text-left">Liquid Mole Fraction</th>
+                <th className="border border-gray-200 dark:border-gray-700 p-2 text-left">Vapor Mole Fraction</th>
+                {results.kValues && <th className="border border-gray-200 dark:border-gray-700 p-2 text-left">K-Value</th>}
+              </tr>
+            </thead>
+            <tbody>
+              {results.results.map((result: any, i: number) => (
+                <tr key={i}>
+                  <td className="border border-gray-200 dark:border-gray-700 p-2">{result.component}</td>
+                  <td className="border border-gray-200 dark:border-gray-700 p-2">{result.liquidMoleFraction.toFixed(4)}</td>
+                  <td className="border border-gray-200 dark:border-gray-700 p-2">{result.vaporMoleFraction.toFixed(4)}</td>
+                  {results.kValues && <td className="border border-gray-200 dark:border-gray-700 p-2">{results.kValues[i].toFixed(4)}</td>}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          
+          {results.properties && (
+            <div className="mt-4">
+              <h4 className="font-semibold mb-2">Physical Properties</h4>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Molecular Weight</p>
+                  <p className="text-base font-medium">{results.properties.molWeight} g/mol</p>
+                </div>
+                <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Density</p>
+                  <p className="text-base font-medium">{results.properties.density} kg/m³</p>
+                </div>
+                <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Viscosity</p>
+                  <p className="text-base font-medium">{results.properties.viscosity} mPa·s</p>
+                </div>
+                <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Thermal Conductivity</p>
+                  <p className="text-base font-medium">{results.properties.thermalConductivity} W/(m·K)</p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    } else if (calculationType === "reaction" && results.conversionData) {
+      return (
+        <div>
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <p className="text-sm text-gray-500 dark:text-gray-400">Reactor Type</p>
+              <p className="text-lg font-medium">{results.reactionType}</p>
+            </div>
+            <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <p className="text-sm text-gray-500 dark:text-gray-400">Heat of Reaction</p>
+              <p className="text-lg font-medium">{results.heatOfReaction} kJ/mol</p>
+            </div>
+          </div>
+          
+          <h4 className="font-semibold mb-2">Conversion Profile</h4>
+          <table className="w-full border-collapse mb-4">
+            <thead>
+              <tr className="bg-gray-50 dark:bg-gray-800">
+                <th className="border border-gray-200 dark:border-gray-700 p-2 text-left">Time (min)</th>
+                <th className="border border-gray-200 dark:border-gray-700 p-2 text-left">Conversion</th>
+              </tr>
+            </thead>
+            <tbody>
+              {results.conversionData.map((point: any, i: number) => (
+                <tr key={i}>
+                  <td className="border border-gray-200 dark:border-gray-700 p-2">{point.time.toFixed(2)}</td>
+                  <td className="border border-gray-200 dark:border-gray-700 p-2">{(point.conversion * 100).toFixed(2)}%</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          
+          <h4 className="font-semibold mb-2">Product Yields</h4>
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="bg-gray-50 dark:bg-gray-800">
+                <th className="border border-gray-200 dark:border-gray-700 p-2 text-left">Component</th>
+                <th className="border border-gray-200 dark:border-gray-700 p-2 text-left">Yield</th>
+              </tr>
+            </thead>
+            <tbody>
+              {results.productYields.map((yield_: any, i: number) => (
+                <tr key={i}>
+                  <td className="border border-gray-200 dark:border-gray-700 p-2">{yield_.component}</td>
+                  <td className="border border-gray-200 dark:border-gray-700 p-2">{(Number(yield_.yield) * 100).toFixed(2)}%</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      );
+    } else if (calculationType === "economic" && results.paybackPeriod) {
+      return (
+        <div>
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+              <p className="text-sm text-gray-500 dark:text-gray-400">Capital Expenditure</p>
+              <p className="text-lg font-medium">${results.capitalCost.toLocaleString()}</p>
+            </div>
+            <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
+              <p className="text-sm text-gray-500 dark:text-gray-400">Operating Cost (Annual)</p>
+              <p className="text-lg font-medium">${results.operatingCost.toLocaleString()}/year</p>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+              <p className="text-sm text-gray-500 dark:text-gray-400">Annual Revenue</p>
+              <p className="text-lg font-medium">${results.annualRevenue.toLocaleString()}/year</p>
+            </div>
+            <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+              <p className="text-sm text-gray-500 dark:text-gray-400">Net Annual Cash Flow</p>
+              <p className="text-lg font-medium">${results.netAnnualCashFlow.toLocaleString()}/year</p>
+            </div>
+          </div>
+          
+          <h4 className="font-semibold mb-2">Economic Indicators</h4>
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="bg-gray-50 dark:bg-gray-800">
+                <th className="border border-gray-200 dark:border-gray-700 p-2 text-left">Indicator</th>
+                <th className="border border-gray-200 dark:border-gray-700 p-2 text-left">Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td className="border border-gray-200 dark:border-gray-700 p-2">Payback Period</td>
+                <td className="border border-gray-200 dark:border-gray-700 p-2">{results.paybackPeriod} years</td>
+              </tr>
+              <tr>
+                <td className="border border-gray-200 dark:border-gray-700 p-2">Return on Investment (ROI)</td>
+                <td className="border border-gray-200 dark:border-gray-700 p-2">{results.roi}%</td>
+              </tr>
+              <tr>
+                <td className="border border-gray-200 dark:border-gray-700 p-2">Net Present Value (NPV)</td>
+                <td className="border border-gray-200 dark:border-gray-700 p-2">${Number(results.npv).toLocaleString()}</td>
+              </tr>
+              <tr>
+                <td className="border border-gray-200 dark:border-gray-700 p-2">Internal Rate of Return (IRR)</td>
+                <td className="border border-gray-200 dark:border-gray-700 p-2">{(Number(results.irr) * 100).toFixed(2)}%</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      );
+    } else if (calculationType === "heat" && results.temperatureProfile) {
+      return (
+        <div>
+          <div className="grid grid-cols-3 gap-3 mb-4">
+            <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <p className="text-sm text-gray-500 dark:text-gray-400">Heat Duty</p>
+              <p className="text-lg font-medium">{results.heatDuty} kW</p>
+            </div>
+            <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <p className="text-sm text-gray-500 dark:text-gray-400">Heat Transfer Coefficient</p>
+              <p className="text-lg font-medium">{results.overallHeatTransferCoefficient} W/(m²·K)</p>
+            </div>
+            <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <p className="text-sm text-gray-500 dark:text-gray-400">Effective Area</p>
+              <p className="text-lg font-medium">{results.effectiveArea} m²</p>
+            </div>
+          </div>
+          
+          <h4 className="font-semibold mb-2">Temperature Profile</h4>
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="bg-gray-50 dark:bg-gray-800">
+                <th className="border border-gray-200 dark:border-gray-700 p-2 text-left">Position</th>
+                <th className="border border-gray-200 dark:border-gray-700 p-2 text-left">Hot Stream Temperature (°C)</th>
+                <th className="border border-gray-200 dark:border-gray-700 p-2 text-left">Cold Stream Temperature (°C)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {results.temperatureProfile.map((point: any, i: number) => (
+                <tr key={i}>
+                  <td className="border border-gray-200 dark:border-gray-700 p-2">{point.position.toFixed(2)}</td>
+                  <td className="border border-gray-200 dark:border-gray-700 p-2">{point.hotTemp.toFixed(2)}</td>
+                  <td className="border border-gray-200 dark:border-gray-700 p-2">{point.coldTemp.toFixed(2)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      );
     } else {
-      // Convert any other type to string and render it safely
-      return <div>{String(results)}</div>;
+      // Generic results display when specific format is not available
+      return (
+        <div className="space-y-4">
+          <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800">
+            <h4 className="font-semibold mb-2 text-blue-700 dark:text-blue-400">Calculation Summary</h4>
+            <p className="text-gray-700 dark:text-gray-300">{results.message || "Calculation completed successfully."}</p>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-3">
+            {Object.entries(results)
+              .filter(([key]) => !['timestamp', 'inputs', 'calcType', 'category', 'message', 'components'].includes(key))
+              .slice(0, 6)
+              .map(([key, value]) => (
+                <div key={key} className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}</p>
+                  <p className="text-base font-medium">{typeof value === 'object' ? 'Complex data' : value}</p>
+                </div>
+              ))}
+          </div>
+        </div>
+      );
     }
   };
 
@@ -726,7 +952,7 @@ const AspenCalculations: React.FC<AspenCalculationsProps> = ({ className, calcul
                   <TabsContent value="results" className="p-6 focus:outline-none">
                     <h4 className="text-lg font-medium mb-4">Results</h4>
                     
-                    {renderResults(results)}
+                    {renderResults()}
                     
                     <div className="mt-6 flex justify-between">
                       <Button variant="outline" className="flex items-center gap-2">
