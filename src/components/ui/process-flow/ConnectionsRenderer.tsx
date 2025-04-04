@@ -36,10 +36,11 @@ const ConnectionsRenderer: React.FC<ConnectionsRendererProps> = ({
         const cellHeight = 120;
         const margin = 12;
         
-        const sourceBaseX = source.position.x * (cellWidth + margin);
-        const sourceBaseY = source.position.y * (cellHeight + margin);
-        const targetBaseX = target.position.x * (cellWidth + margin);
-        const targetBaseY = target.position.y * (cellHeight + margin);
+        // Calculate base positions (center of cells)
+        const sourceBaseX = source.position.x * (cellWidth + margin) + (cellWidth / 2);
+        const sourceBaseY = source.position.y * (cellHeight + margin) + (cellHeight / 2);
+        const targetBaseX = target.position.x * (cellWidth + margin) + (cellWidth / 2);
+        const targetBaseY = target.position.y * (cellHeight + margin) + (cellHeight / 2);
 
         // Calculate midpoint for curved path
         const midX = (sourceBaseX + targetBaseX) / 2;

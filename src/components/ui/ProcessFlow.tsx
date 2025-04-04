@@ -531,6 +531,44 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
     });
   };
 
+  const handleConnectFromPanel = (sourceId: string, targetId: string) => {
+    const sourceEquipment = equipment.find(e => e.id === sourceId);
+    const targetEquipment = equipment.find(e => e.id === targetId);
+    
+    if (sourceEquipment && targetEquipment) {
+      const connectionLabel = `${sourceEquipment.type} → ${targetEquipment.type}`;
+      
+      const newConnection: Connection = {
+        id: `conn-${Date.now()}`,
+        source: sourceId,
+        target: targetId,
+        animated: true,
+        label: connectionLabel
+      };
+      
+      setConnections(prev => [...prev, newConnection]);
+      
+      setEquipment(prev => 
+        prev.map(eq => {
+          if (eq.id === sourceId) {
+            return {
+              ...eq,
+              connections: [...(eq.connections || []), targetId]
+            };
+          }
+          return eq;
+        })
+      );
+      
+      toast({
+        title: "Connection Created",
+        description: `Connected ${sourceEquipment.name} to ${targetEquipment.name}`,
+      });
+      
+      setShowDetails(null);
+    }
+  };
+
   return (
     <div className={cn("w-full", className)}>
       <GlassPanel className="p-6 animate-fade-in shadow-xl border border-white/50 backdrop-blur-sm relative overflow-hidden">
@@ -602,6 +640,37 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
                 onRotate={handleArrowRotate}
                 onResize={handleArrowResize}
               />
+              
+              <ConnectionsRenderer 
+                connections={connections}
+                equipment={equipment}
+              />
+              
+              {showDetails && (
+                <div className="absolute z-30 pointer-events-none">
+                  {equipment.map(eq => (
+                    eq.id === showDetails && (
+                      <div 
+                        key={eq.id} 
+                        className="pointer-events-auto"
+                        style={{
+                          left: `${eq.position.x * (120 + 12)}px`,
+                          top: `${eq.position.y * (120 + 12)}px`,
+                          position: 'absolute'
+                        }}
+                      >
+                        <EquipmentDetail 
+                          equipment={eq}
+                          isRunning={isRunning}
+                          onClose={() => setShowDetails(null)}
+                          allEquipment={equipment}
+                          onConnectEquipment={handleConnectFromPanel}
+                        />
+                      </div>
+                    )
+                  ))}
+                </div>
+              )}
             </div>
           </div>
           
