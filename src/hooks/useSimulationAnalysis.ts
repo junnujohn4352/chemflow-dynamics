@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 
 export interface SubjectAnalysis {
@@ -88,70 +89,60 @@ This analysis examines the ${subject} process using ${components.join(", ")} as 
       // Import icons directly in the components that use them
       const { Thermometer, Waves, Zap, Droplets, FlaskConical, Shield, Cpu, Leaf } = await import('lucide-react');
       
-      // Create the icon components ahead of time
-      const thermometerIcon = <Thermometer className="h-5 w-5" />;
-      const wavesIcon = <Waves className="h-5 w-5" />;
-      const zapIcon = <Zap className="h-5 w-5" />;
-      const dropletsIcon = <Droplets className="h-5 w-5" />;
-      const flaskConicalIcon = <FlaskConical className="h-5 w-5" />;
-      const shieldIcon = <Shield className="h-5 w-5" />;
-      const cpuIcon = <Cpu className="h-5 w-5" />;
-      const leafIcon = <Leaf className="h-5 w-5" />;
-      
       const analyses: SubjectAnalysis[] = [
         {
           id: "heatTransfer",
           title: "Heat Transfer Analysis",
-          icon: thermometerIcon,
+          icon: <Thermometer className="h-5 w-5" />,
           content: heatTransferAnalysis,
           charts: null // Charts will be created in the component
         },
         {
           id: "fluidFlow",
           title: "Fluid Flow Analysis",
-          icon: wavesIcon,
+          icon: <Waves className="h-5 w-5" />,
           content: fluidFlowAnalysis,
           charts: null
         },
         {
           id: "thermodynamics",
           title: "Thermodynamic Analysis",
-          icon: zapIcon,
+          icon: <Zap className="h-5 w-5" />,
           content: thermodynamicsAnalysis,
           charts: null
         },
         {
           id: "massTransfer",
           title: "Mass Transfer Analysis",
-          icon: dropletsIcon,
+          icon: <Droplets className="h-5 w-5" />,
           content: massTransferAnalysis,
           charts: null
         },
         {
           id: "reactionEngineering",
           title: "Reaction Engineering Analysis",
-          icon: flaskConicalIcon,
+          icon: <FlaskConical className="h-5 w-5" />,
           content: reactionAnalysis,
           charts: null
         },
         {
           id: "safetyAnalysis",
           title: "Safety Analysis",
-          icon: shieldIcon,
+          icon: <Shield className="h-5 w-5" />,
           content: safetyAnalysis,
           charts: null
         },
         {
           id: "processSimulation",
           title: "Process Simulation",
-          icon: cpuIcon,
+          icon: <Cpu className="h-5 w-5" />,
           content: processAnalysis,
           charts: null
         },
         {
           id: "utilityEnvironmental",
           title: "Utility & Environmental Analysis",
-          icon: leafIcon,
+          icon: <Leaf className="h-5 w-5" />,
           content: utilityAnalysis,
           charts: null
         }
