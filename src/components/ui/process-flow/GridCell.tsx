@@ -2,7 +2,7 @@
 import React from "react";
 import { Equipment } from "./types";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Info } from "lucide-react";
+import { Info } from "lucide-react";
 import EquipmentCard from "@/components/ui/EquipmentCard";
 import EquipmentController from "./EquipmentController";
 import EquipmentDetail from "./EquipmentDetail";
@@ -22,7 +22,7 @@ interface GridCellProps {
   onConnectionSelect: (id: string) => void;
   onToggleDetails: (id: string) => void;
   onMove: (id: string, direction: 'up' | 'down' | 'left' | 'right') => void;
-  onDropClick?: () => void; // Add optional click to drop handler
+  onDropClick?: () => void;
 }
 
 const GridCell: React.FC<GridCellProps> = ({
@@ -86,10 +86,10 @@ const GridCell: React.FC<GridCellProps> = ({
         onClick={() => connectMode && connectMode !== equipment.id ? onConnectionSelect(equipment.id) : null}
       >
         <EquipmentCard 
-          type={equipment.type}
+          type={equipment.type as "reactor" | "pump" | "valve" | "heater" | "condenser" | "column" | "tank" | "mixer"}
           name={typeof equipment.name === 'string' ? equipment.name : String(equipment.name)} 
           status={isRunning ? "running" : "stopped"} 
-          metrics={equipment.metrics}
+          metrics={equipment.metrics || {}}
         />
         
         {equipment.description && (
@@ -112,18 +112,6 @@ const GridCell: React.FC<GridCellProps> = ({
           >
             <Info className="h-3 w-3 mr-1" />
             {showDetails === equipment.id ? 'Hide' : 'Info'}
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="text-xs px-2 py-1 h-auto"
-            onClick={(e) => {
-              e.stopPropagation();
-              onConnect(equipment.id);
-            }}
-          >
-            <ArrowRight className="h-3 w-3 mr-1" />
-            Connect
           </Button>
         </div>
         
