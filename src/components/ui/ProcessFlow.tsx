@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import GlassPanel from "./GlassPanel";
@@ -7,6 +6,7 @@ import { Equipment, Connection, ConnectionPoint } from "./process-flow/types";
 import SimulationControls from "./process-flow/SimulationControls";
 import EquipmentGrid from "./process-flow/EquipmentGrid";
 import ProcessDataPanel from "./process-flow/ProcessDataPanel";
+import ArrowToolkit from "./process-flow/ArrowToolkit";
 import { 
   Container, 
   Gauge, 
@@ -507,6 +507,29 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
     }));
   };
 
+  const handleArrowAdd = (type: string, rotation: number) => {
+    const newId = `${type}-${Date.now()}`;
+    
+    const newEquipment: Equipment = {
+      id: newId,
+      type: "arrow",
+      name: `Arrow ${rotation}°`,
+      metrics: { direction: rotation },
+      position: { x: 1, y: 1 },
+      connections: [],
+      description: "Flow direction indicator",
+      rotation: rotation,
+      scale: 1
+    };
+    
+    setEquipment(prev => [...prev, newEquipment]);
+    
+    toast({
+      title: "Arrow Added",
+      description: `Added ${rotation}° arrow to the flowsheet`,
+    });
+  };
+
   return (
     <div className={cn("w-full", className)}>
       <GlassPanel className="p-6 animate-fade-in shadow-xl border border-white/50 backdrop-blur-sm relative overflow-hidden">
@@ -548,7 +571,11 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
 
         <div className="grid grid-cols-3 gap-6 mb-6">
           <div className="col-span-2">
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-4 relative">
+              <ArrowToolkit 
+                onSelectArrow={handleArrowAdd}
+                className="relative z-20"
+              />
               <EquipmentGrid 
                 equipment={equipment}
                 connections={connections}
