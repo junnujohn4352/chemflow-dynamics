@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Equipment, Connection, ConnectionPoint } from "./types";
 import EquipmentDetail from "./EquipmentDetail";
@@ -61,6 +62,7 @@ const GridCell: React.FC<GridCellProps> = ({
   onResize
 }) => {
   const [hoveredConnector, setHoveredConnector] = useState<string | null>(null);
+  const isSelected = selectedEquipment === equipment.id;
 
   const defaultConnectionPoints: ConnectionPoint[] = [
     { id: 'top', position: 'top' },
@@ -100,6 +102,11 @@ const GridCell: React.FC<GridCellProps> = ({
       default:
         return {};
     }
+  };
+
+  const handleConnectorClick = (e: React.MouseEvent, connectorId: string) => {
+    e.stopPropagation();
+    onConnectionSelect(equipment.id, connectorId);
   };
 
   return (
