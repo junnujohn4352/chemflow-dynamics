@@ -1,6 +1,6 @@
-
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { Thermometer, Waves, Zap, Droplets, FlaskConical, Shield, Cpu, Leaf } from 'lucide-react';
 
 export interface SubjectAnalysis {
   id: string;
@@ -86,8 +86,8 @@ This analysis examines the ${subject} process using ${components.join(", ")} as 
       const processAnalysis = generateStaticAnalysis(`Process Simulation for ${subject}`, selectedComponents);
       const utilityAnalysis = generateStaticAnalysis(`Utility Requirements for ${subject}`, selectedComponents);
       
-      // Import icons directly in the components that use them
-      const { Thermometer, Waves, Zap, Droplets, FlaskConical, Shield, Cpu, Leaf } = await import('lucide-react');
+      // Import the icons directly at the top of the file instead of dynamically
+      // This is simpler and avoids potential issues with dynamic imports
       
       const analyses: SubjectAnalysis[] = [
         {
