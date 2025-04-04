@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import GlassPanel from "@/components/ui/GlassPanel";
 import { cn } from "@/lib/utils";
@@ -886,7 +887,7 @@ const AspenCalculations: React.FC<AspenCalculationsProps> = ({ className, calcul
                 >
                   <div className="flex items-center mb-2">
                     <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg mr-3">
-                      <calc.icon className="h-5 w-5 text-flow-blue dark:text-blue-400" />
+                      {React.createElement(calc.icon, { className: "h-5 w-5 text-flow-blue dark:text-blue-400" })}
                     </div>
                     <h3 className="font-medium text-lg">{calc.name}</h3>
                   </div>
