@@ -1,161 +1,220 @@
 
 import React from 'react';
-import GlassPanel from "@/components/ui/GlassPanel";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Thermometer, Droplets, Zap, Waves, Activity } from "lucide-react";
+import { Download, BarChart, Zap } from 'lucide-react';
 
 interface StreamDataPanelProps {
-  stream?: any;
   selectedComponents: string[];
 }
 
-const StreamDataPanel: React.FC<StreamDataPanelProps> = ({ stream, selectedComponents }) => {
-  const defaultStream = {
-    name: "Feed Stream",
-    temperature: 25,
-    pressure: 101.325,
-    vaporFraction: 0,
-    totalFlow: 100,
-    components: selectedComponents.reduce((acc, comp) => {
-      acc[comp] = 100 / selectedComponents.length;
-      return acc;
-    }, {} as Record<string, number>),
-    properties: {
-      density: 850,
-      viscosity: 0.5,
-      enthalpy: -250,
-      entropy: 75,
-      molecularWeight: 40,
-      thermalConductivity: 0.1,
-      heatCapacity: 2.1,
-      zFactor: 0.95
+const StreamDataPanel: React.FC<StreamDataPanelProps> = ({ selectedComponents }) => {
+  // Synthetic data for stream properties
+  const streamData = {
+    feed: {
+      totalFlow: 100.0,
+      temperature: 25.0,
+      pressure: 101.325,
+      phase: "Liquid",
+      compositions: Object.fromEntries(
+        selectedComponents.map(comp => [
+          comp, 
+          Math.round(Math.random() * 100) / 100
+        ])
+      ),
+      density: 850.5,
+      molecularWeight: 58.2,
+      viscosity: 0.58,
+      thermalConductivity: 0.125
+    },
+    product: {
+      totalFlow: 95.0,
+      temperature: 75.0,
+      pressure: 95.325,
+      phase: "Vapor/Liquid",
+      compositions: Object.fromEntries(
+        selectedComponents.map(comp => [
+          comp, 
+          Math.round(Math.random() * 100) / 100
+        ])
+      ),
+      density: 780.2,
+      molecularWeight: 52.8,
+      viscosity: 0.41,
+      thermalConductivity: 0.108
     }
   };
 
-  const streamData = stream || defaultStream;
+  // Normalize compositions
+  const normalizeCompositions = (compositions: Record<string, number>) => {
+    const sum = Object.values(compositions).reduce((a, b) => a + b, 0);
+    return Object.fromEntries(
+      Object.entries(compositions).map(([key, value]) => [key, sum > 0 ? value / sum : 0])
+    );
+  };
+
+  streamData.feed.compositions = normalizeCompositions(streamData.feed.compositions);
+  streamData.product.compositions = normalizeCompositions(streamData.product.compositions);
 
   return (
-    <GlassPanel className="mt-4 p-4">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold">{streamData.name}</h3>
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h3 className="text-lg font-semibold text-blue-700 dark:text-blue-400">Stream Properties</h3>
+        <button className="p-1.5 rounded-md bg-blue-50 dark:bg-blue-900 text-blue-600 dark:text-blue-300 hover:bg-blue-100 transition-colors">
+          <Download className="h-4 w-4" />
+        </button>
       </div>
-
-      <Tabs defaultValue="conditions">
-        <TabsList className="w-full mb-4">
-          <TabsTrigger value="conditions">
-            <Thermometer className="h-4 w-4 mr-2" />
-            Conditions
-          </TabsTrigger>
-          <TabsTrigger value="composition">
-            <Droplets className="h-4 w-4 mr-2" />
-            Composition
-          </TabsTrigger>
-          <TabsTrigger value="properties">
-            <Waves className="h-4 w-4 mr-2" />
-            Properties
-          </TabsTrigger>
-          <TabsTrigger value="energy">
-            <Zap className="h-4 w-4 mr-2" />
-            Energy
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="conditions" className="space-y-2">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-white p-3 rounded-md shadow-sm">
-              <div className="text-sm text-gray-500">Temperature</div>
-              <div className="text-lg font-semibold">{streamData.temperature} °C</div>
-            </div>
-            <div className="bg-white p-3 rounded-md shadow-sm">
-              <div className="text-sm text-gray-500">Pressure</div>
-              <div className="text-lg font-semibold">{streamData.pressure} kPa</div>
-            </div>
-            <div className="bg-white p-3 rounded-md shadow-sm">
-              <div className="text-sm text-gray-500">Vapor Fraction</div>
-              <div className="text-lg font-semibold">{streamData.vaporFraction}</div>
-            </div>
-            <div className="bg-white p-3 rounded-md shadow-sm">
-              <div className="text-sm text-gray-500">Total Flow</div>
-              <div className="text-lg font-semibold">{streamData.totalFlow} kg/h</div>
-            </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <StreamCard 
+          name="Feed Stream" 
+          data={streamData.feed} 
+          selectedComponents={selectedComponents} 
+        />
+        <StreamCard 
+          name="Product Stream" 
+          data={streamData.product} 
+          selectedComponents={selectedComponents} 
+        />
+      </div>
+      
+      <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
+        <div className="flex justify-between items-center mb-4">
+          <h4 className="text-base font-medium flex items-center">
+            <BarChart className="h-4 w-4 mr-2 text-blue-500" />
+            Component Distribution
+          </h4>
+          <div className="flex space-x-1 text-xs font-medium">
+            <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">Feed</span>
+            <span className="px-2 py-0.5 rounded-full bg-green-100 text-green-700">Product</span>
           </div>
-        </TabsContent>
-
-        <TabsContent value="composition">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Component</TableHead>
-                <TableHead>Mass Fraction (%)</TableHead>
-                <TableHead>Mole Fraction (%)</TableHead>
-                <TableHead>Flow (kg/h)</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {Object.entries(streamData.components).map(([component, fraction]: [string, any]) => (
-                <TableRow key={component}>
-                  <TableCell className="font-medium">{component}</TableCell>
-                  <TableCell>{fraction.toFixed(2)}</TableCell>
-                  <TableCell>{(fraction * 0.9).toFixed(2)}</TableCell>
-                  <TableCell>{(fraction * streamData.totalFlow / 100).toFixed(2)}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TabsContent>
-
-        <TabsContent value="properties" className="space-y-2">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-white p-3 rounded-md shadow-sm">
-              <div className="text-sm text-gray-500">Density</div>
-              <div className="text-lg font-semibold">{streamData.properties.density} kg/m³</div>
+        </div>
+        
+        <div className="space-y-3">
+          {selectedComponents.map(component => (
+            <div key={component} className="space-y-1">
+              <div className="flex justify-between text-xs">
+                <span>{component}</span>
+                <div className="flex space-x-2">
+                  <span className="text-blue-600">{(streamData.feed.compositions[component] * 100).toFixed(1)}%</span>
+                  <span className="text-green-600">{(streamData.product.compositions[component] * 100).toFixed(1)}%</span>
+                </div>
+              </div>
+              
+              <div className="flex h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div 
+                  className="bg-blue-500" 
+                  style={{ width: `${streamData.feed.compositions[component] * 100}%` }} 
+                />
+                <div 
+                  className="bg-green-500" 
+                  style={{ width: '100%', transform: `scaleX(${streamData.product.compositions[component]})`, transformOrigin: 'right' }} 
+                />
+              </div>
             </div>
-            <div className="bg-white p-3 rounded-md shadow-sm">
-              <div className="text-sm text-gray-500">Viscosity</div>
-              <div className="text-lg font-semibold">{streamData.properties.viscosity} cP</div>
-            </div>
-            <div className="bg-white p-3 rounded-md shadow-sm">
-              <div className="text-sm text-gray-500">Molecular Weight</div>
-              <div className="text-lg font-semibold">{streamData.properties.molecularWeight} g/mol</div>
-            </div>
-            <div className="bg-white p-3 rounded-md shadow-sm">
-              <div className="text-sm text-gray-500">Z Factor</div>
-              <div className="text-lg font-semibold">{streamData.properties.zFactor}</div>
-            </div>
-            <div className="bg-white p-3 rounded-md shadow-sm">
-              <div className="text-sm text-gray-500">Thermal Conductivity</div>
-              <div className="text-lg font-semibold">{streamData.properties.thermalConductivity} W/m·K</div>
-            </div>
-            <div className="bg-white p-3 rounded-md shadow-sm">
-              <div className="text-sm text-gray-500">Heat Capacity</div>
-              <div className="text-lg font-semibold">{streamData.properties.heatCapacity} kJ/kg·K</div>
-            </div>
+          ))}
+        </div>
+      </div>
+      
+      <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
+        <div className="flex justify-between items-center mb-4">
+          <h4 className="text-base font-medium flex items-center">
+            <Zap className="h-4 w-4 mr-2 text-blue-500" />
+            Energy Analysis
+          </h4>
+        </div>
+        
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+          <div className="bg-blue-50 dark:bg-blue-900/30 p-3 rounded-lg">
+            <div className="text-xs text-gray-500 dark:text-gray-400">Enthalpy Change</div>
+            <div className="text-lg font-medium text-blue-700 dark:text-blue-400">125.3 kJ</div>
           </div>
-        </TabsContent>
-
-        <TabsContent value="energy" className="space-y-2">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-white p-3 rounded-md shadow-sm">
-              <div className="text-sm text-gray-500">Enthalpy</div>
-              <div className="text-lg font-semibold">{streamData.properties.enthalpy} kJ/kg</div>
-            </div>
-            <div className="bg-white p-3 rounded-md shadow-sm">
-              <div className="text-sm text-gray-500">Entropy</div>
-              <div className="text-lg font-semibold">{streamData.properties.entropy} J/mol·K</div>
-            </div>
-            <div className="bg-white p-3 rounded-md shadow-sm">
-              <div className="text-sm text-gray-500">Heat Flow</div>
-              <div className="text-lg font-semibold">{(streamData.properties.enthalpy * streamData.totalFlow / 3600).toFixed(2)} kW</div>
-            </div>
-            <div className="bg-white p-3 rounded-md shadow-sm">
-              <div className="text-sm text-gray-500">Gibbs Energy</div>
-              <div className="text-lg font-semibold">{(streamData.properties.enthalpy - 298.15 * streamData.properties.entropy / 1000).toFixed(2)} kJ/kg</div>
-            </div>
+          
+          <div className="bg-blue-50 dark:bg-blue-900/30 p-3 rounded-lg">
+            <div className="text-xs text-gray-500 dark:text-gray-400">Heat Duty</div>
+            <div className="text-lg font-medium text-blue-700 dark:text-blue-400">85.7 kW</div>
           </div>
-        </TabsContent>
-      </Tabs>
-    </GlassPanel>
+          
+          <div className="bg-blue-50 dark:bg-blue-900/30 p-3 rounded-lg">
+            <div className="text-xs text-gray-500 dark:text-gray-400">Vapor Fraction</div>
+            <div className="text-lg font-medium text-blue-700 dark:text-blue-400">0.35</div>
+          </div>
+          
+          <div className="bg-blue-50 dark:bg-blue-900/30 p-3 rounded-lg">
+            <div className="text-xs text-gray-500 dark:text-gray-400">Entropy Change</div>
+            <div className="text-lg font-medium text-blue-700 dark:text-blue-400">0.28 kJ/K</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+interface StreamCardProps {
+  name: string;
+  data: {
+    totalFlow: number;
+    temperature: number;
+    pressure: number;
+    phase: string;
+    compositions: Record<string, number>;
+    density: number;
+    molecularWeight: number;
+    viscosity: number;
+    thermalConductivity: number;
+  };
+  selectedComponents: string[];
+}
+
+const StreamCard: React.FC<StreamCardProps> = ({ name, data, selectedComponents }) => {
+  return (
+    <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
+      <h5 className="font-medium mb-3 text-blue-700 dark:text-blue-400">{name}</h5>
+      
+      <div className="grid grid-cols-2 gap-2 text-sm">
+        <div className="flex justify-between">
+          <span className="text-gray-500 dark:text-gray-400">Flow Rate:</span>
+          <span className="font-medium">{data.totalFlow.toFixed(1)} kg/h</span>
+        </div>
+        
+        <div className="flex justify-between">
+          <span className="text-gray-500 dark:text-gray-400">Temperature:</span>
+          <span className="font-medium">{data.temperature.toFixed(1)} °C</span>
+        </div>
+        
+        <div className="flex justify-between">
+          <span className="text-gray-500 dark:text-gray-400">Pressure:</span>
+          <span className="font-medium">{data.pressure.toFixed(1)} kPa</span>
+        </div>
+        
+        <div className="flex justify-between">
+          <span className="text-gray-500 dark:text-gray-400">Phase:</span>
+          <span className="font-medium">{data.phase}</span>
+        </div>
+        
+        <div className="flex justify-between">
+          <span className="text-gray-500 dark:text-gray-400">Density:</span>
+          <span className="font-medium">{data.density.toFixed(1)} kg/m³</span>
+        </div>
+        
+        <div className="flex justify-between">
+          <span className="text-gray-500 dark:text-gray-400">Mol. Weight:</span>
+          <span className="font-medium">{data.molecularWeight.toFixed(1)} g/mol</span>
+        </div>
+      </div>
+      
+      <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
+        <h6 className="text-xs font-medium mb-2 text-gray-600 dark:text-gray-300">Composition (mole fraction)</h6>
+        <div className="grid grid-cols-2 gap-1 text-sm max-h-24 overflow-y-auto">
+          {selectedComponents.map(comp => (
+            <div key={comp} className="flex justify-between">
+              <span className="text-xs text-gray-500 dark:text-gray-400">{comp}:</span>
+              <span className="text-xs font-medium">
+                {data.compositions[comp]?.toFixed(3) || '0.000'}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 };
 

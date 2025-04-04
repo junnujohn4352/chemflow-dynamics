@@ -144,7 +144,7 @@ const HysysIntegration: React.FC<HysysIntegrationProps> = ({
           </div>
           
           {selectedComponent && (
-            <ComponentDetailsPanel component={selectedComponent} />
+            <ComponentDetailsPanel componentName={selectedComponent} />
           )}
         </TabsContent>
         
