@@ -97,9 +97,9 @@ const AspenCalculations: React.FC<AspenCalculationsProps> = ({ className, calcul
         ];
       case "reaction":
         return [
-          { id: "pfr", name: "Plug Flow Reactor", icon: Flask },
-          { id: "cstr", name: "Continuous Stirred Tank Reactor", icon: Flask },
-          { id: "batch", name: "Batch Reactor", icon: Flask },
+          { id: "pfr", name: "Plug Flow Reactor", icon: FlaskConical },
+          { id: "cstr", name: "Continuous Stirred Tank Reactor", icon: FlaskConical },
+          { id: "batch", name: "Batch Reactor", icon: FlaskConical },
           { id: "kinetics", name: "Reaction Kinetics", icon: Calculator },
           { id: "equilibrium", name: "Equilibrium Conversion", icon: Calculator }
         ];
@@ -887,7 +887,7 @@ const AspenCalculations: React.FC<AspenCalculationsProps> = ({ className, calcul
                 >
                   <div className="flex items-center mb-2">
                     <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg mr-3">
-                      <calc.icon className="h-5 w-5 text-flow-blue dark:text-blue-400" />
+                      {React.createElement(calc.icon, { className: "h-5 w-5 text-flow-blue dark:text-blue-400" })}
                     </div>
                     <h3 className="font-medium text-lg">{calc.name}</h3>
                   </div>
@@ -936,7 +936,7 @@ const AspenCalculations: React.FC<AspenCalculationsProps> = ({ className, calcul
                     
                     <div className="mt-6 flex justify-end">
                       <Button
-                        onClick={() => performCalculation(selectedCalculation!)}
+                        onClick={() => performCalculation(selectedCalculation)}
                       >
                         Run Calculation
                       </Button>
