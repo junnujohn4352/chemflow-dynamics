@@ -39,7 +39,7 @@ const ConnectionPoint: React.FC<ConnectionPointProps> = ({
   
   return (
     <div
-      className={`absolute w-4 h-4 rounded-full cursor-pointer border-2 z-20
+      className={`absolute w-5 h-5 rounded-full cursor-pointer border-2 z-20
         ${isConnected 
           ? "bg-green-500 border-green-700" 
           : isConnectable 
@@ -58,6 +58,9 @@ const ConnectionPoint: React.FC<ConnectionPointProps> = ({
         className={`absolute inset-0 rounded-full bg-white opacity-0 hover:opacity-30 
           transition-opacity duration-200 pointer-events-none`}
       ></div>
+      
+      {/* Add a pulsing effect for better visibility */}
+      <div className={`absolute inset-0 rounded-full ${isConnected ? 'bg-green-400' : 'bg-blue-400'} opacity-50 animate-pulse pointer-events-none`}></div>
     </div>
   );
 };

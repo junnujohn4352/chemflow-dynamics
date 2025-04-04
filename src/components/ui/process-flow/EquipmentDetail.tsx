@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Equipment } from "./types";
 import { X, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, RotateCw, ZoomIn, ZoomOut } from "lucide-react";
@@ -82,9 +83,9 @@ const EquipmentDetail: React.FC<EquipmentDetailProps> = ({
       {/* Connection Points */}
       <div className="mb-4">
         <h4 className="text-sm font-medium text-gray-700 mb-2">Connection Points</h4>
-        <div className="bg-gray-100 p-3 rounded-md text-center relative h-24 mb-2">
+        <div className="bg-gray-100 p-3 rounded-md text-center relative h-32 mb-2">
           {/* Add illustration of the equipment with connection points */}
-          <div className="relative mx-auto h-full w-1/2 border border-gray-300 rounded bg-white flex items-center justify-center">
+          <div className="relative mx-auto h-full w-2/3 border border-gray-300 rounded bg-white flex items-center justify-center">
             {equipment.icon && (
               <span className="text-2xl text-gray-600">{equipment.icon}</span>
             )}
@@ -116,7 +117,7 @@ const EquipmentDetail: React.FC<EquipmentDetailProps> = ({
             />
           </div>
         </div>
-        <p className="text-xs text-center text-gray-500">Click on connection points to connect equipment</p>
+        <p className="text-xs text-center font-medium text-blue-600">Click on connection points to connect equipment</p>
       </div>
       
       {/* Controls for positioning and rotation */}
