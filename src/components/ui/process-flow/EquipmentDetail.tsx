@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Equipment } from "./types";
 import { X, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, RotateCw, ZoomIn, ZoomOut } from "lucide-react";
@@ -90,7 +89,7 @@ const EquipmentDetail: React.FC<EquipmentDetailProps> = ({
               <span className="text-2xl text-gray-600">{equipment.icon}</span>
             )}
             
-            {/* Connection Points */}
+            {/* Make connection points more visible */}
             <ConnectionPoint
               id="top"
               position="top"

@@ -27,28 +27,29 @@ const ConnectionPoint: React.FC<ConnectionPointProps> = ({
   const getPositionStyles = () => {
     switch (position) {
       case "top":
-        return { top: "-5px", left: "50%", transform: "translateX(-50%)" };
+        return { top: "-6px", left: "50%", transform: "translateX(-50%)" };
       case "right":
-        return { right: "-5px", top: "50%", transform: "translateY(-50%)" };
+        return { right: "-6px", top: "50%", transform: "translateY(-50%)" };
       case "bottom":
-        return { bottom: "-5px", left: "50%", transform: "translateX(-50%)" };
+        return { bottom: "-6px", left: "50%", transform: "translateX(-50%)" };
       case "left":
-        return { left: "-5px", top: "50%", transform: "translateY(-50%)" };
+        return { left: "-6px", top: "50%", transform: "translateY(-50%)" };
     }
   };
   
   return (
     <div
-      className={`absolute w-3 h-3 rounded-full cursor-pointer border-2 
+      className={`absolute w-4 h-4 rounded-full cursor-pointer border-2 z-20
         ${isConnected 
-          ? "bg-green-400 border-green-600" 
+          ? "bg-green-500 border-green-700" 
           : isConnectable 
-            ? "bg-blue-400 border-blue-600 hover:bg-blue-500" 
-            : "bg-gray-400 border-gray-600"
-        } z-10 shadow-md`}
+            ? "bg-blue-500 border-blue-700 hover:bg-blue-600" 
+            : "bg-gray-500 border-gray-700"
+        } shadow-md`}
       style={{
         ...getPositionStyles(),
-        transition: "all 0.2s ease"
+        transition: "all 0.2s ease",
+        pointerEvents: "all"
       }}
       onClick={handleClick}
     >

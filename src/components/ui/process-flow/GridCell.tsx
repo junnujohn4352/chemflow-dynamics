@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Equipment } from "./types";
 import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Edit, Link as LinkIcon } from "lucide-react";
@@ -71,38 +70,32 @@ const GridCell: React.FC<GridCellProps> = ({
     onSelect(cell.id);
   };
 
-  // Handle connection point click
   const handleConnectionPointClick = (pointId: string) => {
     if (onConnectionPointClick) {
       onConnectionPointClick(cell.id, pointId);
     }
   };
   
-  // Handle parameter change
   const handleParameterChange = (parameterId: string, value: any) => {
     if (onParameterChange) {
       onParameterChange(cell.id, parameterId, value);
     }
   };
   
-  // Determine cell background based on state
   const cellBackground = isRunning 
     ? 'bg-green-50 border-green-200' 
     : isSelected 
       ? 'bg-blue-50 border-blue-300' 
       : 'bg-white border-gray-200';
   
-  // Calculate rotation transform
   const rotateStyle = cell.rotation 
     ? { transform: `rotate(${cell.rotation}deg)` } 
     : {};
   
-  // Calculate scale transform
   const scaleStyle = cell.scale 
     ? { transform: `${rotateStyle.transform ? rotateStyle.transform + ' ' : ''}scale(${cell.scale})` } 
     : rotateStyle;
   
-  // Show detailed equipment panel
   if (showDetails === cell.id) {
     return (
       <EquipmentDetail 
@@ -128,44 +121,37 @@ const GridCell: React.FC<GridCellProps> = ({
       onClick={handleSelect}
       onMouseDown={(e) => onDragStart(cell.id, e)}
     >
-      {/* Equipment Representation */}
       <div className="relative w-16 h-16 flex items-center justify-center" style={scaleStyle}>
         {cell.icon && (
           <span className="text-4xl text-gray-700">{cell.icon}</span>
         )}
         
-        {/* Only show connection points when hovering or connecting */}
-        {(isHovering || isConnecting || isSelected) && (
-          <>
-            <ConnectionPoint
-              id="top"
-              position="top"
-              onClick={handleConnectionPointClick}
-              isConnected={cell.connectedPoints?.includes("top")}
-            />
-            <ConnectionPoint
-              id="right"
-              position="right"
-              onClick={handleConnectionPointClick}
-              isConnected={cell.connectedPoints?.includes("right")}
-            />
-            <ConnectionPoint
-              id="bottom"
-              position="bottom"
-              onClick={handleConnectionPointClick}
-              isConnected={cell.connectedPoints?.includes("bottom")}
-            />
-            <ConnectionPoint
-              id="left"
-              position="left"
-              onClick={handleConnectionPointClick}
-              isConnected={cell.connectedPoints?.includes("left")}
-            />
-          </>
-        )}
+        <ConnectionPoint
+          id="top"
+          position="top"
+          onClick={handleConnectionPointClick}
+          isConnected={cell.connectedPoints?.includes("top")}
+        />
+        <ConnectionPoint
+          id="right"
+          position="right"
+          onClick={handleConnectionPointClick}
+          isConnected={cell.connectedPoints?.includes("right")}
+        />
+        <ConnectionPoint
+          id="bottom"
+          position="bottom"
+          onClick={handleConnectionPointClick}
+          isConnected={cell.connectedPoints?.includes("bottom")}
+        />
+        <ConnectionPoint
+          id="left"
+          position="left"
+          onClick={handleConnectionPointClick}
+          isConnected={cell.connectedPoints?.includes("left")}
+        />
       </div>
       
-      {/* Equipment Name */}
       {editingName === cell.id ? (
         <div className="mt-2" onClick={(e) => e.stopPropagation()}>
           <input
@@ -184,7 +170,6 @@ const GridCell: React.FC<GridCellProps> = ({
         </div>
       )}
       
-      {/* Equipment Controls - only shown when hovering */}
       {isHovering && !isRunning && (
         <div className="absolute top-1 right-1 flex space-x-1">
           <button
@@ -221,7 +206,6 @@ const GridCell: React.FC<GridCellProps> = ({
         </div>
       )}
       
-      {/* Movement Controls - only shown when selected and not running */}
       {isSelected && !isRunning && (
         <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
           <button
@@ -278,7 +262,6 @@ const GridCell: React.FC<GridCellProps> = ({
         </div>
       )}
       
-      {/* Running Status */}
       {isRunning && (
         <div className="absolute top-1 left-1">
           <span className="flex h-2 w-2">
