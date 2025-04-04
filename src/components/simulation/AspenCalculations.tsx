@@ -1,10 +1,11 @@
+
 import React, { useState } from "react";
 import GlassPanel from "@/components/ui/GlassPanel";
 import { cn } from "@/lib/utils";
 import { 
   Calculator, Droplets, Beaker, Thermometer, Waves, Zap, 
   Shield, Cpu, Leaf, DollarSign, FlaskConical, Gauge, ArrowRight, 
-  BookOpen, FileText, DownloadCloud, LucideIcon
+  BookOpen, FileText, DownloadCloud 
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -18,13 +19,6 @@ import { Slider } from "@/components/ui/slider";
 interface AspenCalculationsProps {
   className?: string;
   calculationType?: string;
-}
-
-// Define a type for our calculation entry
-interface CalculationEntry {
-  id: string;
-  name: string;
-  icon: LucideIcon;
 }
 
 const AspenCalculations: React.FC<AspenCalculationsProps> = ({ className, calculationType = "thermodynamic" }) => {
@@ -74,7 +68,7 @@ const AspenCalculations: React.FC<AspenCalculationsProps> = ({ className, calcul
   });
 
   // Get the available calculations for the current category
-  const getCalculationsByType = (type: string): CalculationEntry[] => {
+  const getCalculationsByType = (type: string) => {
     switch (type) {
       case "thermodynamic":
         return [
@@ -103,9 +97,9 @@ const AspenCalculations: React.FC<AspenCalculationsProps> = ({ className, calcul
         ];
       case "reaction":
         return [
-          { id: "pfr", name: "Plug Flow Reactor", icon: FlaskConical },
-          { id: "cstr", name: "Continuous Stirred Tank Reactor", icon: FlaskConical },
-          { id: "batch", name: "Batch Reactor", icon: FlaskConical },
+          { id: "pfr", name: "Plug Flow Reactor", icon: Flask },
+          { id: "cstr", name: "Continuous Stirred Tank Reactor", icon: Flask },
+          { id: "batch", name: "Batch Reactor", icon: Flask },
           { id: "kinetics", name: "Reaction Kinetics", icon: Calculator },
           { id: "equilibrium", name: "Equilibrium Conversion", icon: Calculator }
         ];
@@ -942,7 +936,7 @@ const AspenCalculations: React.FC<AspenCalculationsProps> = ({ className, calcul
                     
                     <div className="mt-6 flex justify-end">
                       <Button
-                        onClick={() => performCalculation(selectedCalculation)}
+                        onClick={() => performCalculation(selectedCalculation!)}
                       >
                         Run Calculation
                       </Button>
@@ -957,11 +951,11 @@ const AspenCalculations: React.FC<AspenCalculationsProps> = ({ className, calcul
                     <div className="mt-6 flex justify-between">
                       <Button variant="outline" className="flex items-center gap-2">
                         <BookOpen className="h-4 w-4" />
-                        <span>View Documentation</span>
+                        View Documentation
                       </Button>
                       <Button variant="outline" className="flex items-center gap-2">
                         <DownloadCloud className="h-4 w-4" />
-                        <span>Export Results</span>
+                        Export Results
                       </Button>
                     </div>
                   </TabsContent>
