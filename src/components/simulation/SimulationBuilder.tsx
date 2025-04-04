@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Plus, Minus, Thermometer, Droplets, Settings2, Container, FlaskConical, Columns, Gauge, Save, Trash2, X, Sliders, Move, ArrowLeft, Play, ChevronsUpDown, Circle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -77,7 +76,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
   const [streamAnimations, setStreamAnimations] = useState<Record<string, boolean>>({});
   const [expandedCategory, setExpandedCategory] = useState<string | null>("streams");
   
-  // Default parameters for different equipment types
   const defaultParameters = {
     feed: {
       temperature: 25, // °C
@@ -144,7 +142,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     }
   };
   
-  // Equipment port configuration
   const equipmentPorts = {
     feed: [
       { id: 'out', type: 'output', position: 'right' }
@@ -204,14 +201,12 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
       }
     }
     
-    // Start stream animations
     const intervalId = setInterval(() => {
       if (streams.length > 0) {
         setStreamAnimations(prevAnimations => {
           const newAnimations = { ...prevAnimations };
           
           streams.forEach(stream => {
-            // Toggle animation state for each stream
             newAnimations[stream.id] = !prevAnimations[stream.id];
           });
           
@@ -231,202 +226,15 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     }
   };
 
-  const equipmentCategories = [
-    {
-      id: "streams",
-      name: "Material & Energy Streams",
-      items: [
-        { id: "material-stream", name: "Material Stream", icon: <Droplets className="h-5 w-5" /> },
-        { id: "energy-stream", name: "Energy Stream", icon: <Thermometer className="h-5 w-5" /> },
-        { id: "recycle", name: "Recycle", icon: <Circle className="h-5 w-5" /> },
-        { id: "adjust", name: "Adjust", icon: <Sliders className="h-5 w-5" /> }
-      ]
-    },
-    {
-      id: "separators",
-      name: "Separators / Splitters",
-      items: [
-        { id: "flash-separator", name: "Flash Separator", icon: <Container className="h-5 w-5" /> },
-        { id: "three-phase-separator", name: "Three-Phase Separator", icon: <Container className="h-5 w-5" /> },
-        { id: "electrolyte-separator", name: "Electrolyte Separator", icon: <Container className="h-5 w-5" /> },
-        { id: "component-splitter", name: "Component Splitter", icon: <Container className="h-5 w-5" /> },
-        { id: "decanter", name: "Decanter", icon: <Container className="h-5 w-5" /> },
-        { id: "phase-separator", name: "Phase Separator", icon: <Container className="h-5 w-5" /> },
-        { id: "hydrate-separator", name: "Hydrate Separator", icon: <Container className="h-5 w-5" /> },
-        { id: "gravity-separator", name: "Gravity Separator", icon: <Container className="h-5 w-5" /> }
-      ]
-    },
-    {
-      id: "heat-exchange",
-      name: "Heat Exchange Equipment",
-      items: [
-        { id: "heater", name: "Heater", icon: <Thermometer className="h-5 w-5" /> },
-        { id: "cooler", name: "Cooler", icon: <Thermometer className="h-5 w-5" /> },
-        { id: "general-heat-exchanger", name: "General Heat Exchanger", icon: <Thermometer className="h-5 w-5" /> },
-        { id: "shell-tube-exchanger", name: "Shell & Tube Heat Exchanger", icon: <Thermometer className="h-5 w-5" /> },
-        { id: "lng-heat-exchanger", name: "LNG Heat Exchanger", icon: <Thermometer className="h-5 w-5" /> },
-        { id: "multi-stream-exchanger", name: "Multi-stream Heat Exchanger", icon: <Thermometer className="h-5 w-5" /> },
-        { id: "air-cooler", name: "Air Cooler", icon: <Thermometer className="h-5 w-5" /> },
-        { id: "thermosiphon-reboiler", name: "Thermosiphon Reboiler", icon: <Thermometer className="h-5 w-5" /> },
-        { id: "kettle-reboiler", name: "Kettle Reboiler", icon: <Thermometer className="h-5 w-5" /> },
-        { id: "fired-heater", name: "Fired Heater", icon: <Thermometer className="h-5 w-5" /> },
-        { id: "condenser", name: "Condenser", icon: <Thermometer className="h-5 w-5" /> },
-        { id: "reboiler", name: "Reboiler", icon: <Thermometer className="h-5 w-5" /> },
-        { id: "electric-heater", name: "Electric Heater", icon: <Thermometer className="h-5 w-5" /> }
-      ]
-    },
-    {
-      id: "compressors",
-      name: "Compressors / Expanders",
-      items: [
-        { id: "compressor", name: "Compressor", icon: <Gauge className="h-5 w-5" /> },
-        { id: "expander", name: "Expander", icon: <Gauge className="h-5 w-5" /> },
-        { id: "gas-turbine", name: "Gas Turbine", icon: <Gauge className="h-5 w-5" /> },
-        { id: "steam-turbine", name: "Steam Turbine", icon: <Gauge className="h-5 w-5" /> },
-        { id: "power-recovery-expander", name: "Power Recovery Expander", icon: <Gauge className="h-5 w-5" /> },
-        { id: "electric-motor", name: "Electric Motor", icon: <Gauge className="h-5 w-5" /> },
-        { id: "blower", name: "Blower", icon: <Gauge className="h-5 w-5" /> },
-        { id: "fan", name: "Fan", icon: <Gauge className="h-5 w-5" /> }
-      ]
-    },
-    {
-      id: "pumps",
-      name: "Pumps",
-      items: [
-        { id: "centrifugal-pump", name: "Centrifugal Pump", icon: <Gauge className="h-5 w-5" /> },
-        { id: "positive-displacement-pump", name: "Positive Displacement Pump", icon: <Gauge className="h-5 w-5" /> },
-        { id: "multistage-pump", name: "Multistage Pump", icon: <Gauge className="h-5 w-5" /> },
-        { id: "booster-pump", name: "Booster Pump", icon: <Gauge className="h-5 w-5" /> },
-        { id: "submersible-pump", name: "Submersible Pump", icon: <Gauge className="h-5 w-5" /> }
-      ]
-    },
-    {
-      id: "valves",
-      name: "Valves & Pressure Control",
-      items: [
-        { id: "valve", name: "Valve", icon: <Gauge className="h-5 w-5" /> },
-        { id: "control-valve", name: "Control Valve", icon: <Gauge className="h-5 w-5" /> },
-        { id: "orifice-plate", name: "Orifice Plate", icon: <Gauge className="h-5 w-5" /> },
-        { id: "joule-thomson", name: "Joule-Thomson Valve", icon: <Gauge className="h-5 w-5" /> },
-        { id: "choke-valve", name: "Choke Valve", icon: <Gauge className="h-5 w-5" /> },
-        { id: "pressure-safety-valve", name: "Pressure Safety Valve", icon: <Gauge className="h-5 w-5" /> },
-        { id: "rupture-disk", name: "Rupture Disk", icon: <Gauge className="h-5 w-5" /> }
-      ]
-    },
-    {
-      id: "reactors",
-      name: "Reactors",
-      items: [
-        { id: "conversion-reactor", name: "Conversion Reactor", icon: <FlaskConical className="h-5 w-5" /> },
-        { id: "equilibrium-reactor", name: "Equilibrium Reactor", icon: <FlaskConical className="h-5 w-5" /> },
-        { id: "gibbs-reactor", name: "Gibbs Reactor", icon: <FlaskConical className="h-5 w-5" /> },
-        { id: "cstr", name: "CSTR", icon: <FlaskConical className="h-5 w-5" /> },
-        { id: "pfr", name: "PFR", icon: <FlaskConical className="h-5 w-5" /> },
-        { id: "batch-reactor", name: "Batch Reactor", icon: <FlaskConical className="h-5 w-5" /> },
-        { id: "fluidized-bed-reactor", name: "Fluidized Bed Reactor", icon: <FlaskConical className="h-5 w-5" /> },
-        { id: "catalytic-reactor", name: "Catalytic Reactor", icon: <FlaskConical className="h-5 w-5" /> },
-        { id: "sru-claus-reactor", name: "SRU Claus Reactor", icon: <FlaskConical className="h-5 w-5" /> }
-      ]
-    },
-    {
-      id: "columns",
-      name: "Columns & Trays",
-      items: [
-        { id: "distillation-column", name: "Distillation Column", icon: <Columns className="h-5 w-5" /> },
-        { id: "absorber", name: "Absorber", icon: <Columns className="h-5 w-5" /> },
-        { id: "stripper", name: "Stripper", icon: <Columns className="h-5 w-5" /> },
-        { id: "extractive-distillation", name: "Extractive Distillation", icon: <Columns className="h-5 w-5" /> },
-        { id: "radfrac-column", name: "RadFrac Column", icon: <Columns className="h-5 w-5" /> },
-        { id: "crude-distillation", name: "Crude Distillation Unit", icon: <Columns className="h-5 w-5" /> },
-        { id: "ngl-fractionation", name: "NGL Fractionation Train", icon: <Columns className="h-5 w-5" /> },
-        { id: "column-section", name: "Column Section", icon: <Columns className="h-5 w-5" /> },
-        { id: "reactive-distillation", name: "Reactive Distillation", icon: <Columns className="h-5 w-5" /> }
-      ]
-    },
-    {
-      id: "mixers",
-      name: "Mixers & Splitters",
-      items: [
-        { id: "mixer", name: "Mixer", icon: <Columns className="h-5 w-5" /> },
-        { id: "splitter", name: "Splitter", icon: <Columns className="h-5 w-5" /> },
-        { id: "tee", name: "Tee", icon: <Columns className="h-5 w-5" /> },
-        { id: "custom-splitter", name: "Custom Splitter", icon: <Columns className="h-5 w-5" /> },
-        { id: "bypass", name: "Bypass", icon: <Columns className="h-5 w-5" /> }
-      ]
-    },
-    {
-      id: "piping",
-      name: "Piping Systems",
-      items: [
-        { id: "pipe-segment", name: "Pipe Segment", icon: <Circle className="h-5 w-5" /> },
-        { id: "pipeline-flow", name: "Pipeline Flow Segment", icon: <Circle className="h-5 w-5" /> },
-        { id: "pipe-junction", name: "Pipe Junction", icon: <Circle className="h-5 w-5" /> },
-        { id: "pipe-fittings", name: "Pipe Fittings", icon: <Circle className="h-5 w-5" /> },
-        { id: "slug-catcher", name: "Slug Catcher", icon: <Circle className="h-5 w-5" /> }
-      ]
-    },
-    {
-      id: "membranes",
-      name: "Membranes & Adsorbers",
-      items: [
-        { id: "membrane-separator", name: "Membrane Separator", icon: <Container className="h-5 w-5" /> },
-        { id: "gas-membrane", name: "Gas Membrane Unit", icon: <Container className="h-5 w-5" /> },
-        { id: "reverse-osmosis", name: "Reverse Osmosis Unit", icon: <Container className="h-5 w-5" /> },
-        { id: "adsorption-column", name: "Adsorption Column", icon: <Container className="h-5 w-5" /> },
-        { id: "molecular-sieve", name: "Molecular Sieve Bed", icon: <Container className="h-5 w-5" /> }
-      ]
-    },
-    {
-      id: "gas-treating",
-      name: "Gas Treating & Sweetening",
-      items: [
-        { id: "amine-contactor", name: "Amine Contactor", icon: <Container className="h-5 w-5" /> },
-        { id: "amine-regenerator", name: "Amine Regenerator", icon: <Container className="h-5 w-5" /> },
-        { id: "sour-water-stripper", name: "Sour Water Stripper", icon: <Container className="h-5 w-5" /> },
-        { id: "dea-mdea-system", name: "DEA/MDEA Systems", icon: <Container className="h-5 w-5" /> },
-        { id: "co2-scrubber", name: "CO₂ Scrubber", icon: <Container className="h-5 w-5" /> },
-        { id: "teg-dehydrator", name: "TEG Dehydrator", icon: <Container className="h-5 w-5" /> }
-      ]
-    },
-    {
-      id: "special-units",
-      name: "Special Units / Utilities",
-      items: [
-        { id: "hydrate-formation", name: "Hydrate Formation Unit", icon: <Container className="h-5 w-5" /> },
-        { id: "sulfur-recovery", name: "Sulfur Recovery Unit", icon: <Container className="h-5 w-5" /> },
-        { id: "tail-gas-treating", name: "Tail Gas Treating Unit", icon: <Container className="h-5 w-5" /> },
-        { id: "flare-system", name: "Flare System", icon: <Container className="h-5 w-5" /> },
-        { id: "knockout-drum", name: "Knockout Drum", icon: <Container className="h-5 w-5" /> },
-        { id: "compressor-surge", name: "Compressor Anti-Surge", icon: <Container className="h-5 w-5" /> },
-        { id: "heat-loss", name: "Heat Loss Segment", icon: <Container className="h-5 w-5" /> }
-      ]
-    },
-    {
-      id: "measurement",
-      name: "Measurement & Analysis Tools",
-      items: [
-        { id: "spreadsheet", name: "Spreadsheet", icon: <Container className="h-5 w-5" /> },
-        { id: "data-analysis", name: "Data Analysis Block", icon: <Container className="h-5 w-5" /> },
-        { id: "measurement-point", name: "Measurement Point", icon: <Container className="h-5 w-5" /> },
-        { id: "sampling-point", name: "Sampling Point", icon: <Container className="h-5 w-5" /> },
-        { id: "logical-operations", name: "Logical Operations Block", icon: <Container className="h-5 w-5" /> },
-        { id: "user-defined", name: "User Defined Subroutine", icon: <Container className="h-5 w-5" /> }
-      ]
-    },
-    {
-      id: "control",
-      name: "Control & Logic",
-      items: [
-        { id: "controller", name: "Controller", icon: <Sliders className="h-5 w-5" /> },
-        { id: "pid-controller", name: "PID Controller", icon: <Sliders className="h-5 w-5" /> },
-        { id: "logical-operator", name: "Logical Operator", icon: <Sliders className="h-5 w-5" /> },
-        { id: "signal-block", name: "Signal Block", icon: <Sliders className="h-5 w-5" /> },
-        { id: "sequence-block", name: "Sequence Block", icon: <Sliders className="h-5 w-5" /> },
-        { id: "interlock-logic", name: "Interlock Logic", icon: <Sliders className="h-5 w-5" /> }
-      ]
-    }
-  ];
-  
+  const equipmentList = equipmentCategories.flatMap(category => 
+    category.items.map(item => ({
+      id: item.id,
+      name: item.name,
+      icon: item.icon,
+      category: category.id
+    }))
+  );
+
   const handleZoomIn = () => {
     setZoom(prev => Math.min(prev + 10, 200));
   };
@@ -445,10 +253,8 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
   const handleAddEquipment = (type: string, subType?: string) => {
     const id = `${type}-${Date.now()}`;
     
-    // Add appropriate ports for the equipment type
     const ports = equipmentPorts[type as keyof typeof equipmentPorts] || [];
     
-    // Get the default parameters for this equipment type
     const settings = defaultParameters[type as keyof typeof defaultParameters] || {};
     
     const newEquipment: Equipment = {
@@ -563,7 +369,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
       if (rect) {
         const scale = zoom / 100;
         
-        // Calculate position within the canvas, accounting for zoom and pan
         const x = (e.clientX - rect.left) / scale - canvasOffset.x;
         const y = (e.clientY - rect.top) / scale - canvasOffset.y;
         
@@ -608,12 +413,10 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     setIsMoving(false);
   };
 
-  // Middle mouse button panning
   const [isPanning, setIsPanning] = useState(false);
   const [lastPanPoint, setLastPanPoint] = useState({ x: 0, y: 0 });
 
   const handleMouseDown = (e: React.MouseEvent) => {
-    // Middle mouse button (wheel) pressed for panning
     if (e.button === 1) {
       e.preventDefault();
       setIsPanning(true);
@@ -632,7 +435,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
   };
 
   const handleCanvasMouseMove = (e: React.MouseEvent) => {
-    // Handle panning with middle mouse button
     if (isPanning) {
       const dx = (e.clientX - lastPanPoint.x) / (zoom / 100);
       const dy = (e.clientY - lastPanPoint.y) / (zoom / 100);
@@ -642,13 +444,11 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
       return;
     }
     
-    // Handle equipment dragging
     if (isDragging && draggedEquipment && canvasRef.current) {
       e.preventDefault();
       const rect = canvasRef.current.getBoundingClientRect();
       const scale = zoom / 100;
       
-      // Calculate position within the canvas, accounting for zoom and pan
       const x = (e.clientX - rect.left) / scale - canvasOffset.x;
       const y = (e.clientY - rect.top) / scale - canvasOffset.y;
       
@@ -673,15 +473,12 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     e.stopPropagation();
     
     if (isConnecting && isConnecting.id !== equipmentId) {
-      // Find the source equipment and port
       const sourceEquipment = equipment.find(eq => eq.id === isConnecting.id);
       const sourcePort = sourceEquipment?.ports?.find(port => port.id === isConnecting.portId);
       
-      // Find the target equipment and port
       const targetEquipment = equipment.find(eq => eq.id === equipmentId);
       const targetPort = targetEquipment?.ports?.find(port => port.id === portId);
       
-      // Only connect if it's a valid connection (output to input)
       if (sourceEquipment && targetEquipment && sourcePort && targetPort) {
         if (sourcePort.type === 'output' && targetPort.type === 'input') {
           const newStream: Stream = {
@@ -723,7 +520,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
       
       setIsConnecting(null);
     } else if (!isConnecting) {
-      // Start connection from this port
       setIsConnecting({ id: equipmentId, portId });
     } else {
       setIsConnecting(null);
@@ -745,7 +541,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
       const rect = canvasRef.current.getBoundingClientRect();
       const scale = zoom / 100;
       
-      // Calculate the offset within the equipment item
       const offsetX = (e.clientX - rect.left) / scale - canvasOffset.x - equipmentItem.position.x;
       const offsetY = (e.clientY - rect.top) / scale - canvasOffset.y - equipmentItem.position.y;
       
@@ -902,7 +697,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
           onMouseDown={(e) => handleEquipmentDragStart(e, eq.id)}
           onMouseUp={handleEquipmentDragEnd}
         >
-          {/* Render ports */}
           {eq.ports?.map(port => renderPort(eq, port))}
           
           <div className="text-flow-blue flex items-center justify-center w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-50 rounded-full transition-all hover:scale-105">
@@ -960,7 +754,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
       return null;
     }
     
-    // Find the position of the ports
     let sourceX = sourceEq.position.x + 10;
     let sourceY = sourceEq.position.y + 10;
     let targetX = targetEq.position.x + 10;
@@ -971,7 +764,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
       const targetPort = targetEq.ports?.find(p => p.id === stream.toPort);
       
       if (sourcePort && targetPort) {
-        // Adjust positions based on port positions
         switch (sourcePort.position) {
           case 'top':
             sourceX = sourceEq.position.x + 10;
@@ -1016,12 +808,10 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     const dy = targetY - sourceY;
     const angle = Math.atan2(dy, dx);
     
-    // Calculate control points for a bezier curve
     const length = Math.sqrt(dx * dx + dy * dy);
     const controlPointX = sourceX + dx * 0.5;
     const controlPointY = sourceY + dy * 0.5;
     
-    // Determine arrow points
     const arrowSize = 8;
     const arrowX = targetX - arrowSize * Math.cos(angle);
     const arrowY = targetY - arrowSize * Math.sin(angle);
@@ -1037,9 +827,8 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
       streamGlow = "filter drop-shadow(0 0 2px rgba(34, 197, 94, 0.5))";
     }
     
-    // Animated dots along the stream
     const isAnimating = streamAnimations[stream.id];
-    const dotPosition = isAnimating ? 0.7 : 0.3; // Alternate between two positions
+    const dotPosition = isAnimating ? 0.7 : 0.3;
     
     const dotX = sourceX + dx * dotPosition;
     const dotY = sourceY + dy * dotPosition;
@@ -1066,14 +855,12 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
           </marker>
         </defs>
         
-        {/* Bezier Curve for the stream */}
         <path
           d={`M ${sourceX} ${sourceY} Q ${controlPointX} ${controlPointY} ${targetX} ${targetY}`}
           className={`${streamColor} stroke-2 ${streamGlow} fill-none`}
           markerEnd={`url(#arrowhead-${stream.id})`}
         />
         
-        {/* Animated Dot */}
         <circle
           cx={dotX}
           cy={dotY}
@@ -1192,7 +979,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
           </button>
         </div>
         
-        {/* Canvas Code */}
         <div 
           ref={canvasRef}
           className="relative border rounded-lg overflow-auto bg-gradient-to-b from-blue-50/20 to-white shadow-inner"
