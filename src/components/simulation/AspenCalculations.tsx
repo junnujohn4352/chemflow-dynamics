@@ -843,7 +843,9 @@ const AspenCalculations: React.FC<AspenCalculationsProps> = ({ className, calcul
               .map(([key, value]) => (
                 <div key={key} className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                   <p className="text-sm text-gray-500 dark:text-gray-400">{key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}</p>
-                  <p className="text-base font-medium">{typeof value === 'object' ? 'Complex data' : value}</p>
+                  <p className="text-base font-medium">
+                    {typeof value === 'object' ? 'Complex data' : String(value)}
+                  </p>
                 </div>
               ))}
           </div>
