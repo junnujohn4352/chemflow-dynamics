@@ -22,6 +22,7 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
     systemEfficiency: 0
   });
   
+  // Define equipment with input and output ports
   const [equipment, setEquipment] = useState<Equipment[]>([
     { 
       id: 'feed-tank', 
@@ -30,7 +31,8 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
       status: 'stopped', 
       metrics: { level: 75, temperature: 25 },
       position: { x: 0, y: 0 },
-      connections: []
+      connections: [],
+      outputPorts: ["outlet1"]
     },
     { 
       id: 'feed-pump', 
@@ -39,7 +41,9 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
       status: 'stopped', 
       metrics: { flow: 120 },
       position: { x: 2, y: 0 },
-      connections: []
+      connections: [],
+      inputPorts: ["inlet1"],
+      outputPorts: ["outlet1"]
     },
     { 
       id: 'preheater', 
@@ -48,7 +52,9 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
       status: 'stopped', 
       metrics: { temperature: 25 },
       position: { x: 0, y: 2 },
-      connections: []
+      connections: [],
+      inputPorts: ["inlet1"],
+      outputPorts: ["outlet1"]
     },
     { 
       id: 'distillation-column', 
@@ -57,7 +63,9 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
       status: 'stopped', 
       metrics: { pressure: 150, temperature: 30 },
       position: { x: 2, y: 2 },
-      connections: []
+      connections: [],
+      inputPorts: ["feed"],
+      outputPorts: ["distillate", "bottoms"]
     },
     { 
       id: 'product-tank', 
@@ -66,7 +74,8 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
       status: 'stopped', 
       metrics: { level: 10, temperature: 25 },
       position: { x: 0, y: 4 },
-      connections: []
+      connections: [],
+      inputPorts: ["inlet1"]
     },
     { 
       id: 'condenser', 
@@ -75,7 +84,9 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
       status: 'stopped', 
       metrics: { temperature: 25 },
       position: { x: 2, y: 4 },
-      connections: []
+      connections: [],
+      inputPorts: ["inlet1"],
+      outputPorts: ["outlet1"]
     }
   ]);
   
@@ -251,16 +262,50 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
         title: "Connect Mode Enabled",
         description: `Select another equipment to connect from ${equipment.find(e => e.id === id)?.name}`,
       });
+      
+      // Log connection attempt for debugging
+      console.log(`Starting connection from: ${id}`);
     }
   };
 
   const handleConnectionSelect = (id: string) => {
     if (connectMode && connectMode !== id) {
+      // Log connection creation for debugging
+      console.log(`Connecting ${connectMode} to ${id}`);
+      
+      const sourceEquipment = equipment.find(e => e.id === connectMode);
+      const targetEquipment = equipment.find(e => e.id === id);
+      
+      if (!sourceEquipment || !targetEquipment) {
+        console.error("Equipment not found");
+        return;
+      }
+      
+      // Validate connection (example: check if source has output and target has input)
+      if (!sourceEquipment.outputPorts?.length) {
+        toast({
+          title: "Invalid Connection",
+          description: `${sourceEquipment.name} has no output ports`,
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      if (!targetEquipment.inputPorts?.length) {
+        toast({
+          title: "Invalid Connection",
+          description: `${targetEquipment.name} has no input ports`,
+          variant: "destructive"
+        });
+        return;
+      }
+      
       const newConnection: Connection = {
         id: `conn-${Date.now()}`,
         source: connectMode,
         target: id,
-        animated: true
+        animated: true,
+        dashed: false
       };
       
       setConnections(prev => [...prev, newConnection]);
@@ -279,7 +324,7 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
       
       toast({
         title: "Connection Created",
-        description: `Connected ${equipment.find(e => e.id === connectMode)?.name} to ${equipment.find(e => e.id === id)?.name}`,
+        description: `Connected ${sourceEquipment.name} to ${targetEquipment.name}`,
       });
       
       setConnectMode(null);

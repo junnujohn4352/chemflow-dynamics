@@ -13,6 +13,8 @@ export interface Equipment {
   };
   position: { x: number; y: number };
   connections?: string[];
+  inputPorts?: string[];
+  outputPorts?: string[];
 }
 
 export interface Connection {
@@ -20,6 +22,7 @@ export interface Connection {
   source: string;
   target: string;
   animated: boolean;
+  dashed?: boolean;
 }
 
 export interface SimulationData {

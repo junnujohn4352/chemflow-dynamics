@@ -11,6 +11,9 @@ const ConnectionsRenderer: React.FC<ConnectionsRendererProps> = ({
   connections,
   equipment,
 }) => {
+  // Log connection details for debugging
+  console.log("Rendering connections:", connections);
+  
   return (
     <svg className="absolute top-0 left-0 w-full h-full pointer-events-none">
       <defs>
@@ -50,7 +53,7 @@ const ConnectionsRenderer: React.FC<ConnectionsRendererProps> = ({
         const controlX2 = targetX - dx * 0.3;
         const controlY2 = targetY;
         
-        const dashArray = "5,5";
+        const dashArray = conn.dashed ? "5,5" : "";
         
         return (
           <g key={conn.id}>
