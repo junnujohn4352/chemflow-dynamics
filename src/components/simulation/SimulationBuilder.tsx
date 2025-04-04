@@ -19,7 +19,7 @@ export interface Equipment {
   connections: string[];
   settings: Record<string, any>;
   subType?: string;
-  description?: string; // Added description field
+  description?: string;
 }
 
 export interface Stream {
@@ -28,7 +28,7 @@ export interface Stream {
   to: string;
   type: "material" | "energy" | "signal";
   properties: Record<string, any>;
-  label?: string; // Added label field
+  label?: string;
 }
 
 const safeStringify = (value: any): string => {
@@ -75,12 +75,11 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
   const [streamAnimations, setStreamAnimations] = useState<Record<string, boolean>>({});
   const [showEquipmentInfo, setShowEquipmentInfo] = useState<string | null>(null);
   
-  // Default parameters for different equipment types with added descriptions
   const defaultParameters = {
     feed: {
-      temperature: 25, // °C
-      pressure: 101.325, // kPa
-      flowRate: 100, // kg/h
+      temperature: 25,
+      pressure: 101.325,
+      flowRate: 100,
       phase: "Liquid",
       composition: selectedComponents.reduce((acc, comp) => {
         acc[comp] = 0;
@@ -89,64 +88,64 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
       description: "Feed stream with raw materials"
     },
     reactor: {
-      temperature: 80, // °C
-      pressure: 200, // kPa
-      volume: 10, // m³
-      conversionRate: 85, // %
+      temperature: 80,
+      pressure: 200,
+      volume: 10,
+      conversionRate: 85,
       reactionType: "CSTR",
       description: "Chemical reaction vessel"
     },
     column: {
-      temperature: 65, // °C
-      pressure: 150, // kPa
+      temperature: 65,
+      pressure: 150,
       numberOfTrays: 20,
       refluxRatio: 1.5,
       feedTray: 10,
-      bottomsRate: 50, // kg/h
-      distillateRate: 50, // kg/h
+      bottomsRate: 50,
+      distillateRate: 50,
       description: "Separation column with 20 stages"
     },
     heater: {
-      inletTemperature: 25, // °C
-      outletTemperature: 80, // °C
-      pressure: 101.325, // kPa
-      heatDuty: 100, // kW
-      efficiency: 85, // %
+      inletTemperature: 25,
+      outletTemperature: 80,
+      pressure: 101.325,
+      heatDuty: 100,
+      efficiency: 85,
       description: "Heating equipment for process stream"
     },
     cooler: {
-      inletTemperature: 80, // °C
-      outletTemperature: 25, // °C
-      pressure: 101.325, // kPa
-      heatDuty: 100, // kW
-      efficiency: 85, // %
+      inletTemperature: 80,
+      outletTemperature: 25,
+      pressure: 101.325,
+      heatDuty: 100,
+      efficiency: 85,
       description: "Cooling equipment for process stream"
     },
     mixer: {
-      pressure: 101.325, // kPa
-      temperature: 25, // °C
-      efficiency: 95, // %
+      pressure: 101.325,
+      temperature: 25,
+      efficiency: 95,
       description: "Combines multiple input streams"
     },
     valve: {
-      inletPressure: 200, // kPa
-      outletPressure: 101.325, // kPa
+      inletPressure: 200,
+      outletPressure: 101.325,
       flowCoefficient: 0.75,
       valveType: "linear",
       description: "Controls flow rate and pressure"
     },
     pump: {
-      inletPressure: 101.325, // kPa
-      outletPressure: 300, // kPa
-      efficiency: 75, // %
-      power: 5, // kW
+      inletPressure: 101.325,
+      outletPressure: 300,
+      efficiency: 75,
+      power: 5,
       description: "Increases pressure of fluid streams"
     },
     product: {
-      temperature: 25, // °C
-      pressure: 101.325, // kPa
-      flowRate: 100, // kg/h
-      purity: 95, // %
+      temperature: 25,
+      pressure: 101.325,
+      flowRate: 100,
+      purity: 95,
       description: "Final product output stream"
     }
   };
@@ -171,14 +170,12 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
       }
     }
     
-    // Start stream animations
     const intervalId = setInterval(() => {
       if (streams.length > 0) {
         setStreamAnimations(prevAnimations => {
           const newAnimations = { ...prevAnimations };
           
           streams.forEach(stream => {
-            // Toggle animation state for each stream
             newAnimations[stream.id] = !prevAnimations[stream.id];
           });
           
@@ -268,7 +265,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
   const handleAddEquipment = (type: string, subType?: string) => {
     const id = `${type}-${Date.now()}`;
     
-    // Get the default parameters for this equipment type
     const settings = defaultParameters[type as keyof typeof defaultParameters] || {};
     
     const newEquipment: Equipment = {
@@ -389,7 +385,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
       if (rect) {
         const scale = zoom / 100;
         
-        // Calculate position within the canvas, accounting for zoom and pan
         const x = (e.clientX - rect.left) / scale - canvasOffset.x;
         const y = (e.clientY - rect.top) / scale - canvasOffset.y;
         
@@ -435,12 +430,10 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     setIsMoving(false);
   };
 
-  // Middle mouse button panning
   const [isPanning, setIsPanning] = useState(false);
   const [lastPanPoint, setLastPanPoint] = useState({ x: 0, y: 0 });
 
   const handleMouseDown = (e: React.MouseEvent) => {
-    // Middle mouse button (wheel) pressed for panning
     if (e.button === 1) {
       e.preventDefault();
       setIsPanning(true);
@@ -459,7 +452,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
   };
 
   const handleCanvasMouseMove = (e: React.MouseEvent) => {
-    // Handle panning with middle mouse button
     if (isPanning) {
       const dx = (e.clientX - lastPanPoint.x) / (zoom / 100);
       const dy = (e.clientY - lastPanPoint.y) / (zoom / 100);
@@ -469,13 +461,11 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
       return;
     }
     
-    // Handle equipment dragging
     if (isDragging && draggedEquipment && canvasRef.current) {
       e.preventDefault();
       const rect = canvasRef.current.getBoundingClientRect();
       const scale = zoom / 100;
       
-      // Calculate position within the canvas, accounting for zoom and pan
       const x = (e.clientX - rect.left) / scale - canvasOffset.x;
       const y = (e.clientY - rect.top) / scale - canvasOffset.y;
       
@@ -521,7 +511,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
       const targetEquipment = equipment.find(e => e.id === id);
       
       if (sourceEquipment && targetEquipment) {
-        // Create a label based on equipment types
         const label = `${sourceEquipment.type} → ${targetEquipment.type}`;
         
         const newStream: Stream = {
@@ -572,7 +561,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
       const rect = canvasRef.current.getBoundingClientRect();
       const scale = zoom / 100;
       
-      // Calculate the offset within the equipment item
       const offsetX = (e.clientX - rect.left) / scale - canvasOffset.x - equipmentItem.position.x;
       const offsetY = (e.clientY - rect.top) / scale - canvasOffset.y - equipmentItem.position.y;
       
@@ -680,7 +668,7 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
           top: `${eq.position.y}px`,
           zIndex: isSelected ? 10 : 1,
           cursor: isDragging && draggedEquipment === eq.id ? 'grabbing' : 'grab',
-          transform: 'translate3d(0, 0, 0)', // Force GPU acceleration
+          transform: 'translate3d(0, 0, 0)',
         }}
         onClick={(e) => handleEquipmentClick(e, eq.id)}
       >
@@ -699,11 +687,10 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
             }</span>
           )}
           
-          {/* Basic info display */}
           {eq.description && showingInfo && (
             <div className="absolute top-full left-0 right-0 mt-1 p-2 bg-white border border-gray-200 rounded shadow-md z-30 text-xs">
               <p className="text-gray-600">{eq.description}</p>
-              {Object.entries(eq.settings).slice(0, 3).map(([key, value]) => {
+              {Object.entries(eq.settings || {}).slice(0, 3).map(([key, value]) => {
                 if (key !== 'description' && typeof value !== 'object') {
                   return (
                     <div key={key} className="mt-1">
@@ -762,7 +749,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
       return null;
     }
     
-    // Calculate positions for the stream endpoints
     const sourceX = sourceEq.position.x + 10;
     const sourceY = sourceEq.position.y + 10;
     const targetX = targetEq.position.x + 10;
@@ -772,19 +758,16 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     const dy = targetY - sourceY;
     const angle = Math.atan2(dy, dx);
     
-    // Calculate control points for a bezier curve
     const length = Math.sqrt(dx * dx + dy * dy);
     const controlPointX = sourceX + dx * 0.5;
     const controlPointY = sourceY + dy * 0.5;
     
-    // Determine arrow points
     const arrowSize = 8;
     const arrowX = targetX - arrowSize * Math.cos(angle);
     const arrowY = targetY - arrowSize * Math.sin(angle);
     
-    // Animated dots along the stream
     const isAnimating = streamAnimations[stream.id];
-    const dotPosition = isAnimating ? 0.7 : 0.3; // Alternate between two positions
+    const dotPosition = isAnimating ? 0.7 : 0.3;
     
     const dotX = sourceX + dx * dotPosition;
     const dotY = sourceY + dy * dotPosition;
@@ -811,7 +794,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
           </marker>
         </defs>
         
-        {/* Bezier Curve with dashed stroke for the stream */}
         <path
           d={`M ${sourceX} ${sourceY} Q ${controlPointX} ${controlPointY} ${targetX} ${targetY}`}
           stroke="#3b82f6"
@@ -821,7 +803,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
           markerEnd={`url(#arrowhead-${stream.id})`}
         />
         
-        {/* Animated Dot */}
         <circle
           cx={dotX}
           cy={dotY}
@@ -830,7 +811,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
           className="animate-pulse"
         />
         
-        {/* Stream Label */}
         {stream.label && (
           <text
             x={controlPointX}
