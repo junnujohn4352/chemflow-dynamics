@@ -1,25 +1,8 @@
-import React, { useState } from "react";
-import { Equipment, Connection, ConnectionPoint } from "./types";
+
+import React from "react";
+import { Equipment } from "./types";
+import { PencilLine, Settings, Link as LinkIcon, ArrowUpCircle, ArrowDownCircle, ArrowLeftCircle, ArrowRightCircle, RotateCw, RotateCcw, ZoomIn, ZoomOut, Info } from "lucide-react";
 import EquipmentDetail from "./EquipmentDetail";
-import { 
-  Container, 
-  Gauge, 
-  Thermometer, 
-  FlaskConical, 
-  Droplets, 
-  Columns, 
-  Filter, 
-  Beaker, 
-  Lightbulb,
-  Pipette, 
-  Milestone,
-  Package,
-  ArrowRight,
-  Plus,
-  Minus,
-  Info,
-  Circle
-} from "lucide-react";
 
 interface GridCellProps {
   equipment: Equipment;
@@ -60,253 +43,486 @@ const GridCell: React.FC<GridCellProps> = ({
   onRotate,
   onResize
 }) => {
-  const [hoveredConnector, setHoveredConnector] = useState<string | null>(null);
+  const isEditing = editingName === equipment.id;
   const isSelected = selectedEquipment === equipment.id;
-  const isConnecting = connectMode === equipment.id;
-
-  const defaultConnectionPoints: ConnectionPoint[] = [
-    { id: 'top', position: 'top' },
-    { id: 'right', position: 'right' },
-    { id: 'bottom', position: 'bottom' },
-    { id: 'left', position: 'left' }
-  ];
-
-  const connectionPoints = equipment.connectionPoints || defaultConnectionPoints;
-
-  const getConnectorPosition = (position: string): React.CSSProperties => {
-    switch (position) {
-      case 'top':
-        return { 
-          top: '-10px', 
-          left: '50%', 
-          transform: 'translateX(-50%)' 
-        };
-      case 'right':
-        return { 
-          top: '50%', 
-          right: '-10px', 
-          transform: 'translateY(-50%)' 
-        };
-      case 'bottom':
-        return { 
-          bottom: '-10px', 
-          left: '50%', 
-          transform: 'translateX(-50%)' 
-        };
-      case 'left':
-        return { 
-          top: '50%', 
-          left: '-10px', 
-          transform: 'translateY(-50%)' 
-        };
+  const isConnectMode = connectMode === equipment.id;
+  const isDetailVisible = showDetails === equipment.id;
+  
+  const getEquipmentIconColor = (type: string) => {
+    switch (type) {
+      case 'feed':
+      case 'tank':
+        return 'text-blue-500';
+      case 'pump':
+      case 'compressor':
+        return 'text-indigo-500';
+      case 'valve':
+        return 'text-green-500';
+      case 'heater':
+      case 'furnace':
+        return 'text-red-500';
+      case 'cooler':
+      case 'coolingTower':
+        return 'text-blue-400';
+      case 'separator':
+      case 'filter':
+        return 'text-teal-500';
+      case 'column':
+      case 'absorber':
+      case 'flashDrum':
+        return 'text-purple-500';
+      case 'reactor':
+      case 'cstr':
+      case 'pfr':
+        return 'text-pink-500';
+      case 'mixer':
+        return 'text-orange-500';
+      case 'splitter':
+        return 'text-indigo-600';
+      case 'sensor':
+        return 'text-cyan-500';
+      case 'controller':
+        return 'text-violet-500';
+      case 'heatExchanger':
+        return 'text-yellow-500';
+      case 'product':
+        return 'text-emerald-500';
       default:
-        return {};
+        return 'text-gray-500';
     }
   };
-
-  const handleConnectorClick = (e: React.MouseEvent, connectorId: string) => {
-    e.stopPropagation();
-    onConnectionSelect(equipment.id, connectorId);
+  
+  const getEquipmentBackgroundColor = (type: string) => {
+    switch (type) {
+      case 'feed':
+      case 'tank':
+        return 'bg-blue-100';
+      case 'pump':
+      case 'compressor':
+        return 'bg-indigo-100';
+      case 'valve':
+        return 'bg-green-100';
+      case 'heater':
+      case 'furnace':
+        return 'bg-red-100';
+      case 'cooler':
+      case 'coolingTower':
+        return 'bg-blue-50';
+      case 'separator':
+      case 'filter':
+        return 'bg-teal-100';
+      case 'column':
+      case 'absorber':
+      case 'flashDrum':
+        return 'bg-purple-100';
+      case 'reactor':
+      case 'cstr':
+      case 'pfr':
+        return 'bg-pink-100';
+      case 'mixer':
+        return 'bg-orange-100';
+      case 'splitter':
+        return 'bg-indigo-100';
+      case 'sensor':
+        return 'bg-cyan-100';
+      case 'controller':
+        return 'bg-violet-100';
+      case 'heatExchanger':
+        return 'bg-yellow-100';
+      case 'product':
+        return 'bg-emerald-100';
+      default:
+        return 'bg-gray-100';
+    }
   };
-
-  return (
-    <div className="relative w-full h-full">
-      <div className="absolute top-1 left-1 text-xs font-medium text-gray-700 max-w-[80%] truncate">
-        {editingName === equipment.id ? (
-          <input
-            type="text"
-            className="w-full text-xs border rounded px-1"
-            value={tempName}
-            onChange={onNameChange}
-            onBlur={onSaveName}
-            onKeyPress={(e) => e.key === 'Enter' && onSaveName()}
-            autoFocus
-          />
-        ) : (
-          <span onDoubleClick={() => onEditName(equipment.id)}>{equipment.name}</span>
-        )}
-      </div>
-      
-      <div 
-        className={`w-full h-full flex items-center justify-center ${connectMode && !isConnecting ? 'cursor-pointer' : ''}`}
-        onClick={() => connectMode && !isConnecting && onConnectionSelect(equipment.id)}
-      >
-        {equipment.type === 'arrow' ? (
-          <ArrowRight className="w-12 h-12 text-gray-800" />
-        ) : (
-          <span className="text-gray-700">{getEquipmentIcon(equipment.type)}</span>
-        )}
-      </div>
-      
-      {connectionPoints.map(point => (
+  
+  const renderEquipmentIcon = () => {
+    const type = equipment.type;
+    
+    if (type === 'arrow') {
+      return (
         <div 
-          key={point.id}
-          className={`
-            absolute flex items-center justify-center 
-            w-6 h-6 rounded-full cursor-pointer z-10 
-            transition-all duration-200 ease-in-out
-            ${hoveredConnector === point.id 
-              ? 'bg-amber-200 border-2 border-amber-500' 
-              : isConnecting
-                ? 'bg-green-100 border-2 border-green-400'
-                : 'bg-blue-100 border-2 border-blue-400'}
-          `}
+          className="flex items-center justify-center h-16 w-16"
           style={{
-            ...getConnectorPosition(point.position),
-            boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
-            opacity: connectMode ? 1 : 0.7,
-            transform: `${getConnectorPosition(point.position).transform} scale(${connectMode ? 1.2 : 1})`,
+            transform: `rotate(${equipment.rotation || 0}deg) scale(${equipment.scale || 1})`,
+            transition: 'transform 0.3s ease-out'
           }}
-          onClick={(e) => handleConnectorClick(e, point.id)}
-          onMouseEnter={() => setHoveredConnector(point.id)}
-          onMouseLeave={() => setHoveredConnector(null)}
-          title={`Connect from ${point.position}`}
         >
-          <Circle 
-            className={`
-              w-3 h-3 
-              ${hoveredConnector === point.id 
-                ? 'text-amber-600' 
-                : isConnecting
-                  ? 'text-green-500'
-                  : 'text-blue-500'}
-            `} 
-            fill="currentColor" 
-            strokeWidth={2} 
-          />
+          <div className="relative w-12 h-4">
+            <div className="absolute top-0 left-0 w-full h-full bg-gray-300 rounded-full"></div>
+            <div className="absolute top-[-8px] right-[-8px] w-0 h-0 
+              border-l-[10px] border-l-transparent
+              border-b-[10px] border-b-gray-500
+              border-r-[10px] border-r-transparent
+              transform rotate-90"
+            ></div>
+          </div>
         </div>
-      ))}
+      );
+    }
+    
+    const iconClasses = `h-16 w-16 ${getEquipmentIconColor(type)}`;
+    
+    return (
+      <div className={`w-20 h-20 rounded-full flex items-center justify-center ${getEquipmentBackgroundColor(type)} border ${isRunning ? 'animate-pulse' : ''}`}>
+        <div className="text-center">
+          <div className="equipment-icon">
+            {type === 'tank' && (
+              <div className="relative h-12 w-12 mx-auto">
+                <div className="absolute inset-0 border-2 border-current rounded-md"></div>
+                <div 
+                  className="absolute bottom-0 left-0 right-0 bg-current transition-all duration-500 rounded-sm"
+                  style={{ 
+                    height: `${equipment.metrics?.level ? Math.min(100, equipment.metrics.level) : 50}%`,
+                    opacity: 0.3
+                  }}
+                ></div>
+              </div>
+            )}
+            
+            {(type === 'pump' || type === 'compressor') && (
+              <div className="h-12 w-12 mx-auto">
+                <div className="relative h-full w-full">
+                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 h-8 w-8 border-2 border-current rounded-full"></div>
+                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 h-6 w-1 bg-current rounded-full"></div>
+                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 h-1 w-6 bg-current rounded-full"></div>
+                  <div className="absolute top-0 left-1/2 transform -translate-x-1/2 h-3 w-6 border-t-2 border-l-2 border-r-2 border-current rounded-t-md"></div>
+                  <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 h-3 w-6 border-b-2 border-l-2 border-r-2 border-current rounded-b-md"></div>
+                </div>
+              </div>
+            )}
+            
+            {(type === 'heater' || type === 'cooler' || type === 'heatExchanger') && (
+              <div className="h-12 w-12 mx-auto">
+                <div className="relative h-full w-full">
+                  <div className="absolute inset-0 border-2 border-current rounded-md"></div>
+                  <div className="absolute top-2 left-2 right-2 bottom-2">
+                    {type === 'heater' ? (
+                      <div className="h-full w-full flex items-center justify-center">
+                        <div className="h-1 w-8 bg-current"></div>
+                        <div className="h-8 w-1 bg-current"></div>
+                      </div>
+                    ) : type === 'cooler' ? (
+                      <div className="h-full w-full flex items-center justify-center">
+                        <div className="h-1 w-8 bg-current"></div>
+                      </div>
+                    ) : (
+                      <div className="h-full w-full flex flex-col items-center justify-center space-y-1">
+                        <div className="h-1 w-6 bg-current"></div>
+                        <div className="h-1 w-6 bg-current"></div>
+                        <div className="h-1 w-6 bg-current"></div>
+                        <div className="h-1 w-6 bg-current"></div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {type === 'valve' && (
+              <div className="h-12 w-12 mx-auto">
+                <div className="relative h-full w-full">
+                  <div className="absolute top-1/2 left-0 right-0 h-1 bg-current transform -translate-y-1/2"></div>
+                  <div className="absolute top-0 left-1/2 bottom-0 w-1 bg-current transform -translate-x-1/2"></div>
+                  <div className="absolute top-1/2 left-1/2 h-6 w-6 border-2 border-current rounded-full transform -translate-x-1/2 -translate-y-1/2"></div>
+                </div>
+              </div>
+            )}
+            
+            {(type === 'column' || type === 'absorber' || type === 'flashDrum') && (
+              <div className="h-12 w-12 mx-auto">
+                <div className="relative h-full w-full">
+                  <div className="absolute inset-0 border-2 border-current rounded-lg"></div>
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <div 
+                      key={i}
+                      className="absolute left-0 right-0 h-0.5 bg-current"
+                      style={{
+                        top: `${20 + i * 15}%`
+                      }}
+                    ></div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {(type === 'reactor' || type === 'cstr' || type === 'pfr') && (
+              <div className="h-12 w-12 mx-auto">
+                <div className="relative h-full w-full">
+                  {type === 'pfr' ? (
+                    <div className="absolute inset-0 border-2 border-current rounded-full"></div>
+                  ) : (
+                    <div className="absolute inset-0 border-2 border-current rounded-md"></div>
+                  )}
+                  <div className="absolute inset-3 flex items-center justify-center">
+                    {type === 'cstr' ? (
+                      <div className="h-4 w-4 border-2 border-current rounded-full animate-spin" style={{ animationDuration: '3s' }}></div>
+                    ) : (
+                      <div className="h-4 w-4 border-2 border-current rounded-sm"></div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {(type === 'mixer' || type === 'splitter') && (
+              <div className="h-12 w-12 mx-auto">
+                <div className="relative h-full w-full">
+                  <div className="absolute inset-0 border-2 border-current rounded-full"></div>
+                  {type === 'mixer' ? (
+                    <>
+                      <div className="absolute top-1/2 left-0 w-3 h-1 bg-current transform -translate-y-1/2"></div>
+                      <div className="absolute top-0 left-1/2 h-3 w-1 bg-current transform -translate-x-1/2"></div>
+                      <div className="absolute top-1/2 right-0 w-3 h-1 bg-current transform -translate-y-1/2"></div>
+                      <div className="absolute bottom-0 left-1/2 h-3 w-1 bg-current transform -translate-x-1/2"></div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="absolute top-1/4 right-0 w-3 h-1 bg-current transform -translate-y-1/2"></div>
+                      <div className="absolute top-3/4 right-0 w-3 h-1 bg-current transform -translate-y-1/2"></div>
+                      <div className="absolute top-1/2 left-0 w-3 h-1 bg-current transform -translate-y-1/2"></div>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
+            
+            {type === 'filter' && (
+              <div className="h-12 w-12 mx-auto">
+                <div className="relative h-full w-full">
+                  <div className="absolute inset-0 border-2 border-current rounded-md"></div>
+                  <div className="absolute inset-2 flex flex-col justify-around">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                      <div 
+                        key={i}
+                        className="h-1 bg-current rounded-full"
+                        style={{
+                          opacity: 0.7
+                        }}
+                      ></div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {type === 'product' && (
+              <div className="h-12 w-12 mx-auto">
+                <div className="relative h-full w-full">
+                  <div className="absolute inset-0 border-2 border-current rounded-lg"></div>
+                  <div className="absolute top-1 left-1 right-1 h-2 border-b-2 border-current"></div>
+                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-xs font-bold text-current">
+                    END
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+  
+  return (
+    <div 
+      className={`relative h-full w-full flex flex-col items-center justify-center ${isSelected ? 'bg-indigo-50' : isConnectMode ? 'bg-green-50' : ''}`}
+      onMouseDown={(e) => onDragStart(equipment.id, e)}
+    >
+      {isConnectMode && (
+        <div className="absolute inset-0 border-2 border-green-500 z-10 rounded-lg pointer-events-none"></div>
+      )}
       
-      {isSelected && (
-        <div className="absolute -top-2 -right-2 flex space-x-1">
-          {equipment.type === 'arrow' && (
-            <>
-              <button
-                className="bg-blue-100 text-blue-600 rounded-full p-1 hover:bg-blue-200 transition-colors"
-                onClick={() => {
-                  onRotate && onRotate(equipment.id, 45);
-                }}
-                title="Rotate"
-              >
-                <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-                </svg>
-              </button>
-              <button
-                className="bg-purple-100 text-purple-600 rounded-full p-1 hover:bg-purple-200 transition-colors"
-                onClick={() => {
-                  onResize && onResize(equipment.id, 0.2);
-                }}
-                title="Increase size"
-              >
-                <Plus className="h-3 w-3" />
-              </button>
-              <button
-                className="bg-indigo-100 text-indigo-600 rounded-full p-1 hover:bg-indigo-200 transition-colors"
-                onClick={() => {
-                  onResize && onResize(equipment.id, -0.2);
-                }}
-                title="Decrease size"
-              >
-                <Minus className="h-3 w-3" />
-              </button>
-            </>
-          )}
-          <button
-            className="bg-green-100 text-green-600 rounded-full p-1 hover:bg-green-200 transition-colors"
-            onClick={() => onToggleDetails(equipment.id)}
-            title="Show details"
-          >
-            <Info className="h-3 w-3" />
-          </button>
+      {isSelected && !isConnectMode && (
+        <div className="absolute inset-0 border-2 border-indigo-500 z-10 rounded-lg pointer-events-none"></div>
+      )}
+      
+      <div className="flex flex-col items-center gap-1">
+        {renderEquipmentIcon()}
+        
+        {isEditing ? (
+          <div className="mt-1">
+            <input
+              type="text"
+              value={tempName}
+              onChange={onNameChange}
+              onBlur={onSaveName}
+              onKeyDown={(e) => e.key === 'Enter' && onSaveName()}
+              autoFocus
+              className="text-sm p-1 border rounded text-center w-24"
+            />
+          </div>
+        ) : (
+          <div className="flex flex-col items-center">
+            <span className="text-xs font-medium">{equipment.name}</span>
+            {equipment.metrics && Object.keys(equipment.metrics).length > 0 && (
+              <div className="text-xs text-gray-500 mt-0.5">
+                {equipment.metrics.temperature && (
+                  <span className="mr-1">{Math.round(equipment.metrics.temperature)}°C</span>
+                )}
+                {equipment.metrics.pressure && (
+                  <span className="mr-1">{Math.round(equipment.metrics.pressure)} kPa</span>
+                )}
+                {equipment.metrics.flowRate && (
+                  <span>{Math.round(equipment.metrics.flowRate)} kg/h</span>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+      
+      <div className="absolute bottom-1 right-1 flex gap-1">
+        <button
+          className="p-1 bg-blue-100 hover:bg-blue-200 rounded text-blue-700"
+          onClick={() => onToggleDetails(equipment.id)}
+          title="Equipment Details"
+        >
+          <Info className="h-3 w-3" />
+        </button>
+      </div>
+      
+      <div className="absolute bottom-1 left-1 flex gap-1">
+        <button
+          className="p-1 bg-purple-100 hover:bg-purple-200 rounded text-purple-700"
+          onClick={() => onConnect(equipment.id)}
+          title="Connect Equipment"
+        >
+          <LinkIcon className="h-3 w-3" />
+        </button>
+        <button
+          className="p-1 bg-green-100 hover:bg-green-200 rounded text-green-700"
+          onClick={() => onEditName(equipment.id)}
+          title="Edit Name"
+        >
+          <PencilLine className="h-3 w-3" />
+        </button>
+      </div>
+      
+      {(connectMode && connectMode !== equipment.id) && (
+        <div 
+          className="absolute inset-0 bg-green-200 bg-opacity-20 cursor-pointer z-20"
+          onClick={() => onConnectionSelect(equipment.id)}
+        >
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="p-2 bg-white rounded-full shadow-md">
+              <LinkIcon className="h-6 w-6 text-green-500" />
+            </div>
+          </div>
         </div>
       )}
       
-      {showDetails === equipment.id && (
+      {(equipment.connectionPoints && connectMode && connectMode !== equipment.id) && (
+        <div className="absolute inset-0 z-30">
+          {equipment.connectionPoints.map(point => {
+            let style: React.CSSProperties = {};
+            
+            switch (point.position) {
+              case 'top':
+                style = { top: '0', left: '50%', transform: 'translate(-50%, -50%)' };
+                break;
+              case 'right':
+                style = { top: '50%', right: '0', transform: 'translate(50%, -50%)' };
+                break;
+              case 'bottom':
+                style = { bottom: '0', left: '50%', transform: 'translate(-50%, 50%)' };
+                break;
+              case 'left':
+                style = { top: '50%', left: '0', transform: 'translate(-50%, -50%)' };
+                break;
+            }
+            
+            return (
+              <div
+                key={point.id}
+                className="absolute w-5 h-5 bg-green-500 rounded-full cursor-pointer shadow-md z-30"
+                style={style}
+                onClick={() => onConnectionSelect(equipment.id, point.id)}
+              ></div>
+            );
+          })}
+        </div>
+      )}
+      
+      {isDetailVisible && (
         <EquipmentDetail 
-          equipment={equipment} 
+          equipment={equipment}
           isRunning={isRunning}
-          onClose={() => onToggleDetails('')}
-          allEquipment={[]} // Add empty array for allEquipment prop
-          onConnectEquipment={() => {}} // Add empty function for onConnectEquipment prop
+          onClose={() => onToggleDetails(equipment.id)} 
+          allEquipment={[]}
+          onConnectEquipment={() => {}}
         />
       )}
       
-      {equipment.metrics && Object.keys(equipment.metrics).length > 0 && (
-        <div className="absolute bottom-1 left-1 right-1 text-xs bg-gray-50 rounded px-1 py-0.5 line-clamp-1 text-gray-600">
-          {Object.entries(equipment.metrics)
-            .slice(0, 1)
-            .map(([key, value]) => (
-              <span key={key}>
-                {key}: {safeStringify(value)}
-                {key === 'temperature' ? '°C' : 
-                 key === 'pressure' ? ' kPa' : 
-                 key === 'level' ? '%' : 
-                 key === 'flow' ? ' kg/h' : ''}
-              </span>
-            ))}
-        </div>
-      )}
+      <div className="absolute top-1 left-1/2 -translate-x-1/2 flex flex-col items-center">
+        <button
+          className="p-1 bg-gray-100 hover:bg-gray-200 rounded text-gray-700"
+          onClick={() => onMove(equipment.id, 'up')}
+        >
+          <ArrowUpCircle className="h-3 w-3" />
+        </button>
+      </div>
       
-      {equipment.description && isSelected && (
-        <div className="absolute -bottom-8 left-0 right-0 text-xs bg-white shadow border border-gray-200 rounded p-1 z-10">
-          {equipment.description.substring(0, 30)}
-          {equipment.description.length > 30 ? '...' : ''}
+      <div className="absolute top-1/2 -translate-y-1/2 left-1 flex flex-col items-center">
+        <button
+          className="p-1 bg-gray-100 hover:bg-gray-200 rounded text-gray-700"
+          onClick={() => onMove(equipment.id, 'left')}
+        >
+          <ArrowLeftCircle className="h-3 w-3" />
+        </button>
+      </div>
+      
+      <div className="absolute top-1/2 -translate-y-1/2 right-1 flex flex-col items-center">
+        <button
+          className="p-1 bg-gray-100 hover:bg-gray-200 rounded text-gray-700"
+          onClick={() => onMove(equipment.id, 'right')}
+        >
+          <ArrowRightCircle className="h-3 w-3" />
+        </button>
+      </div>
+      
+      <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex flex-col items-center">
+        <button
+          className="p-1 bg-gray-100 hover:bg-gray-200 rounded text-gray-700"
+          onClick={() => onMove(equipment.id, 'down')}
+        >
+          <ArrowDownCircle className="h-3 w-3" />
+        </button>
+      </div>
+      
+      {equipment.type === 'arrow' && (
+        <div className="absolute top-1 right-1 flex flex-col gap-1">
+          <button
+            className="p-1 bg-amber-100 hover:bg-amber-200 rounded text-amber-700"
+            onClick={() => onRotate && onRotate(equipment.id, 45)}
+            title="Rotate Clockwise"
+          >
+            <RotateCw className="h-3 w-3" />
+          </button>
+          <button
+            className="p-1 bg-amber-100 hover:bg-amber-200 rounded text-amber-700"
+            onClick={() => onRotate && onRotate(equipment.id, -45)}
+            title="Rotate Counter-Clockwise"
+          >
+            <RotateCcw className="h-3 w-3" />
+          </button>
+          <button
+            className="p-1 bg-blue-100 hover:bg-blue-200 rounded text-blue-700"
+            onClick={() => onResize && onResize(equipment.id, 0.1)}
+            title="Increase Size"
+          >
+            <ZoomIn className="h-3 w-3" />
+          </button>
+          <button
+            className="p-1 bg-blue-100 hover:bg-blue-200 rounded text-blue-700"
+            onClick={() => onResize && onResize(equipment.id, -0.1)}
+            title="Decrease Size"
+          >
+            <ZoomOut className="h-3 w-3" />
+          </button>
         </div>
       )}
     </div>
   );
-};
-
-const getEquipmentIcon = (type: string) => {
-  switch (type) {
-    case 'tank':
-      return <Container className="h-10 w-10 text-blue-600" />;
-    case 'pump':
-      return <Gauge className="h-10 w-10 text-blue-600" />;
-    case 'heater':
-      return <Thermometer className="h-10 w-10 text-red-500" />;
-    case 'condenser':
-      return <Thermometer className="h-10 w-10 text-blue-400" />;
-    case 'column':
-      return <FlaskConical className="h-10 w-10 text-purple-500" />;
-    case 'valve':
-      return <Gauge className="h-10 w-10 text-green-500" />;
-    case 'mixer':
-      return <Columns className="h-10 w-10 text-orange-500" />;
-    case 'filter':
-      return <Filter className="h-10 w-10 text-gray-600" />;
-    case 'reactor':
-      return <Beaker className="h-10 w-10 text-pink-500" />;
-    case 'heatExchanger':
-      return <Lightbulb className="h-10 w-10 text-yellow-500" />;
-    case 'sensor':
-      return <Pipette className="h-10 w-10 text-teal-500" />;
-    case 'splitter':
-      return <Milestone className="h-10 w-10 text-indigo-500" />;
-    case 'product':
-      return <Package className="h-10 w-10 text-emerald-500" />;
-    case 'arrow':
-      return <ArrowRight className="h-10 w-10 text-gray-800" />;
-    default:
-      return <div className="h-10 w-10 bg-gray-200 rounded-full"></div>;
-  }
-};
-
-const safeStringify = (value: any): string => {
-  if (value === null || value === undefined) {
-    return '';
-  }
-  
-  if (typeof value === 'object') {
-    try {
-      return JSON.stringify(value);
-    } catch (e) {
-      return '[Object]';
-    }
-  }
-  
-  return String(value);
 };
 
 export default GridCell;
