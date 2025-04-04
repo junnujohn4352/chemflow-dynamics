@@ -37,6 +37,7 @@ export interface Equipment {
   scale?: number; // Added scale property for arrow size
   subType?: string; // Added subType for more specific equipment categories
   connectionPoints?: ConnectionPoint[]; // Added connection points
+  icon?: string; // Added icon property
 }
 
 export interface GridCell {

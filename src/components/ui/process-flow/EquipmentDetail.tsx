@@ -6,16 +6,22 @@ import { Equipment } from "./types";
 
 interface EquipmentDetailProps {
   equipment: Equipment;
-  isRunning: boolean;
+  isRunning?: boolean;
   onClose: () => void;
+  onMove?: (id: string, direction: 'up' | 'down' | 'left' | 'right') => void;
+  onRotate?: (id: string, degrees: number) => void;
+  onResize?: (id: string, scaleFactor: number) => void;
   allEquipment?: Equipment[];
-  onConnectEquipment?: (sourceId: string, targetId: string) => void;
+  onConnectEquipment?: (sourceId: string, targetId?: string) => void;
 }
 
 const EquipmentDetail: React.FC<EquipmentDetailProps> = ({
   equipment,
-  isRunning,
+  isRunning = false,
   onClose,
+  onMove,
+  onRotate,
+  onResize,
   allEquipment = [],
   onConnectEquipment
 }) => {
@@ -104,6 +110,83 @@ const EquipmentDetail: React.FC<EquipmentDetailProps> = ({
               </div>
             ))}
           </div>
+        </div>
+      )}
+      
+      {/* Control buttons for move, rotate, resize */}
+      {(onMove || onRotate || onResize) && (
+        <div className="mt-3 p-2 rounded-md bg-gray-50">
+          {onMove && (
+            <div className="mb-2">
+              <div className="text-xs font-medium text-gray-700 mb-1">Move Equipment:</div>
+              <div className="flex justify-center space-x-1">
+                <button 
+                  onClick={() => onMove(equipment.id, 'left')}
+                  className="p-1 rounded bg-blue-100 text-blue-700 text-xs hover:bg-blue-200"
+                >
+                  ←
+                </button>
+                <button 
+                  onClick={() => onMove(equipment.id, 'up')}
+                  className="p-1 rounded bg-blue-100 text-blue-700 text-xs hover:bg-blue-200"
+                >
+                  ↑
+                </button>
+                <button 
+                  onClick={() => onMove(equipment.id, 'down')}
+                  className="p-1 rounded bg-blue-100 text-blue-700 text-xs hover:bg-blue-200"
+                >
+                  ↓
+                </button>
+                <button 
+                  onClick={() => onMove(equipment.id, 'right')}
+                  className="p-1 rounded bg-blue-100 text-blue-700 text-xs hover:bg-blue-200"
+                >
+                  →
+                </button>
+              </div>
+            </div>
+          )}
+          
+          {onRotate && equipment.type === 'arrow' && (
+            <div className="mb-2">
+              <div className="text-xs font-medium text-gray-700 mb-1">Rotate:</div>
+              <div className="flex justify-center space-x-1">
+                <button 
+                  onClick={() => onRotate(equipment.id, -45)}
+                  className="p-1 rounded bg-purple-100 text-purple-700 text-xs hover:bg-purple-200"
+                >
+                  ↺ 45°
+                </button>
+                <button 
+                  onClick={() => onRotate(equipment.id, 45)}
+                  className="p-1 rounded bg-purple-100 text-purple-700 text-xs hover:bg-purple-200"
+                >
+                  ↻ 45°
+                </button>
+              </div>
+            </div>
+          )}
+          
+          {onResize && equipment.type === 'arrow' && (
+            <div>
+              <div className="text-xs font-medium text-gray-700 mb-1">Size:</div>
+              <div className="flex justify-center space-x-1">
+                <button 
+                  onClick={() => onResize(equipment.id, -0.2)}
+                  className="p-1 rounded bg-green-100 text-green-700 text-xs hover:bg-green-200"
+                >
+                  Smaller
+                </button>
+                <button 
+                  onClick={() => onResize(equipment.id, 0.2)}
+                  className="p-1 rounded bg-green-100 text-green-700 text-xs hover:bg-green-200"
+                >
+                  Larger
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
       

@@ -169,6 +169,7 @@ const GridCell: React.FC<GridCellProps> = ({
       {isShowingDetails && (
         <EquipmentDetail 
           equipment={cell}
+          isRunning={isRunning}
           onClose={() => onToggleDetails && onToggleDetails(cell.id)}
           onMove={onMove}
           onRotate={onRotate}
