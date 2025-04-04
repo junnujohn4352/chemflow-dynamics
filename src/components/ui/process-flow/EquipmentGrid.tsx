@@ -2,6 +2,7 @@
 import React from "react";
 import { Equipment, Connection } from "./types";
 import GridCell from "./GridCell";
+import ConnectionsRenderer from "./ConnectionsRenderer";
 
 interface EquipmentGridProps {
   equipment: Equipment[];
@@ -19,14 +20,9 @@ interface EquipmentGridProps {
   onNameChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onSaveName: () => void;
   onConnect: (id: string) => void;
-  onConnectionSelect: (id: string, handleId?: string) => void;
+  onConnectionSelect: (id: string) => void;
   onToggleDetails: (id: string) => void;
   onMove: (id: string, direction: 'up' | 'down' | 'left' | 'right') => void;
-  onCellClick: (row: number, col: number) => void;
-  onRotate?: (id: string, degrees: number) => void;
-  onResize?: (id: string, scaleFactor: number) => void;
-  onConnectionPointClick?: (equipmentId: string, pointId: string) => void;
-  onParameterChange?: (equipmentId: string, parameterId: string, value: any) => void;
 }
 
 const EquipmentGrid: React.FC<EquipmentGridProps> = ({
@@ -48,71 +44,48 @@ const EquipmentGrid: React.FC<EquipmentGridProps> = ({
   onConnectionSelect,
   onToggleDetails,
   onMove,
-  onCellClick,
-  onRotate,
-  onResize,
-  onConnectionPointClick,
-  onParameterChange
 }) => {
-  // Create a 5x3 grid
-  const rows = 5;
-  const cols = 3;
+  // Create a 2D grid structure
+  const grid = Array(5).fill(0).map(() => Array(3).fill(null));
   
-  // Generate the grid
-  const grid = Array(rows).fill(null).map(() => Array(cols).fill(null));
-  
-  // Place equipment on the grid
-  equipment.forEach(equip => {
-    const { x, y } = equip.position;
-    if (x >= 0 && x < cols && y >= 0 && y < rows) {
-      grid[y][x] = equip;
-    }
+  equipment.forEach(eq => {
+    const { x, y } = eq.position;
+    grid[y][x] = eq;
   });
-  
+
   return (
     <div 
-      className="relative bg-white shadow-sm rounded-xl border border-gray-200 p-3"
+      className="grid grid-cols-3 gap-4 relative"
       onMouseMove={onMouseMove}
       onMouseUp={onMouseUp}
       onMouseLeave={onMouseLeave}
     >
-      <div className="grid grid-cols-3 gap-3">
-        {grid.map((row, rowIndex) => 
-          row.map((cell, colIndex) => (
-            <div 
-              key={`${rowIndex}-${colIndex}`} 
-              onClick={() => !cell && onCellClick(rowIndex, colIndex)}
-              className="min-h-[120px]"
-            >
+      {grid.map((row, rowIndex) => (
+        <React.Fragment key={`row-${rowIndex}`}>
+          {row.map((eq, colIndex) => (
+            <div key={`cell-${rowIndex}-${colIndex}`} className="min-h-[120px] flex items-center justify-center">
               <GridCell 
-                cell={cell}
-                row={rowIndex}
-                col={colIndex}
-                isSelected={false}
-                isConnecting={connectMode !== null}
-                isRunning={isRunning}
+                equipment={eq}
+                connectMode={connectMode}
                 editingName={editingName}
-                nameValue={tempName}
+                tempName={tempName}
                 showDetails={showDetails}
+                isRunning={isRunning}
                 onDragStart={onDragStart}
                 onEditName={onEditName}
                 onNameChange={onNameChange}
                 onSaveName={onSaveName}
                 onConnect={onConnect}
-                onSelect={onConnectionSelect}
+                onConnectionSelect={onConnectionSelect}
                 onToggleDetails={onToggleDetails}
                 onMove={onMove}
-                onRotate={onRotate}
-                onResize={onResize}
-                allEquipment={equipment}
-                onConnectEquipment={onConnectionSelect}
-                onConnectionPointClick={onConnectionPointClick}
-                onParameterChange={onParameterChange}
               />
             </div>
-          ))
-        )}
-      </div>
+          ))}
+        </React.Fragment>
+      ))}
+      
+      <ConnectionsRenderer connections={connections} equipment={equipment} />
     </div>
   );
 };

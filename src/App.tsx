@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Index from "./pages/Index";
@@ -14,8 +15,6 @@ import HysysCalculations from "./pages/HysysCalculations";
 import About from "./pages/About";
 import CodeConverter from "./pages/CodeConverter";
 import Formulas from "./pages/Formulas";
-import Simulations from "./pages/Simulations";
-import AuthLayout from "./components/layout/AuthLayout";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -59,6 +58,7 @@ function App() {
                 streams: simData.streams || 0,
               };
               
+              // Save simulation function inline
               try {
                 if (!fullSimData || !fullSimData.name) return;
                 
@@ -101,26 +101,25 @@ function App() {
   }, []);
 
   return (
-    <div className="App bg-gray-50 h-full min-h-screen">
+    <div className="app">
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
-          <Toaster />
-          <Sonner />
-          <Routes>
-            <Route path="/" element={<Navigate to="/dashboard" />} />
-            
-            <Route path="/dashboard" element={<AuthLayout><Dashboard /></AuthLayout>} />
-            <Route path="/simulations" element={<AuthLayout><Simulations /></AuthLayout>} />
-            <Route path="/create-simulation" element={<AuthLayout><CreateSimulation /></AuthLayout>} />
-            <Route path="/unit-converter" element={<AuthLayout><UnitConverter /></AuthLayout>} />
-            <Route path="/formulas" element={<AuthLayout><Formulas /></AuthLayout>} />
-            <Route path="/hysys-calculations" element={<AuthLayout><HysysCalculations /></AuthLayout>} />
-            <Route path="/about" element={<AuthLayout><About /></AuthLayout>} />
-            <Route path="/code-converter" element={<AuthLayout><CodeConverter /></AuthLayout>} />
-            <Route path="/settings" element={<AuthLayout><Settings /></AuthLayout>} />
-            
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <Routes>
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/create-simulation" element={<CreateSimulation />} />
+              <Route path="/unit-converter" element={<UnitConverter />} />
+              <Route path="/hysys-calculations" element={<HysysCalculations />} />
+              <Route path="/formulas" element={<Formulas />} />
+              <Route path="/code-converter" element={<CodeConverter />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="/about" element={<About />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </TooltipProvider>
         </BrowserRouter>
       </QueryClientProvider>
     </div>

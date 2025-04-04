@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from "react";
-import { X, Link as LinkIcon, Settings2, PlusCircle, AlignJustify } from "lucide-react";
+import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface EquipmentSettingsProps {
@@ -18,12 +19,6 @@ interface EquipmentSettingsProps {
   }[];
   onClose: () => void;
   onSave: (equipmentId: string, newSettings: Record<string, any>) => void;
-  allEquipment?: {
-    id: string;
-    type: string;
-    name: string;
-  }[];
-  onConnectEquipment?: (sourceId: string, targetId: string) => void;
 }
 
 const EquipmentSettings: React.FC<EquipmentSettingsProps> = ({
@@ -31,14 +26,14 @@ const EquipmentSettings: React.FC<EquipmentSettingsProps> = ({
   equipmentTypes,
   onClose,
   onSave,
-  allEquipment = [],
-  onConnectEquipment,
 }) => {
   const [settings, setSettings] = useState<Record<string, any>>(equipment.settings);
   const [equipmentName, setEquipmentName] = useState(equipment.name);
-  const [activeTab, setActiveTab] = useState<'basic' | 'advanced' | 'composition' | 'connect'>('basic');
+  const [activeTab, setActiveTab] = useState<'basic' | 'advanced' | 'composition'>('basic');
 
   useEffect(() => {
+    // If it's a feed stream and we have components but no composition,
+    // initialize composition to 0 for each component
     if (equipment.type === 'feed' && 
         (!settings.composition || Object.keys(settings.composition).length === 0)) {
       
@@ -69,6 +64,7 @@ const EquipmentSettings: React.FC<EquipmentSettingsProps> = ({
     onSave(equipment.id, { ...settings, _equipmentName: equipmentName });
   };
 
+  // Helper function to safely render values
   const renderValue = (value: any): string => {
     if (value === null || value === undefined) {
       return '';
@@ -93,6 +89,7 @@ const EquipmentSettings: React.FC<EquipmentSettingsProps> = ({
       );
     }
     
+    // Calculate total to ensure it adds up to 100%
     const total = components.reduce((sum, comp) => sum + (parseFloat(composition[comp]) || 0), 0);
     
     return (
@@ -104,7 +101,7 @@ const EquipmentSettings: React.FC<EquipmentSettingsProps> = ({
         
         {components.map(comp => (
           <div key={comp} className="mb-3 flex items-center justify-between gap-4">
-            <label className="text-sm text-gray-700 flex-1 colorful-border blue">
+            <label className="text-sm text-gray-700 flex-1">
               {comp}
             </label>
             <input
@@ -118,7 +115,7 @@ const EquipmentSettings: React.FC<EquipmentSettingsProps> = ({
                 newComposition[comp] = parseFloat(e.target.value) || 0;
                 handleChange('composition', newComposition);
               }}
-              className="w-24 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-flow-blue/20 focus:border-flow-blue colorful-input"
+              className="w-24 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-flow-blue/20 focus:border-flow-blue"
             />
           </div>
         ))}
@@ -142,6 +139,7 @@ const EquipmentSettings: React.FC<EquipmentSettingsProps> = ({
             variant="outline"
             size="sm"
             onClick={() => {
+              // Normalize to 100%
               if (total > 0) {
                 const normalizedComposition = Object.keys(composition).reduce((acc, comp) => {
                   acc[comp] = (parseFloat(composition[comp]) || 0) * (100 / total);
@@ -151,60 +149,9 @@ const EquipmentSettings: React.FC<EquipmentSettingsProps> = ({
                 handleChange('composition', normalizedComposition);
               }
             }}
-            className="bg-gradient-blue-cyan hover:shadow-blue-300/50 text-white hover:bg-blue-600"
           >
             Normalize to 100%
           </Button>
-        </div>
-      </div>
-    );
-  };
-
-  const renderConnectFields = () => {
-    const connectableEquipment = allEquipment?.filter(eq => 
-      eq.id !== equipment.id
-    ) || [];
-    
-    if (connectableEquipment.length === 0) {
-      return (
-        <div className="p-4 text-center bg-gray-50 rounded-md">
-          <p className="text-gray-500">No other equipment available to connect</p>
-        </div>
-      );
-    }
-    
-    return (
-      <div className="space-y-2">
-        <div className="mb-4">
-          <h3 className="text-sm font-medium text-gray-700 mb-2 colorful-border purple">
-            Connect {equipment.name} to:
-          </h3>
-          <div className="space-y-1 max-h-[300px] overflow-y-auto border border-gray-100 p-2 rounded-md">
-            {connectableEquipment.map(eq => (
-              <div 
-                key={eq.id}
-                onClick={() => onConnectEquipment && onConnectEquipment(equipment.id, eq.id)}
-                className="connect-item cursor-pointer"
-              >
-                <LinkIcon className="h-4 w-4 mr-2 text-indigo-500" />
-                <span className="font-medium text-sm">{eq.name}</span>
-                <span className="ml-2 text-xs text-gray-500">({eq.type})</span>
-                <PlusCircle className="h-4 w-4 ml-auto text-green-500" />
-              </div>
-            ))}
-          </div>
-        </div>
-        
-        <div className="bg-indigo-50 p-3 rounded-md mt-4">
-          <div className="flex items-start">
-            <Settings2 className="h-5 w-5 text-indigo-500 mr-2 mt-0.5" />
-            <div>
-              <h4 className="text-sm font-medium text-indigo-700">Connection Info</h4>
-              <p className="text-xs text-indigo-600 mt-1">
-                Connections define the flow of materials and energy between equipment. Click on an equipment to create a connection.
-              </p>
-            </div>
-          </div>
         </div>
       </div>
     );
@@ -226,14 +173,15 @@ const EquipmentSettings: React.FC<EquipmentSettingsProps> = ({
     
     return filteredSettings.map(([key, value]) => {
       if (typeof value === 'number') {
+        // Determine appropriate units based on key name
         let unit = "";
         let min = 0;
         let step = 0.1;
-        let maxValue = 100;
+        let maxValue = 100; // Define maxValue variable instead of max
         
         if (key.includes('temperature')) {
           unit = "°C";
-          min = -273.15;
+          min = -273.15; // Absolute zero
           step = 1;
         } else if (key.includes('pressure')) {
           unit = "kPa";
@@ -246,7 +194,7 @@ const EquipmentSettings: React.FC<EquipmentSettingsProps> = ({
         } else if (key.includes('efficiency')) {
           unit = "%";
           min = 0;
-          maxValue = 100;
+          maxValue = 100; // Use maxValue instead of max
         } else if (key.includes('volume')) {
           unit = "m³";
           min = 0;
@@ -254,7 +202,7 @@ const EquipmentSettings: React.FC<EquipmentSettingsProps> = ({
         
         return (
           <div key={key} className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1 capitalize colorful-border green">
+            <label className="block text-sm font-medium text-gray-700 mb-1 capitalize">
               {key.replace(/([A-Z])/g, ' $1').trim()}
             </label>
             <div className="flex items-center">
@@ -262,10 +210,10 @@ const EquipmentSettings: React.FC<EquipmentSettingsProps> = ({
                 type="number"
                 min={min}
                 step={step}
-                max={key.includes('efficiency') ? maxValue : undefined}
+                max={key.includes('efficiency') ? maxValue : undefined} // Use maxValue here
                 value={value}
                 onChange={(e) => handleChange(key, parseFloat(e.target.value))}
-                className="flex-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-flow-blue/20 focus:border-flow-blue colorful-input"
+                className="flex-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-flow-blue/20 focus:border-flow-blue"
               />
               {unit && <span className="ml-2 text-sm text-gray-500">{unit}</span>}
             </div>
@@ -277,13 +225,13 @@ const EquipmentSettings: React.FC<EquipmentSettingsProps> = ({
           
           return (
             <div key={key} className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1 capitalize colorful-border green">
+              <label className="block text-sm font-medium text-gray-700 mb-1 capitalize">
                 {key.replace(/([A-Z])/g, ' $1').trim()}
               </label>
               <select
                 value={value}
                 onChange={(e) => handleChange(key, e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-flow-blue/20 focus:border-flow-blue colorful-input"
+                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-flow-blue/20 focus:border-flow-blue"
               >
                 {options.map(option => (
                   <option key={option} value={option}>{option}</option>
@@ -298,13 +246,13 @@ const EquipmentSettings: React.FC<EquipmentSettingsProps> = ({
             
           return (
             <div key={key} className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1 capitalize colorful-border green">
+              <label className="block text-sm font-medium text-gray-700 mb-1 capitalize">
                 {key.replace(/([A-Z])/g, ' $1').trim()}
               </label>
               <select
                 value={value}
                 onChange={(e) => handleChange(key, e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-flow-blue/20 focus:border-flow-blue colorful-input"
+                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-flow-blue/20 focus:border-flow-blue"
               >
                 {options.map(option => (
                   <option key={option} value={option}>{option}</option>
@@ -316,14 +264,14 @@ const EquipmentSettings: React.FC<EquipmentSettingsProps> = ({
         
         return (
           <div key={key} className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1 capitalize colorful-border green">
+            <label className="block text-sm font-medium text-gray-700 mb-1 capitalize">
               {key.replace(/([A-Z])/g, ' $1').trim()}
             </label>
             <input
               type="text"
               value={value}
               onChange={(e) => handleChange(key, e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-flow-blue/20 focus:border-flow-blue colorful-input"
+              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-flow-blue/20 focus:border-flow-blue"
             />
           </div>
         );
@@ -351,35 +299,35 @@ const EquipmentSettings: React.FC<EquipmentSettingsProps> = ({
       if (typeof value === 'number') {
         return (
           <div key={key} className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1 capitalize colorful-border orange">
+            <label className="block text-sm font-medium text-gray-700 mb-1 capitalize">
               {key.replace(/([A-Z])/g, ' $1').trim()}
             </label>
             <input
               type="number"
               value={value}
               onChange={(e) => handleChange(key, parseFloat(e.target.value))}
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-flow-blue/20 focus:border-flow-blue colorful-input"
+              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-flow-blue/20 focus:border-flow-blue"
             />
           </div>
         );
       } else if (typeof value === 'string') {
         return (
           <div key={key} className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1 capitalize colorful-border orange">
+            <label className="block text-sm font-medium text-gray-700 mb-1 capitalize">
               {key.replace(/([A-Z])/g, ' $1').trim()}
             </label>
             <input
               type="text"
               value={value}
               onChange={(e) => handleChange(key, e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-flow-blue/20 focus:border-flow-blue colorful-input"
+              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-flow-blue/20 focus:border-flow-blue"
             />
           </div>
         );
       } else if (typeof value === 'boolean') {
         return (
           <div key={key} className="mb-4 flex items-center">
-            <label className="text-sm font-medium text-gray-700 capitalize mr-2 colorful-border orange">
+            <label className="text-sm font-medium text-gray-700 capitalize mr-2">
               {key.replace(/([A-Z])/g, ' $1').trim()}
             </label>
             <input
@@ -391,9 +339,10 @@ const EquipmentSettings: React.FC<EquipmentSettingsProps> = ({
           </div>
         );
       } else if (typeof value === 'object' && value !== null && key !== 'composition') {
+        // Render complex objects as read-only text
         return (
           <div key={key} className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1 capitalize colorful-border orange">
+            <label className="block text-sm font-medium text-gray-700 mb-1 capitalize">
               {key.replace(/([A-Z])/g, ' $1').trim()}
             </label>
             <div className="p-2 bg-gray-50 border border-gray-200 rounded-md">
@@ -412,13 +361,13 @@ const EquipmentSettings: React.FC<EquipmentSettingsProps> = ({
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm">
       <div className="bg-white rounded-lg shadow-xl max-w-lg w-full max-h-[80vh] overflow-y-auto animate-fade-in">
-        <div className="flex justify-between items-center p-4 border-b bg-gradient-to-r from-indigo-500 to-purple-600 text-white">
-          <h3 className="text-lg font-medium">
+        <div className="flex justify-between items-center p-4 border-b">
+          <h3 className="text-lg font-medium bg-gradient-to-r from-flow-blue to-blue-700 bg-clip-text text-transparent">
             {typeof equipment.name === 'string' ? equipment.name : String(equipment.name)} Settings
           </h3>
           <button 
             onClick={onClose}
-            className="text-white hover:text-gray-200"
+            className="text-gray-500 hover:text-gray-700"
           >
             <X className="h-5 w-5" />
           </button>
@@ -426,14 +375,14 @@ const EquipmentSettings: React.FC<EquipmentSettingsProps> = ({
         
         <form onSubmit={handleSubmit} className="p-4">
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1 colorful-border purple">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Equipment Name
             </label>
             <input
               type="text"
               value={equipmentName}
               onChange={(e) => setEquipmentName(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-500 colorful-input"
+              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-flow-blue/20 focus:border-flow-blue"
             />
           </div>
           
@@ -446,57 +395,49 @@ const EquipmentSettings: React.FC<EquipmentSettingsProps> = ({
           )}
           
           <div className="mb-6 border-b border-gray-200">
-            <div className="flex -mb-px overflow-x-auto">
+            <div className="flex -mb-px">
               <button
                 type="button"
-                className={`py-2 px-4 flex items-center colorful-tab ${
-                  activeTab === 'basic' ? 'active purple' : ''
+                className={`py-2 px-4 border-b-2 ${
+                  activeTab === 'basic' 
+                    ? 'border-flow-blue text-flow-blue'
+                    : 'border-transparent text-gray-500 hover:text-gray-700'
                 }`}
                 onClick={() => setActiveTab('basic')}
               >
-                <Settings2 className="h-4 w-4 mr-1" />
                 Basic Parameters
               </button>
               <button
                 type="button"
-                className={`py-2 px-4 flex items-center colorful-tab ${
-                  activeTab === 'advanced' ? 'active orange' : ''
+                className={`py-2 px-4 border-b-2 ${
+                  activeTab === 'advanced' 
+                    ? 'border-flow-blue text-flow-blue'
+                    : 'border-transparent text-gray-500 hover:text-gray-700'
                 }`}
                 onClick={() => setActiveTab('advanced')}
               >
-                <AlignJustify className="h-4 w-4 mr-1" />
                 Advanced
               </button>
               {equipment.type === 'feed' && (
                 <button
                   type="button"
-                  className={`py-2 px-4 flex items-center colorful-tab ${
-                    activeTab === 'composition' ? 'active blue' : ''
+                  className={`py-2 px-4 border-b-2 ${
+                    activeTab === 'composition' 
+                      ? 'border-flow-blue text-flow-blue'
+                      : 'border-transparent text-gray-500 hover:text-gray-700'
                   }`}
                   onClick={() => setActiveTab('composition')}
                 >
-                  <PlusCircle className="h-4 w-4 mr-1" />
                   Composition
                 </button>
               )}
-              <button
-                type="button"
-                className={`py-2 px-4 flex items-center colorful-tab ${
-                  activeTab === 'connect' ? 'active green' : ''
-                }`}
-                onClick={() => setActiveTab('connect')}
-              >
-                <LinkIcon className="h-4 w-4 mr-1" />
-                Connect To
-              </button>
             </div>
           </div>
           
-          <div className="space-y-2 tab-panel">
+          <div className="space-y-2">
             {activeTab === 'basic' && renderBasicSettingsFields()}
             {activeTab === 'advanced' && renderAdvancedSettingsFields()}
             {activeTab === 'composition' && renderCompositionFields()}
-            {activeTab === 'connect' && renderConnectFields()}
           </div>
           
           <div className="flex justify-end gap-2 mt-6">
@@ -505,7 +446,7 @@ const EquipmentSettings: React.FC<EquipmentSettingsProps> = ({
             </Button>
             <Button 
               type="submit"
-              className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700"
+              className="bg-gradient-to-r from-flow-blue to-blue-600 hover:from-blue-600 hover:to-blue-700"
             >
               Save Changes
             </Button>

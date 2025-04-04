@@ -9,22 +9,11 @@ import {
   Thermometer, 
   FlaskConical, 
   SquareStack,
-  Container,
-  Wind,
-  Filter,
-  Beaker,
-  Package,
-  Columns,
-  Cpu,
-  ArrowRight,
-  Waves,
-  Milestone,
-  Lightbulb,
-  Pipette
+  Container 
 } from "lucide-react";
 
 interface EquipmentCardProps {
-  type: string;
+  type: "reactor" | "pump" | "valve" | "heater" | "condenser" | "column" | "tank" | "mixer";
   name: string;
   status?: "running" | "stopped" | "warning" | "error";
   metrics?: {
@@ -32,12 +21,6 @@ interface EquipmentCardProps {
     pressure?: number;
     flow?: number;
     level?: number;
-    efficiency?: number;
-    conversion?: number;
-    duty?: number;
-    purity?: number;
-    separation?: number;
-    [key: string]: number | undefined;
   };
   className?: string;
   onClick?: () => void;
@@ -54,46 +37,21 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
   const getIcon = () => {
     switch (type) {
       case "reactor":
-      case "cstr":
-      case "pfr":
-        return <Beaker className="h-7 w-7" />;
+        return <FlaskConical className="h-7 w-7" />;
       case "pump":
         return <Droplets className="h-7 w-7" />;
       case "valve":
         return <CircleOff className="h-7 w-7" />;
       case "heater":
-      case "furnace":
         return <Flame className="h-7 w-7" />;
-      case "cooler":
+      case "condenser":
         return <Thermometer className="h-7 w-7" />;
       case "column":
-      case "absorber":
         return <SquareStack className="h-7 w-7" />;
       case "tank":
-      case "flashDrum":
         return <Container className="h-7 w-7" />;
       case "mixer":
-        return <Columns className="h-7 w-7" />;
-      case "compressor":
-        return <Wind className="h-7 w-7" />;
-      case "filter":
-        return <Filter className="h-7 w-7" />;
-      case "product":
-        return <Package className="h-7 w-7" />;
-      case "separator":
-        return <Columns className="h-7 w-7" />;
-      case "controller":
-        return <Cpu className="h-7 w-7" />;
-      case "arrow":
-        return <ArrowRight className="h-7 w-7" />;
-      case "heatExchanger":
-        return <Lightbulb className="h-7 w-7" />;
-      case "sensor":
-        return <Pipette className="h-7 w-7" />;
-      case "splitter":
-        return <Milestone className="h-7 w-7" />;
-      case "coolingTower":
-        return <Waves className="h-7 w-7" />;
+        return <Gauge className="h-7 w-7" />;
       default:
         return <FlaskConical className="h-7 w-7" />;
     }
@@ -175,51 +133,6 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
                 <span className="text-xs text-gray-500">Level</span>
               </div>
               <p className="font-medium mt-1">{metrics.level}%</p>
-            </div>
-          )}
-          {metrics.efficiency !== undefined && (
-            <div className="p-2 rounded-lg bg-gray-50">
-              <div className="flex items-center gap-2">
-                <Gauge className="h-3.5 w-3.5 text-gray-500" />
-                <span className="text-xs text-gray-500">Efficiency</span>
-              </div>
-              <p className="font-medium mt-1">{metrics.efficiency}%</p>
-            </div>
-          )}
-          {metrics.conversion !== undefined && (
-            <div className="p-2 rounded-lg bg-gray-50">
-              <div className="flex items-center gap-2">
-                <Beaker className="h-3.5 w-3.5 text-gray-500" />
-                <span className="text-xs text-gray-500">Conversion</span>
-              </div>
-              <p className="font-medium mt-1">{metrics.conversion}%</p>
-            </div>
-          )}
-          {metrics.duty !== undefined && (
-            <div className="p-2 rounded-lg bg-gray-50">
-              <div className="flex items-center gap-2">
-                <Flame className="h-3.5 w-3.5 text-gray-500" />
-                <span className="text-xs text-gray-500">Duty</span>
-              </div>
-              <p className="font-medium mt-1">{metrics.duty} kW</p>
-            </div>
-          )}
-          {metrics.purity !== undefined && (
-            <div className="p-2 rounded-lg bg-gray-50">
-              <div className="flex items-center gap-2">
-                <Package className="h-3.5 w-3.5 text-gray-500" />
-                <span className="text-xs text-gray-500">Purity</span>
-              </div>
-              <p className="font-medium mt-1">{metrics.purity}%</p>
-            </div>
-          )}
-          {metrics.separation !== undefined && (
-            <div className="p-2 rounded-lg bg-gray-50">
-              <div className="flex items-center gap-2">
-                <Columns className="h-3.5 w-3.5 text-gray-500" />
-                <span className="text-xs text-gray-500">Separation</span>
-              </div>
-              <p className="font-medium mt-1">{metrics.separation}%</p>
             </div>
           )}
         </div>

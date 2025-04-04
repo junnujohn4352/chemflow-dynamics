@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import Navbar from "@/components/layout/Navbar";
 import GlassPanel from "@/components/ui/GlassPanel";
@@ -9,16 +8,13 @@ import {
   CloudUpload,
   Trash2,
   RefreshCw,
-  LogOut
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { useNavigate } from "react-router-dom";
 
 const Settings = () => {
   const { toast } = useToast();
-  const navigate = useNavigate();
 
   // App settings
   const [settings, setSettings] = useState({
@@ -115,33 +111,24 @@ const Settings = () => {
     });
   };
 
-  const handleSignOut = () => {
-    localStorage.removeItem("auth");
-    toast({
-      title: "Signed out",
-      description: "You have been signed out successfully."
-    });
-    navigate('/sign-in');
-  };
-
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-gray-900 dark:to-purple-900">
+    <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
       <Navbar />
       
       <main className="flex-1 py-16 px-6">
         <div className="max-w-screen-xl mx-auto">
           <div className="mb-8">
-            <h1 className="text-3xl font-display font-bold mb-2 text-purple-800 dark:text-purple-300">App Settings</h1>
+            <h1 className="text-3xl font-display font-bold mb-2 dark:text-white">App Settings</h1>
             <p className="text-gray-600 dark:text-gray-400">Manage your application preferences</p>
           </div>
           
           <div className="space-y-6">
-            <GlassPanel className="p-6 bg-white bg-opacity-70 dark:bg-gray-800 dark:border-gray-700">
-              <h3 className="text-lg font-medium mb-6 text-indigo-700 dark:text-indigo-300">Application Settings</h3>
+            <GlassPanel className="p-6 bg-white dark:bg-gray-800 dark:border-gray-700">
+              <h3 className="text-lg font-medium mb-6 dark:text-white">Application Settings</h3>
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 border border-purple-100 dark:border-purple-900 rounded-lg bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900">
+                <div className="flex items-center justify-between p-4 border border-gray-100 dark:border-gray-700 rounded-lg">
                   <div>
-                    <h4 className="font-medium text-purple-800 dark:text-purple-300">Dark Mode</h4>
+                    <h4 className="font-medium dark:text-white">Dark Mode</h4>
                     <p className="text-sm text-gray-600 dark:text-gray-400">Use dark theme throughout the application</p>
                   </div>
                   <Switch 
@@ -150,9 +137,9 @@ const Settings = () => {
                   />
                 </div>
                 
-                <div className="flex items-center justify-between p-4 border border-purple-100 dark:border-purple-900 rounded-lg bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900">
+                <div className="flex items-center justify-between p-4 border border-gray-100 dark:border-gray-700 rounded-lg">
                   <div>
-                    <h4 className="font-medium text-purple-800 dark:text-purple-300">Auto Save</h4>
+                    <h4 className="font-medium dark:text-white">Auto Save</h4>
                     <p className="text-sm text-gray-600 dark:text-gray-400">Automatically save simulations while editing</p>
                   </div>
                   <Switch 
@@ -161,9 +148,9 @@ const Settings = () => {
                   />
                 </div>
                 
-                <div className="flex items-center justify-between p-4 border border-purple-100 dark:border-purple-900 rounded-lg bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900">
+                <div className="flex items-center justify-between p-4 border border-gray-100 dark:border-gray-700 rounded-lg">
                   <div>
-                    <h4 className="font-medium text-purple-800 dark:text-purple-300">High Precision Mode</h4>
+                    <h4 className="font-medium dark:text-white">High Precision Mode</h4>
                     <p className="text-sm text-gray-600 dark:text-gray-400">Use higher numerical precision for calculations</p>
                   </div>
                   <Switch 
@@ -172,9 +159,9 @@ const Settings = () => {
                   />
                 </div>
                 
-                <div className="flex items-center justify-between p-4 border border-purple-100 dark:border-purple-900 rounded-lg bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900">
+                <div className="flex items-center justify-between p-4 border border-gray-100 dark:border-gray-700 rounded-lg">
                   <div>
-                    <h4 className="font-medium text-purple-800 dark:text-purple-300">Experimental Features</h4>
+                    <h4 className="font-medium dark:text-white">Experimental Features</h4>
                     <p className="text-sm text-gray-600 dark:text-gray-400">Enable early access to experimental features</p>
                   </div>
                   <Switch 
@@ -185,17 +172,17 @@ const Settings = () => {
               </div>
             </GlassPanel>
             
-            <GlassPanel className="p-6 bg-white bg-opacity-70 dark:bg-gray-800 dark:border-gray-700">
-              <h3 className="text-lg font-medium mb-6 text-indigo-700 dark:text-indigo-300">Data Management</h3>
+            <GlassPanel className="p-6 bg-white dark:bg-gray-800 dark:border-gray-700">
+              <h3 className="text-lg font-medium mb-6 dark:text-white">Data Management</h3>
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 border border-purple-100 dark:border-purple-900 rounded-lg bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900">
+                <div className="flex items-center justify-between p-4 border border-gray-100 dark:border-gray-700 rounded-lg">
                   <div>
-                    <h4 className="font-medium text-purple-800 dark:text-purple-300">Export All Data</h4>
+                    <h4 className="font-medium dark:text-white">Export All Data</h4>
                     <p className="text-sm text-gray-600 dark:text-gray-400">Export all your settings and simulations</p>
                   </div>
                   <Button
                     variant="outline"
-                    className="border-purple-300 text-purple-700 hover:bg-purple-100 dark:border-purple-700 dark:text-purple-300 dark:hover:bg-purple-900"
+                    className="dark:border-gray-600 dark:text-gray-200"
                     onClick={exportAllData}
                   >
                     <Download className="mr-2 h-4 w-4" />
@@ -203,33 +190,17 @@ const Settings = () => {
                   </Button>
                 </div>
                 
-                <div className="flex items-center justify-between p-4 border border-purple-100 dark:border-purple-900 rounded-lg bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900">
+                <div className="flex items-center justify-between p-4 border border-gray-100 dark:border-gray-700 rounded-lg">
                   <div>
-                    <h4 className="font-medium text-purple-800 dark:text-purple-300">Clear All Data</h4>
+                    <h4 className="font-medium dark:text-white">Clear All Data</h4>
                     <p className="text-sm text-gray-600 dark:text-gray-400">Reset all application data and settings</p>
                   </div>
                   <Button
                     variant="destructive"
-                    className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600"
                     onClick={clearAllData}
                   >
                     <Trash2 className="mr-2 h-4 w-4" />
                     Clear Data
-                  </Button>
-                </div>
-                
-                <div className="flex items-center justify-between p-4 border border-purple-100 dark:border-purple-900 rounded-lg bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900">
-                  <div>
-                    <h4 className="font-medium text-purple-800 dark:text-purple-300">Sign Out</h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Sign out from your account</p>
-                  </div>
-                  <Button
-                    variant="outline"
-                    className="border-purple-300 text-purple-700 hover:bg-purple-100 dark:border-purple-700 dark:text-purple-300 dark:hover:bg-purple-900"
-                    onClick={handleSignOut}
-                  >
-                    <LogOut className="mr-2 h-4 w-4" />
-                    Sign Out
                   </Button>
                 </div>
               </div>

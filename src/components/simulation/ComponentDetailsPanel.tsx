@@ -1,7 +1,8 @@
+
 import React, { useState } from 'react';
 import GlassPanel from "@/components/ui/GlassPanel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Thermometer, Droplets, Waves, Activity, Percent, BarChart3 } from "lucide-react";
+import { Thermometer, Droplets, Waves, Activity, Percent, BarChart3, ConnectIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
 

@@ -18,11 +18,11 @@ const ConnectionsRenderer: React.FC<ConnectionsRendererProps> = ({
           id="arrowhead" 
           markerWidth="10" 
           markerHeight="7" 
-          refX="9" 
+          refX="0" 
           refY="3.5" 
           orient="auto"
         >
-          <polygon points="0 0, 10 3.5, 0 7" fill="#8B5CF6" />
+          <polygon points="0 0, 10 3.5, 0 7" fill="#3b82f6" />
         </marker>
       </defs>
       
@@ -36,82 +36,44 @@ const ConnectionsRenderer: React.FC<ConnectionsRendererProps> = ({
         const cellHeight = 120;
         const margin = 12;
         
-        // Calculate base positions (center of cells)
-        const sourceBaseX = source.position.x * (cellWidth + margin) + (cellWidth / 2);
-        const sourceBaseY = source.position.y * (cellHeight + margin) + (cellHeight / 2);
-        const targetBaseX = target.position.x * (cellWidth + margin) + (cellWidth / 2);
-        const targetBaseY = target.position.y * (cellHeight + margin) + (cellHeight / 2);
-
-        // Get connection point positions
-        const getConnectionPointOffset = (equipment: Equipment, pointId: string) => {
-          const point = equipment.connectionPoints?.find(p => p.id === pointId);
-          if (!point) return { x: 0, y: 0 };
-          
-          switch (point.position) {
-            case "top": 
-              return { x: 0, y: -cellHeight/2 };
-            case "right": 
-              return { x: cellWidth/2, y: 0 };
-            case "bottom": 
-              return { x: 0, y: cellHeight/2 };
-            case "left": 
-              return { x: -cellWidth/2, y: 0 };
-            default: 
-              return { x: 0, y: 0 };
-          }
-        };
+        const sourceX = (source.position.x * (cellWidth + margin)) + (cellWidth / 2);
+        const sourceY = (source.position.y * (cellHeight + margin)) + (cellHeight / 2);
         
-        const sourceOffset = getConnectionPointOffset(source, conn.sourceHandle || 'right');
-        const targetOffset = getConnectionPointOffset(target, conn.targetHandle || 'left');
+        const targetX = (target.position.x * (cellWidth + margin)) + (cellWidth / 2);
+        const targetY = (target.position.y * (cellHeight + margin)) + (cellHeight / 2);
         
-        const startX = sourceBaseX + sourceOffset.x;
-        const startY = sourceBaseY + sourceOffset.y;
-        const endX = targetBaseX + targetOffset.x;
-        const endY = targetBaseY + targetOffset.y;
-
-        // Calculate midpoint for curved path
-        const midX = (startX + endX) / 2;
-        const midY = (startY + endY) / 2;
+        const dx = targetX - sourceX;
+        const dy = targetY - sourceY;
         
-        const pathId = `path-${conn.id}`;
+        const controlX1 = sourceX + dx * 0.3;
+        const controlY1 = sourceY;
+        const controlX2 = targetX - dx * 0.3;
+        const controlY2 = targetY;
+        
+        const dashArray = "5,5";
         
         return (
           <g key={conn.id}>
             <path 
-              id={pathId}
-              d={`M ${startX} ${startY} Q ${midX} ${midY} ${endX} ${endY}`} 
+              d={`M ${sourceX} ${sourceY} C ${controlX1} ${controlY1}, ${controlX2} ${controlY2}, ${targetX} ${targetY}`} 
               fill="none" 
-              stroke="#8B5CF6" 
-              strokeWidth="3" 
+              stroke="#3b82f6" 
+              strokeWidth="2" 
+              strokeDasharray={dashArray}
               markerEnd="url(#arrowhead)"
-              strokeDasharray={conn.dashed ? "5,5" : "none"}
+              className={conn.animated ? "animate-dash" : ""}
             />
             
-            {conn.animated && (
-              <circle 
-                r="5" 
-                fill="#8B5CF6">
-                <animateMotion 
-                  dur="3s"
-                  repeatCount="indefinite"
-                  path={`M ${startX} ${startY} Q ${midX} ${midY} ${endX} ${endY}`}
-                />
-              </circle>
-            )}
-            
-            {conn.label && (
-              <text
-                x={midX}
-                y={midY - 10}
-                textAnchor="middle"
-                fill="#8B5CF6"
-                fontWeight="bold"
-                fontSize="12"
-                className="pointer-events-none"
-              >
-                {conn.label}
-              </text>
-            )}
+            <circle 
+              r="3" 
+              fill="#3b82f6" 
+              className="animate-pulse">
+              <animateMotion 
+                dur="3s"
+                repeatCount="indefinite"
+                path={`M ${sourceX} ${sourceY} C ${controlX1} ${controlY1}, ${controlX2} ${controlY2}, ${targetX} ${targetY}`}
+              />
+            </circle>
           </g>
         );
       })}

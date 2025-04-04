@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import GlassPanel from "@/components/ui/GlassPanel";
 import { cn } from "@/lib/utils";
@@ -96,9 +97,9 @@ const AspenCalculations: React.FC<AspenCalculationsProps> = ({ className, calcul
         ];
       case "reaction":
         return [
-          { id: "pfr", name: "Plug Flow Reactor", icon: FlaskConical },
-          { id: "cstr", name: "Continuous Stirred Tank Reactor", icon: FlaskConical },
-          { id: "batch", name: "Batch Reactor", icon: FlaskConical },
+          { id: "pfr", name: "Plug Flow Reactor", icon: Flask },
+          { id: "cstr", name: "Continuous Stirred Tank Reactor", icon: Flask },
+          { id: "batch", name: "Batch Reactor", icon: Flask },
           { id: "kinetics", name: "Reaction Kinetics", icon: Calculator },
           { id: "equilibrium", name: "Equilibrium Conversion", icon: Calculator }
         ];
@@ -861,7 +862,7 @@ const AspenCalculations: React.FC<AspenCalculationsProps> = ({ className, calcul
               .map(([key, value]) => (
                 <div key={key} className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                   <p className="text-sm text-gray-500 dark:text-gray-400">{key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}</p>
-                  <p className="text-base font-medium">{typeof value === 'object' ? 'Complex data' : String(value)}</p>
+                  <p className="text-base font-medium">{typeof value === 'object' ? 'Complex data' : value}</p>
                 </div>
               ))}
           </div>
