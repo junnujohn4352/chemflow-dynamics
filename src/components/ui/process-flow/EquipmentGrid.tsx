@@ -23,6 +23,7 @@ interface EquipmentGridProps {
   onConnectionSelect: (id: string) => void;
   onToggleDetails: (id: string) => void;
   onMove: (id: string, direction: 'up' | 'down' | 'left' | 'right') => void;
+  onCellClick?: (row: number, col: number) => void; // Add new prop for cell click
 }
 
 const EquipmentGrid: React.FC<EquipmentGridProps> = ({
@@ -44,6 +45,7 @@ const EquipmentGrid: React.FC<EquipmentGridProps> = ({
   onConnectionSelect,
   onToggleDetails,
   onMove,
+  onCellClick, // Add handler to component props
 }) => {
   // Create a 2D grid structure
   const grid = Array(5).fill(0).map(() => Array(3).fill(null));
@@ -79,6 +81,7 @@ const EquipmentGrid: React.FC<EquipmentGridProps> = ({
                 onConnectionSelect={onConnectionSelect}
                 onToggleDetails={onToggleDetails}
                 onMove={onMove}
+                onDropClick={onCellClick ? () => onCellClick(rowIndex, colIndex) : undefined}
               />
             </div>
           ))}

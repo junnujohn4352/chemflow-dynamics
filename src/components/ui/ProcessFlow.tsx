@@ -7,11 +7,42 @@ import { Equipment, Connection } from "./process-flow/types";
 import SimulationControls from "./process-flow/SimulationControls";
 import EquipmentGrid from "./process-flow/EquipmentGrid";
 import ProcessDataPanel from "./process-flow/ProcessDataPanel";
+import { 
+  Container, 
+  Gauge, 
+  Thermometer, 
+  FlaskConical, 
+  Droplets, 
+  Columns, 
+  Filter, 
+  Beaker, 
+  Lightbulb,
+  Pipette, 
+  Milestone,
+  Package
+} from "lucide-react";
 
 interface ProcessFlowProps {
   className?: string;
   onStartSimulation?: () => void;
 }
+
+// Define equipment types for the toolbar
+const equipmentTypes = [
+  { id: "tank", name: "Tank", icon: <Container className="h-5 w-5 text-blue-600" /> },
+  { id: "pump", name: "Pump", icon: <Gauge className="h-5 w-5 text-blue-600" /> },
+  { id: "heater", name: "Heater", icon: <Thermometer className="h-5 w-5 text-red-500" /> },
+  { id: "condenser", name: "Condenser", icon: <Thermometer className="h-5 w-5 text-blue-400" /> },
+  { id: "column", name: "Column", icon: <FlaskConical className="h-5 w-5 text-purple-500" /> },
+  { id: "valve", name: "Valve", icon: <Gauge className="h-5 w-5 text-green-500" /> },
+  { id: "mixer", name: "Mixer", icon: <Columns className="h-5 w-5 text-orange-500" /> },
+  { id: "filter", name: "Filter", icon: <Filter className="h-5 w-5 text-gray-600" /> },
+  { id: "reactor", name: "Reactor", icon: <Beaker className="h-5 w-5 text-pink-500" /> },
+  { id: "heatExchanger", name: "Heat Exchanger", icon: <Lightbulb className="h-5 w-5 text-yellow-500" /> },
+  { id: "sensor", name: "Sensor", icon: <Pipette className="h-5 w-5 text-teal-500" /> },
+  { id: "splitter", name: "Splitter", icon: <Milestone className="h-5 w-5 text-indigo-500" /> },
+  { id: "product", name: "Product", icon: <Package className="h-5 w-5 text-emerald-500" /> }
+];
 
 const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation }) => {
   const { toast } = useToast();
@@ -22,6 +53,7 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
     systemEfficiency: 0
   });
   
+  const [selectedEquipmentType, setSelectedEquipmentType] = useState<string | null>(null);
   const [equipment, setEquipment] = useState<Equipment[]>([
     { 
       id: 'feed-tank', 
@@ -304,6 +336,72 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
     setShowDetails(showDetails === id ? null : id);
   };
 
+  // Handle equipment selection from toolbar
+  const handleEquipmentSelect = (type: string) => {
+    setSelectedEquipmentType(selectedEquipmentType === type ? null : type);
+    toast({
+      title: `${type.charAt(0).toUpperCase() + type.slice(1)} Selected`,
+      description: "Click on an empty cell to place the equipment",
+    });
+  };
+
+  // Handle cell click for equipment placement
+  const handleCellClick = (row: number, col: number) => {
+    if (!selectedEquipmentType) return;
+    
+    // Check if cell is already occupied
+    const cellOccupied = equipment.some(eq => 
+      eq.position.x === col && eq.position.y === row
+    );
+    
+    if (cellOccupied) {
+      toast({
+        title: "Cell Occupied",
+        description: "This position already has equipment",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    const newId = `${selectedEquipmentType}-${Date.now()}`;
+    const newEquipment: Equipment = {
+      id: newId,
+      type: selectedEquipmentType,
+      name: `${selectedEquipmentType.charAt(0).toUpperCase() + selectedEquipmentType.slice(1)} ${
+        equipment.filter(e => e.type === selectedEquipmentType).length + 1
+      }`,
+      status: 'stopped',
+      metrics: 
+        selectedEquipmentType === 'tank' ? { level: 50, temperature: 25 } :
+        selectedEquipmentType === 'pump' ? { flow: 120 } :
+        selectedEquipmentType === 'heater' ? { temperature: 80 } :
+        selectedEquipmentType === 'condenser' ? { temperature: 15 } :
+        selectedEquipmentType === 'column' ? { pressure: 150, temperature: 65 } :
+        selectedEquipmentType === 'valve' ? { flow: 80 } :
+        selectedEquipmentType === 'mixer' ? { efficiency: 90 } :
+        selectedEquipmentType === 'reactor' ? { temperature: 85, conversion: 75 } :
+        selectedEquipmentType === 'heatExchanger' ? { duty: 250 } :
+        selectedEquipmentType === 'filter' ? { efficiency: 95 } :
+        selectedEquipmentType === 'sensor' ? { reading: 42 } :
+        selectedEquipmentType === 'splitter' ? { ratio: 0.5 } :
+        selectedEquipmentType === 'product' ? { purity: 99 } :
+        {},
+      position: { x: col, y: row },
+      connections: [],
+      description: `New ${selectedEquipmentType} equipment`
+    };
+    
+    setEquipment(prev => [...prev, newEquipment]);
+    
+    toast({
+      title: "Equipment Placed",
+      description: `Added ${newEquipment.name} at position (${col},${row})`,
+    });
+    
+    // Optionally clear the selection after placement
+    setSelectedEquipmentType(null);
+  };
+
   return (
     <div className={cn("w-full", className)}>
       <GlassPanel className="p-6 animate-fade-in shadow-xl border border-white/50 backdrop-blur-sm relative overflow-hidden">
@@ -319,6 +417,29 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
             isRunning={isRunning} 
             onToggleSimulation={toggleSimulation} 
           />
+        </div>
+
+        {/* Equipment toolbar */}
+        <div className="mb-6 p-3 bg-white border border-gray-100 rounded-xl shadow-sm overflow-x-auto">
+          <div className="flex items-center gap-2">
+            <div className="text-sm font-medium text-gray-500 mr-2">Equipment:</div>
+            <div className="flex flex-wrap gap-2">
+              {equipmentTypes.map(type => (
+                <button
+                  key={type.id}
+                  className={`px-3 py-1.5 rounded text-xs border transition-colors flex items-center gap-1 ${
+                    selectedEquipmentType === type.id
+                      ? 'bg-blue-100 border-blue-300 text-blue-700'
+                      : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
+                  }`}
+                  onClick={() => handleEquipmentSelect(type.id)}
+                >
+                  <span className="mr-1">{type.icon}</span>
+                  {type.name}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
         <div className="grid grid-cols-3 gap-6 mb-6">
@@ -343,6 +464,7 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
                 onConnectionSelect={handleConnectionSelect}
                 onToggleDetails={toggleDetails}
                 onMove={handleEquipmentMove}
+                onCellClick={handleCellClick}
               />
             </div>
           </div>

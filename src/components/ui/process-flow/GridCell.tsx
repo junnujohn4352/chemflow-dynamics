@@ -22,6 +22,7 @@ interface GridCellProps {
   onConnectionSelect: (id: string) => void;
   onToggleDetails: (id: string) => void;
   onMove: (id: string, direction: 'up' | 'down' | 'left' | 'right') => void;
+  onDropClick?: () => void; // Add optional click to drop handler
 }
 
 const GridCell: React.FC<GridCellProps> = ({
@@ -39,11 +40,15 @@ const GridCell: React.FC<GridCellProps> = ({
   onConnectionSelect,
   onToggleDetails,
   onMove,
+  onDropClick, // Add handler to component props
 }) => {
   if (!equipment) {
     return (
-      <div className="w-full h-full min-h-[120px] border border-dashed border-blue-200 rounded-xl flex items-center justify-center bg-blue-50/30 hover:bg-blue-50 transition-colors">
-        <span className="text-gray-400 text-xs">Empty</span>
+      <div 
+        className="w-full h-full min-h-[120px] border border-dashed border-blue-200 rounded-xl flex items-center justify-center bg-blue-50/30 hover:bg-blue-50 transition-colors cursor-pointer"
+        onClick={onDropClick} // Add click handler for empty cells
+      >
+        <span className="text-gray-400 text-xs">Drop equipment here</span>
       </div>
     );
   }
@@ -52,25 +57,25 @@ const GridCell: React.FC<GridCellProps> = ({
     <div className="relative group">
       {/* Left connection dot */}
       <div 
-        className="absolute left-0 top-1/2 -translate-x-2 -translate-y-1/2 w-4 h-4 bg-violet-500 hover:bg-violet-600 rounded-full opacity-100 cursor-pointer z-10 transition-all duration-200"
+        className="absolute left-0 top-1/2 -translate-x-2 -translate-y-1/2 w-4 h-4 bg-violet-500 hover:bg-violet-600 rounded-full opacity-0 group-hover:opacity-100 cursor-pointer z-10 transition-all duration-200"
         onClick={() => onConnect(equipment.id)}
       />
       
       {/* Right connection dot */}
       <div 
-        className="absolute right-0 top-1/2 translate-x-2 -translate-y-1/2 w-4 h-4 bg-violet-500 hover:bg-violet-600 rounded-full opacity-100 cursor-pointer z-10 transition-all duration-200"
+        className="absolute right-0 top-1/2 translate-x-2 -translate-y-1/2 w-4 h-4 bg-violet-500 hover:bg-violet-600 rounded-full opacity-0 group-hover:opacity-100 cursor-pointer z-10 transition-all duration-200"
         onClick={() => onConnect(equipment.id)}
       />
       
       {/* Top connection dot */}
       <div 
-        className="absolute top-0 left-1/2 -translate-y-2 -translate-x-1/2 w-4 h-4 bg-violet-500 hover:bg-violet-600 rounded-full opacity-100 cursor-pointer z-10 transition-all duration-200"
+        className="absolute top-0 left-1/2 -translate-y-2 -translate-x-1/2 w-4 h-4 bg-violet-500 hover:bg-violet-600 rounded-full opacity-0 group-hover:opacity-100 cursor-pointer z-10 transition-all duration-200"
         onClick={() => onConnect(equipment.id)}
       />
       
       {/* Bottom connection dot */}
       <div 
-        className="absolute bottom-0 left-1/2 translate-y-2 -translate-x-1/2 w-4 h-4 bg-violet-500 hover:bg-violet-600 rounded-full opacity-100 cursor-pointer z-10 transition-all duration-200"
+        className="absolute bottom-0 left-1/2 translate-y-2 -translate-x-1/2 w-4 h-4 bg-violet-500 hover:bg-violet-600 rounded-full opacity-0 group-hover:opacity-100 cursor-pointer z-10 transition-all duration-200"
         onClick={() => onConnect(equipment.id)}
       />
 
