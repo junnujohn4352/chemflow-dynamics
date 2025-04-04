@@ -20,6 +20,8 @@ export interface Equipment {
   settings: Record<string, any>;
   subType?: string;
   description?: string;
+  rotation?: number;
+  scale?: number;
 }
 
 export interface Stream {

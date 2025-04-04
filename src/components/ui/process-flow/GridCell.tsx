@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Equipment, Connection } from "./types";
 import EquipmentDetail from "./EquipmentDetail";
@@ -14,7 +15,10 @@ import {
   Pipette, 
   Milestone,
   Package,
-  ArrowRight
+  ArrowRight,
+  Plus,
+  Minus,
+  Info
 } from "lucide-react";
 
 interface GridCellProps {
