@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import GlassPanel from "@/components/ui/GlassPanel";
 import { cn } from "@/lib/utils";
@@ -28,30 +29,37 @@ const AspenCalculations: React.FC<AspenCalculationsProps> = ({ className, calcul
   const [results, setResults] = useState<any>(null);
   const [calculationTab, setCalculationTab] = useState("input");
   
+  // Form state for various calculation types
   const [formState, setFormState] = useState({
+    // Common
     temperature: 298.15, // K
     pressure: 101.325, // kPa
     components: ["Methane", "Ethane", "Propane"],
     composition: [0.65, 0.25, 0.10],
     
+    // Reaction specific
     reactionType: "CSTR",
     conversionRate: 85,
     residence: 20, // min
     
+    // Heat transfer
     heatDuty: 100, // kW
     inletTemp: 25, // °C
     outletTemp: 80, // °C
     foulingFactor: 0.0002, // m²·K/W
     
+    // Distillation
     numberOfTrays: 20,
     refluxRatio: 1.5,
     feedTray: 10,
     
+    // Fluid flow
     flowRate: 100, // m³/h
     pipeLength: 100, // m
     pipeDiameter: 0.1, // m
     roughness: 0.000045, // m
     
+    // Economic
     capitalCost: 1000000, // $
     operatingCost: 200000, // $/year
     revenue: 500000, // $/year
@@ -59,6 +67,7 @@ const AspenCalculations: React.FC<AspenCalculationsProps> = ({ className, calcul
     projectLife: 10 // years
   });
 
+  // Get the available calculations for the current category
   const getCalculationsByType = (type: string) => {
     switch (type) {
       case "thermodynamic":
@@ -88,9 +97,9 @@ const AspenCalculations: React.FC<AspenCalculationsProps> = ({ className, calcul
         ];
       case "reaction":
         return [
-          { id: "pfr", name: "Plug Flow Reactor", icon: FlaskConical },
-          { id: "cstr", name: "Continuous Stirred Tank Reactor", icon: FlaskConical },
-          { id: "batch", name: "Batch Reactor", icon: FlaskConical },
+          { id: "pfr", name: "Plug Flow Reactor", icon: Flask },
+          { id: "cstr", name: "Continuous Stirred Tank Reactor", icon: Flask },
+          { id: "batch", name: "Batch Reactor", icon: Flask },
           { id: "kinetics", name: "Reaction Kinetics", icon: Calculator },
           { id: "equilibrium", name: "Equilibrium Conversion", icon: Calculator }
         ];
@@ -157,6 +166,7 @@ const AspenCalculations: React.FC<AspenCalculationsProps> = ({ className, calcul
     setResults(null);
     setCalculationTab("input");
     
+    // Simulated calculation
     let progress = 0;
     const interval = setInterval(() => {
       progress += 5;
@@ -167,6 +177,7 @@ const AspenCalculations: React.FC<AspenCalculationsProps> = ({ className, calcul
         setIsCalculating(false);
         setCalculationTab("results");
         
+        // Generate results based on calculation type
         const result = generateResults(calcId);
         setResults(result);
         
@@ -180,7 +191,9 @@ const AspenCalculations: React.FC<AspenCalculationsProps> = ({ className, calcul
     return () => clearInterval(interval);
   };
 
+  // Generate simulated results based on calculation type
   const generateResults = (calcId: string) => {
+    // Common results structure with variations based on calculation type
     const baseResult = {
       timestamp: new Date().toISOString(),
       inputs: { ...formState },
@@ -317,6 +330,7 @@ const AspenCalculations: React.FC<AspenCalculationsProps> = ({ className, calcul
     }
   };
 
+  // Render appropriate form fields based on calculation type
   const renderInputFields = () => {
     const baseFields = (
       <div className="space-y-4">
@@ -343,6 +357,7 @@ const AspenCalculations: React.FC<AspenCalculationsProps> = ({ className, calcul
       </div>
     );
 
+    // Additional fields based on calculation type
     switch (calculationType) {
       case "thermodynamic":
         return (
@@ -616,9 +631,11 @@ const AspenCalculations: React.FC<AspenCalculationsProps> = ({ className, calcul
     }
   };
 
+  // Render results based on calculation type and results
   const renderResults = () => {
     if (!results) return <p>No results available.</p>;
     
+    // Common results display components
     const renderBasicProperties = () => (
       <div className="grid grid-cols-2 gap-3 mb-4">
         <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
@@ -632,6 +649,7 @@ const AspenCalculations: React.FC<AspenCalculationsProps> = ({ className, calcul
       </div>
     );
     
+    // Specific displays based on calculation type
     if (calculationType === "thermodynamic" && results.components && Array.isArray(results.results)) {
       return (
         <div>
@@ -829,6 +847,7 @@ const AspenCalculations: React.FC<AspenCalculationsProps> = ({ className, calcul
         </div>
       );
     } else {
+      // Generic results display when specific format is not available
       return (
         <div className="space-y-4">
           <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800">
@@ -843,9 +862,7 @@ const AspenCalculations: React.FC<AspenCalculationsProps> = ({ className, calcul
               .map(([key, value]) => (
                 <div key={key} className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                   <p className="text-sm text-gray-500 dark:text-gray-400">{key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}</p>
-                  <p className="text-base font-medium">
-                    {typeof value === 'object' ? 'Complex data' : String(value)}
-                  </p>
+                  <p className="text-base font-medium">{typeof value === 'object' ? 'Complex data' : value}</p>
                 </div>
               ))}
           </div>
