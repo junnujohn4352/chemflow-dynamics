@@ -1,7 +1,6 @@
 import React, { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Index from "./pages/Index";
@@ -108,29 +107,27 @@ function App() {
     <div className="App bg-gray-50 h-full min-h-screen">
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <Routes>
-              <Route path="/" element={<LandingPage />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/simulations" element={<Simulations />} />
-              <Route path="/create-simulation" element={<CreateSimulation />} />
-              <Route path="/unit-converter" element={<UnitConverter />} />
-              <Route path="/formulas" element={<Formulas />} />
-              <Route path="/hysys-calculations" element={<HysysCalculations />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/components" element={<Components />} />
-              <Route path="/code-converter" element={<CodeConverter />} />
-              <Route path="/settings" element={<Settings />} />
-              
-              {/* Authentication routes */}
-              <Route path="/sign-in" element={<SignIn />} />
-              <Route path="/sign-up" element={<SignUp />} />
-              
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/simulations" element={<Simulations />} />
+            <Route path="/create-simulation" element={<CreateSimulation />} />
+            <Route path="/unit-converter" element={<UnitConverter />} />
+            <Route path="/formulas" element={<Formulas />} />
+            <Route path="/hysys-calculations" element={<HysysCalculations />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/components" element={<Components />} />
+            <Route path="/code-converter" element={<CodeConverter />} />
+            <Route path="/settings" element={<Settings />} />
+            
+            {/* Authentication routes */}
+            <Route path="/sign-in" element={<SignIn />} />
+            <Route path="/sign-up" element={<SignUp />} />
+            
+            <Route path="*" element={<NotFound />} />
+          </Routes>
         </BrowserRouter>
       </QueryClientProvider>
     </div>

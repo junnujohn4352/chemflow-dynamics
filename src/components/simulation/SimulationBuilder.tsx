@@ -153,6 +153,14 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     }
   };
   
+  const [newEquipment, setNewEquipment] = useState<Partial<Equipment>>({
+    name: '',
+    type: '',
+    position: { x: 0, y: 0 },
+    metrics: {},
+    description: ''
+  });
+
   useEffect(() => {
     const savedEquipment = localStorage.getItem('chemflow-equipment');
     const savedStreams = localStorage.getItem('chemflow-streams');
