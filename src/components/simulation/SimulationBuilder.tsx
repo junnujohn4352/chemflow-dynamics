@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { 
   Plus, 
@@ -111,7 +110,34 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
   const [streamAnimations, setStreamAnimations] = useState<Record<string, boolean>>({});
   const [showEquipmentInfo, setShowEquipmentInfo] = useState<string | null>(null);
   
-  const defaultParameters = {
+  interface EquipmentParameters {
+    temperature?: number;
+    pressure?: number;
+    flowRate?: number;
+    phase?: string;
+    composition?: Record<string, number>;
+    volume?: number;
+    conversionRate?: number;
+    reactionType?: string;
+    numberOfTrays?: number;
+    refluxRatio?: number;
+    feedTray?: number;
+    bottomsRate?: number;
+    distillateRate?: number;
+    inletTemperature?: number;
+    outletTemperature?: number;
+    heatDuty?: number;
+    efficiency?: number;
+    inletPressure?: number;
+    outletPressure?: number;
+    flowCoefficient?: number;
+    valveType?: string;
+    power?: number;
+    purity?: number;
+    description?: string;
+  }
+
+  const defaultParameters: Record<string, EquipmentParameters> = {
     feed: {
       temperature: 25,
       pressure: 101.325,
@@ -339,7 +365,7 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
   const handleAddEquipment = (type: string, subType?: string) => {
     const id = `${type}-${Date.now()}`;
     
-    const settings = defaultParameters[type as keyof typeof defaultParameters] || {};
+    const settings = defaultParameters[type as keyof typeof defaultParameters] || {} as EquipmentParameters;
     
     const newEquipment: Equipment = {
       id,
@@ -349,7 +375,7 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
       connections: [],
       settings,
       subType,
-      description: settings?.description || `${type.charAt(0).toUpperCase() + type.slice(1)} equipment`
+      description: settings.description || `${type.charAt(0).toUpperCase() + type.slice(1)} equipment`
     };
     
     setEquipment(prev => [...prev, newEquipment]);
