@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Equipment, Connection, ConnectionPoint } from "./types";
 import EquipmentDetail from "./EquipmentDetail";
@@ -94,7 +93,7 @@ const GridCell: React.FC<GridCellProps> = ({
     }
   };
 
-  const getConnectorPosition = (position: string): { top?: string, right?: string, bottom?: string, left?: string } => {
+  const getConnectorPosition = (position: string): React.CSSProperties => {
     switch (position) {
       case 'top':
         return { top: '-5px', left: '50%', transform: 'translateX(-50%)' };
