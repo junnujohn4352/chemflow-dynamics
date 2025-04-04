@@ -1,8 +1,8 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { Equipment } from "./types";
 import { Button } from "@/components/ui/button";
-import { Info, ArrowRight } from "lucide-react";
+import { Info } from "lucide-react";
 import EquipmentCard from "@/components/ui/EquipmentCard";
 import EquipmentController from "./EquipmentController";
 import EquipmentDetail from "./EquipmentDetail";
@@ -40,76 +40,6 @@ const GridCell: React.FC<GridCellProps> = ({
   onToggleDetails,
   onMove,
 }) => {
-  const [showArrow, setShowArrow] = useState(false);
-  const [arrowPosition, setArrowPosition] = useState({ x: 0, y: 0 });
-  const [arrowAngle, setArrowAngle] = useState(0);
-  const [isDraggingArrow, setIsDraggingArrow] = useState(false);
-
-  const handleMouseEnter = () => {
-    if (equipment) {
-      setShowArrow(true);
-    }
-  };
-
-  const handleMouseLeave = () => {
-    if (!isDraggingArrow) {
-      setShowArrow(false);
-    }
-  };
-
-  const startArrowDrag = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (equipment) {
-      setIsDraggingArrow(true);
-      document.addEventListener('mousemove', moveArrow);
-      document.addEventListener('mouseup', stopArrowDrag);
-      
-      // Initialize arrow at center of the equipment
-      const rect = e.currentTarget.getBoundingClientRect();
-      setArrowPosition({
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top
-      });
-    }
-  };
-
-  const moveArrow = (e: MouseEvent) => {
-    if (isDraggingArrow && equipment) {
-      const equipmentElement = document.getElementById(`equipment-${equipment.id}`);
-      if (equipmentElement) {
-        const rect = equipmentElement.getBoundingClientRect();
-        const centerX = rect.width / 2;
-        const centerY = rect.height / 2;
-        
-        // Calculate new position relative to equipment center
-        const newX = e.clientX - rect.left;
-        const newY = e.clientY - rect.top;
-        
-        // Calculate angle based on vector from center to new position
-        const dx = newX - centerX;
-        const dy = newY - centerY;
-        const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-        
-        setArrowPosition({ x: newX, y: newY });
-        setArrowAngle(angle);
-      }
-    }
-  };
-
-  const stopArrowDrag = (e: MouseEvent) => {
-    if (isDraggingArrow && equipment) {
-      // Determine which equipment to connect to based on the arrow direction
-      // We'll use the closest equipment in the arrow's direction
-      setIsDraggingArrow(false);
-      setShowArrow(false);
-      document.removeEventListener('mousemove', moveArrow);
-      document.removeEventListener('mouseup', stopArrowDrag);
-      
-      // Initiate the connection process
-      onConnect(equipment.id);
-    }
-  };
-
   if (!equipment) {
     return (
       <div className="w-full h-full min-h-[120px] border border-dashed border-blue-200 rounded-xl flex items-center justify-center bg-blue-50/30 hover:bg-blue-50 transition-colors">
@@ -119,12 +49,7 @@ const GridCell: React.FC<GridCellProps> = ({
   }
 
   return (
-    <div 
-      className="relative group"
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      id={`equipment-${equipment.id}`}
-    >
+    <div className="relative group">
       {/* Left connection dot */}
       <div 
         className="absolute left-0 top-1/2 -translate-x-2 -translate-y-1/2 w-4 h-4 bg-violet-500 hover:bg-violet-600 rounded-full opacity-100 cursor-pointer z-10 transition-all duration-200"
@@ -148,24 +73,6 @@ const GridCell: React.FC<GridCellProps> = ({
         className="absolute bottom-0 left-1/2 translate-y-2 -translate-x-1/2 w-4 h-4 bg-violet-500 hover:bg-violet-600 rounded-full opacity-100 cursor-pointer z-10 transition-all duration-200"
         onClick={() => onConnect(equipment.id)}
       />
-
-      {/* Floating arrow for custom angle connections */}
-      {showArrow && (
-        <div 
-          className="absolute z-20 cursor-grab active:cursor-grabbing"
-          style={{
-            left: arrowPosition.x || "50%",
-            top: arrowPosition.y || "50%",
-            transform: `translate(-50%, -50%) rotate(${arrowAngle}deg)`,
-            display: isDraggingArrow ? 'block' : 'block'
-          }}
-          onMouseDown={startArrowDrag}
-        >
-          <div className="p-2 rounded-full bg-violet-500 hover:bg-violet-600 text-white shadow-lg transition-colors">
-            <ArrowRight className="h-5 w-5" />
-          </div>
-        </div>
-      )}
 
       {editingName === equipment.id ? (
         <div className="absolute -top-10 left-0 right-0 flex z-50">
