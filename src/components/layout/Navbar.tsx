@@ -45,8 +45,8 @@ const Navbar: React.FC = () => {
             <Link to="/dashboard" className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium dark:text-gray-300 dark:hover:text-white">
               Dashboard
             </Link>
-            <Link to="/simulations" className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium dark:text-gray-300 dark:hover:text-white">
-              Simulations
+            <Link to="/create-simulation" className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium dark:text-gray-300 dark:hover:text-white">
+              Create Simulation
             </Link>
             <Link to="/unit-converter" className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium dark:text-gray-300 dark:hover:text-white">
               Unit Converter
@@ -59,9 +59,6 @@ const Navbar: React.FC = () => {
             </Link>
             <Link to="/about" className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium dark:text-gray-300 dark:hover:text-white">
               About
-            </Link>
-            <Link to="/components" className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium dark:text-gray-300 dark:hover:text-white">
-              Components
             </Link>
             <Link to="/code-converter" className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium dark:text-gray-300 dark:hover:text-white">
               Code Converter
@@ -146,10 +143,10 @@ const Navbar: React.FC = () => {
               Dashboard
             </Link>
             <Link
-              to="/simulations"
+              to="/create-simulation"
               className="text-gray-600 hover:bg-gray-100 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white"
             >
-              Simulations
+              Create Simulation
             </Link>
             <Link
               to="/unit-converter"
@@ -174,12 +171,6 @@ const Navbar: React.FC = () => {
               className="text-gray-600 hover:bg-gray-100 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white"
             >
               About
-            </Link>
-            <Link
-              to="/components"
-              className="text-gray-600 hover:bg-gray-100 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white"
-            >
-              Components
             </Link>
             <Link
               to="/code-converter"
