@@ -27,12 +27,10 @@ const RealTimeAnalysis: React.FC<RealTimeAnalysisProps> = ({
   const [reactorData, setReactorData] = useState<any[]>([]);
   const [flowData, setFlowData] = useState<any[]>([]);
   
-  // Generate and update real-time data for charts
   useEffect(() => {
     if (!isRunning) return;
     
     const intervalId = setInterval(() => {
-      // Add a new data point to our timeline
       const newDataPoint = {
         time: simulationTime,
         temperature: getAverageMetric('temperature'),
@@ -43,11 +41,9 @@ const RealTimeAnalysis: React.FC<RealTimeAnalysisProps> = ({
       
       setRealtimeData(prev => {
         const newData = [...prev, newDataPoint];
-        // Keep only the last 20 data points for better visualization
         return newData.slice(-20);
       });
       
-      // Update reactor-specific data if reactors exist
       const reactors = equipment.filter(eq => eq.type === 'reactor' || eq.type === 'cstr' || eq.type === 'pfr');
       if (reactors.length > 0) {
         const reactorDataPoint = {
@@ -67,7 +63,6 @@ const RealTimeAnalysis: React.FC<RealTimeAnalysisProps> = ({
         });
       }
       
-      // Update flow data for pumps and valves
       const flowEquipment = equipment.filter(eq => 
         eq.type === 'pump' || eq.type === 'valve' || eq.type === 'compressor'
       );
@@ -95,14 +90,12 @@ const RealTimeAnalysis: React.FC<RealTimeAnalysisProps> = ({
     return () => clearInterval(intervalId);
   }, [isRunning, simulationTime, equipment]);
   
-  // Helper to calculate average metric value across equipment
   const getAverageMetric = (metricName: string): number => {
     const validEquipment = equipment.filter(eq => 
       eq.metrics && eq.metrics[metricName] !== undefined
     );
     
     if (validEquipment.length === 0) {
-      // Return simulated data if no real metrics
       if (metricName === 'temperature') return 25 + Math.sin(simulationTime / 2) * 10 + simulationTime;
       if (metricName === 'pressure') return 100 + Math.cos(simulationTime / 3) * 15 + simulationTime * 0.5;
       if (metricName === 'level') return Math.min(100, 10 + simulationTime * 1.5);
@@ -114,7 +107,13 @@ const RealTimeAnalysis: React.FC<RealTimeAnalysisProps> = ({
     return sum / validEquipment.length;
   };
   
-  // Render the chart components
+  const formatValue = (value: any, suffix: string = ''): string => {
+    if (typeof value === 'number') {
+      return value.toFixed(1) + suffix;
+    }
+    return String(value) + suffix;
+  };
+  
   return (
     <div className="space-y-6">
       <div>
@@ -133,7 +132,7 @@ const RealTimeAnalysis: React.FC<RealTimeAnalysisProps> = ({
               <YAxis yAxisId="right" orientation="right" 
                 label={{ value: 'Pressure (kPa)', angle: 90, position: 'insideRight' }} 
               />
-              <Tooltip formatter={(value) => value.toFixed(1)} />
+              <Tooltip formatter={(value) => formatValue(value)} />
               <Line 
                 yAxisId="left" 
                 type="monotone" 
@@ -171,7 +170,7 @@ const RealTimeAnalysis: React.FC<RealTimeAnalysisProps> = ({
                 <YAxis 
                   label={{ value: 'Conversion (%)', angle: -90, position: 'insideLeft' }}
                 />
-                <Tooltip formatter={(value) => value.toFixed(1) + '%'} />
+                <Tooltip formatter={(value) => formatValue(value, '%')} />
                 {Object.keys(reactorData[0] || {})
                   .filter(key => key !== 'time')
                   .map((key, index) => {
@@ -209,7 +208,7 @@ const RealTimeAnalysis: React.FC<RealTimeAnalysisProps> = ({
                 <YAxis 
                   label={{ value: 'Flow Rate (kg/h)', angle: -90, position: 'insideLeft' }}
                 />
-                <Tooltip formatter={(value) => value.toFixed(1) + ' kg/h'} />
+                <Tooltip formatter={(value) => formatValue(value, ' kg/h')} />
                 {Object.keys(flowData[0] || {})
                   .filter(key => key !== 'time')
                   .map((key, index) => {
@@ -246,7 +245,7 @@ const RealTimeAnalysis: React.FC<RealTimeAnalysisProps> = ({
               <YAxis 
                 label={{ value: 'Level (%)', angle: -90, position: 'insideLeft' }}
               />
-              <Tooltip formatter={(value) => value.toFixed(1) + '%'} />
+              <Tooltip formatter={(value) => formatValue(value, '%')} />
               <Area 
                 type="monotone" 
                 dataKey="level" 

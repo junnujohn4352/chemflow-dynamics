@@ -1,8 +1,7 @@
-
 import React, { useState } from "react";
 import { Equipment, EquipmentParameter } from "./types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { SliderIcon, Settings2 } from "lucide-react";
+import { SlidersIcon, Settings2 } from "lucide-react";
 
 interface ParametersPanelProps {
   equipment: Equipment;
@@ -39,7 +38,7 @@ const ParametersPanel: React.FC<ParametersPanelProps> = ({
       >
         <TabsList className="w-full mb-3 grid grid-cols-2">
           <TabsTrigger value="basic" className="text-xs flex items-center">
-            <SliderIcon className="h-3 w-3 mr-1" />
+            <SlidersIcon className="h-3 w-3 mr-1" />
             Basic Parameters
           </TabsTrigger>
           <TabsTrigger value="advanced" className="text-xs flex items-center">
