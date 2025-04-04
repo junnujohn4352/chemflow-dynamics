@@ -62,7 +62,6 @@ const GridCell: React.FC<GridCellProps> = ({
 }) => {
   const [hoveredConnector, setHoveredConnector] = useState<string | null>(null);
 
-  // Default connection points if not specified in equipment
   const defaultConnectionPoints: ConnectionPoint[] = [
     { id: 'top', position: 'top' },
     { id: 'right', position: 'right' },
@@ -119,13 +118,7 @@ const GridCell: React.FC<GridCellProps> = ({
     
     return (
       <div
-        className={`relative w-full h-full rounded-lg bg-white transition-colors ${
-          isSelected 
-            ? 'ring-2 ring-blue-500 shadow-md'
-            : isConnectionSource
-              ? 'ring-2 ring-amber-400 shadow-md'
-              : 'ring-1 ring-gray-200 hover:ring-blue-300'
-        }`}
+        className="relative w-full h-full rounded-lg bg-white transition-colors"
         onMouseDown={(e) => onDragStart(equipment.id, e)}
       >
         <div className="absolute top-1 left-1 text-xs font-medium text-gray-700 max-w-[80%] truncate">
@@ -152,16 +145,18 @@ const GridCell: React.FC<GridCellProps> = ({
           )}
         </div>
         
-        {/* Connection points */}
         {connectionPoints.map(point => (
           <div 
             key={point.id}
-            className={`absolute w-3 h-3 rounded-full cursor-pointer z-10 ${
-              hoveredConnector === point.id 
-                ? 'bg-amber-400 border border-amber-500' 
-                : 'bg-blue-100 border border-blue-300'
-            }`}
-            style={getConnectorPosition(point.position)}
+            className={`absolute w-4 h-4 rounded-full cursor-pointer z-10 border-2 
+              ${hoveredConnector === point.id 
+                ? 'bg-amber-300 border-amber-500' 
+                : 'bg-blue-200 border-blue-400'
+              }`}
+            style={{
+              ...getConnectorPosition(point.position),
+              boxShadow: '0 0 5px rgba(0,0,0,0.2)'
+            }}
             onClick={(e) => handleConnectorClick(e, point.id)}
             onMouseEnter={() => setHoveredConnector(point.id)}
             onMouseLeave={() => setHoveredConnector(null)}

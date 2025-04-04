@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Equipment, Connection } from "./types";
 import GridCell from "./GridCell";
@@ -51,7 +50,6 @@ const EquipmentGrid: React.FC<EquipmentGridProps> = ({
   onRotate,
   onResize
 }) => {
-
   const handleRotate = (id: string, degrees: number) => {
     if (onRotate) {
       onRotate(id, degrees);
@@ -66,14 +64,14 @@ const EquipmentGrid: React.FC<EquipmentGridProps> = ({
 
   return (
     <div 
-      className="relative border border-gray-200 rounded-lg shadow-inner bg-gray-50"
+      className="relative border border-gray-200 rounded-lg shadow-inner bg-gray-50 w-[480px] mx-auto"
       onMouseMove={onMouseMove}
       onMouseUp={onMouseUp}
       onMouseLeave={onMouseLeave}
     >
       <ConnectionsRenderer connections={connections} equipment={equipment} />
       
-      <div className="grid grid-cols-3 gap-3 p-3">
+      <div className="grid grid-cols-3 gap-2 p-2">
         {Array.from({ length: 15 }).map((_, index) => {
           const row = Math.floor(index / 3);
           const col = index % 3;
