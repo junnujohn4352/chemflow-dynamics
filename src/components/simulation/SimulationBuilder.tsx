@@ -157,7 +157,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     name: '',
     type: '',
     position: { x: 0, y: 0 },
-    metrics: {},
     description: ''
   });
 
