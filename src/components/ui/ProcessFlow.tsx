@@ -574,6 +574,8 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
             <div className="flex flex-col gap-4 relative">
               <ArrowToolkit 
                 onSelectArrow={handleArrowAdd}
+                onSelectConnector={() => setConnectMode(connectMode ? null : 'connect-mode')}
+                connectMode={!!connectMode}
                 className="relative z-20"
               />
               <EquipmentGrid 

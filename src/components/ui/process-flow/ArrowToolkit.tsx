@@ -16,12 +16,16 @@ import {
 
 interface ArrowToolkitProps {
   onSelectArrow: (type: string, rotation: number) => void;
+  onSelectConnector?: () => void;
   className?: string;
+  connectMode?: boolean;
 }
 
 const ArrowToolkit: React.FC<ArrowToolkitProps> = ({
   onSelectArrow,
-  className
+  onSelectConnector,
+  className,
+  connectMode = false
 }) => {
   const [isOpen, setIsOpen] = useState(true);
 
@@ -56,18 +60,35 @@ const ArrowToolkit: React.FC<ArrowToolkitProps> = ({
           </button>
         </div>
         {isOpen && (
-          <div className="p-2 grid grid-cols-2 gap-2">
-            {arrowConfigurations.map((config, index) => (
+          <div className="p-2 grid grid-cols-1 gap-2">
+            {onSelectConnector && (
               <button
-                key={index}
-                className="p-2 bg-gray-50 hover:bg-blue-50 border border-gray-200 rounded-md flex flex-col items-center justify-center transition-colors"
-                onClick={() => onSelectArrow("arrow", config.rotation)}
-                title={`Add ${config.label} Arrow`}
+                className={`p-2 ${connectMode ? 'bg-blue-100 border-blue-300' : 'bg-gray-50 hover:bg-blue-50 border-gray-200'} border rounded-md flex items-center justify-center transition-colors mb-2 w-full`}
+                onClick={onSelectConnector}
+                title="Connect Equipment"
               >
-                <config.icon className="h-5 w-5 text-blue-600" />
-                <span className="text-xs mt-1 text-gray-600">{config.rotation}°</span>
+                <div className="flex items-center">
+                  <div className="h-2 w-2 rounded-full bg-blue-600 mr-1"></div>
+                  <ArrowRight className="h-4 w-4 text-blue-600 mx-1" />
+                  <div className="h-2 w-2 rounded-full bg-blue-600 ml-1"></div>
+                </div>
+                <span className="text-xs ml-2 text-gray-600">Connect Equipment</span>
               </button>
-            ))}
+            )}
+            
+            <div className="grid grid-cols-2 gap-2">
+              {arrowConfigurations.map((config, index) => (
+                <button
+                  key={index}
+                  className="p-2 bg-gray-50 hover:bg-blue-50 border border-gray-200 rounded-md flex flex-col items-center justify-center transition-colors"
+                  onClick={() => onSelectArrow("arrow", config.rotation)}
+                  title={`Add ${config.label} Arrow`}
+                >
+                  <config.icon className="h-5 w-5 text-blue-600" />
+                  <span className="text-xs mt-1 text-gray-600">{config.rotation}°</span>
+                </button>
+              ))}
+            </div>
           </div>
         )}
       </div>
