@@ -17,7 +17,7 @@ import Formulas from "./pages/Formulas";
 import Simulations from "./pages/Simulations";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
-import Components from "./pages/Components";
+import AuthLayout from "./components/layout/AuthLayout";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -61,7 +61,6 @@ function App() {
                 streams: simData.streams || 0,
               };
               
-              // Save simulation function inline
               try {
                 if (!fullSimData || !fullSimData.name) return;
                 
@@ -111,20 +110,18 @@ function App() {
           <Sonner />
           <Routes>
             <Route path="/" element={<LandingPage />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/simulations" element={<Simulations />} />
-            <Route path="/create-simulation" element={<CreateSimulation />} />
-            <Route path="/unit-converter" element={<UnitConverter />} />
-            <Route path="/formulas" element={<Formulas />} />
-            <Route path="/hysys-calculations" element={<HysysCalculations />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/components" element={<Components />} />
-            <Route path="/code-converter" element={<CodeConverter />} />
-            <Route path="/settings" element={<Settings />} />
-            
-            {/* Authentication routes */}
             <Route path="/sign-in" element={<SignIn />} />
             <Route path="/sign-up" element={<SignUp />} />
+            
+            <Route path="/dashboard" element={<AuthLayout><Dashboard /></AuthLayout>} />
+            <Route path="/simulations" element={<AuthLayout><Simulations /></AuthLayout>} />
+            <Route path="/create-simulation" element={<AuthLayout><CreateSimulation /></AuthLayout>} />
+            <Route path="/unit-converter" element={<AuthLayout><UnitConverter /></AuthLayout>} />
+            <Route path="/formulas" element={<AuthLayout><Formulas /></AuthLayout>} />
+            <Route path="/hysys-calculations" element={<AuthLayout><HysysCalculations /></AuthLayout>} />
+            <Route path="/about" element={<AuthLayout><About /></AuthLayout>} />
+            <Route path="/code-converter" element={<AuthLayout><CodeConverter /></AuthLayout>} />
+            <Route path="/settings" element={<AuthLayout><Settings /></AuthLayout>} />
             
             <Route path="*" element={<NotFound />} />
           </Routes>

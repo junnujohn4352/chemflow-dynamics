@@ -1,31 +1,30 @@
+
 import React from "react";
-import { cn } from "@/lib/utils";
 import { Equipment } from "./types";
 import EquipmentDetail from "./EquipmentDetail";
-import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Edit2, Link, Info, RotateCw, RotateCcw, Maximize, Minimize } from "lucide-react";
 
 interface GridCellProps {
   cell: Equipment | null;
   row: number;
   col: number;
-  isSelected?: boolean;
-  isConnecting?: boolean;
-  isRunning?: boolean;
-  editingName?: string | null;
-  nameValue?: string;
-  showDetails?: string | null;
+  isSelected: boolean;
+  isConnecting: boolean;
+  isRunning: boolean;
+  editingName: string | null;
+  nameValue: string;
+  showDetails: string | null;
   onDragStart?: (id: string, e: React.MouseEvent) => void;
   onEditName?: (id: string) => void;
   onNameChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onSaveName?: () => void;
   onConnect?: (id: string) => void;
-  onSelect?: (id: string, handleId?: string) => void;
+  onSelect?: (id: string) => void;
   onToggleDetails?: (id: string) => void;
   onMove?: (id: string, direction: 'up' | 'down' | 'left' | 'right') => void;
   onRotate?: (id: string, degrees: number) => void;
   onResize?: (id: string, scaleFactor: number) => void;
   allEquipment?: Equipment[];
-  onConnectEquipment?: (sourceId: string, targetId: string) => void;
+  onConnectEquipment?: (id: string, handleId?: string) => void;
 }
 
 const GridCell: React.FC<GridCellProps> = ({
@@ -51,233 +50,132 @@ const GridCell: React.FC<GridCellProps> = ({
   allEquipment,
   onConnectEquipment
 }) => {
-  
   if (!cell) {
-    return <div className="w-30 h-30 border border-dashed border-gray-200 rounded-lg flex items-center justify-center"></div>;
+    return (
+      <div className={`min-h-[120px] bg-gradient-to-br from-indigo-50 to-purple-50 rounded-lg flex items-center justify-center border border-dashed border-purple-200 ${isConnecting ? 'cursor-pointer opacity-75 hover:bg-purple-100 transition-colors' : ''}`}>
+        {isConnecting ? (
+          <div className="text-purple-400 text-sm font-medium text-center">Click to place equipment here</div>
+        ) : (
+          <div className="text-purple-300 text-xs text-center">Empty</div>
+        )}
+      </div>
+    );
   }
-  
+
+  // Determine if this cell's equipment is currently being edited for its name
   const isEditing = editingName === cell.id;
+  
+  // Determine if the details panel should be shown for this equipment
   const isShowingDetails = showDetails === cell.id;
   
-  const renderEquipmentIcon = () => {
-    switch (cell.type) {
-      case 'tank':
-        return <div className="w-8 h-8 rounded-full bg-blue-200 text-blue-700 flex items-center justify-center"><span className="text-xl">💧</span></div>;
-      case 'pump':
-        return <div className="w-8 h-8 rounded-full bg-blue-200 text-blue-700 flex items-center justify-center"><span className="text-xl">⚙️</span></div>;
-      case 'valve':
-        return <div className="w-8 h-8 rounded-full bg-green-200 text-green-700 flex items-center justify-center"><span className="text-xl">🔀</span></div>;
-      case 'heater':
-        return <div className="w-8 h-8 rounded-full bg-red-200 text-red-700 flex items-center justify-center"><span className="text-xl">🔥</span></div>;
-      case 'cooler':
-        return <div className="w-8 h-8 rounded-full bg-blue-200 text-blue-700 flex items-center justify-center"><span className="text-xl">🧊</span></div>;
-      case 'column':
-        return <div className="w-8 h-8 rounded-full bg-purple-200 text-purple-700 flex items-center justify-center"><span className="text-xl">⚗️</span></div>;
-      case 'reactor':
-        return <div className="w-8 h-8 rounded-full bg-pink-200 text-pink-700 flex items-center justify-center"><span className="text-xl">🧪</span></div>;
-      case 'separator':
-        return <div className="w-8 h-8 rounded-full bg-teal-200 text-teal-700 flex items-center justify-center"><span className="text-xl">⧖</span></div>;
-      case 'product':
-        return <div className="w-8 h-8 rounded-full bg-emerald-200 text-emerald-700 flex items-center justify-center"><span className="text-xl">📦</span></div>;
-      case 'arrow':
-        return <div className="w-8 h-8 rounded-full bg-gray-200 text-gray-700 flex items-center justify-center" style={{ transform: `rotate(${cell.rotation}deg) scale(${cell.scale})` }}><span className="text-xl">➔</span></div>;
-      default:
-        return <div className="w-8 h-8 rounded-full bg-gray-200 text-gray-700 flex items-center justify-center"><span className="text-xl">🏭</span></div>;
-    }
-  };
+  // Define base styling for the equipment card
+  let cardClasses = "relative flex flex-col items-center justify-between rounded-xl p-3 shadow-sm transition-all overflow-hidden";
   
-  const shouldShowArrowControls = cell.type === 'arrow';
+  // Add conditional styling
+  if (isSelected) {
+    cardClasses += " ring-2 ring-blue-500";
+  }
+  
+  if (isRunning) {
+    cardClasses += " animate-pulse";
+  }
+  
+  // Add custom colors based on equipment type
+  let bgColorClass = "";
+  switch (cell.type) {
+    case "reactor":
+      bgColorClass = "bg-gradient-to-br from-red-500 to-orange-500";
+      break;
+    case "distillation":
+      bgColorClass = "bg-gradient-to-br from-blue-500 to-cyan-500";
+      break;
+    case "heatExchanger":
+      bgColorClass = "bg-gradient-to-br from-yellow-500 to-orange-500";
+      break;
+    case "pump":
+      bgColorClass = "bg-gradient-to-br from-green-500 to-emerald-500";
+      break;
+    case "valve":
+      bgColorClass = "bg-gradient-to-br from-purple-500 to-pink-500";
+      break;
+    default:
+      bgColorClass = "bg-gradient-to-br from-gray-500 to-gray-600";
+  }
+  
+  cardClasses += ` ${bgColorClass}`;
   
   return (
-    <div 
-      className={cn(
-        "w-30 h-30 border border-gray-200 rounded-lg relative p-2 transition-all glass-card overflow-hidden",
-        isConnecting ? "ring-2 ring-offset-2 ring-indigo-500 cursor-none" : "",
-        isSelected ? "ring-2 ring-offset-2 ring-blue-400" : "",
-        isRunning && cell.status === 'running' ? "shadow-md" : "hover:shadow-md"
-      )}
-      draggable={!isEditing && !isShowingDetails}
-      onDragStart={(e) => onDragStart?.(cell.id, e)}
-      onClick={() => isConnecting && onSelect?.(cell.id)}
-    >
-      <div className="absolute inset-0 opacity-20 pointer-events-none">
-        <div className="absolute -top-10 -right-10 w-20 h-20 bg-gradient-to-r from-blue-500/30 to-indigo-500/30 rounded-full blur-xl"></div>
-        <div className="absolute -bottom-10 -left-10 w-20 h-20 bg-gradient-to-r from-green-500/30 to-teal-500/30 rounded-full blur-xl"></div>
-      </div>
-      
-      <div className="absolute top-0 left-0 w-full h-1">
-        <div 
-          className={cn(
-            "h-1 bg-gradient-to-r from-green-400 to-green-500",
-            isRunning && cell.status === 'running' ? "animate-pulse" : "opacity-0"
-          )}
-        ></div>
-      </div>
-      
-      <div className="flex flex-col h-full justify-between">
-        <div>
+    <div className={cardClasses}>
+      {/* Equipment Image/Icon */}
+      <div 
+        className="w-full cursor-move" 
+        onMouseDown={(e) => onDragStart && onDragStart(cell.id, e)}
+      >
+        <div className="flex justify-between items-center mb-2">
+          {/* Equipment Name (or Editing Input) */}
           {isEditing ? (
-            <div className="mb-2 flex">
+            <div className="w-full">
               <input
                 type="text"
                 value={nameValue}
                 onChange={onNameChange}
-                className="text-xs w-full border border-blue-200 rounded px-1 py-0.5 focus:outline-none focus:ring-1 focus:ring-blue-400"
-                autoFocus
                 onBlur={onSaveName}
-                onKeyDown={(e) => e.key === 'Enter' && onSaveName?.()}
+                onKeyDown={(e) => e.key === 'Enter' && onSaveName && onSaveName()}
+                className="w-full px-2 py-1 text-sm rounded border border-gray-300 bg-white text-gray-800"
+                autoFocus
               />
             </div>
           ) : (
-            <div className="flex justify-between items-start">
-              <h4 className="text-xs font-medium truncate max-w-[70px] text-gray-700">
-                {typeof cell.name === 'string' ? cell.name : String(cell.name)}
-              </h4>
-              <button
-                onClick={() => onEditName?.(cell.id)}
-                className="text-gray-400 hover:text-gray-700 p-0.5 rounded"
-              >
-                <Edit2 className="h-3 w-3" />
-              </button>
+            <div 
+              className="font-medium text-white text-sm truncate cursor-pointer hover:underline" 
+              onClick={() => onEditName && onEditName(cell.id)}
+              title={cell.name}
+            >
+              {cell.name}
             </div>
           )}
-          
-          <div className="flex justify-center mt-1 mb-2">
-            {renderEquipmentIcon()}
-          </div>
         </div>
         
-        <div className="flex justify-between mt-auto">
-          <div className="flex space-x-1">
-            <button
-              onClick={() => onToggleDetails?.(cell.id)}
-              className="p-1 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded transition-colors"
-            >
-              <Info className="h-3 w-3" />
-            </button>
-            <button
-              onClick={() => onConnect?.(cell.id)}
-              className={cn(
-                "p-1 hover:bg-indigo-50 rounded transition-colors",
-                isConnecting && cell.id === isConnecting ? "text-indigo-600 bg-indigo-50" : "text-gray-400 hover:text-indigo-500"
-              )}
-            >
-              <Link className="h-3 w-3" />
-            </button>
-          </div>
-          
-          <div className="flex space-x-1">
-            {shouldShowArrowControls ? (
-              <>
-                <button
-                  onClick={() => onRotate?.(cell.id, 45)}
-                  className="p-1 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded transition-colors"
-                >
-                  <RotateCw className="h-3 w-3" />
-                </button>
-                <button
-                  onClick={() => onRotate?.(cell.id, -45)}
-                  className="p-1 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded transition-colors"
-                >
-                  <RotateCcw className="h-3 w-3" />
-                </button>
-                <button
-                  onClick={() => onResize?.(cell.id, 0.2)}
-                  className="p-1 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded transition-colors"
-                >
-                  <Maximize className="h-3 w-3" />
-                </button>
-                <button
-                  onClick={() => onResize?.(cell.id, -0.2)}
-                  className="p-1 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded transition-colors"
-                >
-                  <Minimize className="h-3 w-3" />
-                </button>
-              </>
-            ) : (
-              <div className="flex">
-                <button
-                  onClick={() => onMove?.(cell.id, 'up')}
-                  className="p-1 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded transition-colors"
-                >
-                  <ChevronUp className="h-3 w-3" />
-                </button>
-                <button
-                  onClick={() => onMove?.(cell.id, 'down')}
-                  className="p-1 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded transition-colors"
-                >
-                  <ChevronDown className="h-3 w-3" />
-                </button>
-                <button
-                  onClick={() => onMove?.(cell.id, 'left')}
-                  className="p-1 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded transition-colors"
-                >
-                  <ChevronLeft className="h-3 w-3" />
-                </button>
-                <button
-                  onClick={() => onMove?.(cell.id, 'right')}
-                  className="p-1 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded transition-colors"
-                >
-                  <ChevronRight className="h-3 w-3" />
-                </button>
-              </div>
-            )}
-          </div>
+        {/* Equipment Icon/Image */}
+        <div className="flex justify-center items-center h-12 my-1">
+          <img 
+            src={cell.icon || '/placeholder.svg'} 
+            alt={cell.type} 
+            className="max-h-full max-w-full object-contain"
+          />
         </div>
       </div>
       
+      {/* Action Buttons */}
+      <div className="w-full flex justify-around mt-2">
+        <button 
+          onClick={() => onToggleDetails && onToggleDetails(cell.id)}
+          className="text-xs bg-white bg-opacity-30 hover:bg-opacity-40 text-white px-2 py-1 rounded-md transition-colors"
+        >
+          {isShowingDetails ? 'Hide' : 'Details'}
+        </button>
+        
+        <button 
+          onClick={() => onConnect && onConnect(cell.id)}
+          className={`text-xs px-2 py-1 rounded-md transition-colors ${
+            isConnecting ? 'bg-white text-purple-700 font-medium' : 'bg-white bg-opacity-30 hover:bg-opacity-40 text-white'
+          }`}
+        >
+          Connect
+        </button>
+      </div>
+      
+      {/* Equipment Details Panel */}
       {isShowingDetails && (
-        <EquipmentDetail
+        <EquipmentDetail 
           equipment={cell}
-          isRunning={isRunning || false}
-          onClose={() => onToggleDetails?.(cell.id)}
-          allEquipment={allEquipment}
+          onClose={() => onToggleDetails && onToggleDetails(cell.id)}
+          onMove={onMove}
+          onRotate={onRotate}
+          onResize={onResize}
+          allEquipment={allEquipment || []}
           onConnectEquipment={onConnectEquipment}
         />
-      )}
-      
-      {/* Connection points */}
-      {isConnecting && cell.connectionPoints && (
-        <div className="absolute inset-0 pointer-events-auto">
-          {cell.connectionPoints.map(point => {
-            const pointStyle: React.CSSProperties = {
-              position: 'absolute',
-              width: '12px',
-              height: '12px',
-              background: 'white',
-              borderRadius: '50%',
-              border: '2px solid #6366f1',
-              zIndex: 10,
-              cursor: 'pointer',
-            };
-            
-            if (point.position === 'top') {
-              pointStyle.top = '-6px';
-              pointStyle.left = 'calc(50% - 6px)';
-            } else if (point.position === 'right') {
-              pointStyle.top = 'calc(50% - 6px)';
-              pointStyle.right = '-6px';
-            } else if (point.position === 'bottom') {
-              pointStyle.bottom = '-6px';
-              pointStyle.left = 'calc(50% - 6px)';
-            } else if (point.position === 'left') {
-              pointStyle.top = 'calc(50% - 6px)';
-              pointStyle.left = '-6px';
-            }
-            
-            return (
-              <div
-                key={point.id}
-                style={pointStyle}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onSelect?.(cell.id, point.position);
-                }}
-                className="hover:scale-110 hover:shadow-md transition-transform"
-              />
-            );
-          })}
-        </div>
       )}
     </div>
   );
