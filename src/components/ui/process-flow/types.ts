@@ -12,13 +12,14 @@ export interface Equipment {
   metrics?: Record<string, number>;
   parameters?: EquipmentParameter[];
   connectedPoints?: string[];
-  connections?: string[]; // Added for compatibility
-  connectionPoints?: ConnectionPoint[]; // Added for compatibility
-  status?: string; // Added for compatibility
+  connections?: string[]; // IDs of connections
+  connectionPoints?: ConnectionPoint[]; // Connection points on this equipment
+  inputPorts?: string[]; // IDs of input port points
+  outputPorts?: string[]; // IDs of output port points
+  status?: string;
   icon?: string;
-  description?: string; // Added for compatibility
-  settings?: Record<string, any>; // Added for compatibility
-  // Add any other properties needed for equipment
+  description?: string;
+  settings?: Record<string, any>;
 }
 
 export interface Connection {
@@ -27,8 +28,9 @@ export interface Connection {
   target: string;
   label?: string;
   animated?: boolean;
-  sourceHandle?: string; // Added for compatibility
-  targetHandle?: string; // Added for compatibility
+  sourceHandle?: string;
+  targetHandle?: string;
+  dashed?: boolean; // Added for dashed line style
 }
 
 export interface EquipmentParameter {
@@ -50,4 +52,5 @@ export interface ConnectionPoint {
   position: "top" | "right" | "bottom" | "left";
   isConnected?: boolean;
   isConnectable?: boolean;
+  portType?: "input" | "output"; // Added to specify port type
 }

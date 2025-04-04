@@ -11,6 +11,21 @@ const ConnectionsRenderer: React.FC<ConnectionsRendererProps> = ({
   connections,
   equipment,
 }) => {
+  // Log connections for debugging
+  React.useEffect(() => {
+    if (connections.length > 0) {
+      console.log("Current connections:", connections);
+      connections.forEach(conn => {
+        const source = equipment.find(e => e.id === conn.source);
+        const target = equipment.find(e => e.id === conn.target);
+        
+        if (source && target) {
+          console.log(`Connection from ${source.name || source.type} (${conn.sourceHandle}) to ${target.name || target.type} (${conn.targetHandle})`);
+        }
+      });
+    }
+  }, [connections, equipment]);
+
   return (
     <svg className="absolute top-0 left-0 w-full h-full pointer-events-none">
       <defs>
