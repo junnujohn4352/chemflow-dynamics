@@ -1,11 +1,10 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import GlassPanel from '@/components/ui/GlassPanel';
 import { ChevronUp, ChevronDown } from 'lucide-react';
 import HysysIntegration from '@/components/simulation/HysysIntegration';
 import SimulationAnalysisCharts from '@/components/simulation/SimulationAnalysisCharts';
-import { SubjectAnalysis } from '@/hooks/useSimulationAnalysis';
+import { SubjectAnalysis } from '@/hooks/useSimulationAnalysis.tsx'; // The import will now correctly reference the .tsx file
 
 interface SimulationAnalysisSectionProps {
   showAnalysis: boolean;

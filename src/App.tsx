@@ -1,4 +1,5 @@
-import React, { useEffect } from "react";
+
+import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -26,6 +27,7 @@ const queryClient = new QueryClient({
 });
 
 function App() {
+  // Use useEffect correctly with direct import
   React.useEffect(() => {
     const savedMode = localStorage.getItem('darkMode');
     if (savedMode === 'dark') {
