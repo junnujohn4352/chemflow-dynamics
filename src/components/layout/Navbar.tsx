@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { useTheme } from "@/hooks/use-theme";
@@ -7,7 +8,7 @@ import { Menu } from 'lucide-react';
 import ChemFlowLogo from "@/assets/icons/ChemFlowLogo";
 
 const Navbar: React.FC = () => {
-  const { theme, setTheme } = useTheme();
+  const { isDarkMode, toggleDarkMode } = useTheme();
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const isSmallScreen = useMediaQuery('(max-width: 640px)');
@@ -21,14 +22,14 @@ const Navbar: React.FC = () => {
 
   return (
     <header className="sticky top-0 z-50">
-      <nav className="bg-white border-b border-gray-200 px-4 py-2 shadow-sm">
+      <nav className="bg-white border-b border-gray-200 px-4 py-2 shadow-sm dark:bg-gray-800 dark:border-gray-700">
         <div className="flex items-center justify-between h-16">
           {/* Logo and Mobile Menu */}
           <div className="flex items-center">
             {isSmallScreen && (
               <button
                 onClick={() => setShowMobileMenu(!showMobileMenu)}
-                className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-flow-blue mr-2"
+                className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-flow-blue mr-2 dark:hover:bg-gray-700"
               >
                 <span className="sr-only">Open main menu</span>
                 <Menu className="h-6 w-6" aria-hidden="true" />
@@ -41,28 +42,28 @@ const Navbar: React.FC = () => {
           
           {/* Desktop Navigation */}
           <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
-            <Link to="/dashboard" className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+            <Link to="/dashboard" className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium dark:text-gray-300 dark:hover:text-white">
               Dashboard
             </Link>
-            <Link to="/simulations" className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+            <Link to="/simulations" className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium dark:text-gray-300 dark:hover:text-white">
               Simulations
             </Link>
-            <Link to="/unit-converter" className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+            <Link to="/unit-converter" className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium dark:text-gray-300 dark:hover:text-white">
               Unit Converter
             </Link>
-            <Link to="/formulas" className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+            <Link to="/formulas" className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium dark:text-gray-300 dark:hover:text-white">
               Formulas
             </Link>
-            <Link to="/hysys-calculations" className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+            <Link to="/hysys-calculations" className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium dark:text-gray-300 dark:hover:text-white">
               HYSYS Calculations
             </Link>
-            <Link to="/about" className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+            <Link to="/about" className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium dark:text-gray-300 dark:hover:text-white">
               About
             </Link>
-            <Link to="/components" className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+            <Link to="/components" className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium dark:text-gray-300 dark:hover:text-white">
               Components
             </Link>
-            <Link to="/code-converter" className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+            <Link to="/code-converter" className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium dark:text-gray-300 dark:hover:text-white">
               Code Converter
             </Link>
           </div>
@@ -81,11 +82,11 @@ const Navbar: React.FC = () => {
                 </button>
                 
                 {showUserMenu && (
-                  <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 focus:outline-none">
+                  <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 focus:outline-none dark:bg-gray-800 dark:ring-gray-700 dark:divide-gray-700">
                     <div className="py-1">
                       <Link
                         to="/settings"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
                         onClick={() => setShowUserMenu(false)}
                       >
                         Settings
@@ -94,7 +95,7 @@ const Navbar: React.FC = () => {
                     <div className="py-1">
                       <button
                         onClick={handleSignOut}
-                        className="w-full text-left block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        className="w-full text-left block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
                       >
                         Sign out
                       </button>
@@ -106,7 +107,7 @@ const Navbar: React.FC = () => {
               <div className="flex items-center space-x-2">
                 <Link
                   to="/sign-in"
-                  className="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium"
+                  className="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium dark:text-gray-300 dark:hover:text-white"
                 >
                   Sign in
                 </Link>
@@ -121,13 +122,13 @@ const Navbar: React.FC = () => {
             
             {/* Theme Toggle */}
             <button
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              className="ml-4 p-2 rounded-full hover:bg-gray-100 transition-colors"
+              onClick={toggleDarkMode}
+              className="ml-4 p-2 rounded-full hover:bg-gray-100 transition-colors dark:hover:bg-gray-700"
             >
-              {theme === "dark" ? (
-                <SunIcon className="h-5 w-5 text-gray-700" />
+              {isDarkMode ? (
+                <SunIcon className="h-5 w-5 text-gray-700 dark:text-gray-300" />
               ) : (
-                <MoonIcon className="h-5 w-5 text-gray-700" />
+                <MoonIcon className="h-5 w-5 text-gray-700 dark:text-gray-300" />
               )}
             </button>
           </div>
@@ -136,53 +137,53 @@ const Navbar: React.FC = () => {
       
       {/* Mobile Menu */}
       {isSmallScreen && showMobileMenu && (
-        <div className="sm:hidden absolute top-full left-0 right-0 bg-white border-b border-gray-200 shadow-md z-50">
+        <div className="sm:hidden absolute top-full left-0 right-0 bg-white border-b border-gray-200 shadow-md z-50 dark:bg-gray-800 dark:border-gray-700">
           <div className="px-2 pt-2 pb-3 space-y-1">
             <Link
               to="/dashboard"
-              className="bg-gray-100 text-gray-900 block px-3 py-2 rounded-md text-base font-medium"
+              className="bg-gray-100 text-gray-900 block px-3 py-2 rounded-md text-base font-medium dark:bg-gray-700 dark:text-white"
             >
               Dashboard
             </Link>
             <Link
               to="/simulations"
-              className="text-gray-600 hover:bg-gray-100 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium"
+              className="text-gray-600 hover:bg-gray-100 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white"
             >
               Simulations
             </Link>
             <Link
               to="/unit-converter"
-              className="text-gray-600 hover:bg-gray-100 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium"
+              className="text-gray-600 hover:bg-gray-100 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white"
             >
               Unit Converter
             </Link>
              <Link
               to="/formulas"
-              className="text-gray-600 hover:bg-gray-100 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium"
+              className="text-gray-600 hover:bg-gray-100 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white"
             >
               Formulas
             </Link>
             <Link
               to="/hysys-calculations"
-              className="text-gray-600 hover:bg-gray-100 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium"
+              className="text-gray-600 hover:bg-gray-100 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white"
             >
               HYSYS Calculations
             </Link>
             <Link
               to="/about"
-              className="text-gray-600 hover:bg-gray-100 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium"
+              className="text-gray-600 hover:bg-gray-100 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white"
             >
               About
             </Link>
             <Link
               to="/components"
-              className="text-gray-600 hover:bg-gray-100 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium"
+              className="text-gray-600 hover:bg-gray-100 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white"
             >
               Components
             </Link>
             <Link
               to="/code-converter"
-              className="text-gray-600 hover:bg-gray-100 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium"
+              className="text-gray-600 hover:bg-gray-100 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white"
             >
               Code Converter
             </Link>
@@ -190,13 +191,13 @@ const Navbar: React.FC = () => {
               <>
                 <Link
                   to="/settings"
-                  className="text-gray-600 hover:bg-gray-100 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium"
+                  className="text-gray-600 hover:bg-gray-100 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white"
                 >
                   Settings
                 </Link>
                 <button
                   onClick={handleSignOut}
-                  className="w-full text-left text-gray-600 hover:bg-gray-100 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium"
+                  className="w-full text-left text-gray-600 hover:bg-gray-100 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white"
                 >
                   Sign out
                 </button>
@@ -205,13 +206,13 @@ const Navbar: React.FC = () => {
               <>
                 <Link
                   to="/sign-in"
-                  className="text-gray-600 hover:bg-gray-100 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium"
+                  className="text-gray-600 hover:bg-gray-100 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white"
                 >
                   Sign in
                 </Link>
                 <Link
                   to="/sign-up"
-                  className="text-gray-600 hover:bg-gray-100 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium"
+                  className="text-gray-600 hover:bg-gray-100 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white"
                 >
                   Sign up
                 </Link>

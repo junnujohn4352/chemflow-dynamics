@@ -1,31 +1,27 @@
-
-export interface Equipment {
-  id: string;
-  type: string; // Changed from union type to allow any string
-  name: string;
-  status: "running" | "stopped" | "warning" | "error" | string;
-  metrics: {
-    temperature?: number;
-    pressure?: number;
-    flow?: number;
-    level?: number;
-    [key: string]: any;
-  };
-  position: { x: number; y: number };
-  connections?: string[];
-  description?: string; // Added description for basic information
-}
-
 export interface Connection {
   id: string;
   source: string;
   target: string;
-  animated: boolean;
-  label?: string; // Added label for connection information
+  label?: string;
+  animated?: boolean;
 }
 
-export interface SimulationData {
-  componentA: number;
-  componentB: number;
-  systemEfficiency: number;
+export type EquipmentType = string;
+
+export interface Equipment {
+  id: string;
+  type: EquipmentType;
+  name: string;
+  position: {
+    x: number;
+    y: number;
+  };
+  settings?: Record<string, any>;
+  connections?: string[];
+}
+
+export interface GridCell {
+  x: number;
+  y: number;
+  equipmentId: string | null;
 }
