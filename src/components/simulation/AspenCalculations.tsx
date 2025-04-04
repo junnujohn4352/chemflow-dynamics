@@ -957,11 +957,11 @@ const AspenCalculations: React.FC<AspenCalculationsProps> = ({ className, calcul
                     <div className="mt-6 flex justify-between">
                       <Button variant="outline" className="flex items-center gap-2">
                         <BookOpen className="h-4 w-4" />
-                        View Documentation
+                        <span>View Documentation</span>
                       </Button>
                       <Button variant="outline" className="flex items-center gap-2">
                         <DownloadCloud className="h-4 w-4" />
-                        Export Results
+                        <span>Export Results</span>
                       </Button>
                     </div>
                   </TabsContent>
