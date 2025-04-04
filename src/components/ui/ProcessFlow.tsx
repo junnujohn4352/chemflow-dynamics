@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import GlassPanel from "./GlassPanel";
@@ -8,6 +9,7 @@ import EquipmentGrid from "./process-flow/EquipmentGrid";
 import ProcessDataPanel from "./process-flow/ProcessDataPanel";
 import ArrowToolkit from "./process-flow/ArrowToolkit";
 import ConnectionsRenderer from "./process-flow/ConnectionsRenderer";
+import EquipmentDetail from "./process-flow/EquipmentDetail";
 import { 
   Container, 
   Gauge, 

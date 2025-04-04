@@ -227,6 +227,8 @@ const GridCell: React.FC<GridCellProps> = ({
           equipment={equipment} 
           isRunning={isRunning}
           onClose={() => onToggleDetails('')}
+          allEquipment={[]} // Add empty array for allEquipment prop
+          onConnectEquipment={() => {}} // Add empty function for onConnectEquipment prop
         />
       )}
       
