@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Equipment } from "./types";
 import { Button } from "@/components/ui/button";
@@ -64,7 +63,6 @@ const GridCell: React.FC<GridCellProps> = ({
       document.addEventListener('mousemove', moveArrow);
       document.addEventListener('mouseup', stopArrowDrag);
       
-      // Initialize arrow at center of the equipment
       const rect = e.currentTarget.getBoundingClientRect();
       setArrowPosition({
         x: e.clientX - rect.left,
@@ -81,11 +79,9 @@ const GridCell: React.FC<GridCellProps> = ({
         const centerX = rect.width / 2;
         const centerY = rect.height / 2;
         
-        // Calculate new position relative to equipment center
         const newX = e.clientX - rect.left;
         const newY = e.clientY - rect.top;
         
-        // Calculate angle based on vector from center to new position
         const dx = newX - centerX;
         const dy = newY - centerY;
         const angle = Math.atan2(dy, dx) * (180 / Math.PI);
@@ -98,14 +94,11 @@ const GridCell: React.FC<GridCellProps> = ({
 
   const stopArrowDrag = (e: MouseEvent) => {
     if (isDraggingArrow && equipment) {
-      // Determine which equipment to connect to based on the arrow direction
-      // We'll use the closest equipment in the arrow's direction
       setIsDraggingArrow(false);
       setShowArrow(false);
       document.removeEventListener('mousemove', moveArrow);
       document.removeEventListener('mouseup', stopArrowDrag);
       
-      // Initiate the connection process
       onConnect(equipment.id);
     }
   };
@@ -125,31 +118,26 @@ const GridCell: React.FC<GridCellProps> = ({
       onMouseLeave={handleMouseLeave}
       id={`equipment-${equipment.id}`}
     >
-      {/* Left connection dot */}
       <div 
         className="absolute left-0 top-1/2 -translate-x-2 -translate-y-1/2 w-4 h-4 bg-violet-500 hover:bg-violet-600 rounded-full opacity-100 cursor-pointer z-10 transition-all duration-200"
         onClick={() => onConnect(equipment.id)}
       />
       
-      {/* Right connection dot */}
       <div 
         className="absolute right-0 top-1/2 translate-x-2 -translate-y-1/2 w-4 h-4 bg-violet-500 hover:bg-violet-600 rounded-full opacity-100 cursor-pointer z-10 transition-all duration-200"
         onClick={() => onConnect(equipment.id)}
       />
       
-      {/* Top connection dot */}
       <div 
         className="absolute top-0 left-1/2 -translate-y-2 -translate-x-1/2 w-4 h-4 bg-violet-500 hover:bg-violet-600 rounded-full opacity-100 cursor-pointer z-10 transition-all duration-200"
         onClick={() => onConnect(equipment.id)}
       />
       
-      {/* Bottom connection dot */}
       <div 
         className="absolute bottom-0 left-1/2 translate-y-2 -translate-x-1/2 w-4 h-4 bg-violet-500 hover:bg-violet-600 rounded-full opacity-100 cursor-pointer z-10 transition-all duration-200"
         onClick={() => onConnect(equipment.id)}
       />
 
-      {/* Floating arrow for custom angle connections */}
       {showArrow && (
         <div 
           className="absolute z-20 cursor-grab active:cursor-grabbing"
@@ -198,7 +186,7 @@ const GridCell: React.FC<GridCellProps> = ({
         onClick={() => connectMode && connectMode !== equipment.id ? onConnectionSelect(equipment.id) : null}
       >
         <EquipmentCard 
-          type={equipment.type} 
+          type={equipment.type as "reactor" | "pump" | "valve" | "heater" | "condenser" | "column" | "tank" | "mixer"} 
           name={typeof equipment.name === 'string' ? equipment.name : String(equipment.name)} 
           status={isRunning ? "running" : "stopped"} 
           metrics={equipment.metrics}
