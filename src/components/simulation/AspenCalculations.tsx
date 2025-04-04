@@ -1,11 +1,10 @@
-
 import React, { useState } from "react";
 import GlassPanel from "@/components/ui/GlassPanel";
 import { cn } from "@/lib/utils";
 import { 
   Calculator, Droplets, Beaker, Thermometer, Waves, Zap, 
   Shield, Cpu, Leaf, DollarSign, FlaskConical, Gauge, ArrowRight, 
-  BookOpen, FileText, DownloadCloud 
+  BookOpen, FileText, DownloadCloud, LucideIcon
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -19,6 +18,13 @@ import { Slider } from "@/components/ui/slider";
 interface AspenCalculationsProps {
   className?: string;
   calculationType?: string;
+}
+
+// Define a type for our calculation entry
+interface CalculationEntry {
+  id: string;
+  name: string;
+  icon: LucideIcon;
 }
 
 const AspenCalculations: React.FC<AspenCalculationsProps> = ({ className, calculationType = "thermodynamic" }) => {
@@ -68,7 +74,7 @@ const AspenCalculations: React.FC<AspenCalculationsProps> = ({ className, calcul
   });
 
   // Get the available calculations for the current category
-  const getCalculationsByType = (type: string) => {
+  const getCalculationsByType = (type: string): CalculationEntry[] => {
     switch (type) {
       case "thermodynamic":
         return [
@@ -887,7 +893,7 @@ const AspenCalculations: React.FC<AspenCalculationsProps> = ({ className, calcul
                 >
                   <div className="flex items-center mb-2">
                     <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg mr-3">
-                      {React.createElement(calc.icon, { className: "h-5 w-5 text-flow-blue dark:text-blue-400" })}
+                      <calc.icon className="h-5 w-5 text-flow-blue dark:text-blue-400" />
                     </div>
                     <h3 className="font-medium text-lg">{calc.name}</h3>
                   </div>
