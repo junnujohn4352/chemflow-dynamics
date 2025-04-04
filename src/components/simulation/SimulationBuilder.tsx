@@ -275,7 +275,7 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
       connections: [],
       settings,
       subType,
-      description: settings.description || `${type.charAt(0).toUpperCase() + type.slice(1)} equipment`
+      description: settings?.description || `${type.charAt(0).toUpperCase() + type.slice(1)} equipment`
     };
     
     setEquipment(prev => [...prev, newEquipment]);

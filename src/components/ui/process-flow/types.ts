@@ -1,7 +1,7 @@
 
 export interface Equipment {
   id: string;
-  type: "reactor" | "pump" | "valve" | "heater" | "condenser" | "column" | "tank" | "mixer" | string;
+  type: string; // Changed from union type to allow any string
   name: string;
   status: "running" | "stopped" | "warning" | "error" | string;
   metrics: {
