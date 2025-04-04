@@ -14,13 +14,6 @@ const Navbar: React.FC = () => {
   const isSmallScreen = useMediaQuery('(max-width: 640px)');
   const navigate = useNavigate();
   
-  const isAuthenticated = localStorage.getItem("auth") === "true";
-  
-  const handleSignOut = () => {
-    localStorage.removeItem("auth");
-    navigate("/sign-in");
-  };
-
   // Main navigation items in the requested order
   const navItems = [
     { title: "Dashboard", path: "/dashboard" },
@@ -66,44 +59,8 @@ const Navbar: React.FC = () => {
             ))}
           </div>
           
-          {/* User Menu */}
+          {/* Theme Toggle */}
           <div className="flex items-center">
-            {isAuthenticated && (
-              <div className="relative">
-                <button
-                  onClick={() => setShowUserMenu(!showUserMenu)}
-                  className="flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-purple-500 focus:ring-white"
-                >
-                  <div className="h-8 w-8 rounded-full bg-gradient-to-r from-blue-400 to-purple-600 flex items-center justify-center text-white">
-                    US
-                  </div>
-                </button>
-                
-                {showUserMenu && (
-                  <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 focus:outline-none dark:bg-gray-800 dark:ring-gray-700 dark:divide-gray-700">
-                    <div className="py-1">
-                      <Link
-                        to="/settings"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
-                        onClick={() => setShowUserMenu(false)}
-                      >
-                        Settings
-                      </Link>
-                    </div>
-                    <div className="py-1">
-                      <button
-                        onClick={handleSignOut}
-                        className="w-full text-left block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
-                      >
-                        Sign out
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-            
-            {/* Theme Toggle */}
             <button
               onClick={toggleDarkMode}
               className="ml-4 p-2 rounded-full text-white hover:bg-purple-600 transition-colors"
@@ -127,18 +84,11 @@ const Navbar: React.FC = () => {
                 key={item.path}
                 to={item.path}
                 className="text-white block px-3 py-2 rounded-md text-base font-medium hover:bg-purple-600"
+                onClick={() => setShowMobileMenu(false)}
               >
                 {item.title}
               </Link>
             ))}
-            {isAuthenticated && (
-              <button
-                onClick={handleSignOut}
-                className="w-full text-left text-white block px-3 py-2 rounded-md text-base font-medium hover:bg-purple-600"
-              >
-                Sign out
-              </button>
-            )}
           </div>
         </div>
       )}

@@ -1,54 +1,53 @@
 
 import React from "react";
-import { X, Settings2, Link as LinkIcon, ChevronRight } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { Equipment } from "./types";
+import { X, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, RotateCw, ZoomIn, ZoomOut } from "lucide-react";
+import ConnectionPoint from "./ConnectionPoint";
 import ParametersPanel from "./ParametersPanel";
 
-interface EquipmentDetailProps {
+export interface EquipmentDetailProps {
   equipment: Equipment;
-  isRunning?: boolean;
   onClose: () => void;
-  onMove?: (id: string, direction: 'up' | 'down' | 'left' | 'right') => void;
+  onMove?: (id: string, direction: "up" | "down" | "left" | "right") => void;
   onRotate?: (id: string, degrees: number) => void;
   onResize?: (id: string, scaleFactor: number) => void;
   allEquipment?: Equipment[];
-  onConnectEquipment?: (sourceId: string, targetId?: string) => void;
+  onConnectEquipment?: (id: string, handleId?: string) => void;
+  onConnectionPointClick?: (equipmentId: string, pointId: string) => void;
   onParameterChange?: (equipmentId: string, parameterId: string, value: any) => void;
+  isRunning?: boolean;
 }
 
 const EquipmentDetail: React.FC<EquipmentDetailProps> = ({
   equipment,
-  isRunning = false,
   onClose,
   onMove,
   onRotate,
   onResize,
-  allEquipment = [],
+  allEquipment,
   onConnectEquipment,
-  onParameterChange
+  onConnectionPointClick,
+  onParameterChange,
+  isRunning = false
 }) => {
-  // Function to safely render metric values
-  const renderMetricValue = (metric: any): string => {
-    if (metric === null || metric === undefined) {
-      return '';
+  const handleRotate = () => {
+    if (onRotate) {
+      onRotate(equipment.id, 90);
     }
-    
-    if (typeof metric === 'object') {
-      try {
-        return JSON.stringify(metric);
-      } catch (e) {
-        return '[Object]';
-      }
-    }
-    
-    return String(metric);
   };
 
-  // Get other equipment (for connection options)
-  const otherEquipment = allEquipment?.filter(eq => eq.id !== equipment.id) || [];
-
-  // Handle parameter changes
+  const handleResize = (increase: boolean) => {
+    if (onResize) {
+      onResize(equipment.id, increase ? 1.1 : 0.9);
+    }
+  };
+  
+  const handleConnectionPointClick = (pointId: string) => {
+    if (onConnectionPointClick) {
+      onConnectionPointClick(equipment.id, pointId);
+    }
+  };
+  
   const handleParameterChange = (parameterId: string, value: any) => {
     if (onParameterChange) {
       onParameterChange(equipment.id, parameterId, value);
@@ -56,163 +55,140 @@ const EquipmentDetail: React.FC<EquipmentDetailProps> = ({
   };
 
   return (
-    <div className="absolute z-10 p-4 rounded-lg shadow-xl w-64 bg-white glass-card border-2 border-blue-200 animate-fade-in">
-      <div className="flex justify-between items-center mb-3">
-        <h3 className="text-md font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-          {equipment.name}
-        </h3>
-        <button 
+    <div className="bg-white rounded-lg shadow-lg border border-blue-100 p-4 w-full max-w-sm">
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-medium text-blue-800">{equipment.name || equipment.type}</h3>
+        <button
+          className="text-gray-500 hover:text-gray-700"
           onClick={onClose}
-          className="p-1 rounded-full hover:bg-gray-100 text-gray-500"
         >
-          <X className="h-4 w-4" />
+          <X className="h-5 w-5" />
         </button>
       </div>
       
-      <div className="text-xs text-gray-500 mb-3">
-        {equipment.description || `${equipment.type} equipment`}
+      <div className="mb-4">
+        <h4 className="text-sm font-medium text-gray-700 mb-2">Equipment Info</h4>
+        <div className="bg-blue-50 p-3 rounded-md">
+          <p className="text-sm"><span className="font-medium">Type:</span> {equipment.type}</p>
+          <p className="text-sm"><span className="font-medium">Position:</span> ({equipment.position.x}, {equipment.position.y})</p>
+          {equipment.rotation && (
+            <p className="text-sm"><span className="font-medium">Rotation:</span> {equipment.rotation}°</p>
+          )}
+          {equipment.scale && (
+            <p className="text-sm"><span className="font-medium">Scale:</span> {equipment.scale.toFixed(1)}x</p>
+          )}
+        </div>
       </div>
       
-      {equipment.metrics && Object.keys(equipment.metrics).length > 0 && (
-        <>
-          <div className="text-sm font-medium text-gray-700 mb-2">Current Values:</div>
-          <div className="mb-4 space-y-2">
-            {Object.entries(equipment.metrics).map(([key, value]) => (
-              <div key={key} className="flex justify-between items-center py-1 px-2 rounded-md bg-blue-50">
-                <span className="text-xs text-gray-700 capitalize">{key}:</span>
-                <span className={cn(
-                  "text-xs font-medium",
-                  isRunning ? "text-green-600" : "text-blue-600"
-                )}>
-                  {key === 'temperature' 
-                    ? `${renderMetricValue(value)}°C` 
-                    : key === 'pressure' 
-                      ? `${renderMetricValue(value)} kPa`
-                      : key === 'flow' || key === 'flowRate'
-                        ? `${renderMetricValue(value)} kg/h`
-                        : key === 'level'
-                          ? `${renderMetricValue(value)}%`
-                          : renderMetricValue(value)
-                  }
-                </span>
-              </div>
-            ))}
-          </div>
-        </>
-      )}
-      
-      {/* Connection Options */}
-      {otherEquipment.length > 0 && (
-        <div className="mt-3">
-          <div className="text-sm font-medium text-gray-700 mb-2 colorful-border blue">Connect to:</div>
-          <div className="max-h-[120px] overflow-y-auto space-y-1 bg-gradient-to-r from-indigo-50 to-blue-50 p-2 rounded-md">
-            {otherEquipment.map(eq => (
-              <div 
-                key={eq.id} 
-                onClick={() => onConnectEquipment?.(equipment.id, eq.id)}
-                className="flex items-center justify-between text-xs p-1.5 rounded transition-colors hover:bg-white cursor-pointer"
-              >
-                <span className="font-medium">{eq.name}</span>
-                <div className="flex items-center">
-                  <span className="text-gray-500 text-xs mr-1">{eq.type}</span>
-                  <ChevronRight className="h-3 w-3 text-blue-500" />
-                </div>
-              </div>
-            ))}
+      {/* Connection Points */}
+      <div className="mb-4">
+        <h4 className="text-sm font-medium text-gray-700 mb-2">Connection Points</h4>
+        <div className="bg-gray-100 p-3 rounded-md text-center relative h-24 mb-2">
+          {/* Add illustration of the equipment with connection points */}
+          <div className="relative mx-auto h-full w-1/2 border border-gray-300 rounded bg-white flex items-center justify-center">
+            {equipment.icon && (
+              <span className="text-2xl text-gray-600">{equipment.icon}</span>
+            )}
+            
+            {/* Connection Points */}
+            <ConnectionPoint
+              id="top"
+              position="top"
+              onClick={(id) => handleConnectionPointClick(id)}
+              isConnected={equipment.connectedPoints?.includes("top")}
+            />
+            <ConnectionPoint
+              id="right"
+              position="right"
+              onClick={(id) => handleConnectionPointClick(id)}
+              isConnected={equipment.connectedPoints?.includes("right")}
+            />
+            <ConnectionPoint
+              id="bottom"
+              position="bottom"
+              onClick={(id) => handleConnectionPointClick(id)}
+              isConnected={equipment.connectedPoints?.includes("bottom")}
+            />
+            <ConnectionPoint
+              id="left"
+              position="left"
+              onClick={(id) => handleConnectionPointClick(id)}
+              isConnected={equipment.connectedPoints?.includes("left")}
+            />
           </div>
         </div>
-      )}
+        <p className="text-xs text-center text-gray-500">Click on connection points to connect equipment</p>
+      </div>
       
-      {/* Control buttons for move, rotate, resize */}
-      {(onMove || onRotate || onResize) && (
-        <div className="mt-3 p-2 rounded-md bg-gray-50">
-          {onMove && (
-            <div className="mb-2">
-              <div className="text-xs font-medium text-gray-700 mb-1">Move Equipment:</div>
-              <div className="flex justify-center space-x-1">
-                <button 
-                  onClick={() => onMove(equipment.id, 'left')}
-                  className="p-1 rounded bg-blue-100 text-blue-700 text-xs hover:bg-blue-200"
-                >
-                  ←
-                </button>
-                <button 
-                  onClick={() => onMove(equipment.id, 'up')}
-                  className="p-1 rounded bg-blue-100 text-blue-700 text-xs hover:bg-blue-200"
-                >
-                  ↑
-                </button>
-                <button 
-                  onClick={() => onMove(equipment.id, 'down')}
-                  className="p-1 rounded bg-blue-100 text-blue-700 text-xs hover:bg-blue-200"
-                >
-                  ↓
-                </button>
-                <button 
-                  onClick={() => onMove(equipment.id, 'right')}
-                  className="p-1 rounded bg-blue-100 text-blue-700 text-xs hover:bg-blue-200"
-                >
-                  →
-                </button>
-              </div>
-            </div>
-          )}
-          
-          {onRotate && equipment.type === 'arrow' && (
-            <div className="mb-2">
-              <div className="text-xs font-medium text-gray-700 mb-1">Rotate:</div>
-              <div className="flex justify-center space-x-1">
-                <button 
-                  onClick={() => onRotate(equipment.id, -45)}
-                  className="p-1 rounded bg-purple-100 text-purple-700 text-xs hover:bg-purple-200"
-                >
-                  ↺ 45°
-                </button>
-                <button 
-                  onClick={() => onRotate(equipment.id, 45)}
-                  className="p-1 rounded bg-purple-100 text-purple-700 text-xs hover:bg-purple-200"
-                >
-                  ↻ 45°
-                </button>
-              </div>
-            </div>
-          )}
-          
-          {onResize && equipment.type === 'arrow' && (
-            <div>
-              <div className="text-xs font-medium text-gray-700 mb-1">Size:</div>
-              <div className="flex justify-center space-x-1">
-                <button 
-                  onClick={() => onResize(equipment.id, -0.2)}
-                  className="p-1 rounded bg-green-100 text-green-700 text-xs hover:bg-green-200"
-                >
-                  Smaller
-                </button>
-                <button 
-                  onClick={() => onResize(equipment.id, 0.2)}
-                  className="p-1 rounded bg-green-100 text-green-700 text-xs hover:bg-green-200"
-                >
-                  Larger
-                </button>
-              </div>
-            </div>
-          )}
+      {/* Controls for positioning and rotation */}
+      <div className="mb-4">
+        <h4 className="text-sm font-medium text-gray-700 mb-2">Controls</h4>
+        <div className="grid grid-cols-3 gap-2">
+          <div className="col-start-2">
+            <button
+              className="w-full flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded p-2"
+              onClick={() => onMove && onMove(equipment.id, "up")}
+            >
+              <ArrowUp className="h-4 w-4" />
+            </button>
+          </div>
+          <div className="col-start-1 row-start-2">
+            <button
+              className="w-full flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded p-2"
+              onClick={() => onMove && onMove(equipment.id, "left")}
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </button>
+          </div>
+          <div className="col-start-3 row-start-2">
+            <button
+              className="w-full flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded p-2"
+              onClick={() => onMove && onMove(equipment.id, "right")}
+            >
+              <ArrowRight className="h-4 w-4" />
+            </button>
+          </div>
+          <div className="col-start-2 row-start-2">
+            <button
+              className="w-full flex items-center justify-center bg-blue-100 hover:bg-blue-200 rounded p-2"
+              onClick={handleRotate}
+            >
+              <RotateCw className="h-4 w-4" />
+            </button>
+          </div>
+          <div className="col-start-2 row-start-3">
+            <button
+              className="w-full flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded p-2"
+              onClick={() => onMove && onMove(equipment.id, "down")}
+            >
+              <ArrowDown className="h-4 w-4" />
+            </button>
+          </div>
+          <div className="col-start-1 row-start-3">
+            <button
+              className="w-full flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded p-2"
+              onClick={() => handleResize(false)}
+            >
+              <ZoomOut className="h-4 w-4" />
+            </button>
+          </div>
+          <div className="col-start-3 row-start-3">
+            <button
+              className="w-full flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded p-2"
+              onClick={() => handleResize(true)}
+            >
+              <ZoomIn className="h-4 w-4" />
+            </button>
+          </div>
         </div>
-      )}
+      </div>
       
-      {/* Equipment Parameters Panel */}
-      <ParametersPanel 
+      {/* Parameters Panel */}
+      <ParametersPanel
         equipment={equipment}
         onParameterChange={handleParameterChange}
         isRunning={isRunning}
       />
-      
-      <div className="mt-4 pt-3 border-t border-blue-100 flex justify-end">
-        <button className="text-xs font-medium text-indigo-600 flex items-center">
-          <Settings2 className="h-3 w-3 mr-1" />
-          View Details
-        </button>
-      </div>
     </div>
   );
 };

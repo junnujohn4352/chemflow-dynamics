@@ -15,8 +15,6 @@ import About from "./pages/About";
 import CodeConverter from "./pages/CodeConverter";
 import Formulas from "./pages/Formulas";
 import Simulations from "./pages/Simulations";
-import SignIn from "./pages/SignIn";
-import SignUp from "./pages/SignUp";
 import AuthLayout from "./components/layout/AuthLayout";
 
 const queryClient = new QueryClient({
@@ -109,9 +107,7 @@ function App() {
           <Toaster />
           <Sonner />
           <Routes>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/sign-in" element={<SignIn />} />
-            <Route path="/sign-up" element={<SignUp />} />
+            <Route path="/" element={<Navigate to="/dashboard" />} />
             
             <Route path="/dashboard" element={<AuthLayout><Dashboard /></AuthLayout>} />
             <Route path="/simulations" element={<AuthLayout><Simulations /></AuthLayout>} />

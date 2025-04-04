@@ -1,83 +1,62 @@
 
 import React from "react";
-import { ConnectionPoint as ConnectionPointType } from "./types";
 
 interface ConnectionPointProps {
-  point: ConnectionPointType;
-  equipmentId: string;
-  onClick: (equipmentId: string, pointId: string) => void;
-  isConnecting: boolean;
+  id: string;
+  position: "top" | "right" | "bottom" | "left";
+  onClick?: (id: string) => void;
+  isConnected?: boolean;
+  isConnectable?: boolean;
 }
 
-const ConnectionPoint: React.FC<ConnectionPointProps> = ({ 
-  point, 
-  equipmentId,
+const ConnectionPoint: React.FC<ConnectionPointProps> = ({
+  id,
+  position,
   onClick,
-  isConnecting
+  isConnected = false,
+  isConnectable = true
 }) => {
-  // Calculate position and size for connection point
-  const getPositionStyle = () => {
-    const baseStyle: React.CSSProperties = {
-      position: 'absolute',
-      width: '12px',
-      height: '12px',
-      borderRadius: '50%',
-      backgroundColor: point.isConnected ? '#4CAF50' : '#9e86ed',
-      border: '2px solid white',
-      cursor: 'pointer',
-      zIndex: 10,
-      transition: 'transform 0.2s, background-color 0.2s',
-    };
-
-    // Add hover effect when connecting
-    if (isConnecting) {
-      baseStyle.transform = 'scale(1.2)';
-      baseStyle.boxShadow = '0 0 0 2px rgba(158, 134, 237, 0.4)';
-    }
-
-    // Position the connection point based on its position property
-    switch (point.position) {
-      case 'top':
-        return {
-          ...baseStyle,
-          top: '-6px',
-          left: '50%',
-          transform: `translateX(-50%) ${isConnecting ? 'scale(1.2)' : ''}`,
-        };
-      case 'right':
-        return {
-          ...baseStyle,
-          top: '50%',
-          right: '-6px',
-          transform: `translateY(-50%) ${isConnecting ? 'scale(1.2)' : ''}`,
-        };
-      case 'bottom':
-        return {
-          ...baseStyle,
-          bottom: '-6px',
-          left: '50%',
-          transform: `translateX(-50%) ${isConnecting ? 'scale(1.2)' : ''}`,
-        };
-      case 'left':
-        return {
-          ...baseStyle,
-          top: '50%',
-          left: '-6px',
-          transform: `translateY(-50%) ${isConnecting ? 'scale(1.2)' : ''}`,
-        };
-      default:
-        return baseStyle;
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onClick && isConnectable) {
+      onClick(id);
     }
   };
-
+  
+  // Position the connection point along the edge of the parent
+  const getPositionStyles = () => {
+    switch (position) {
+      case "top":
+        return { top: "-5px", left: "50%", transform: "translateX(-50%)" };
+      case "right":
+        return { right: "-5px", top: "50%", transform: "translateY(-50%)" };
+      case "bottom":
+        return { bottom: "-5px", left: "50%", transform: "translateX(-50%)" };
+      case "left":
+        return { left: "-5px", top: "50%", transform: "translateY(-50%)" };
+    }
+  };
+  
   return (
     <div
-      className="connection-point"
-      style={getPositionStyle()}
-      onClick={() => onClick(equipmentId, point.id)}
-      title={`Connect from ${point.position}${point.label ? `: ${point.label}` : ''}`}
+      className={`absolute w-3 h-3 rounded-full cursor-pointer border-2 
+        ${isConnected 
+          ? "bg-green-400 border-green-600" 
+          : isConnectable 
+            ? "bg-blue-400 border-blue-600 hover:bg-blue-500" 
+            : "bg-gray-400 border-gray-600"
+        } z-10 shadow-md`}
+      style={{
+        ...getPositionStyles(),
+        transition: "all 0.2s ease"
+      }}
+      onClick={handleClick}
     >
-      {/* Add a tooltip or label if needed */}
+      {/* Add a visual indicator when hovering */}
+      <div 
+        className={`absolute inset-0 rounded-full bg-white opacity-0 hover:opacity-30 
+          transition-opacity duration-200 pointer-events-none`}
+      ></div>
     </div>
   );
 };

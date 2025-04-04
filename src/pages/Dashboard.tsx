@@ -1,7 +1,5 @@
-
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import Navbar from "@/components/layout/Navbar";
 import { 
   FileText, 
   Calculator,
@@ -21,8 +19,6 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-indigo-50 via-white to-purple-50 dark:bg-gray-900">
-      <Navbar />
-      
       <main className="flex-1 py-16 px-6">
         <div className="max-w-screen-xl mx-auto">
           <div className="mb-8 flex justify-between items-center">
@@ -168,4 +164,3 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
 };
 
 export default Dashboard;
-

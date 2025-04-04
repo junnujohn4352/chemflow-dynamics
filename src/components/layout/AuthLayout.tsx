@@ -1,6 +1,5 @@
 
-import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React from 'react';
 import { Layout } from './Layout';
 
 interface AuthLayoutProps {
@@ -8,19 +7,6 @@ interface AuthLayoutProps {
 }
 
 const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
-  const navigate = useNavigate();
-  const isAuthenticated = localStorage.getItem("auth") === "true";
-
-  useEffect(() => {
-    if (!isAuthenticated) {
-      navigate('/sign-in');
-    }
-  }, [isAuthenticated, navigate]);
-
-  if (!isAuthenticated) {
-    return null;
-  }
-
   return <Layout>{children}</Layout>;
 };
 
