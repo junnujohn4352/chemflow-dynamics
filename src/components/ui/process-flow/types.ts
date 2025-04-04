@@ -1,3 +1,4 @@
+
 export interface Connection {
   id: string;
   source: string;
@@ -18,6 +19,9 @@ export interface Equipment {
   };
   settings?: Record<string, any>;
   connections?: string[];
+  status?: string;
+  metrics?: Record<string, any>;
+  description?: string;
 }
 
 export interface GridCell {

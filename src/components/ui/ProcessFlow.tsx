@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import GlassPanel from "./GlassPanel";
@@ -27,7 +26,6 @@ interface ProcessFlowProps {
   onStartSimulation?: () => void;
 }
 
-// Define equipment types for the toolbar
 const equipmentTypes = [
   { id: "tank", name: "Tank", icon: <Container className="h-5 w-5 text-blue-600" /> },
   { id: "pump", name: "Pump", icon: <Gauge className="h-5 w-5 text-blue-600" /> },
@@ -58,8 +56,7 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
     { 
       id: 'feed-tank', 
       type: 'tank', 
-      name: 'Feed Tank', 
-      status: 'stopped', 
+      name: 'Feed Tank',
       metrics: { level: 75, temperature: 25 },
       position: { x: 0, y: 0 },
       connections: [],
@@ -68,8 +65,7 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
     { 
       id: 'feed-pump', 
       type: 'pump', 
-      name: 'Feed Pump', 
-      status: 'stopped', 
+      name: 'Feed Pump',
       metrics: { flow: 120 },
       position: { x: 2, y: 0 },
       connections: [],
@@ -78,8 +74,7 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
     { 
       id: 'preheater', 
       type: 'heater', 
-      name: 'Preheater', 
-      status: 'stopped', 
+      name: 'Preheater',
       metrics: { temperature: 25 },
       position: { x: 0, y: 2 },
       connections: [],
@@ -88,8 +83,7 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
     { 
       id: 'distillation-column', 
       type: 'column', 
-      name: 'Distillation Column', 
-      status: 'stopped', 
+      name: 'Distillation Column',
       metrics: { pressure: 150, temperature: 30 },
       position: { x: 2, y: 2 },
       connections: [],
@@ -98,8 +92,7 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
     { 
       id: 'product-tank', 
       type: 'tank', 
-      name: 'Product Tank', 
-      status: 'stopped', 
+      name: 'Product Tank',
       metrics: { level: 10, temperature: 25 },
       position: { x: 0, y: 4 },
       connections: [],
@@ -108,8 +101,7 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
     { 
       id: 'condenser', 
       type: 'condenser', 
-      name: 'Condenser', 
-      status: 'stopped', 
+      name: 'Condenser',
       metrics: { temperature: 25 },
       position: { x: 2, y: 4 },
       connections: [],
@@ -336,7 +328,6 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
     setShowDetails(showDetails === id ? null : id);
   };
 
-  // Handle equipment selection from toolbar
   const handleEquipmentSelect = (type: string) => {
     setSelectedEquipmentType(selectedEquipmentType === type ? null : type);
     toast({
@@ -345,11 +336,9 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
     });
   };
 
-  // Handle cell click for equipment placement
   const handleCellClick = (row: number, col: number) => {
     if (!selectedEquipmentType) return;
     
-    // Check if cell is already occupied
     const cellOccupied = equipment.some(eq => 
       eq.position.x === col && eq.position.y === row
     );
@@ -398,7 +387,6 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
       description: `Added ${newEquipment.name} at position (${col},${row})`,
     });
     
-    // Optionally clear the selection after placement
     setSelectedEquipmentType(null);
   };
 
@@ -419,7 +407,6 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
           />
         </div>
 
-        {/* Equipment toolbar */}
         <div className="mb-6 p-3 bg-white border border-gray-100 rounded-xl shadow-sm overflow-x-auto">
           <div className="flex items-center gap-2">
             <div className="text-sm font-medium text-gray-500 mr-2">Equipment:</div>

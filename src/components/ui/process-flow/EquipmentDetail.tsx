@@ -29,7 +29,8 @@ const EquipmentDetail: React.FC<EquipmentDetailProps> = ({
   isRunning,
   onClose,
 }) => {
-  const { name, type, metrics, connections } = equipment;
+  const { name, type, connections } = equipment;
+  const metrics = equipment.metrics || {};
   
   return (
     <div className="absolute top-full left-0 right-0 mt-2 bg-white p-3 rounded-lg shadow-lg z-10 border border-gray-200 text-left animate-fade-in">
