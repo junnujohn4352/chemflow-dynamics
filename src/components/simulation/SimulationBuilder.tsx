@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useDrop } from "react-dnd";
 import { ItemTypes } from "@/components/simulation/ItemTypes";
@@ -6,17 +5,14 @@ import GlassPanel from "@/components/ui/GlassPanel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, X, GripVertical } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-// Add proper type definition to include the description property
 interface SimulationComponentType {
   id: string;
   name: string;
   description: string;
-  // Add other properties as needed
 }
 
 const initialComponents = [
