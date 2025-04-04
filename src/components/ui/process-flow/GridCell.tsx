@@ -2,7 +2,7 @@
 import React from "react";
 import { Equipment } from "./types";
 import { Button } from "@/components/ui/button";
-import { Info } from "lucide-react";
+import { ArrowRight, Info } from "lucide-react";
 import EquipmentCard from "@/components/ui/EquipmentCard";
 import EquipmentController from "./EquipmentController";
 import EquipmentDetail from "./EquipmentDetail";
@@ -40,13 +40,13 @@ const GridCell: React.FC<GridCellProps> = ({
   onConnectionSelect,
   onToggleDetails,
   onMove,
-  onDropClick, // Add handler to component props
+  onDropClick,
 }) => {
   if (!equipment) {
     return (
       <div 
         className="w-full h-full min-h-[120px] border border-dashed border-blue-200 rounded-xl flex items-center justify-center bg-blue-50/30 hover:bg-blue-50 transition-colors cursor-pointer"
-        onClick={onDropClick} // Add click handler for empty cells
+        onClick={onDropClick}
       >
         <span className="text-gray-400 text-xs">Drop equipment here</span>
       </div>
@@ -55,30 +55,6 @@ const GridCell: React.FC<GridCellProps> = ({
 
   return (
     <div className="relative group">
-      {/* Left connection dot */}
-      <div 
-        className="absolute left-0 top-1/2 -translate-x-2 -translate-y-1/2 w-4 h-4 bg-violet-500 hover:bg-violet-600 rounded-full opacity-0 group-hover:opacity-100 cursor-pointer z-10 transition-all duration-200"
-        onClick={() => onConnect(equipment.id)}
-      />
-      
-      {/* Right connection dot */}
-      <div 
-        className="absolute right-0 top-1/2 translate-x-2 -translate-y-1/2 w-4 h-4 bg-violet-500 hover:bg-violet-600 rounded-full opacity-0 group-hover:opacity-100 cursor-pointer z-10 transition-all duration-200"
-        onClick={() => onConnect(equipment.id)}
-      />
-      
-      {/* Top connection dot */}
-      <div 
-        className="absolute top-0 left-1/2 -translate-y-2 -translate-x-1/2 w-4 h-4 bg-violet-500 hover:bg-violet-600 rounded-full opacity-0 group-hover:opacity-100 cursor-pointer z-10 transition-all duration-200"
-        onClick={() => onConnect(equipment.id)}
-      />
-      
-      {/* Bottom connection dot */}
-      <div 
-        className="absolute bottom-0 left-1/2 translate-y-2 -translate-x-1/2 w-4 h-4 bg-violet-500 hover:bg-violet-600 rounded-full opacity-0 group-hover:opacity-100 cursor-pointer z-10 transition-all duration-200"
-        onClick={() => onConnect(equipment.id)}
-      />
-
       {editingName === equipment.id ? (
         <div className="absolute -top-10 left-0 right-0 flex z-50">
           <input
@@ -110,7 +86,7 @@ const GridCell: React.FC<GridCellProps> = ({
         onClick={() => connectMode && connectMode !== equipment.id ? onConnectionSelect(equipment.id) : null}
       >
         <EquipmentCard 
-          type={equipment.type} 
+          type={equipment.type}
           name={typeof equipment.name === 'string' ? equipment.name : String(equipment.name)} 
           status={isRunning ? "running" : "stopped"} 
           metrics={equipment.metrics}
@@ -136,6 +112,18 @@ const GridCell: React.FC<GridCellProps> = ({
           >
             <Info className="h-3 w-3 mr-1" />
             {showDetails === equipment.id ? 'Hide' : 'Info'}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-xs px-2 py-1 h-auto"
+            onClick={(e) => {
+              e.stopPropagation();
+              onConnect(equipment.id);
+            }}
+          >
+            <ArrowRight className="h-3 w-3 mr-1" />
+            Connect
           </Button>
         </div>
         

@@ -35,7 +35,6 @@ const ConnectionsRenderer: React.FC<ConnectionsRendererProps> = ({
         const cellWidth = 120;
         const cellHeight = 120;
         const margin = 12;
-        const dotOffset = 8; // Offset for the connection dots
         
         // Calculate base positions
         const sourceBaseX = source.position.x * (cellWidth + margin);
@@ -49,61 +48,22 @@ const ConnectionsRenderer: React.FC<ConnectionsRendererProps> = ({
         const targetCenterX = targetBaseX + (cellWidth / 2);
         const targetCenterY = targetBaseY + (cellHeight / 2);
         
-        // Determine connection points based on relative positions
-        let sourceX, sourceY, targetX, targetY;
-        
-        // Calculate angle between centers
+        // Calculate angle between centers for proper arrow rotation
         const angleRad = Math.atan2(targetCenterY - sourceCenterY, targetCenterX - sourceCenterX);
         const angleDeg = (angleRad * 180) / Math.PI;
         
-        // Determine which side of the source to connect from
-        if (angleDeg >= -45 && angleDeg < 45) {
-          // Connect from right side of source
-          sourceX = sourceBaseX + cellWidth + dotOffset;
-          sourceY = sourceCenterY;
-        } else if (angleDeg >= 45 && angleDeg < 135) {
-          // Connect from bottom of source
-          sourceX = sourceCenterX;
-          sourceY = sourceBaseY + cellHeight + dotOffset;
-        } else if ((angleDeg >= 135 && angleDeg <= 180) || (angleDeg >= -180 && angleDeg < -135)) {
-          // Connect from left side of source
-          sourceX = sourceBaseX - dotOffset;
-          sourceY = sourceCenterY;
-        } else {
-          // Connect from top of source
-          sourceX = sourceCenterX;
-          sourceY = sourceBaseY - dotOffset;
-        }
+        // Calculate control points for curved paths - make smoother curves
+        const dx = targetCenterX - sourceCenterX;
+        const dy = targetCenterY - sourceCenterY;
+        const distance = Math.sqrt(dx * dx + dy * dy);
         
-        // Determine which side of the target to connect to
-        // We use the opposite angle for the target
-        const targetAngleDeg = (angleDeg + 180) % 360;
+        // Adjust curve strength based on distance
+        const curveFactor = Math.min(0.4, distance / 500);
         
-        if (targetAngleDeg >= -45 && targetAngleDeg < 45) {
-          // Connect to right side of target
-          targetX = targetBaseX + cellWidth + dotOffset;
-          targetY = targetCenterY;
-        } else if (targetAngleDeg >= 45 && targetAngleDeg < 135) {
-          // Connect to bottom of target
-          targetX = targetCenterX;
-          targetY = targetBaseY + cellHeight + dotOffset;
-        } else if ((targetAngleDeg >= 135 && targetAngleDeg <= 180) || (targetAngleDeg >= -180 && targetAngleDeg < -135)) {
-          // Connect to left side of target
-          targetX = targetBaseX - dotOffset;
-          targetY = targetCenterY;
-        } else {
-          // Connect to top of target
-          targetX = targetCenterX;
-          targetY = targetBaseY - dotOffset;
-        }
-        
-        // Calculate control points for curved paths
-        const dx = targetX - sourceX;
-        const dy = targetY - sourceY;
-        const controlX1 = sourceX + dx * 0.4;
-        const controlY1 = sourceY + dy * 0.4;
-        const controlX2 = targetX - dx * 0.4;
-        const controlY2 = targetY - dy * 0.4;
+        const controlX1 = sourceCenterX + dx * 0.3;
+        const controlY1 = sourceCenterY + dy * 0.3;
+        const controlX2 = targetCenterX - dx * 0.3;
+        const controlY2 = targetCenterY - dy * 0.3;
         
         const pathId = `path-${conn.id}`;
         
@@ -111,11 +71,10 @@ const ConnectionsRenderer: React.FC<ConnectionsRendererProps> = ({
           <g key={conn.id}>
             <path 
               id={pathId}
-              d={`M ${sourceX} ${sourceY} C ${controlX1} ${controlY1}, ${controlX2} ${controlY2}, ${targetX} ${targetY}`} 
+              d={`M ${sourceCenterX} ${sourceCenterY} C ${controlX1} ${controlY1}, ${controlX2} ${controlY2}, ${targetCenterX} ${targetCenterY}`} 
               fill="none" 
               stroke="#8B5CF6" 
               strokeWidth="2" 
-              strokeDasharray="5,5"
               markerEnd="url(#arrowhead)"
             />
             
@@ -126,19 +85,20 @@ const ConnectionsRenderer: React.FC<ConnectionsRendererProps> = ({
                 <animateMotion 
                   dur="3s"
                   repeatCount="indefinite"
-                  path={`M ${sourceX} ${sourceY} C ${controlX1} ${controlY1}, ${controlX2} ${controlY2}, ${targetX} ${targetY}`}
+                  path={`M ${sourceCenterX} ${sourceCenterY} C ${controlX1} ${controlY1}, ${controlX2} ${controlY2}, ${targetCenterX} ${targetCenterY}`}
                 />
               </circle>
             )}
             
             {conn.label && (
               <text
-                x={(sourceX + targetX) / 2}
-                y={(sourceY + targetY) / 2 - 10}
+                x={(sourceCenterX + targetCenterX) / 2}
+                y={(sourceCenterY + targetCenterY) / 2 - 10}
                 textAnchor="middle"
                 fill="#8B5CF6"
                 fontSize="10"
                 className="pointer-events-none"
+                transform={`rotate(${angleDeg < -90 || angleDeg > 90 ? angleDeg + 180 : angleDeg}, ${(sourceCenterX + targetCenterX) / 2}, ${(sourceCenterY + targetCenterY) / 2})`}
               >
                 {conn.label}
               </text>

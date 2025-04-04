@@ -1,155 +1,226 @@
 import React, { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Moon, Sun, Settings, FileText, FlaskConical, Calculator, Book, Code, Info } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useTheme } from "@/hooks/use-theme";
-import { Button } from "@/components/ui/button";
+import { MoonIcon, SunIcon } from "@radix-ui/react-icons";
+import { useMediaQuery } from "@/hooks/use-media-query";
+import { Menu } from 'lucide-react';
+import ChemFlowLogo from "@/assets/icons/ChemFlowLogo";
 
-const Navbar = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const location = useLocation();
-  const { isDarkMode, toggleDarkMode } = useTheme();
-
-  const isActiveRoute = (path: string) => {
-    return location.pathname === path;
+const Navbar: React.FC = () => {
+  const { theme, setTheme } = useTheme();
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const isSmallScreen = useMediaQuery('(max-width: 640px)');
+  
+  const isAuthenticated = localStorage.getItem("auth") === "true";
+  
+  const handleSignOut = () => {
+    localStorage.removeItem("auth");
+    window.location.href = "/sign-in";
   };
 
-  const navigationItems = [
-    {
-      label: "Dashboard",
-      href: "/dashboard",
-      icon: <FlaskConical className="h-4 w-4 mr-2" />,
-    },
-    {
-      label: "Create Simulation",
-      href: "/create-simulation",
-      icon: <FlaskConical className="h-4 w-4 mr-2" />,
-    },
-    {
-      label: "HYSYS Calculations",
-      href: "/hysys-calculations",
-      icon: <Calculator className="h-4 w-4 mr-2" />,
-    },
-    {
-      label: "Engineering Formulas",
-      href: "/formulas",
-      icon: <Book className="h-4 w-4 mr-2" />,
-    },
-    {
-      label: "Unit Converter",
-      href: "/unit-converter",
-      icon: <FileText className="h-4 w-4 mr-2" />,
-    },
-    {
-      label: "Code Converter",
-      href: "/code-converter",
-      icon: <Code className="h-4 w-4 mr-2" />,
-    },
-    {
-      label: "About",
-      href: "/about",
-      icon: <Info className="h-4 w-4 mr-2" />,
-    },
-    {
-      label: "Settings",
-      href: "/settings",
-      icon: <Settings className="h-4 w-4 mr-2" />,
-    },
-  ];
-
   return (
-    <nav className="bg-white dark:bg-gray-800 shadow-sm">
-      <div className="max-w-screen-xl mx-auto px-4 sm:px-6">
-        <div className="flex justify-between items-center h-16">
+    <header className="sticky top-0 z-50">
+      <nav className="bg-white border-b border-gray-200 px-4 py-2 shadow-sm">
+        <div className="flex items-center justify-between h-16">
+          {/* Logo and Mobile Menu */}
           <div className="flex items-center">
-            <Link to="/" className="flex-shrink-0 flex items-center">
-              <span className="text-xl font-display font-bold text-gray-900 dark:text-white">
-                Chem<span className="text-flow-blue">Flow</span>
-              </span>
+            {isSmallScreen && (
+              <button
+                onClick={() => setShowMobileMenu(!showMobileMenu)}
+                className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-flow-blue mr-2"
+              >
+                <span className="sr-only">Open main menu</span>
+                <Menu className="h-6 w-6" aria-hidden="true" />
+              </button>
+            )}
+            <Link to="/" className="flex-shrink-0">
+              <ChemFlowLogo className="h-8 w-auto" />
             </Link>
           </div>
           
-          <div className="hidden md:block">
-            <div className="ml-10 flex items-center space-x-4">
-              {navigationItems.map((item, index) => (
-                <Link
-                  key={index}
-                  to={item.href}
-                  className={`px-3 py-2 rounded-md text-sm font-medium ${
-                    isActiveRoute(item.href)
-                      ? "bg-flow-blue text-white dark:bg-flow-blue/80"
-                      : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                  }`}
+          {/* Desktop Navigation */}
+          <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
+            <Link to="/dashboard" className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+              Dashboard
+            </Link>
+            <Link to="/simulations" className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+              Simulations
+            </Link>
+            <Link to="/unit-converter" className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+              Unit Converter
+            </Link>
+            <Link to="/formulas" className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+              Formulas
+            </Link>
+            <Link to="/hysys-calculations" className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+              HYSYS Calculations
+            </Link>
+            <Link to="/about" className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+              About
+            </Link>
+            <Link to="/components" className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+              Components
+            </Link>
+            <Link to="/code-converter" className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+              Code Converter
+            </Link>
+          </div>
+          
+          {/* User Menu */}
+          <div className="flex items-center">
+            {isAuthenticated ? (
+              <div className="relative">
+                <button
+                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  className="flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-flow-blue"
                 >
-                  <div className="flex items-center">
-                    {item.icon}
-                    {item.label}
+                  <div className="h-8 w-8 rounded-full bg-gradient-to-r from-flow-blue to-blue-500 flex items-center justify-center text-white">
+                    US
                   </div>
+                </button>
+                
+                {showUserMenu && (
+                  <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 focus:outline-none">
+                    <div className="py-1">
+                      <Link
+                        to="/settings"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        onClick={() => setShowUserMenu(false)}
+                      >
+                        Settings
+                      </Link>
+                    </div>
+                    <div className="py-1">
+                      <button
+                        onClick={handleSignOut}
+                        className="w-full text-left block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        Sign out
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="flex items-center space-x-2">
+                <Link
+                  to="/sign-in"
+                  className="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium"
+                >
+                  Sign in
                 </Link>
-              ))}
-            </div>
-          </div>
-          
-          <div className="hidden md:block">
-            <div className="ml-4 flex items-center">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={toggleDarkMode}
-                className="text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"
-              >
-                {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-              </Button>
-            </div>
-          </div>
-          
-          <div className="flex md:hidden">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleDarkMode}
-              className="text-gray-600 dark:text-gray-300 mr-2"
-            >
-              {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-            </Button>
+                <Link
+                  to="/sign-up"
+                  className="bg-flow-blue text-white hover:bg-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                >
+                  Sign up
+                </Link>
+              </div>
+            )}
             
+            {/* Theme Toggle */}
             <button
-              onClick={() => setIsOpen(!isOpen)}
-              className="inline-flex items-center justify-center p-2 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none"
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              className="ml-4 p-2 rounded-full hover:bg-gray-100 transition-colors"
             >
-              {isOpen ? (
-                <X className="h-6 w-6" />
+              {theme === "dark" ? (
+                <SunIcon className="h-5 w-5 text-gray-700" />
               ) : (
-                <Menu className="h-6 w-6" />
+                <MoonIcon className="h-5 w-5 text-gray-700" />
               )}
             </button>
           </div>
         </div>
-      </div>
-
-      {isOpen && (
-        <div className="md:hidden">
-          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white dark:bg-gray-800">
-            {navigationItems.map((item, index) => (
-              <Link
-                key={index}
-                to={item.href}
-                className={`block px-3 py-2 rounded-md text-base font-medium ${
-                  isActiveRoute(item.href)
-                    ? "bg-flow-blue text-white dark:bg-flow-blue/80"
-                    : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                }`}
-                onClick={() => setIsOpen(false)}
-              >
-                <div className="flex items-center">
-                  {item.icon}
-                  {item.label}
-                </div>
-              </Link>
-            ))}
+      </nav>
+      
+      {/* Mobile Menu */}
+      {isSmallScreen && showMobileMenu && (
+        <div className="sm:hidden absolute top-full left-0 right-0 bg-white border-b border-gray-200 shadow-md z-50">
+          <div className="px-2 pt-2 pb-3 space-y-1">
+            <Link
+              to="/dashboard"
+              className="bg-gray-100 text-gray-900 block px-3 py-2 rounded-md text-base font-medium"
+            >
+              Dashboard
+            </Link>
+            <Link
+              to="/simulations"
+              className="text-gray-600 hover:bg-gray-100 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium"
+            >
+              Simulations
+            </Link>
+            <Link
+              to="/unit-converter"
+              className="text-gray-600 hover:bg-gray-100 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium"
+            >
+              Unit Converter
+            </Link>
+             <Link
+              to="/formulas"
+              className="text-gray-600 hover:bg-gray-100 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium"
+            >
+              Formulas
+            </Link>
+            <Link
+              to="/hysys-calculations"
+              className="text-gray-600 hover:bg-gray-100 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium"
+            >
+              HYSYS Calculations
+            </Link>
+            <Link
+              to="/about"
+              className="text-gray-600 hover:bg-gray-100 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium"
+            >
+              About
+            </Link>
+            <Link
+              to="/components"
+              className="text-gray-600 hover:bg-gray-100 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium"
+            >
+              Components
+            </Link>
+            <Link
+              to="/code-converter"
+              className="text-gray-600 hover:bg-gray-100 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium"
+            >
+              Code Converter
+            </Link>
+             {isAuthenticated ? (
+              <>
+                <Link
+                  to="/settings"
+                  className="text-gray-600 hover:bg-gray-100 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium"
+                >
+                  Settings
+                </Link>
+                <button
+                  onClick={handleSignOut}
+                  className="w-full text-left text-gray-600 hover:bg-gray-100 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium"
+                >
+                  Sign out
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/sign-in"
+                  className="text-gray-600 hover:bg-gray-100 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium"
+                >
+                  Sign in
+                </Link>
+                <Link
+                  to="/sign-up"
+                  className="text-gray-600 hover:bg-gray-100 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium"
+                >
+                  Sign up
+                </Link>
+              </>
+            )}
           </div>
         </div>
       )}
-    </nav>
+    </header>
   );
 };
 
