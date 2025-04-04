@@ -1,6 +1,37 @@
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { Plus, Minus, Thermometer, Droplets, Settings2, Container, FlaskConical, Columns, Gauge, Save, Trash2, X, Sliders, Move, ArrowLeft, Play, ChevronsUpDown, ArrowRight, Info } from "lucide-react";
+import { 
+  Plus, 
+  Minus, 
+  Thermometer, 
+  Droplets, 
+  Settings2, 
+  Container, 
+  FlaskConical, 
+  Columns, 
+  Gauge, 
+  Save, 
+  Trash2, 
+  X, 
+  Sliders, 
+  Move, 
+  ArrowLeft, 
+  Play, 
+  ChevronsUpDown, 
+  ArrowRight, 
+  Info,
+  Wind,
+  Filter,
+  Beaker,
+  Package,
+  Cpu,
+  CircleOff,
+  Waves,
+  Milestone,
+  Lightbulb,
+  Pipette,
+  Flame
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import EquipmentSettings from "./EquipmentSettings";
@@ -162,7 +193,8 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     settings: {},
     connections: [],
     description: '',
-    metrics: {}
+    metrics: {},
+    status: ''
   });
 
   useEffect(() => {
@@ -203,30 +235,11 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
   }, [streams.length]);
   
   const equipmentList = [
+    // Storage and Feed Equipment
     { id: "feed", name: "Feed Stream", icon: <Droplets className="h-5 w-5" /> },
-    { 
-      id: "reactor", 
-      name: "Reactor", 
-      icon: <FlaskConical className="h-5 w-5" />,
-      subTypes: [
-        { id: "cstr", name: "CSTR" },
-        { id: "pfr", name: "PFR" },
-        { id: "batch", name: "Batch Reactor" },
-        { id: "pbr", name: "Packed Bed Reactor" },
-        { id: "fbr", name: "Fluidized Bed Reactor" }
-      ]
-    },
-    { 
-      id: "column", 
-      name: "Distillation Column", 
-      icon: <FlaskConical className="h-5 w-5" />,
-      subTypes: [
-        { id: "tray", name: "Tray Column" },
-        { id: "packed", name: "Packed Column" },
-        { id: "extractive", name: "Extractive Distillation" },
-        { id: "azeotropic", name: "Azeotropic Distillation" }
-      ]
-    },
+    { id: "product", name: "Product Stream", icon: <Package className="h-5 w-5" /> },
+    
+    // Heat Exchange Equipment
     { 
       id: "heater", 
       name: "Heater", 
@@ -247,6 +260,46 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
         { id: "refrigeration", name: "Refrigeration" }
       ]
     },
+    { id: "heatExchanger", name: "Heat Exchanger", icon: <Lightbulb className="h-5 w-5" /> },
+    { id: "furnace", name: "Furnace", icon: <Flame className="h-5 w-5" /> },
+    
+    // Flow Control Equipment
+    { id: "pump", name: "Pump", icon: <Gauge className="h-5 w-5" /> },
+    { id: "compressor", name: "Compressor", icon: <Wind className="h-5 w-5" /> },
+    { id: "valve", name: "Valve", icon: <CircleOff className="h-5 w-5" /> },
+    
+    // Separation Equipment
+    { 
+      id: "column", 
+      name: "Distillation Column", 
+      icon: <FlaskConical className="h-5 w-5" />,
+      subTypes: [
+        { id: "tray", name: "Tray Column" },
+        { id: "packed", name: "Packed Column" },
+        { id: "extractive", name: "Extractive Distillation" },
+        { id: "azeotropic", name: "Azeotropic Distillation" }
+      ]
+    },
+    { id: "absorber", name: "Absorber", icon: <FlaskConical className="h-5 w-5" /> },
+    { id: "separator", name: "Separator", icon: <Columns className="h-5 w-5" /> },
+    { id: "flashDrum", name: "Flash Drum", icon: <Container className="h-5 w-5" /> },
+    { id: "filter", name: "Filter", icon: <Filter className="h-5 w-5" /> },
+    
+    // Reaction Equipment
+    { 
+      id: "reactor", 
+      name: "Reactor", 
+      icon: <Beaker className="h-5 w-5" />,
+      subTypes: [
+        { id: "cstr", name: "CSTR" },
+        { id: "pfr", name: "PFR" },
+        { id: "batch", name: "Batch Reactor" },
+        { id: "pbr", name: "Packed Bed Reactor" },
+        { id: "fbr", name: "Fluidized Bed Reactor" }
+      ]
+    },
+    
+    // Mixing Equipment
     { 
       id: "mixer", 
       name: "Mixer", 
@@ -257,9 +310,15 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
         { id: "inline", name: "Inline Mixer" }
       ]
     },
-    { id: "valve", name: "Valve", icon: <Gauge className="h-5 w-5" /> },
-    { id: "pump", name: "Pump", icon: <Gauge className="h-5 w-5" /> },
-    { id: "product", name: "Product Stream", icon: <Droplets className="h-5 w-5" /> }
+    { id: "splitter", name: "Splitter", icon: <Milestone className="h-5 w-5" /> },
+    
+    // Utilities and Sensors
+    { id: "sensor", name: "Sensor", icon: <Pipette className="h-5 w-5" /> },
+    { id: "controller", name: "Controller", icon: <Cpu className="h-5 w-5" /> },
+    { id: "coolingTower", name: "Cooling Tower", icon: <Waves className="h-5 w-5" /> },
+    
+    // Flow Direction
+    { id: "arrow", name: "Flow Direction", icon: <ArrowRight className="h-5 w-5" /> }
   ];
   
   const handleZoomIn = () => {

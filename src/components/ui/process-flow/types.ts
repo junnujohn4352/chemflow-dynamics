@@ -24,6 +24,7 @@ export interface Equipment {
   description?: string;
   rotation?: number; // Added rotation property for arrow direction
   scale?: number; // Added scale property for arrow size
+  subType?: string; // Added subType for more specific equipment categories
 }
 
 export interface GridCell {

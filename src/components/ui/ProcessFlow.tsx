@@ -18,7 +18,13 @@ import {
   Lightbulb,
   Pipette, 
   Milestone,
-  Package
+  Package,
+  CircleOff,
+  Wind,
+  Cpu,
+  Flame,
+  Waves,
+  ArrowRight
 } from "lucide-react";
 
 interface ProcessFlowProps {
@@ -28,18 +34,36 @@ interface ProcessFlowProps {
 
 const equipmentTypes = [
   { id: "tank", name: "Tank", icon: <Container className="h-5 w-5 text-blue-600" /> },
+  { id: "product", name: "Product", icon: <Package className="h-5 w-5 text-emerald-500" /> },
+  
   { id: "pump", name: "Pump", icon: <Gauge className="h-5 w-5 text-blue-600" /> },
+  { id: "valve", name: "Valve", icon: <CircleOff className="h-5 w-5 text-green-500" /> },
+  { id: "compressor", name: "Compressor", icon: <Wind className="h-5 w-5 text-indigo-500" /> },
+  
   { id: "heater", name: "Heater", icon: <Thermometer className="h-5 w-5 text-red-500" /> },
-  { id: "condenser", name: "Condenser", icon: <Thermometer className="h-5 w-5 text-blue-400" /> },
-  { id: "column", name: "Column", icon: <FlaskConical className="h-5 w-5 text-purple-500" /> },
-  { id: "valve", name: "Valve", icon: <Gauge className="h-5 w-5 text-green-500" /> },
-  { id: "mixer", name: "Mixer", icon: <Columns className="h-5 w-5 text-orange-500" /> },
-  { id: "filter", name: "Filter", icon: <Filter className="h-5 w-5 text-gray-600" /> },
-  { id: "reactor", name: "Reactor", icon: <Beaker className="h-5 w-5 text-pink-500" /> },
+  { id: "cooler", name: "Cooler", icon: <Thermometer className="h-5 w-5 text-blue-400" /> },
   { id: "heatExchanger", name: "Heat Exchanger", icon: <Lightbulb className="h-5 w-5 text-yellow-500" /> },
-  { id: "sensor", name: "Sensor", icon: <Pipette className="h-5 w-5 text-teal-500" /> },
+  { id: "furnace", name: "Furnace", icon: <Flame className="h-5 w-5 text-orange-600" /> },
+  
+  { id: "column", name: "Distillation Column", icon: <FlaskConical className="h-5 w-5 text-purple-500" /> },
+  { id: "absorber", name: "Absorber", icon: <FlaskConical className="h-5 w-5 text-indigo-400" /> },
+  { id: "separator", name: "Separator", icon: <Columns className="h-5 w-5 text-teal-600" /> },
+  { id: "flashDrum", name: "Flash Drum", icon: <Container className="h-5 w-5 text-amber-500" /> },
+  { id: "filter", name: "Filter", icon: <Filter className="h-5 w-5 text-gray-600" /> },
+  
+  { id: "reactor", name: "Reactor", icon: <Beaker className="h-5 w-5 text-pink-500" /> },
+  { id: "cstr", name: "CSTR", icon: <Beaker className="h-5 w-5 text-rose-600" /> },
+  { id: "pfr", name: "PFR", icon: <Beaker className="h-5 w-5 text-fuchsia-600" /> },
+  
+  { id: "mixer", name: "Mixer", icon: <Columns className="h-5 w-5 text-orange-500" /> },
   { id: "splitter", name: "Splitter", icon: <Milestone className="h-5 w-5 text-indigo-500" /> },
-  { id: "product", name: "Product", icon: <Package className="h-5 w-5 text-emerald-500" /> }
+  
+  { id: "sensor", name: "Sensor", icon: <Pipette className="h-5 w-5 text-teal-500" /> },
+  { id: "coolingTower", name: "Cooling Tower", icon: <Waves className="h-5 w-5 text-blue-300" /> },
+  
+  { id: "arrow", name: "Flow Direction", icon: <ArrowRight className="h-5 w-5 text-gray-500" /> },
+  
+  { id: "controller", name: "Controller", icon: <Cpu className="h-5 w-5 text-violet-500" /> }
 ];
 
 const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation }) => {
@@ -100,7 +124,7 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
     },
     { 
       id: 'condenser', 
-      type: 'condenser', 
+      type: 'cooler', 
       name: 'Condenser',
       metrics: { temperature: 25 },
       position: { x: 2, y: 4 },
@@ -363,22 +387,61 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
       metrics: 
         selectedEquipmentType === 'tank' ? { level: 50, temperature: 25 } :
         selectedEquipmentType === 'pump' ? { flow: 120 } :
-        selectedEquipmentType === 'heater' ? { temperature: 80 } :
-        selectedEquipmentType === 'condenser' ? { temperature: 15 } :
-        selectedEquipmentType === 'column' ? { pressure: 150, temperature: 65 } :
+        selectedEquipmentType === 'compressor' ? { flow: 150, pressure: 350 } :
         selectedEquipmentType === 'valve' ? { flow: 80 } :
-        selectedEquipmentType === 'mixer' ? { efficiency: 90 } :
-        selectedEquipmentType === 'reactor' ? { temperature: 85, conversion: 75 } :
+        selectedEquipmentType === 'heater' ? { temperature: 80 } :
+        selectedEquipmentType === 'cooler' ? { temperature: 15 } :
         selectedEquipmentType === 'heatExchanger' ? { duty: 250 } :
+        selectedEquipmentType === 'furnace' ? { temperature: 850, efficiency: 85 } :
+        selectedEquipmentType === 'column' ? { pressure: 150, temperature: 65 } :
+        selectedEquipmentType === 'absorber' ? { pressure: 120, efficiency: 90 } :
+        selectedEquipmentType === 'flashDrum' ? { pressure: 110, temperature: 40 } :
+        selectedEquipmentType === 'separator' ? { separation: 95 } :
+        selectedEquipmentType === 'mixer' ? { efficiency: 90 } :
+        selectedEquipmentType === 'splitter' ? { ratio: 0.5 } :
+        selectedEquipmentType === 'reactor' ? { temperature: 85, conversion: 75 } :
+        selectedEquipmentType === 'cstr' ? { volume: 5, conversion: 80 } :
+        selectedEquipmentType === 'pfr' ? { length: 10, diameter: 0.5, conversion: 85 } :
         selectedEquipmentType === 'filter' ? { efficiency: 95 } :
         selectedEquipmentType === 'sensor' ? { reading: 42 } :
-        selectedEquipmentType === 'splitter' ? { ratio: 0.5 } :
+        selectedEquipmentType === 'controller' ? { setpoint: 50 } :
+        selectedEquipmentType === 'coolingTower' ? { approach: 5, range: 10 } :
         selectedEquipmentType === 'product' ? { purity: 99 } :
+        selectedEquipmentType === 'arrow' ? { direction: 0 } :
         {},
       position: { x: col, y: row },
       connections: [],
-      description: `New ${selectedEquipmentType} equipment`
+      description: 
+        selectedEquipmentType === 'tank' ? 'Storage vessel for liquids' :
+        selectedEquipmentType === 'pump' ? 'Increases fluid pressure' :
+        selectedEquipmentType === 'compressor' ? 'Increases gas pressure' :
+        selectedEquipmentType === 'valve' ? 'Controls flow rate' :
+        selectedEquipmentType === 'heater' ? 'Increases fluid temperature' :
+        selectedEquipmentType === 'cooler' ? 'Decreases fluid temperature' :
+        selectedEquipmentType === 'heatExchanger' ? 'Transfers heat between fluids' :
+        selectedEquipmentType === 'furnace' ? 'High temperature heating equipment' :
+        selectedEquipmentType === 'column' ? 'Separates components by boiling point' :
+        selectedEquipmentType === 'absorber' ? 'Selectively absorbs components from a gas stream' :
+        selectedEquipmentType === 'flashDrum' ? 'Separates vapor and liquid phases' :
+        selectedEquipmentType === 'separator' ? 'Separates process streams' :
+        selectedEquipmentType === 'mixer' ? 'Combines multiple streams' :
+        selectedEquipmentType === 'splitter' ? 'Divides a stream into multiple outputs' :
+        selectedEquipmentType === 'reactor' ? 'Chemical reaction vessel' :
+        selectedEquipmentType === 'cstr' ? 'Continuous Stirred Tank Reactor' :
+        selectedEquipmentType === 'pfr' ? 'Plug Flow Reactor' :
+        selectedEquipmentType === 'filter' ? 'Removes solids from fluids' :
+        selectedEquipmentType === 'sensor' ? 'Measures process parameters' :
+        selectedEquipmentType === 'controller' ? 'Controls process parameters' :
+        selectedEquipmentType === 'coolingTower' ? 'Removes heat from cooling water' :
+        selectedEquipmentType === 'product' ? 'Final product output' :
+        selectedEquipmentType === 'arrow' ? 'Indicates flow direction' :
+        `New ${selectedEquipmentType} equipment`
     };
+    
+    if (selectedEquipmentType === 'arrow') {
+      newEquipment.rotation = 0;
+      newEquipment.scale = 1;
+    }
     
     setEquipment(prev => [...prev, newEquipment]);
     
