@@ -27,6 +27,7 @@ export interface Connection {
   target: string;
   label?: string;
   animated?: boolean;
+  dashed?: boolean; // Added the dashed property
   sourceHandle?: string; // Added for compatibility
   targetHandle?: string; // Added for compatibility
 }
