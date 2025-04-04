@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Equipment, Connection } from "./types";
 import GridCell from "./GridCell";
@@ -128,7 +127,7 @@ const EquipmentGrid: React.FC<EquipmentGridProps> = ({
                   {eq && (
                     <GridCell 
                       equipment={eq}
-                      selectedEquipment={connectMode}
+                      selectedEquipment={eq.id === connectMode ? null : connectMode}
                       connectMode={connectMode}
                       editingName={editingName}
                       tempName={tempName}
@@ -142,8 +141,8 @@ const EquipmentGrid: React.FC<EquipmentGridProps> = ({
                       onConnectionSelect={onConnectionSelect}
                       onToggleDetails={onToggleDetails}
                       onMove={onMove}
-                      onRotate={handleRotate}
-                      onResize={handleResize}
+                      onRotate={onRotate}
+                      onResize={onResize}
                     />
                   )}
                 </div>

@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Equipment, Connection, ConnectionPoint } from "./types";
 import EquipmentDetail from "./EquipmentDetail";
@@ -63,6 +62,7 @@ const GridCell: React.FC<GridCellProps> = ({
 }) => {
   const [hoveredConnector, setHoveredConnector] = useState<string | null>(null);
   const isSelected = selectedEquipment === equipment.id;
+  const isConnecting = connectMode === equipment.id;
 
   const defaultConnectionPoints: ConnectionPoint[] = [
     { id: 'top', position: 'top' },
@@ -127,7 +127,10 @@ const GridCell: React.FC<GridCellProps> = ({
         )}
       </div>
       
-      <div className="w-full h-full flex items-center justify-center">
+      <div 
+        className={`w-full h-full flex items-center justify-center ${connectMode && !isConnecting ? 'cursor-pointer' : ''}`}
+        onClick={() => connectMode && !isConnecting && onConnectionSelect(equipment.id)}
+      >
         {equipment.type === 'arrow' ? (
           <ArrowRight className="w-12 h-12 text-gray-800" />
         ) : (
@@ -144,11 +147,15 @@ const GridCell: React.FC<GridCellProps> = ({
             transition-all duration-200 ease-in-out
             ${hoveredConnector === point.id 
               ? 'bg-amber-200 border-2 border-amber-500' 
-              : 'bg-blue-100 border-2 border-blue-400'}
+              : isConnecting
+                ? 'bg-green-100 border-2 border-green-400'
+                : 'bg-blue-100 border-2 border-blue-400'}
           `}
           style={{
             ...getConnectorPosition(point.position),
-            boxShadow: '0 2px 5px rgba(0,0,0,0.2)'
+            boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
+            opacity: connectMode ? 1 : 0.7,
+            transform: `${getConnectorPosition(point.position).transform} scale(${connectMode ? 1.2 : 1})`,
           }}
           onClick={(e) => handleConnectorClick(e, point.id)}
           onMouseEnter={() => setHoveredConnector(point.id)}
@@ -160,7 +167,9 @@ const GridCell: React.FC<GridCellProps> = ({
               w-3 h-3 
               ${hoveredConnector === point.id 
                 ? 'text-amber-600' 
-                : 'text-blue-500'}
+                : isConnecting
+                  ? 'text-green-500'
+                  : 'text-blue-500'}
             `} 
             fill="currentColor" 
             strokeWidth={2} 

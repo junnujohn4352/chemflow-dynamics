@@ -7,6 +7,7 @@ import SimulationControls from "./process-flow/SimulationControls";
 import EquipmentGrid from "./process-flow/EquipmentGrid";
 import ProcessDataPanel from "./process-flow/ProcessDataPanel";
 import ArrowToolkit from "./process-flow/ArrowToolkit";
+import ConnectionsRenderer from "./process-flow/ConnectionsRenderer";
 import { 
   Container, 
   Gauge, 
