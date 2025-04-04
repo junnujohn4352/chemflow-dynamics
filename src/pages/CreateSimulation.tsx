@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import GlassPanel from "@/components/ui/GlassPanel";
@@ -684,11 +686,13 @@ This analysis examines the ${subject} process using ${components.join(", ")} as 
             )}
             
             {activeTab === 'builder' && (
-              <SimulationBuilder 
-                selectedComponents={selectedComponents}
-                thermodynamicModel={selectedModel}
-                onRunSimulation={handleRunSimulation}
-              />
+              <DndProvider backend={HTML5Backend}>
+                <SimulationBuilder 
+                  selectedComponents={selectedComponents}
+                  thermodynamicModel={selectedModel}
+                  onRunSimulation={handleRunSimulation}
+                />
+              </DndProvider>
             )}
           </GlassPanel>
           

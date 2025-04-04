@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useDrop } from "react-dnd";
 import { ItemTypes } from "@/components/simulation/ItemTypes";
@@ -31,7 +32,7 @@ const initialComponents = [
 
 const SimulationBuilder: React.FC<{ selectedComponents: string[]; thermodynamicModel: string; onRunSimulation: () => void }> = ({ selectedComponents, thermodynamicModel, onRunSimulation }) => {
   const { toast } = useToast();
-  const [components, setComponents] = useState(initialComponents);
+  const [components, setComponents] = useState<SimulationComponentType[]>(initialComponents);
   const [newComponentName, setNewComponentName] = useState("");
   const [newComponentDescription, setNewComponentDescription] = useState("");
   const [simulationDescription, setSimulationDescription] = useState("");

@@ -1,5 +1,6 @@
+
 import React, { useState } from "react";
-import { Equipment } from "./types";
+import { Equipment, EquipmentType } from "./types";
 import { Button } from "@/components/ui/button";
 import { Info, ArrowRight } from "lucide-react";
 import EquipmentCard from "@/components/ui/EquipmentCard";
@@ -186,7 +187,7 @@ const GridCell: React.FC<GridCellProps> = ({
         onClick={() => connectMode && connectMode !== equipment.id ? onConnectionSelect(equipment.id) : null}
       >
         <EquipmentCard 
-          type={equipment.type as "reactor" | "pump" | "valve" | "heater" | "condenser" | "column" | "tank" | "mixer"} 
+          type={equipment.type} 
           name={typeof equipment.name === 'string' ? equipment.name : String(equipment.name)} 
           status={isRunning ? "running" : "stopped"} 
           metrics={equipment.metrics}
