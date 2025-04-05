@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import EquipmentCard from "./EquipmentCard";
@@ -13,7 +12,12 @@ import {
   Square,
   Settings2, 
   Share2,
-  Link
+  Link,
+  ChevronDown,
+  ChevronUp,
+  Plus,
+  Layers,
+  X
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -166,6 +170,62 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
   const [isDragging, setIsDragging] = useState(false);
   const [connectMode, setConnectMode] = useState<string | null>(null);
   const [showDetails, setShowDetails] = useState<string | null>(null);
+  const [showEquipmentPalette, setShowEquipmentPalette] = useState(false);
+  
+  // Equipment palette categories
+  const equipmentCategories = [
+    {
+      name: "Heat Transfer",
+      types: [
+        { type: "heat-exchanger", name: "Heat Exchanger" },
+        { type: "shell-and-tube", name: "Shell & Tube HX" },
+        { type: "plate", name: "Plate HX" },
+        { type: "air-cooler", name: "Air Cooler" },
+        { type: "reboiler", name: "Reboiler" },
+        { type: "heater", name: "Heater" },
+        { type: "condenser", name: "Condenser" },
+        { type: "cooling-tower", name: "Cooling Tower" },
+        { type: "furnace", name: "Furnace" }
+      ]
+    },
+    {
+      name: "Reactors",
+      types: [
+        { type: "reactor", name: "Reactor" },
+        { type: "batch-reactor", name: "Batch Reactor" }
+      ]
+    },
+    {
+      name: "Separation",
+      types: [
+        { type: "column", name: "Distillation Column" },
+        { type: "separator", name: "Separator" },
+        { type: "filter", name: "Filter" },
+        { type: "cyclone", name: "Cyclone" },
+        { type: "flash", name: "Flash Drum" },
+        { type: "decanter", name: "Decanter" },
+        { type: "centrifuge", name: "Centrifuge" },
+        { type: "crystallizer", name: "Crystallizer" },
+        { type: "absorber", name: "Absorber" },
+        { type: "stripper", name: "Stripper" },
+        { type: "evaporator", name: "Evaporator" },
+        { type: "dryer", name: "Dryer" },
+        { type: "scrubber", name: "Scrubber" },
+        { type: "extractor", name: "Extractor" }
+      ]
+    },
+    {
+      name: "Flow & Storage",
+      types: [
+        { type: "pump", name: "Pump" },
+        { type: "valve", name: "Valve" },
+        { type: "compressor", name: "Compressor" },
+        { type: "tank", name: "Tank" },
+        { type: "mixer", name: "Mixer" },
+        { type: "turbine", name: "Turbine" }
+      ]
+    }
+  ];
   
   const toggleSimulation = () => {
     const newState = !isRunning;
@@ -367,6 +427,37 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
 
   const toggleDetails = (id: string) => {
     setShowDetails(showDetails === id ? null : id);
+  };
+
+  // Add new equipment from palette
+  const handleAddEquipment = (type: string, name: string) => {
+    const newId = `${type}-${Date.now()}`;
+    const newEquipment: Equipment = {
+      id: newId,
+      type,
+      name,
+      status: isRunning ? 'running' : 'stopped',
+      metrics: type === 'tank' 
+        ? { level: 0, temperature: 25 }
+        : type === 'heat-exchanger' || type.includes('heat') || type === 'condenser' || type === 'heater'
+          ? { temperature: 25 }
+          : type === 'pump' || type === 'compressor'
+            ? { flow: 0 }
+            : type === 'column' || type === 'reactor'
+              ? { temperature: 25, pressure: 100 }
+              : {},
+      position: { 
+        x: Math.floor(Math.random() * 3),  // Random position in the grid
+        y: Math.floor(Math.random() * 5)
+      },
+      connections: []
+    };
+    
+    setEquipment(prev => [...prev, newEquipment]);
+    toast({
+      title: "Equipment Added",
+      description: `Added ${name} to the process flow`
+    });
   };
 
   const renderEquipmentGrid = () => {
@@ -611,6 +702,51 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
     );
   };
 
+  // Render equipment palette
+  const renderEquipmentPalette = () => {
+    if (!showEquipmentPalette) return null;
+    
+    return (
+      <div className="fixed top-0 right-0 h-full w-80 bg-white shadow-xl z-20 overflow-y-auto transition-all transform">
+        <div className="p-4 border-b sticky top-0 bg-white z-10 flex items-center justify-between">
+          <h3 className="text-lg font-medium">Equipment Palette</h3>
+          <button 
+            onClick={() => setShowEquipmentPalette(false)}
+            className="p-1 rounded-lg hover:bg-gray-100 transition-colors"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+        
+        <div className="p-3">
+          {equipmentCategories.map((category, idx) => (
+            <div key={idx} className="mb-4">
+              <h4 className="text-sm font-medium text-gray-700 mb-2 flex items-center">
+                <Layers className="h-4 w-4 mr-1 text-blue-500" />
+                {category.name}
+              </h4>
+              <div className="grid grid-cols-2 gap-2">
+                {category.types.map((item, i) => (
+                  <button
+                    key={i}
+                    className="p-2 border border-gray-200 rounded-lg hover:bg-blue-50 hover:border-blue-200 transition-colors text-xs flex flex-col items-center"
+                    onClick={() => handleAddEquipment(item.type, item.name)}
+                  >
+                    <EquipmentCard 
+                      type={item.type} 
+                      name={item.name}
+                      className="w-full scale-75 transform origin-top"
+                    />
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className={cn("w-full", className)}>
       <GlassPanel className="p-6 animate-fade-in shadow-xl border border-white/50 backdrop-blur-sm relative overflow-hidden">
@@ -623,6 +759,15 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
             <p className="text-gray-500 mt-1">Simulation Overview</p>
           </div>
           <div className="flex items-center gap-3">
+            <Button 
+              variant="outline"
+              onClick={() => setShowEquipmentPalette(!showEquipmentPalette)}
+              className="mr-2"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Add Equipment
+            </Button>
+            
             <button 
               onClick={toggleSimulation}
               className={cn(
@@ -684,70 +829,4 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
                 <div className="space-y-4">
                   <div className="p-3 rounded-lg bg-white/80 shadow-sm hover:shadow-md transition-all border border-blue-50">
                     <div className="flex justify-between">
-                      <span className="text-sm text-gray-500">Component A</span>
-                      <span className="text-sm font-medium">{simulationData.componentA.toFixed(1)}%</span>
-                    </div>
-                    <div className="w-full h-2 bg-gray-200 rounded-full mt-2 overflow-hidden">
-                      <div 
-                        className="h-2 bg-gradient-to-r from-blue-400 to-flow-blue rounded-full transition-all duration-500 ease-out"
-                        style={{ width: `${simulationData.componentA}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                  
-                  <div className="p-3 rounded-lg bg-white/80 shadow-sm hover:shadow-md transition-all border border-blue-50">
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-500">Component B</span>
-                      <span className="text-sm font-medium">{simulationData.componentB.toFixed(1)}%</span>
-                    </div>
-                    <div className="w-full h-2 bg-gray-200 rounded-full mt-2 overflow-hidden">
-                      <div 
-                        className="h-2 bg-gradient-to-r from-flow-cyan to-cyan-500 rounded-full transition-all duration-500 ease-out"
-                        style={{ width: `${simulationData.componentB}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                  
-                  <div className="p-3 rounded-lg bg-white/80 shadow-sm hover:shadow-md transition-all border border-blue-50">
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-500">System Efficiency</span>
-                      <span className="text-sm font-medium">{simulationData.systemEfficiency.toFixed(1)}%</span>
-                    </div>
-                    <div className="w-full h-2 bg-gray-200 rounded-full mt-2 overflow-hidden">
-                      <div 
-                        className="h-2 bg-gradient-to-r from-blue-400 to-flow-teal rounded-full transition-all duration-500 ease-out"
-                        style={{ width: `${simulationData.systemEfficiency}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                  
-                  <div className="mt-8">
-                    <h4 className="text-sm font-medium mb-3 text-gray-700">Key Parameters</h4>
-                    <div className="space-y-2">
-                      {equipment.map(eq => (
-                        <div key={eq.id} className="flex justify-between py-1.5 border-b border-blue-50 hover:bg-blue-50/50 px-2 rounded transition-colors">
-                          <span className="text-sm text-gray-500">{typeof eq.name === 'string' ? eq.name : String(eq.name)}</span>
-                          <span className="text-sm font-medium text-blue-700">
-                            {eq.type === 'tank' 
-                              ? `${renderMetricValue(eq.metrics.level)}% level` 
-                              : eq.type === 'pump' 
-                                ? `${renderMetricValue(eq.metrics.flow)} kg/h` 
-                                : eq.type === 'heater' || eq.type === 'column' || eq.type === 'condenser'
-                                  ? `${renderMetricValue(eq.metrics.temperature)}°C`
-                                  : ''}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </GlassPanel>
-    </div>
-  );
-};
-
-export default ProcessFlow;
+                      <span className="text-sm text-gray-50

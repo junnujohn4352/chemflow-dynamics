@@ -17,13 +17,23 @@ import {
   Waves,
   Pipette,
   Timer,
-  BoxSelect
+  BoxSelect,
+  Fan,
+  FlaskRound,
+  Cylinder,
+  Leaf,
+  Beaker,
+  CircleDot,
+  Wrench,
+  Package
 } from "lucide-react";
 
 interface EquipmentCardProps {
   type: "reactor" | "pump" | "valve" | "heater" | "condenser" | "column" | "tank" | "mixer" | 
          "heat-exchanger" | "filter" | "compressor" | "separator" | "cyclone" | "crystallizer" | 
-         "evaporator" | "extractor" | "dryer" | "scrubber" | "batch-reactor";
+         "evaporator" | "extractor" | "dryer" | "scrubber" | "batch-reactor" | "shell-and-tube" |
+         "plate" | "air-cooler" | "reboiler" | "rotary" | "belt" | "spray" | "tray" | "absorber" |
+         "stripper" | "flash" | "decanter" | "centrifuge" | "cooling-tower" | "furnace" | "turbine";
   name: string;
   status?: "running" | "stopped" | "warning" | "error";
   metrics?: {
@@ -66,6 +76,14 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
         return <Gauge className="h-7 w-7" />;
       case "heat-exchanger":
         return <ArrowUpDown className="h-7 w-7" />;
+      case "shell-and-tube":
+        return <Cylinder className="h-7 w-7" />;
+      case "plate":
+        return <Package className="h-7 w-7" />;
+      case "air-cooler":
+        return <Fan className="h-7 w-7" />;
+      case "reboiler":
+        return <Flame className="h-7 w-7" />;
       case "filter":
         return <Filter className="h-7 w-7" />;
       case "compressor":
@@ -84,6 +102,30 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
         return <Thermometer className="h-7 w-7" />;
       case "scrubber":
         return <Filter className="h-7 w-7" />;
+      case "rotary":
+        return <CircleDot className="h-7 w-7" />;
+      case "belt":
+        return <ArrowUpDown className="h-7 w-7" />;
+      case "spray":
+        return <Droplets className="h-7 w-7" />;
+      case "tray":
+        return <SquareStack className="h-7 w-7" />;
+      case "absorber":
+        return <FlaskRound className="h-7 w-7" />;
+      case "stripper":
+        return <Leaf className="h-7 w-7" />;
+      case "flash":
+        return <Beaker className="h-7 w-7" />;
+      case "decanter":
+        return <Container className="h-7 w-7" />;
+      case "centrifuge":
+        return <Wrench className="h-7 w-7" />;
+      case "cooling-tower":
+        return <SquareStack className="h-7 w-7" />;
+      case "furnace":
+        return <Flame className="h-7 w-7" />;
+      case "turbine":
+        return <Fan className="h-7 w-7" />;
       default:
         return <FlaskConical className="h-7 w-7" />;
     }
