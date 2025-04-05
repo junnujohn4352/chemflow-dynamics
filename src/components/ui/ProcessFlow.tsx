@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import EquipmentCard from "./EquipmentCard";
@@ -829,4 +830,87 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
                 <div className="space-y-4">
                   <div className="p-3 rounded-lg bg-white/80 shadow-sm hover:shadow-md transition-all border border-blue-50">
                     <div className="flex justify-between">
-                      <span className="text-sm text-gray-50
+                      <span className="text-sm text-gray-500">Component A</span>
+                      <span className="text-sm font-medium">{simulationData.componentA.toFixed(1)}%</span>
+                    </div>
+                    <div className="mt-2 h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-blue-500 rounded-full transition-all duration-500"
+                        style={{ width: `${simulationData.componentA}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                  
+                  <div className="p-3 rounded-lg bg-white/80 shadow-sm hover:shadow-md transition-all border border-blue-50">
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-500">Component B</span>
+                      <span className="text-sm font-medium">{simulationData.componentB.toFixed(1)}%</span>
+                    </div>
+                    <div className="mt-2 h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-green-500 rounded-full transition-all duration-500"
+                        style={{ width: `${simulationData.componentB}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                  
+                  <div className="p-3 rounded-lg bg-white/80 shadow-sm hover:shadow-md transition-all border border-blue-50">
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-500">System Efficiency</span>
+                      <span className="text-sm font-medium">{simulationData.systemEfficiency.toFixed(1)}%</span>
+                    </div>
+                    <div className="mt-2 h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-amber-500 rounded-full transition-all duration-500"
+                        style={{ width: `${simulationData.systemEfficiency}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="mt-6">
+                  <h4 className="text-sm font-medium text-gray-700 mb-2">System Status</h4>
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div className="p-2 rounded-lg bg-blue-50 flex items-center">
+                      <div className={`h-2 w-2 rounded-full mr-2 ${isRunning ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+                      <span>Simulation: {isRunning ? 'Active' : 'Inactive'}</span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-blue-50 flex items-center">
+                      <div className="h-2 w-2 rounded-full bg-blue-500 mr-2"></div>
+                      <span>Connections: {connections.length}</span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-blue-50 flex items-center">
+                      <div className="h-2 w-2 rounded-full bg-purple-500 mr-2"></div>
+                      <span>Equipment: {equipment.length}</span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-blue-50 flex items-center">
+                      <div className="h-2 w-2 rounded-full bg-amber-500 mr-2"></div>
+                      <span>Warnings: {0}</span>
+                    </div>
+                  </div>
+                </div>
+                
+                {isRunning && (
+                  <div className="mt-6 p-3 rounded-lg border border-green-100 bg-green-50">
+                    <h4 className="text-sm font-medium text-green-700 flex items-center">
+                      <ArrowRight className="h-3.5 w-3.5 mr-1" />
+                      Simulation Progress
+                    </h4>
+                    <p className="text-xs text-green-600 mt-1">
+                      The simulation is running smoothly. All equipment is functioning as expected.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {renderEquipmentPalette()}
+      </GlassPanel>
+    </div>
+  );
+};
+
+export default ProcessFlow;
+
