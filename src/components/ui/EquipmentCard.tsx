@@ -25,7 +25,30 @@ import {
   Beaker,
   CircleDot,
   Wrench,
-  Package
+  Package,
+  Activity,
+  Asterisk,
+  Cog,
+  Factory,
+  Cloud,
+  MoveVertical,
+  Move,
+  Snowflake,
+  TriangleRight,
+  PipetteIcon,
+  Hammer,
+  Banana,
+  AtSign,
+  Columns,
+  Microscope,
+  Stretch,
+  TestTube,
+  Network,
+  Sparkles,
+  ScrollIcon,
+  PanelTop,
+  Wind,
+  SplitSquareVertical
 } from "lucide-react";
 
 interface EquipmentCardProps {
@@ -33,7 +56,12 @@ interface EquipmentCardProps {
          "heat-exchanger" | "filter" | "compressor" | "separator" | "cyclone" | "crystallizer" | 
          "evaporator" | "extractor" | "dryer" | "scrubber" | "batch-reactor" | "shell-and-tube" |
          "plate" | "air-cooler" | "reboiler" | "rotary" | "belt" | "spray" | "tray" | "absorber" |
-         "stripper" | "flash" | "decanter" | "centrifuge" | "cooling-tower" | "furnace" | "turbine";
+         "stripper" | "flash" | "decanter" | "centrifuge" | "cooling-tower" | "furnace" | "turbine" |
+         "cstr" | "pfr" | "absorption-tower" | "cooler" | "distillation" | "crystallization" | 
+         "extruder" | "disintegrator" | "expander" | "reformer" | "boiler" | "tee" | "sieve" |
+         "hydrocyclone" | "gravity-separator" | "drum" | "clarifier" | "membrane" | "granulator" |
+         "homogenizer" | "conveyor" | "drainer" | "agitator" | "fluidized-bed" |
+         "blender" | "dehumidifier" | "adsorber" | "quench" | "wetted-wall" | "ejector" | "calciner";
   name: string;
   status?: "running" | "stopped" | "warning" | "error";
   metrics?: {
@@ -41,6 +69,10 @@ interface EquipmentCardProps {
     pressure?: number;
     flow?: number;
     level?: number;
+    conversion?: number;
+    power?: number;
+    efficiency?: number;
+    duty?: number;
   };
   className?: string;
   onClick?: () => void;
@@ -56,24 +88,45 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
 }) => {
   const getIcon = () => {
     switch (type) {
+      // Reactor types
       case "reactor":
         return <FlaskConical className="h-7 w-7" />;
       case "batch-reactor":
         return <Timer className="h-7 w-7" />;
+      case "cstr":
+        return <FlaskRound className="h-7 w-7" />;
+      case "pfr":
+        return <Cylinder className="h-7 w-7" />;
+      case "fluidized-bed":
+        return <Blocks className="h-7 w-7" />;
+      case "reformer":
+        return <AtSign className="h-7 w-7" />;
+        
+      // Flow equipment
       case "pump":
         return <Droplets className="h-7 w-7" />;
       case "valve":
         return <CircleOff className="h-7 w-7" />;
+      case "compressor":
+        return <Blocks className="h-7 w-7" />;
+      case "expander":
+        return <MoveVertical className="h-7 w-7" />;
+      case "turbine":
+        return <Fan className="h-7 w-7" />;
+      case "tee":
+        return <GitFork className="h-7 w-7" />;
+      case "ejector":
+        return <Activity className="h-7 w-7" />;
+      case "conveyor":
+        return <ArrowUpDown className="h-7 w-7" />;
+        
+      // Heat transfer equipment
       case "heater":
         return <Flame className="h-7 w-7" />;
+      case "cooler":
+        return <Snowflake className="h-7 w-7" />;
       case "condenser":
         return <Thermometer className="h-7 w-7" />;
-      case "column":
-        return <SquareStack className="h-7 w-7" />;
-      case "tank":
-        return <Container className="h-7 w-7" />;
-      case "mixer":
-        return <Gauge className="h-7 w-7" />;
       case "heat-exchanger":
         return <ArrowUpDown className="h-7 w-7" />;
       case "shell-and-tube":
@@ -84,16 +137,32 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
         return <Fan className="h-7 w-7" />;
       case "reboiler":
         return <Flame className="h-7 w-7" />;
+      case "cooling-tower":
+        return <SquareStack className="h-7 w-7" />;
+      case "furnace":
+        return <Flame className="h-7 w-7" />;
+      case "boiler":
+        return <Cloud className="h-7 w-7" />;
+      case "quench":
+        return <Droplets className="h-7 w-7" />;
+        
+      // Separation equipment
+      case "column":
+        return <SquareStack className="h-7 w-7" />;
+      case "distillation":
+        return <Columns className="h-7 w-7" />;
+      case "absorption-tower":
+        return <SquareStack className="h-7 w-7" />;
       case "filter":
         return <Filter className="h-7 w-7" />;
-      case "compressor":
-        return <Blocks className="h-7 w-7" />;
       case "separator":
         return <GitFork className="h-7 w-7" />;
       case "cyclone":
         return <Waves className="h-7 w-7" />;
       case "crystallizer":
         return <BoxSelect className="h-7 w-7" />;
+      case "crystallization":
+        return <Asterisk className="h-7 w-7" />;
       case "evaporator":
         return <Waves className="h-7 w-7" />;
       case "extractor":
@@ -102,30 +171,71 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
         return <Thermometer className="h-7 w-7" />;
       case "scrubber":
         return <Filter className="h-7 w-7" />;
-      case "rotary":
+      case "hydrocyclone":
         return <CircleDot className="h-7 w-7" />;
-      case "belt":
-        return <ArrowUpDown className="h-7 w-7" />;
-      case "spray":
-        return <Droplets className="h-7 w-7" />;
-      case "tray":
-        return <SquareStack className="h-7 w-7" />;
-      case "absorber":
-        return <FlaskRound className="h-7 w-7" />;
-      case "stripper":
-        return <Leaf className="h-7 w-7" />;
-      case "flash":
-        return <Beaker className="h-7 w-7" />;
       case "decanter":
         return <Container className="h-7 w-7" />;
       case "centrifuge":
         return <Wrench className="h-7 w-7" />;
-      case "cooling-tower":
-        return <SquareStack className="h-7 w-7" />;
-      case "furnace":
+      case "flash":
+        return <Beaker className="h-7 w-7" />;
+      case "adsorber":
+        return <PanelTop className="h-7 w-7" />;
+      case "absorber":
+        return <FlaskRound className="h-7 w-7" />;
+      case "stripper":
+        return <Leaf className="h-7 w-7" />;
+      case "drum":
+        return <Cylinder className="h-7 w-7" />;
+      case "clarifier":
+        return <Droplets className="h-7 w-7" />;
+      case "membrane":
+        return <Filter className="h-7 w-7" />;
+      case "gravity-separator":
+        return <MoveVertical className="h-7 w-7" />;
+      case "sieve":
+        return <TriangleRight className="h-7 w-7" />;
+      case "mixer-settler":
+        return <SplitSquareVertical className="h-7 w-7" />;
+      
+      // Storage and mixing
+      case "tank":
+        return <Container className="h-7 w-7" />;
+      case "mixer":
+        return <Gauge className="h-7 w-7" />;
+        
+      // Solid handling equipment
+      case "rotary":
+        return <CircleDot className="h-7 w-7" />;
+      case "belt":
+        return <ArrowUpDown className="h-7 w-7" />;
+      case "extruder":
+        return <Stretch className="h-7 w-7" />;
+      case "disintegrator":
+        return <Hammer className="h-7 w-7" />;
+      case "granulator":
+        return <Sparkles className="h-7 w-7" />;
+      case "blender":
+        return <Move className="h-7 w-7" />;
+      case "agitator":
+        return <Cog className="h-7 w-7" />;
+      case "homogenizer":
+        return <Factory className="h-7 w-7" />;
+      case "drainer":
+        return <PipetteIcon className="h-7 w-7" />;
+      case "calciner":
         return <Flame className="h-7 w-7" />;
-      case "turbine":
-        return <Fan className="h-7 w-7" />;
+        
+      // Mass transfer equipment
+      case "spray":
+        return <Droplets className="h-7 w-7" />;
+      case "tray":
+        return <SquareStack className="h-7 w-7" />;
+      case "wetted-wall":
+        return <ScrollIcon className="h-7 w-7" />;
+      case "dehumidifier":
+        return <Wind className="h-7 w-7" />;
+        
       default:
         return <FlaskConical className="h-7 w-7" />;
     }
@@ -207,6 +317,42 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
                 <span className="text-xs text-gray-500">Level</span>
               </div>
               <p className="font-medium mt-1">{metrics.level}%</p>
+            </div>
+          )}
+          {metrics.conversion !== undefined && (
+            <div className="p-2 rounded-lg bg-gray-50">
+              <div className="flex items-center gap-2">
+                <FlaskConical className="h-3.5 w-3.5 text-gray-500" />
+                <span className="text-xs text-gray-500">Conv</span>
+              </div>
+              <p className="font-medium mt-1">{metrics.conversion}%</p>
+            </div>
+          )}
+          {metrics.power !== undefined && (
+            <div className="p-2 rounded-lg bg-gray-50">
+              <div className="flex items-center gap-2">
+                <Blocks className="h-3.5 w-3.5 text-gray-500" />
+                <span className="text-xs text-gray-500">Power</span>
+              </div>
+              <p className="font-medium mt-1">{metrics.power} kW</p>
+            </div>
+          )}
+          {metrics.efficiency !== undefined && (
+            <div className="p-2 rounded-lg bg-gray-50">
+              <div className="flex items-center gap-2">
+                <Activity className="h-3.5 w-3.5 text-gray-500" />
+                <span className="text-xs text-gray-500">Eff</span>
+              </div>
+              <p className="font-medium mt-1">{metrics.efficiency}%</p>
+            </div>
+          )}
+          {metrics.duty !== undefined && (
+            <div className="p-2 rounded-lg bg-gray-50">
+              <div className="flex items-center gap-2">
+                <Flame className="h-3.5 w-3.5 text-gray-500" />
+                <span className="text-xs text-gray-500">Duty</span>
+              </div>
+              <p className="font-medium mt-1">{metrics.duty} kW</p>
             </div>
           )}
         </div>

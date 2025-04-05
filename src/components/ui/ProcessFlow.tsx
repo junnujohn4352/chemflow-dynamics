@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import EquipmentCard from "./EquipmentCard";
@@ -33,7 +34,12 @@ interface Equipment {
          "heat-exchanger" | "filter" | "compressor" | "separator" | "cyclone" | "crystallizer" | 
          "evaporator" | "extractor" | "dryer" | "scrubber" | "batch-reactor" | "shell-and-tube" |
          "plate" | "air-cooler" | "reboiler" | "rotary" | "belt" | "spray" | "tray" | "absorber" |
-         "stripper" | "flash" | "decanter" | "centrifuge" | "cooling-tower" | "furnace" | "turbine";
+         "stripper" | "flash" | "decanter" | "centrifuge" | "cooling-tower" | "furnace" | "turbine" |
+         "cstr" | "pfr" | "absorption-tower" | "cooler" | "distillation" | "crystallization" | 
+         "extruder" | "disintegrator" | "expander" | "reformer" | "boiler" | "tee" | "sieve" |
+         "hydrocyclone" | "gravity-separator" | "drum" | "clarifier" | "membrane" | "granulator" |
+         "homogenizer" | "conveyor" | "drainer" | "mixer-settler" | "agitator" | "fluidized-bed" |
+         "blender" | "dehumidifier" | "adsorber" | "quench" | "wetted-wall" | "ejector" | "calciner";
   name: string;
   status: string;
   metrics: any;
@@ -178,54 +184,100 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
   
   const equipmentCategories = [
     {
-      name: "Heat Transfer",
+      name: "Heat Transfer Equipment",
       types: [
         { type: "heat-exchanger" as const, name: "Heat Exchanger" },
         { type: "shell-and-tube" as const, name: "Shell & Tube HX" },
-        { type: "plate" as const, name: "Plate HX" },
+        { type: "plate" as const, name: "Plate Heat Exchanger" },
         { type: "air-cooler" as const, name: "Air Cooler" },
         { type: "reboiler" as const, name: "Reboiler" },
         { type: "heater" as const, name: "Heater" },
+        { type: "cooler" as const, name: "Cooler" },
         { type: "condenser" as const, name: "Condenser" },
         { type: "cooling-tower" as const, name: "Cooling Tower" },
-        { type: "furnace" as const, name: "Furnace" }
+        { type: "furnace" as const, name: "Furnace" },
+        { type: "boiler" as const, name: "Boiler" },
+        { type: "quench" as const, name: "Quencher" }
       ]
     },
     {
       name: "Reactors",
       types: [
         { type: "reactor" as const, name: "Reactor" },
-        { type: "batch-reactor" as const, name: "Batch Reactor" }
+        { type: "batch-reactor" as const, name: "Batch Reactor" },
+        { type: "cstr" as const, name: "CSTR" },
+        { type: "pfr" as const, name: "PFR" },
+        { type: "reformer" as const, name: "Reformer" },
+        { type: "fluidized-bed" as const, name: "Fluidized Bed" }
       ]
     },
     {
-      name: "Separation",
+      name: "Separation Equipment",
       types: [
-        { type: "column" as const, name: "Distillation Column" },
+        { type: "column" as const, name: "Column" },
+        { type: "distillation" as const, name: "Distillation Column" },
+        { type: "absorption-tower" as const, name: "Absorption Tower" },
         { type: "separator" as const, name: "Separator" },
+        { type: "flash" as const, name: "Flash Drum" },
         { type: "filter" as const, name: "Filter" },
         { type: "cyclone" as const, name: "Cyclone" },
-        { type: "flash" as const, name: "Flash Drum" },
+        { type: "hydrocyclone" as const, name: "Hydrocyclone" },
         { type: "decanter" as const, name: "Decanter" },
         { type: "centrifuge" as const, name: "Centrifuge" },
         { type: "crystallizer" as const, name: "Crystallizer" },
+        { type: "crystallization" as const, name: "Crystallization Unit" },
         { type: "absorber" as const, name: "Absorber" },
+        { type: "adsorber" as const, name: "Adsorber" },
         { type: "stripper" as const, name: "Stripper" },
         { type: "evaporator" as const, name: "Evaporator" },
         { type: "dryer" as const, name: "Dryer" },
         { type: "scrubber" as const, name: "Scrubber" },
-        { type: "extractor" as const, name: "Extractor" }
+        { type: "extractor" as const, name: "Extractor" },
+        { type: "drum" as const, name: "Drum" },
+        { type: "clarifier" as const, name: "Clarifier" },
+        { type: "membrane" as const, name: "Membrane" },
+        { type: "gravity-separator" as const, name: "Gravity Separator" },
+        { type: "sieve" as const, name: "Sieve" },
+        { type: "mixer-settler" as const, name: "Mixer-Settler" }
       ]
     },
     {
-      name: "Flow & Storage",
+      name: "Flow & Storage Equipment",
       types: [
         { type: "pump" as const, name: "Pump" },
         { type: "valve" as const, name: "Valve" },
         { type: "compressor" as const, name: "Compressor" },
+        { type: "expander" as const, name: "Expander" },
         { type: "tank" as const, name: "Tank" },
         { type: "mixer" as const, name: "Mixer" },
-        { type: "turbine" as const, name: "Turbine" }
+        { type: "turbine" as const, name: "Turbine" },
+        { type: "tee" as const, name: "Tee" },
+        { type: "ejector" as const, name: "Ejector" },
+        { type: "conveyor" as const, name: "Conveyor" }
+      ]
+    },
+    {
+      name: "Solid Handling Equipment",
+      types: [
+        { type: "extruder" as const, name: "Extruder" },
+        { type: "disintegrator" as const, name: "Disintegrator" },
+        { type: "granulator" as const, name: "Granulator" },
+        { type: "blender" as const, name: "Blender" },
+        { type: "agitator" as const, name: "Agitator" },
+        { type: "homogenizer" as const, name: "Homogenizer" },
+        { type: "drainer" as const, name: "Drainer" },
+        { type: "calciner" as const, name: "Calciner" },
+        { type: "rotary" as const, name: "Rotary Kiln" },
+        { type: "belt" as const, name: "Belt Equipment" }
+      ]
+    },
+    {
+      name: "Mass Transfer Equipment",
+      types: [
+        { type: "spray" as const, name: "Spray Tower" },
+        { type: "tray" as const, name: "Tray Column" },
+        { type: "wetted-wall" as const, name: "Wetted Wall Column" },
+        { type: "dehumidifier" as const, name: "Dehumidifier" }
       ]
     }
   ];
@@ -756,8 +808,8 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
         
         <div className="flex justify-between items-center mb-6 relative z-10">
           <div>
-            <h2 className="text-2xl font-medium bg-gradient-to-r from-blue-500 to-blue-700 bg-clip-text text-transparent">Distillation Process</h2>
-            <p className="text-gray-500 mt-1">Simulation Overview</p>
+            <h2 className="text-2xl font-medium bg-gradient-to-r from-blue-500 to-blue-700 bg-clip-text text-transparent">Process Flowsheet</h2>
+            <p className="text-gray-500 mt-1">Design your chemical process</p>
           </div>
           <div className="flex items-center gap-3">
             <Button 
