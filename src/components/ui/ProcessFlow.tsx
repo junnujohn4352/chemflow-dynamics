@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import EquipmentCard from "./EquipmentCard";
@@ -30,7 +29,11 @@ interface ProcessFlowProps {
 
 interface Equipment {
   id: string;
-  type: string;
+  type: "reactor" | "pump" | "valve" | "heater" | "condenser" | "column" | "tank" | "mixer" | 
+         "heat-exchanger" | "filter" | "compressor" | "separator" | "cyclone" | "crystallizer" | 
+         "evaporator" | "extractor" | "dryer" | "scrubber" | "batch-reactor" | "shell-and-tube" |
+         "plate" | "air-cooler" | "reboiler" | "rotary" | "belt" | "spray" | "tray" | "absorber" |
+         "stripper" | "flash" | "decanter" | "centrifuge" | "cooling-tower" | "furnace" | "turbine";
   name: string;
   status: string;
   metrics: any;
@@ -173,57 +176,56 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
   const [showDetails, setShowDetails] = useState<string | null>(null);
   const [showEquipmentPalette, setShowEquipmentPalette] = useState(false);
   
-  // Equipment palette categories
   const equipmentCategories = [
     {
       name: "Heat Transfer",
       types: [
-        { type: "heat-exchanger", name: "Heat Exchanger" },
-        { type: "shell-and-tube", name: "Shell & Tube HX" },
-        { type: "plate", name: "Plate HX" },
-        { type: "air-cooler", name: "Air Cooler" },
-        { type: "reboiler", name: "Reboiler" },
-        { type: "heater", name: "Heater" },
-        { type: "condenser", name: "Condenser" },
-        { type: "cooling-tower", name: "Cooling Tower" },
-        { type: "furnace", name: "Furnace" }
+        { type: "heat-exchanger" as const, name: "Heat Exchanger" },
+        { type: "shell-and-tube" as const, name: "Shell & Tube HX" },
+        { type: "plate" as const, name: "Plate HX" },
+        { type: "air-cooler" as const, name: "Air Cooler" },
+        { type: "reboiler" as const, name: "Reboiler" },
+        { type: "heater" as const, name: "Heater" },
+        { type: "condenser" as const, name: "Condenser" },
+        { type: "cooling-tower" as const, name: "Cooling Tower" },
+        { type: "furnace" as const, name: "Furnace" }
       ]
     },
     {
       name: "Reactors",
       types: [
-        { type: "reactor", name: "Reactor" },
-        { type: "batch-reactor", name: "Batch Reactor" }
+        { type: "reactor" as const, name: "Reactor" },
+        { type: "batch-reactor" as const, name: "Batch Reactor" }
       ]
     },
     {
       name: "Separation",
       types: [
-        { type: "column", name: "Distillation Column" },
-        { type: "separator", name: "Separator" },
-        { type: "filter", name: "Filter" },
-        { type: "cyclone", name: "Cyclone" },
-        { type: "flash", name: "Flash Drum" },
-        { type: "decanter", name: "Decanter" },
-        { type: "centrifuge", name: "Centrifuge" },
-        { type: "crystallizer", name: "Crystallizer" },
-        { type: "absorber", name: "Absorber" },
-        { type: "stripper", name: "Stripper" },
-        { type: "evaporator", name: "Evaporator" },
-        { type: "dryer", name: "Dryer" },
-        { type: "scrubber", name: "Scrubber" },
-        { type: "extractor", name: "Extractor" }
+        { type: "column" as const, name: "Distillation Column" },
+        { type: "separator" as const, name: "Separator" },
+        { type: "filter" as const, name: "Filter" },
+        { type: "cyclone" as const, name: "Cyclone" },
+        { type: "flash" as const, name: "Flash Drum" },
+        { type: "decanter" as const, name: "Decanter" },
+        { type: "centrifuge" as const, name: "Centrifuge" },
+        { type: "crystallizer" as const, name: "Crystallizer" },
+        { type: "absorber" as const, name: "Absorber" },
+        { type: "stripper" as const, name: "Stripper" },
+        { type: "evaporator" as const, name: "Evaporator" },
+        { type: "dryer" as const, name: "Dryer" },
+        { type: "scrubber" as const, name: "Scrubber" },
+        { type: "extractor" as const, name: "Extractor" }
       ]
     },
     {
       name: "Flow & Storage",
       types: [
-        { type: "pump", name: "Pump" },
-        { type: "valve", name: "Valve" },
-        { type: "compressor", name: "Compressor" },
-        { type: "tank", name: "Tank" },
-        { type: "mixer", name: "Mixer" },
-        { type: "turbine", name: "Turbine" }
+        { type: "pump" as const, name: "Pump" },
+        { type: "valve" as const, name: "Valve" },
+        { type: "compressor" as const, name: "Compressor" },
+        { type: "tank" as const, name: "Tank" },
+        { type: "mixer" as const, name: "Mixer" },
+        { type: "turbine" as const, name: "Turbine" }
       ]
     }
   ];
@@ -430,8 +432,7 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
     setShowDetails(showDetails === id ? null : id);
   };
 
-  // Add new equipment from palette
-  const handleAddEquipment = (type: string, name: string) => {
+  const handleAddEquipment = (type: Equipment['type'], name: string) => {
     const newId = `${type}-${Date.now()}`;
     const newEquipment: Equipment = {
       id: newId,
@@ -703,7 +704,6 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
     );
   };
 
-  // Render equipment palette
   const renderEquipmentPalette = () => {
     if (!showEquipmentPalette) return null;
     
@@ -913,4 +913,3 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
 };
 
 export default ProcessFlow;
-
