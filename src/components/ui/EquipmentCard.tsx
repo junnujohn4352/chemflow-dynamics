@@ -41,7 +41,7 @@ import {
   AtSign,
   Columns,
   Microscope,
-  Stretch,
+  // Removing the non-existent Stretch icon
   TestTube,
   Network,
   Sparkles,
@@ -61,7 +61,8 @@ interface EquipmentCardProps {
          "extruder" | "disintegrator" | "expander" | "reformer" | "boiler" | "tee" | "sieve" |
          "hydrocyclone" | "gravity-separator" | "drum" | "clarifier" | "membrane" | "granulator" |
          "homogenizer" | "conveyor" | "drainer" | "agitator" | "fluidized-bed" |
-         "blender" | "dehumidifier" | "adsorber" | "quench" | "wetted-wall" | "ejector" | "calciner";
+         "blender" | "dehumidifier" | "adsorber" | "quench" | "wetted-wall" | "ejector" | "calciner" |
+         "mixer-settler"; // Added mixer-settler to the type definition
   name: string;
   status?: "running" | "stopped" | "warning" | "error";
   metrics?: {
@@ -210,7 +211,7 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
       case "belt":
         return <ArrowUpDown className="h-7 w-7" />;
       case "extruder":
-        return <Stretch className="h-7 w-7" />;
+        return <Move className="h-7 w-7" />; // Replaced Stretch with Move icon
       case "disintegrator":
         return <Hammer className="h-7 w-7" />;
       case "granulator":
