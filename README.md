@@ -1,3 +1,5 @@
+![chemflow](https://github.com/user-attachments/assets/6b7f1a5b-d4d4-4b7b-915a-5125b801e212)
+
 # Welcome to your Lovable project
 
 ## Project info
