@@ -85,11 +85,29 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
       connections: []
     },
     { 
+      id: 'heat-exchanger', 
+      type: 'heat-exchanger', 
+      name: 'Heat Exchanger', 
+      status: 'stopped', 
+      metrics: { temperature: 65 },
+      position: { x: 0, y: 1 },
+      connections: []
+    },
+    { 
       id: 'preheater', 
       type: 'heater', 
       name: 'Preheater', 
       status: 'stopped', 
       metrics: { temperature: 25 },
+      position: { x: 2, y: 1 },
+      connections: []
+    },
+    { 
+      id: 'reactor', 
+      type: 'reactor', 
+      name: 'Main Reactor', 
+      status: 'stopped', 
+      metrics: { temperature: 75, pressure: 180 },
       position: { x: 0, y: 2 },
       connections: []
     },
@@ -100,6 +118,24 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
       status: 'stopped', 
       metrics: { pressure: 150, temperature: 30 },
       position: { x: 2, y: 2 },
+      connections: []
+    },
+    { 
+      id: 'filter', 
+      type: 'filter', 
+      name: 'Particulate Filter', 
+      status: 'stopped', 
+      metrics: { flow: 85, pressure: 160 },
+      position: { x: 0, y: 3 },
+      connections: []
+    },
+    { 
+      id: 'separator', 
+      type: 'separator', 
+      name: 'Phase Separator', 
+      status: 'stopped', 
+      metrics: { temperature: 45, pressure: 130 },
+      position: { x: 2, y: 3 },
       connections: []
     },
     { 

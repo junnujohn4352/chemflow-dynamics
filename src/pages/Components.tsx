@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
@@ -13,7 +12,12 @@ import {
   Droplets, 
   Thermometer, 
   Gauge, 
-  MoveHorizontal
+  MoveHorizontal,
+  ArrowUpDown,
+  Blocks,
+  GitFork,
+  Waves,
+  Container
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
@@ -22,9 +26,13 @@ const categories = [
   { id: "reactors", name: "Reactors", icon: <FlaskConical className="h-5 w-5" /> },
   { id: "columns", name: "Columns", icon: <Columns className="h-5 w-5" /> },
   { id: "mixers", name: "Mixers", icon: <Droplets className="h-5 w-5" /> },
-  { id: "heat", name: "Heat Exchangers", icon: <Thermometer className="h-5 w-5" /> },
+  { id: "heat", name: "Heat Exchangers", icon: <ArrowUpDown className="h-5 w-5" /> },
   { id: "pressure", name: "Pressure Equipment", icon: <Gauge className="h-5 w-5" /> },
   { id: "flow", name: "Flow Equipment", icon: <MoveHorizontal className="h-5 w-5" /> },
+  { id: "separation", name: "Separation Equipment", icon: <GitFork className="h-5 w-5" /> },
+  { id: "storage", name: "Storage Equipment", icon: <Container className="h-5 w-5" /> },
+  { id: "thermal", name: "Thermal Processing", icon: <Thermometer className="h-5 w-5" /> },
+  { id: "compression", name: "Compression Equipment", icon: <Blocks className="h-5 w-5" /> },
 ];
 
 interface ComponentItem {
@@ -133,6 +141,116 @@ const Components = () => {
         maxFlow: "75 m³/h",
         maxPressure: "20 bar",
         material: "Stainless Steel 304"
+      }
+    },
+    {
+      id: "heat-ex-1",
+      name: "Shell & Tube Heat Exchanger",
+      category: "heat",
+      description: "Transfers heat between two fluids through tube walls.",
+      specs: {
+        maxTemp: "350°C",
+        maxPressure: "30 bar",
+        material: "Carbon Steel"
+      }
+    },
+    {
+      id: "heat-ex-2",
+      name: "Plate Heat Exchanger",
+      category: "heat",
+      description: "Uses metal plates to transfer heat between two fluids.",
+      specs: {
+        maxTemp: "200°C",
+        maxPressure: "25 bar",
+        material: "Stainless Steel 316"
+      }
+    },
+    {
+      id: "heat-ex-3",
+      name: "Spiral Heat Exchanger",
+      category: "heat",
+      description: "Uses spiral channels for efficient heat transfer with fouling fluids.",
+      specs: {
+        maxTemp: "400°C",
+        maxPressure: "20 bar",
+        material: "Titanium Alloy"
+      }
+    },
+    {
+      id: "filter-1",
+      name: "Bag Filter",
+      category: "separation",
+      description: "Uses fabric bags to filter particulates from gas or liquid streams.",
+      specs: {
+        maxTemp: "120°C",
+        maxPressure: "10 bar",
+        material: "Polypropylene"
+      }
+    },
+    {
+      id: "filter-2",
+      name: "Cartridge Filter",
+      category: "separation",
+      description: "Uses replaceable cartridges for fine filtration of liquids.",
+      specs: {
+        maxFlow: "100 m³/h",
+        maxPressure: "15 bar",
+        material: "Various media"
+      }
+    },
+    {
+      id: "compr-1",
+      name: "Centrifugal Compressor",
+      category: "compression",
+      description: "Increases gas pressure through centrifugal force.",
+      specs: {
+        maxFlow: "500,000 m³/h",
+        maxPressure: "80 bar",
+        material: "Stainless Steel"
+      }
+    },
+    {
+      id: "compr-2",
+      name: "Reciprocating Compressor",
+      category: "compression",
+      description: "Uses pistons to compress gas to high pressures.",
+      specs: {
+        maxFlow: "10,000 m³/h",
+        maxPressure: "400 bar",
+        material: "Cast Iron / Steel"
+      }
+    },
+    {
+      id: "tank-1",
+      name: "Floating Roof Tank",
+      category: "storage",
+      description: "Large storage vessel with floating roof to minimize vapor loss.",
+      specs: {
+        maxTemp: "80°C",
+        dimensions: "Up to 100m dia",
+        material: "Carbon Steel"
+      }
+    },
+    {
+      id: "separat-1",
+      name: "Cyclone Separator",
+      category: "separation",
+      description: "Uses centrifugal force to separate particles from gas stream.",
+      specs: {
+        maxFlow: "50,000 m³/h",
+        maxTemp: "500°C",
+        material: "Carbon Steel"
+      }
+    },
+    {
+      id: "thermal-1",
+      name: "Rotary Dryer",
+      category: "thermal",
+      description: "Rotating drum that removes moisture using hot air flow.",
+      specs: {
+        maxTemp: "600°C",
+        dimensions: "2-5m dia x 10-20m length",
+        material: "Carbon Steel"
       }
     },
   ];

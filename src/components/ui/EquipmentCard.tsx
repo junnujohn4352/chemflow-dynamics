@@ -9,11 +9,21 @@ import {
   Thermometer, 
   FlaskConical, 
   SquareStack,
-  Container 
+  Container,
+  ArrowUpDown,
+  Filter,
+  Blocks,
+  GitFork,
+  Waves,
+  Pipette,
+  Timer,
+  BoxSelect
 } from "lucide-react";
 
 interface EquipmentCardProps {
-  type: "reactor" | "pump" | "valve" | "heater" | "condenser" | "column" | "tank" | "mixer";
+  type: "reactor" | "pump" | "valve" | "heater" | "condenser" | "column" | "tank" | "mixer" | 
+         "heat-exchanger" | "filter" | "compressor" | "separator" | "cyclone" | "crystallizer" | 
+         "evaporator" | "extractor" | "dryer" | "scrubber" | "batch-reactor";
   name: string;
   status?: "running" | "stopped" | "warning" | "error";
   metrics?: {
@@ -38,6 +48,8 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
     switch (type) {
       case "reactor":
         return <FlaskConical className="h-7 w-7" />;
+      case "batch-reactor":
+        return <Timer className="h-7 w-7" />;
       case "pump":
         return <Droplets className="h-7 w-7" />;
       case "valve":
@@ -52,6 +64,26 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
         return <Container className="h-7 w-7" />;
       case "mixer":
         return <Gauge className="h-7 w-7" />;
+      case "heat-exchanger":
+        return <ArrowUpDown className="h-7 w-7" />;
+      case "filter":
+        return <Filter className="h-7 w-7" />;
+      case "compressor":
+        return <Blocks className="h-7 w-7" />;
+      case "separator":
+        return <GitFork className="h-7 w-7" />;
+      case "cyclone":
+        return <Waves className="h-7 w-7" />;
+      case "crystallizer":
+        return <BoxSelect className="h-7 w-7" />;
+      case "evaporator":
+        return <Waves className="h-7 w-7" />;
+      case "extractor":
+        return <Pipette className="h-7 w-7" />;
+      case "dryer":
+        return <Thermometer className="h-7 w-7" />;
+      case "scrubber":
+        return <Filter className="h-7 w-7" />;
       default:
         return <FlaskConical className="h-7 w-7" />;
     }
