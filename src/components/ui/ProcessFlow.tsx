@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import EquipmentCard from "./EquipmentCard";
@@ -187,6 +186,7 @@ const ProcessFlow: React.FC<ProcessFlowProps> = ({ className, onStartSimulation 
       name: "Heat Transfer Equipment",
       types: [
         { type: "heat-exchanger" as const, name: "Heat Exchanger" },
+        { type: "shell-tube-heat-exchanger" as const, name: "Shell & Tube HX" },
         { type: "shell-and-tube" as const, name: "Shell & Tube HX" },
         { type: "plate" as const, name: "Plate Heat Exchanger" },
         { type: "air-cooler" as const, name: "Air Cooler" },

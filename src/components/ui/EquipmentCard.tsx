@@ -62,7 +62,7 @@ interface EquipmentCardProps {
          "hydrocyclone" | "gravity-separator" | "drum" | "clarifier" | "membrane" | "granulator" |
          "homogenizer" | "conveyor" | "drainer" | "agitator" | "fluidized-bed" |
          "blender" | "dehumidifier" | "adsorber" | "quench" | "wetted-wall" | "ejector" | "calciner" |
-         "mixer-settler"; // Added mixer-settler to the type definition
+         "mixer-settler" | "shell-tube-heat-exchanger"; // Added shell-tube-heat-exchanger to the type definition
   name: string;
   status?: "running" | "stopped" | "warning" | "error";
   metrics?: {
@@ -130,6 +130,8 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
         return <Thermometer className="h-7 w-7" />;
       case "heat-exchanger":
         return <ArrowUpDown className="h-7 w-7" />;
+      case "shell-tube-heat-exchanger":
+        return <Network className="h-7 w-7" />;  // Added dedicated icon for shell-tube heat exchanger
       case "shell-and-tube":
         return <Cylinder className="h-7 w-7" />;
       case "plate":
