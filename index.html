@@ -19,9 +19,16 @@
     <meta name="twitter:image" content="/lovable-uploads/29c72e63-c684-45e0-b8ce-64278f3e65d5.png" />
     
     <style>
-      /* Hide Lovable edit banner */
-      .lovable-edit-banner {
+      /* Hide Lovable edit banner more aggressively */
+      .lovable-edit-banner,
+      #lovable-edit-banner,
+      [class*="lovable-edit-banner"] {
         display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        position: absolute !important;
+        top: -9999px !important;
+        left: -9999px !important;
       }
     </style>
   </head>
