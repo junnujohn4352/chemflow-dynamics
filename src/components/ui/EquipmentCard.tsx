@@ -265,7 +265,15 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
            type === "shell-and-tube" || 
            type === "plate" || 
            type === "air-cooler" || 
-           type === "reboiler";
+           type === "reboiler" ||
+           type === "condenser" ||
+           type === "heater" ||
+           type === "cooler";
+  };
+
+  const isShellAndTube = () => {
+    return type === "shell-tube-heat-exchanger" || 
+           type === "shell-and-tube";
   };
 
   return (
@@ -295,12 +303,19 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
 
       {isHeatExchanger() && (
         <div className="absolute inset-0 pointer-events-none">
+          {/* Left Connection Point */}
           <div className="absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-blue-500 border-2 border-white shadow-sm z-10"></div>
+          
+          {/* Right Connection Point */}
           <div className="absolute right-0 top-1/2 translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-blue-500 border-2 border-white shadow-sm z-10"></div>
-          {(type === "shell-tube-heat-exchanger" || type === "shell-and-tube") && (
+          
+          {/* Top Connection Point (shell side for shell & tube) */}
+          {isShellAndTube() && (
             <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-green-500 border-2 border-white shadow-sm z-10"></div>
           )}
-          {(type === "shell-tube-heat-exchanger" || type === "shell-and-tube") && (
+          
+          {/* Bottom Connection Point (shell side for shell & tube) */}
+          {isShellAndTube() && (
             <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-3 h-3 rounded-full bg-green-500 border-2 border-white shadow-sm z-10"></div>
           )}
         </div>
