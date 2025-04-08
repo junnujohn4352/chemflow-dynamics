@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -8,7 +7,8 @@ import {
   Save, ArrowLeft, Layers, Database, Settings2, 
   GitBranch, Play, Check, Pause, RefreshCw,
   BarChart3, ChevronDown, ChevronUp, FlaskConical, Waves, Zap, Droplets, Shield, Cpu, Leaf,
-  ThermometerIcon as Thermometer // Use ThermometerIcon and alias it as Thermometer
+  ThermometerIcon as Thermometer, 
+  Download, FileDown 
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import SimulationBuilder from "@/components/simulation/SimulationBuilder";
@@ -17,6 +17,8 @@ import ThermodynamicsSelector from "@/components/simulation/ThermodynamicsSelect
 import { Button } from "@/components/ui/button";
 import HysysIntegration from "@/components/simulation/HysysIntegration";
 import RealTimeAnalysisCharts from "@/components/charts/RealTimeAnalysisCharts";
+import html2canvas from 'html2canvas';
+import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import {
   AreaChart,
   Area,
@@ -57,6 +59,8 @@ const CreateSimulation = () => {
   const [realTimeData, setRealTimeData] = useState<any[]>([]);
   const [isRealTimeActive, setIsRealTimeActive] = useState(false);
   const [realTimeInterval, setRealTimeInterval] = useState<number | null>(null);
+  const analysisSectionRef = useRef<HTMLDivElement>(null);
+  const builderSectionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const savedSimData = localStorage.getItem('chemflow-simulation-data');
@@ -521,11 +525,183 @@ This analysis examines the ${subject} process using ${components.join(", ")} as 
     }
   };
 
+  const generatePDF = async () => {
+    if (!isSimulationComplete) {
+      toast({
+        title: "Simulation not complete",
+        description: "Please run the simulation first before exporting to PDF",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      toast({
+        title: "Generating PDF",
+        description: "Please wait while we generate your PDF",
+      });
+
+      const pdfDoc = await PDFDocument.create();
+      
+      const page1 = pdfDoc.addPage([850, 1100]);
+      const helveticaFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
+      const helveticaBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+      
+      page1.drawText('ChemFlow Simulation Report', {
+        x: 50,
+        y: 1000,
+        size: 30,
+        font: helveticaBold,
+        color: rgb(0, 0.3, 0.7),
+      });
+      
+      page1.drawText(`Simulation Name: ${simulationName}`, {
+        x: 50,
+        y: 950,
+        size: 16,
+        font: helveticaFont,
+      });
+      
+      page1.drawText(`Date: ${new Date().toLocaleDateString()}`, {
+        x: 50,
+        y: 920,
+        size: 14,
+        font: helveticaFont,
+      });
+      
+      page1.drawText(`Process Type: ${simulationSubject || 'Chemical Process'}`, {
+        x: 50,
+        y: 890,
+        size: 14,
+        font: helveticaFont,
+      });
+      
+      page1.drawText('Components:', {
+        x: 50,
+        y: 840,
+        size: 16,
+        font: helveticaBold,
+      });
+      
+      selectedComponents.forEach((component, index) => {
+        page1.drawText(`• ${component}`, {
+          x: 70,
+          y: 810 - (index * 25),
+          size: 14,
+          font: helveticaFont,
+        });
+      });
+      
+      const thermoY = 810 - (selectedComponents.length * 25) - 30;
+      page1.drawText('Thermodynamic Model:', {
+        x: 50,
+        y: thermoY,
+        size: 16,
+        font: helveticaBold,
+      });
+      
+      page1.drawText(selectedModel, {
+        x: 70,
+        y: thermoY - 30,
+        size: 14,
+        font: helveticaFont,
+      });
+
+      if (analysisSectionRef.current && showAnalysis) {
+        try {
+          const analysisCanvas = await html2canvas(analysisSectionRef.current, {
+            scale: 0.75,
+            useCORS: true,
+            allowTaint: true,
+            logging: false,
+          });
+          
+          const analysisImage = await pdfDoc.embedPng(analysisCanvas.toDataURL('image/png'));
+          
+          const page2 = pdfDoc.addPage([850, 1100]);
+          
+          page2.drawText('Simulation Analysis', {
+            x: 50,
+            y: 1000,
+            size: 24,
+            font: helveticaBold,
+            color: rgb(0, 0.3, 0.7),
+          });
+          
+          const imgDims = analysisImage.scale(0.5);
+          
+          page2.drawImage(analysisImage, {
+            x: 50,
+            y: 950 - imgDims.height,
+            width: imgDims.width,
+            height: imgDims.height,
+          });
+        } catch (error) {
+          console.error("Error capturing analysis section:", error);
+        }
+      }
+      
+      if (builderSectionRef.current) {
+        try {
+          const builderCanvas = await html2canvas(builderSectionRef.current, {
+            scale: 0.75,
+            useCORS: true,
+            allowTaint: true,
+            logging: false,
+          });
+          
+          const builderImage = await pdfDoc.embedPng(builderCanvas.toDataURL('image/png'));
+          
+          const page3 = pdfDoc.addPage([850, 1100]);
+          
+          page3.drawText('Process Flowsheet', {
+            x: 50,
+            y: 1000,
+            size: 24,
+            font: helveticaBold,
+            color: rgb(0, 0.3, 0.7),
+          });
+          
+          const imgDims = builderImage.scale(0.5);
+          
+          page3.drawImage(builderImage, {
+            x: 50,
+            y: 950 - imgDims.height,
+            width: imgDims.width,
+            height: imgDims.height,
+          });
+        } catch (error) {
+          console.error("Error capturing builder section:", error);
+        }
+      }
+
+      const pdfBytes = await pdfDoc.save();
+      
+      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `${simulationName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
+      link.click();
+      
+      toast({
+        title: "PDF Generated Successfully",
+        description: "Your simulation has been exported to PDF",
+      });
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      toast({
+        title: "PDF Generation Failed",
+        description: "There was an error generating the PDF. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const renderAnalysisSection = () => {
     if (!showAnalysis || !isSimulationComplete) return null;
     
     return (
-      <div className="mt-8">
+      <div className="mt-8" ref={analysisSectionRef}>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-2xl font-display font-bold">
             {simulationSubject} Simulation Analysis
@@ -685,6 +861,14 @@ This analysis examines the ${subject} process using ${components.join(", ")} as 
                 <Save className="mr-2 h-4 w-4" />
                 Save Simulation
               </Button>
+              <Button 
+                variant="secondary"
+                onClick={generatePDF}
+                disabled={!isSimulationComplete}
+              >
+                <FileDown className="mr-2 h-4 w-4" />
+                Export to PDF
+              </Button>
             </div>
           </div>
           
@@ -767,7 +951,7 @@ This analysis examines the ${subject} process using ${components.join(", ")} as 
             </div>
           </div>
           
-          <GlassPanel className="p-6">
+          <GlassPanel className="p-6" ref={builderSectionRef}>
             {activeTab === 'components' && (
               <div className="flex flex-col">
                 <ComponentSelector 
@@ -830,14 +1014,25 @@ This analysis examines the ${subject} process using ${components.join(", ")} as 
                 Version History
               </Button>
             </div>
-            <Button 
-              className={`${isSimulationRunning ? 'bg-amber-500 hover:bg-amber-600' : 'bg-green-600 hover:bg-green-700'}`}
-              disabled={!allStepsValid || isSimulationRunning}
-              onClick={handleRunSimulation}
-            >
-              <Play className="mr-2 h-4 w-4" />
-              {isSimulationRunning ? 'Running Simulation...' : 'Run Simulation'}
-            </Button>
+            <div className="flex items-center gap-3">
+              {isSimulationComplete && (
+                <Button
+                  variant="outline"
+                  onClick={generatePDF}
+                >
+                  <FileDown className="mr-2 h-4 w-4" />
+                  Export as PDF
+                </Button>
+              )}
+              <Button 
+                className={`${isSimulationRunning ? 'bg-amber-500 hover:bg-amber-600' : 'bg-green-600 hover:bg-green-700'}`}
+                disabled={!allStepsValid || isSimulationRunning}
+                onClick={handleRunSimulation}
+              >
+                <Play className="mr-2 h-4 w-4" />
+                {isSimulationRunning ? 'Running Simulation...' : 'Run Simulation'}
+              </Button>
+            </div>
           </div>
         </div>
       </main>
