@@ -51,7 +51,10 @@ const CreateSimulation = () => {
   const [simulationSubject, setSimulationSubject] = useState<string | null>(null);
   const [subjectAnalyses, setSubjectAnalyses] = useState<SubjectAnalysis[]>([]);
   const [activeSubjectAnalysis, setActiveSubjectAnalysis] = useState<string | null>(null);
-  
+  const [realTimeData, setRealTimeData] = useState<any[]>([]);
+  const [isRealTimeActive, setIsRealTimeActive] = useState(false);
+  const [realTimeInterval, setRealTimeInterval] = useState<number | null>(null);
+
   useEffect(() => {
     const savedSimData = localStorage.getItem('chemflow-simulation-data');
     if (savedSimData) {
@@ -74,10 +77,10 @@ const CreateSimulation = () => {
       }
     }
   }, []);
-  
+
   const componentsValid = selectedComponents.length > 0;
   const allStepsValid = componentsValid && selectedModel !== '';
-  
+
   const handleSaveSimulation = () => {
     if (simulationName.trim() === '') {
       toast({
@@ -160,6 +163,8 @@ const CreateSimulation = () => {
     generateAnalysisData();
     
     await generateSubjectAnalyses(subject);
+
+    startRealTimeAnalysis();
     
     setTimeout(() => {
       setIsSimulationRunning(false);
@@ -172,7 +177,74 @@ const CreateSimulation = () => {
       });
     }, 2000);
   };
-  
+
+  const startRealTimeAnalysis = () => {
+    if (realTimeInterval) {
+      clearInterval(realTimeInterval);
+    }
+
+    const initialData = generateRealTimeDataPoint(0);
+    setRealTimeData([initialData]);
+    setIsRealTimeActive(true);
+    
+    const intervalId = window.setInterval(() => {
+      setRealTimeData(prevData => {
+        const timePoint = prevData.length;
+        if (timePoint >= 20) {
+          clearInterval(intervalId);
+          setRealTimeInterval(null);
+          setIsRealTimeActive(false);
+          return prevData;
+        }
+        
+        const newDataPoint = generateRealTimeDataPoint(timePoint);
+        return [...prevData, newDataPoint];
+      });
+    }, 2000);
+    
+    setRealTimeInterval(intervalId);
+  };
+
+  const generateRealTimeDataPoint = (timePoint: number) => {
+    const dataPoint: { 
+      time: number; 
+      temperature?: number; 
+      pressure?: number; 
+      conversion?: number;
+      [key: string]: number | undefined; 
+    } = { time: timePoint };
+    
+    selectedComponents.forEach(comp => {
+      if (comp === 'Ethanol') {
+        dataPoint[comp] = Math.min(95, 10 + 85 * (1 - Math.exp(-0.2 * timePoint)));
+      } else if (comp === 'Water') {
+        dataPoint[comp] = Math.min(90, 15 + 75 * (1 - Math.exp(-0.15 * timePoint)));
+      } else if (comp === 'Methanol') {
+        dataPoint[comp] = Math.min(85, 5 + 80 * (1 - Math.exp(-0.25 * timePoint)));
+      } else if (comp === 'Butanol') {
+        dataPoint[comp] = Math.min(75, 8 + 67 * (1 - Math.exp(-0.18 * timePoint)));
+      } else {
+        dataPoint[comp] = Math.min(80, 10 + 70 * (1 - Math.exp(-0.2 * timePoint)));
+      }
+      
+      dataPoint[comp] *= (0.95 + Math.random() * 0.1);
+    });
+    
+    dataPoint.temperature = 300 + 50 * Math.sin(timePoint / 3 + Math.random() * 0.5);
+    dataPoint.pressure = 100 - 10 * Math.cos(timePoint / 2 + Math.random() * 0.3);
+    dataPoint.conversion = Math.min(0.98, 1 - Math.exp(-0.1 * (timePoint + 1)));
+    
+    return dataPoint;
+  };
+
+  const stopRealTimeAnalysis = () => {
+    if (realTimeInterval) {
+      clearInterval(realTimeInterval);
+      setRealTimeInterval(null);
+    }
+    setIsRealTimeActive(false);
+  };
+
   const generateAnalysisData = () => {
     const timePoints = Array.from({ length: 25 }, (_, i) => i);
     
@@ -425,7 +497,7 @@ This analysis examines the ${subject} process using ${components.join(", ")} as 
       });
     }
   };
-  
+
   const handleComponentSelectionDone = () => {
     if (componentsValid && activeTab === 'components') {
       toast({
@@ -435,7 +507,7 @@ This analysis examines the ${subject} process using ${components.join(", ")} as 
       setActiveTab('thermodynamics');
     }
   };
-  
+
   const handleModelSelectionDone = () => {
     if (activeTab === 'thermodynamics') {
       toast({
@@ -445,7 +517,7 @@ This analysis examines the ${subject} process using ${components.join(", ")} as 
       setActiveTab('builder');
     }
   };
-  
+
   const renderAnalysisSection = () => {
     if (!showAnalysis || !isSimulationComplete) return null;
     
@@ -520,7 +592,15 @@ This analysis examines the ${subject} process using ${components.join(", ")} as 
       </div>
     );
   };
-  
+
+  useEffect(() => {
+    return () => {
+      if (realTimeInterval) {
+        clearInterval(realTimeInterval);
+      }
+    };
+  }, [realTimeInterval]);
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
