@@ -5,7 +5,7 @@ import Footer from "@/components/layout/Footer";
 import GlassPanel from "@/components/ui/GlassPanel";
 import { 
   Save, ArrowLeft, Layers, Database, Settings2, 
-  Thermometer, GitBranch, Play, Check, 
+  GitBranch, Play, Check, Pause, RefreshCw,
   BarChart3, ChevronDown, ChevronUp, FlaskConical, Waves, Zap, Droplets, Shield, Cpu, Leaf
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -14,6 +14,7 @@ import ComponentSelector from "@/components/simulation/ComponentSelector";
 import ThermodynamicsSelector from "@/components/simulation/ThermodynamicsSelector";
 import { Button } from "@/components/ui/button";
 import HysysIntegration from "@/components/simulation/HysysIntegration";
+import RealTimeAnalysisCharts from "@/components/charts/RealTimeAnalysisCharts";
 import {
   AreaChart,
   Area,
@@ -534,6 +535,48 @@ This analysis examines the ${subject} process using ${components.join(", ")} as 
           >
             {showAnalysis ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
           </Button>
+        </div>
+        
+        <div className="mb-6">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-medium text-blue-700 dark:text-blue-400">Real-time Analysis</h3>
+            <div className="flex gap-2">
+              <Button 
+                variant={isRealTimeActive ? "destructive" : "default"}
+                size="sm"
+                onClick={isRealTimeActive ? stopRealTimeAnalysis : startRealTimeAnalysis}
+              >
+                {isRealTimeActive ? (
+                  <>
+                    <Pause className="mr-2 h-4 w-4" />
+                    Stop Analysis
+                  </>
+                ) : (
+                  <>
+                    <Play className="mr-2 h-4 w-4" />
+                    Start Analysis
+                  </>
+                )}
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setRealTimeData([])}
+              >
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Reset Data
+              </Button>
+            </div>
+          </div>
+          
+          <GlassPanel className="p-6">
+            <RealTimeAnalysisCharts 
+              realTimeData={realTimeData} 
+              selectedComponents={selectedComponents}
+              isRealTimeActive={isRealTimeActive}
+            />
+          </GlassPanel>
         </div>
         
         <div className="mt-4">

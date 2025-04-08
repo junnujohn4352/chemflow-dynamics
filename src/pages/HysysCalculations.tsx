@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import Navbar from "@/components/layout/Navbar";
 import AspenCalculations from "@/components/simulation/AspenCalculations";
@@ -14,20 +13,8 @@ import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import HysysIntegration from "@/components/simulation/HysysIntegration";
 import { Button } from "@/components/ui/button";
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  LineChart,
-  Line
-} from 'recharts';
+import RealTimeAnalysisCharts from "@/components/charts/RealTimeAnalysisCharts";
 
-// List of calculation categories with their descriptions and icons
 const calculationCategories = [
   {
     id: "thermodynamic",
@@ -166,7 +153,6 @@ const HysysCalculations = () => {
   const [thermodynamicModel, setThermodynamicModel] = useState<string>('Peng-Robinson');
   const { toast } = useToast();
 
-  // Load simulation data from localStorage
   useEffect(() => {
     const loadSimulationData = () => {
       try {
@@ -184,7 +170,6 @@ const HysysCalculations = () => {
           setThermodynamicModel(simModel);
         }
         
-        // Combine all simulation data
         const data = {
           name: simName || 'Untitled Simulation',
           components: simComponents ? JSON.parse(simComponents) : [],
@@ -208,7 +193,6 @@ const HysysCalculations = () => {
     loadSimulationData();
   }, [toast]);
 
-  // Start real-time analysis
   const startRealTimeAnalysis = () => {
     if (realTimeInterval) {
       clearInterval(realTimeInterval);
@@ -250,7 +234,6 @@ const HysysCalculations = () => {
     });
   };
 
-  // Generate real-time data point based on components
   const generateRealTimeDataPoint = (timePoint: number, components: string[]) => {
     const dataPoint: { 
       time: number; 
@@ -283,7 +266,6 @@ const HysysCalculations = () => {
     return dataPoint;
   };
 
-  // Stop real-time analysis
   const stopRealTimeAnalysis = () => {
     if (realTimeInterval) {
       clearInterval(realTimeInterval);
@@ -297,7 +279,6 @@ const HysysCalculations = () => {
     });
   };
 
-  // Clean up interval on unmount
   useEffect(() => {
     return () => {
       if (realTimeInterval) {
@@ -378,7 +359,6 @@ const HysysCalculations = () => {
             </div>
           </div>
           
-          {/* Real-time Analysis Charts */}
           {realTimeData.length > 0 && (
             <div className="mb-8 glass-panel relative z-10 shadow-xl border border-white/30 backdrop-blur-sm">
               <div className="p-6">
@@ -387,98 +367,11 @@ const HysysCalculations = () => {
                   Monitoring key parameters from your {simulationData?.model} simulation
                 </p>
                 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                  <div>
-                    <h3 className="text-lg font-semibold mb-3 text-blue-700 dark:text-blue-400">
-                      Process Variables
-                    </h3>
-                    <div className="bg-white dark:bg-gray-800 rounded-lg p-4 h-[350px]">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={realTimeData}>
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="time" label={{ value: 'Time (min)', position: 'insideBottom', offset: -5 }} />
-                          <YAxis yAxisId="left" label={{ value: 'Temperature (K)', angle: -90, position: 'insideLeft' }} />
-                          <YAxis yAxisId="right" orientation="right" label={{ value: 'Pressure (kPa)', angle: 90, position: 'insideRight' }} />
-                          <Tooltip />
-                          <Legend />
-                          <Line yAxisId="left" type="monotone" dataKey="temperature" stroke="#ff7300" name="Temperature" />
-                          <Line yAxisId="right" type="monotone" dataKey="pressure" stroke="#387908" name="Pressure" />
-                        </LineChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <h3 className="text-lg font-semibold mb-3 text-blue-700 dark:text-blue-400">
-                      Conversion
-                    </h3>
-                    <div className="bg-white dark:bg-gray-800 rounded-lg p-4 h-[350px]">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={realTimeData}>
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="time" label={{ value: 'Time (min)', position: 'insideBottom', offset: -5 }} />
-                          <YAxis domain={[0, 1]} label={{ value: 'Conversion', angle: -90, position: 'insideLeft' }} />
-                          <Tooltip />
-                          <Legend />
-                          <Line type="monotone" dataKey="conversion" stroke="#8884d8" activeDot={{ r: 8 }} />
-                        </LineChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </div>
-                  
-                  <div className="lg:col-span-2">
-                    <h3 className="text-lg font-semibold mb-3 text-blue-700 dark:text-blue-400">
-                      Component Compositions
-                    </h3>
-                    <div className="bg-white dark:bg-gray-800 rounded-lg p-4 h-[350px]">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={realTimeData}>
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="time" label={{ value: 'Time (min)', position: 'insideBottom', offset: -5 }} />
-                          <YAxis label={{ value: 'Concentration (%)', angle: -90, position: 'insideLeft' }} />
-                          <Tooltip />
-                          <Legend />
-                          {selectedComponents.slice(0, 6).map((comp, index) => {
-                            const colors = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088fe', '#00C49F'];
-                            return (
-                              <Area 
-                                key={comp} 
-                                type="monotone" 
-                                dataKey={comp} 
-                                stackId="1"
-                                stroke={colors[index % colors.length]} 
-                                fill={colors[index % colors.length]} 
-                              />
-                            );
-                          })}
-                        </AreaChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </div>
-                </div>
-                
-                {realTimeData.length >= 5 && (
-                  <div className="bg-blue-50 dark:bg-gray-800/60 p-4 rounded-lg">
-                    <div className="flex items-center mb-2 gap-2">
-                      <BarChart3 className="h-5 w-5 text-blue-600" />
-                      <h3 className="text-lg font-semibold text-blue-700 dark:text-blue-400">Analysis Insights</h3>
-                    </div>
-                    <ul className="space-y-1 text-sm">
-                      <li className="flex items-start">
-                        <span className="inline-block w-2 h-2 rounded-full bg-green-500 mt-1.5 mr-2 flex-shrink-0"></span>
-                        <span>System reaching {(realTimeData[realTimeData.length-1].conversion * 100).toFixed(1)}% conversion, within expected parameters</span>
-                      </li>
-                      <li className="flex items-start">
-                        <span className="inline-block w-2 h-2 rounded-full bg-amber-500 mt-1.5 mr-2 flex-shrink-0"></span>
-                        <span>Temperature variations of {(Math.max(...realTimeData.map(d => d.temperature)) - Math.min(...realTimeData.map(d => d.temperature))).toFixed(1)}K detected - monitoring required</span>
-                      </li>
-                      <li className="flex items-start">
-                        <span className="inline-block w-2 h-2 rounded-full bg-blue-500 mt-1.5 mr-2 flex-shrink-0"></span>
-                        <span>Component equilibrium approaching steady state - estimated time to completion: {20 - realTimeData.length} minutes</span>
-                      </li>
-                    </ul>
-                  </div>
-                )}
+                <RealTimeAnalysisCharts 
+                  realTimeData={realTimeData} 
+                  selectedComponents={selectedComponents}
+                  isRealTimeActive={isRealTimeActive}
+                />
               </div>
             </div>
           )}
