@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
@@ -7,8 +6,7 @@ import GlassPanel from "@/components/ui/GlassPanel";
 import { 
   Save, ArrowLeft, Layers, Database, Settings2, 
   GitBranch, Play, Check, Pause, RefreshCw,
-  BarChart3, ChevronDown, ChevronUp, FlaskConical, Waves, Zap, Droplets, Shield, Cpu, Leaf,
-  ThermometerIcon as Thermometer // Use ThermometerIcon and alias it as Thermometer
+  BarChart3, ChevronDown, ChevronUp, FlaskConical, Waves, Zap, Droplets, Shield, Cpu, Leaf
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import SimulationBuilder from "@/components/simulation/SimulationBuilder";
