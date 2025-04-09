@@ -62,7 +62,14 @@ interface EquipmentCardProps {
          "hydrocyclone" | "gravity-separator" | "drum" | "clarifier" | "membrane" | "granulator" |
          "homogenizer" | "conveyor" | "drainer" | "agitator" | "fluidized-bed" |
          "blender" | "dehumidifier" | "adsorber" | "quench" | "wetted-wall" | "ejector" | "calciner" |
-         "mixer-settler" | "shell-tube-heat-exchanger"; // Added shell-tube-heat-exchanger to the type definition
+         "mixer-settler" | "shell-tube-heat-exchanger" | 
+         // Adding new Aspen HYSYS specific equipment types
+         "short-cut-column" | "three-phase-separator" | "component-splitter" | "conversion-reactor" |
+         "equilibrium-reactor" | "gibbs-reactor" | "yield-shift-reactor" | "pipe-segment" |
+         "liquid-liquid-extraction" | "spread-sheet" | "makeup" | "recycle" | "ratio-control" |
+         "adjust" | "balance" | "controller" | "set" | "case-study" | "logical-operator" |
+         "mixer-column" | "divider" | "splitter" | "relief-valve" | "check-valve" | "plate-fin-exchanger" |
+         "generic-valve" | "spiral-heat-exchanger";
   name: string;
   status?: "running" | "stopped" | "warning" | "error";
   metrics?: {
@@ -102,6 +109,14 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
         return <Blocks className="h-7 w-7" />;
       case "reformer":
         return <AtSign className="h-7 w-7" />;
+      case "conversion-reactor":
+        return <FlaskConical className="h-7 w-7" />;
+      case "equilibrium-reactor":
+        return <FlaskRound className="h-7 w-7" />;
+      case "gibbs-reactor":
+        return <Thermometer className="h-7 w-7" />;
+      case "yield-shift-reactor":
+        return <ArrowUpDown className="h-7 w-7" />;
         
       // Flow equipment
       case "pump":
@@ -120,6 +135,14 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
         return <Activity className="h-7 w-7" />;
       case "conveyor":
         return <ArrowUpDown className="h-7 w-7" />;
+      case "relief-valve":
+        return <CircleOff className="h-7 w-7" />;
+      case "check-valve":
+        return <CircleDot className="h-7 w-7" />;
+      case "generic-valve":
+        return <Gauge className="h-7 w-7" />;
+      case "pipe-segment":
+        return <Cylinder className="h-7 w-7" />;
         
       // Heat transfer equipment
       case "heater":
@@ -131,7 +154,7 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
       case "heat-exchanger":
         return <ArrowUpDown className="h-7 w-7" />;
       case "shell-tube-heat-exchanger":
-        return <Network className="h-7 w-7" />;  // Added dedicated icon for shell-tube heat exchanger
+        return <Network className="h-7 w-7" />;
       case "shell-and-tube":
         return <Cylinder className="h-7 w-7" />;
       case "plate":
@@ -148,6 +171,10 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
         return <Cloud className="h-7 w-7" />;
       case "quench":
         return <Droplets className="h-7 w-7" />;
+      case "plate-fin-exchanger":
+        return <Package className="h-7 w-7" />;
+      case "spiral-heat-exchanger":
+        return <CircleDot className="h-7 w-7" />;
         
       // Separation equipment
       case "column":
@@ -200,12 +227,26 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
         return <TriangleRight className="h-7 w-7" />;
       case "mixer-settler":
         return <SplitSquareVertical className="h-7 w-7" />;
+      case "short-cut-column":
+        return <Columns className="h-7 w-7" />;
+      case "three-phase-separator":
+        return <SplitSquareVertical className="h-7 w-7" />;
+      case "component-splitter":
+        return <GitFork className="h-7 w-7" />;
+      case "liquid-liquid-extraction":
+        return <PipetteIcon className="h-7 w-7" />;
       
       // Storage and mixing
       case "tank":
         return <Container className="h-7 w-7" />;
       case "mixer":
         return <Gauge className="h-7 w-7" />;
+      case "mixer-column":
+        return <Cog className="h-7 w-7" />;
+      case "divider":
+        return <SplitSquareVertical className="h-7 w-7" />;
+      case "splitter":
+        return <GitFork className="h-7 w-7" />;
         
       // Solid handling equipment
       case "rotary":
@@ -213,7 +254,7 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
       case "belt":
         return <ArrowUpDown className="h-7 w-7" />;
       case "extruder":
-        return <Move className="h-7 w-7" />; // Replaced Stretch with Move icon
+        return <Move className="h-7 w-7" />;
       case "disintegrator":
         return <Hammer className="h-7 w-7" />;
       case "granulator":
@@ -239,6 +280,28 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
       case "dehumidifier":
         return <Wind className="h-7 w-7" />;
         
+      // HYSYS specific operations and controls
+      case "spread-sheet":
+        return <Package className="h-7 w-7" />;
+      case "makeup":
+        return <Droplets className="h-7 w-7" />;
+      case "recycle":
+        return <Activity className="h-7 w-7" />;
+      case "ratio-control":
+        return <Gauge className="h-7 w-7" />;
+      case "adjust":
+        return <Wrench className="h-7 w-7" />;
+      case "balance":
+        return <Activity className="h-7 w-7" />;
+      case "controller":
+        return <Cog className="h-7 w-7" />;
+      case "set":
+        return <CircleDot className="h-7 w-7" />;
+      case "case-study":
+        return <Microscope className="h-7 w-7" />;
+      case "logical-operator":
+        return <GitFork className="h-7 w-7" />;
+
       default:
         return <FlaskConical className="h-7 w-7" />;
     }
@@ -259,6 +322,17 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
     }
   };
 
+  // Check if the equipment type is a vessel (has multiple connection points)
+  const isVessel = () => {
+    return [
+      "tank", "column", "reactor", "cstr", "pfr", "batch-reactor", "fluidized-bed",
+      "drum", "flash", "crystallizer", "evaporator", "converter", "stripper", "absorber",
+      "distillation", "absorption-tower", "adsorber", "three-phase-separator", "component-splitter",
+      "conversion-reactor", "equilibrium-reactor", "gibbs-reactor", "yield-shift-reactor"
+    ].includes(type);
+  };
+
+  // Check if the equipment type is a heat exchanger
   const isHeatExchanger = () => {
     return type === "heat-exchanger" || 
            type === "shell-tube-heat-exchanger" || 
@@ -268,7 +342,32 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
            type === "reboiler" ||
            type === "condenser" ||
            type === "heater" ||
-           type === "cooler";
+           type === "cooler" ||
+           type === "plate-fin-exchanger" ||
+           type === "spiral-heat-exchanger";
+  };
+
+  // Check if equipment has top and bottom connections only
+  const hasVerticalConnections = () => {
+    return [
+      "column", "distillation", "absorption-tower", "short-cut-column", "stripper", 
+      "absorber", "mixer-column"
+    ].includes(type);
+  };
+
+  // Check if equipment is a flow controller type
+  const isFlowController = () => {
+    return [
+      "valve", "pump", "compressor", "turbine", "tee", "divider", "splitter", 
+      "ejector", "relief-valve", "check-valve", "generic-valve"
+    ].includes(type);
+  };
+
+  // Check if equipment has multiple inputs but one output
+  const isMultiInputEquipment = () => {
+    return [
+      "mixer", "mixer-column", "blender", "mixer-settler"
+    ].includes(type);
   };
 
   const isShellAndTube = () => {
@@ -301,25 +400,54 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
         </div>
       </div>
 
-      {isHeatExchanger() && (
-        <div className="absolute inset-0 pointer-events-none">
-          {/* Left Connection Point */}
-          <div className="absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-blue-500 border-2 border-white shadow-sm z-10"></div>
-          
-          {/* Right Connection Point */}
-          <div className="absolute right-0 top-1/2 translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-blue-500 border-2 border-white shadow-sm z-10"></div>
-          
-          {/* Top Connection Point (shell side for shell & tube) */}
-          {isShellAndTube() && (
+      {/* Connection points based on equipment type */}
+      <div className="absolute inset-0 pointer-events-none">
+        {/* Standard horizontal flow connections (left and right) - most equipment has these */}
+        {!hasVerticalConnections() && (
+          <>
+            {/* Left Connection Point */}
+            <div className="absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-blue-500 border-2 border-white shadow-sm z-10"></div>
+            
+            {/* Right Connection Point */}
+            <div className="absolute right-0 top-1/2 translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-blue-500 border-2 border-white shadow-sm z-10"></div>
+          </>
+        )}
+
+        {/* For column-type equipment, add vertical connections */}
+        {hasVerticalConnections() && (
+          <>
+            {/* Top Connection Point */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-blue-500 border-2 border-white shadow-sm z-10"></div>
+            
+            {/* Bottom Connection Point */}
+            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-3 h-3 rounded-full bg-blue-500 border-2 border-white shadow-sm z-10"></div>
+          </>
+        )}
+
+        {/* For vessel-type equipment with multiple connections, add more connection points */}
+        {isVessel() && !hasVerticalConnections() && (
+          <>
+            {/* Top Connection Point */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-blue-500 border-2 border-white shadow-sm z-10"></div>
+            
+            {/* Bottom Connection Point */}
+            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-3 h-3 rounded-full bg-blue-500 border-2 border-white shadow-sm z-10"></div>
+          </>
+        )}
+
+        {/* For multi-input equipment, add extra input point */}
+        {isMultiInputEquipment() && (
+          <div className="absolute top-1/2 left-0 -translate-x-1/2 -translate-y-[calc(50%+15px)] w-3 h-3 rounded-full bg-blue-500 border-2 border-white shadow-sm z-10"></div>
+        )}
+
+        {/* Shell-side connections (top and bottom) for shell & tube heat exchangers */}
+        {isShellAndTube() && (
+          <>
             <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-green-500 border-2 border-white shadow-sm z-10"></div>
-          )}
-          
-          {/* Bottom Connection Point (shell side for shell & tube) */}
-          {isShellAndTube() && (
             <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-3 h-3 rounded-full bg-green-500 border-2 border-white shadow-sm z-10"></div>
-          )}
-        </div>
-      )}
+          </>
+        )}
+      </div>
 
       {metrics && (
         <div className="grid grid-cols-2 gap-2 mt-4">
