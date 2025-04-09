@@ -5,7 +5,7 @@ import {
   Droplets, 
   Flame, 
   Gauge, 
-  ThermometerIcon as Thermometer, 
+  ThermometerIcon, 
   FlaskConical, 
   SquareStack,
   Container,
@@ -14,7 +14,7 @@ import {
   Blocks,
   GitFork,
   Waves,
-  PipetteIcon as Pipette,
+  PipetteIcon,
   Timer,
   BoxSelect,
   Fan,
@@ -34,13 +34,12 @@ import {
   Move,
   Snowflake,
   TriangleRight,
-  PipetteIcon,
   Hammer,
   Banana,
   AtSign,
   Columns,
   Microscope,
-  TestTubeIcon as TestTube,
+  TestTubeIcon,
   Network,
   Sparkles,
   ScrollIcon,
@@ -48,6 +47,10 @@ import {
   Wind,
   SplitSquareVertical
 } from "lucide-react";
+
+const Thermometer = ThermometerIcon;
+const Pipette = PipetteIcon;
+const TestTube = TestTubeIcon;
 
 interface EquipmentCardProps {
   type: "reactor" | "pump" | "valve" | "heater" | "condenser" | "column" | "tank" | "mixer" | 
