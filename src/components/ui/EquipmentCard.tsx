@@ -364,6 +364,14 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
            type === "shell-and-tube";
   };
 
+  const isPlateFin = () => {
+    return type === "plate-fin-exchanger";
+  };
+
+  const isSpiral = () => {
+    return type === "spiral-heat-exchanger";
+  };
+
   return (
     <div
       className={cn(
@@ -390,7 +398,7 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
       </div>
 
       <div className="absolute inset-0 pointer-events-none">
-        {!hasVerticalConnections() && (
+        {!hasVerticalConnections() && !isHeatExchanger() && (
           <>
             <div className="absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-blue-500 border-2 border-white shadow-sm z-10"></div>
             <div className="absolute right-0 top-1/2 translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-blue-500 border-2 border-white shadow-sm z-10"></div>
@@ -415,10 +423,36 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
           <div className="absolute top-1/2 left-0 -translate-x-1/2 -translate-y-[calc(50%+15px)] w-3 h-3 rounded-full bg-blue-500 border-2 border-white shadow-sm z-10"></div>
         )}
 
-        {isShellAndTube() && (
+        {/* Heat Exchanger connections based on type */}
+        {isHeatExchanger() && (
           <>
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-green-500 border-2 border-white shadow-sm z-10"></div>
-            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-3 h-3 rounded-full bg-green-500 border-2 border-white shadow-sm z-10"></div>
+            {/* Standard horizontal connections for all heat exchangers */}
+            <div className="absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-blue-500 border-2 border-white shadow-sm z-10"></div>
+            <div className="absolute right-0 top-1/2 translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-blue-500 border-2 border-white shadow-sm z-10"></div>
+            
+            {/* Additional connections for specific heat exchanger types */}
+            {isShellAndTube() && (
+              <>
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-green-500 border-2 border-white shadow-sm z-10"></div>
+                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-3 h-3 rounded-full bg-green-500 border-2 border-white shadow-sm z-10"></div>
+              </>
+            )}
+            
+            {isPlateFin() && (
+              <>
+                <div className="absolute top-0 left-1/3 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-amber-500 border-2 border-white shadow-sm z-10"></div>
+                <div className="absolute bottom-0 left-1/3 -translate-x-1/2 translate-y-1/2 w-3 h-3 rounded-full bg-amber-500 border-2 border-white shadow-sm z-10"></div>
+                <div className="absolute top-0 left-2/3 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-amber-500 border-2 border-white shadow-sm z-10"></div>
+                <div className="absolute bottom-0 left-2/3 -translate-x-1/2 translate-y-1/2 w-3 h-3 rounded-full bg-amber-500 border-2 border-white shadow-sm z-10"></div>
+              </>
+            )}
+            
+            {isSpiral() && (
+              <>
+                <div className="absolute top-1/4 left-0 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-purple-500 border-2 border-white shadow-sm z-10"></div>
+                <div className="absolute bottom-1/4 right-0 translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-purple-500 border-2 border-white shadow-sm z-10"></div>
+              </>
+            )}
           </>
         )}
       </div>
