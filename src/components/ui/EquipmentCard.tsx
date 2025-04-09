@@ -1,4 +1,3 @@
-
 import React from "react";
 import { cn } from "@/lib/utils";
 import { 
@@ -6,7 +5,7 @@ import {
   Droplets, 
   Flame, 
   Gauge, 
-  Thermometer, 
+  ThermometerIcon as Thermometer, 
   FlaskConical, 
   SquareStack,
   Container,
@@ -15,7 +14,7 @@ import {
   Blocks,
   GitFork,
   Waves,
-  Pipette,
+  PipetteIcon as Pipette,
   Timer,
   BoxSelect,
   Fan,
@@ -41,8 +40,7 @@ import {
   AtSign,
   Columns,
   Microscope,
-  // Removing the non-existent Stretch icon
-  TestTube,
+  TestTubeIcon as TestTube,
   Network,
   Sparkles,
   ScrollIcon,
@@ -63,7 +61,6 @@ interface EquipmentCardProps {
          "homogenizer" | "conveyor" | "drainer" | "agitator" | "fluidized-bed" |
          "blender" | "dehumidifier" | "adsorber" | "quench" | "wetted-wall" | "ejector" | "calciner" |
          "mixer-settler" | "shell-tube-heat-exchanger" | 
-         // Adding new Aspen HYSYS specific equipment types
          "short-cut-column" | "three-phase-separator" | "component-splitter" | "conversion-reactor" |
          "equilibrium-reactor" | "gibbs-reactor" | "yield-shift-reactor" | "pipe-segment" |
          "liquid-liquid-extraction" | "spread-sheet" | "makeup" | "recycle" | "ratio-control" |
@@ -96,7 +93,6 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
 }) => {
   const getIcon = () => {
     switch (type) {
-      // Reactor types
       case "reactor":
         return <FlaskConical className="h-7 w-7" />;
       case "batch-reactor":
@@ -118,7 +114,6 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
       case "yield-shift-reactor":
         return <ArrowUpDown className="h-7 w-7" />;
         
-      // Flow equipment
       case "pump":
         return <Droplets className="h-7 w-7" />;
       case "valve":
@@ -144,7 +139,6 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
       case "pipe-segment":
         return <Cylinder className="h-7 w-7" />;
         
-      // Heat transfer equipment
       case "heater":
         return <Flame className="h-7 w-7" />;
       case "cooler":
@@ -176,7 +170,6 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
       case "spiral-heat-exchanger":
         return <CircleDot className="h-7 w-7" />;
         
-      // Separation equipment
       case "column":
         return <SquareStack className="h-7 w-7" />;
       case "distillation":
@@ -236,7 +229,6 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
       case "liquid-liquid-extraction":
         return <PipetteIcon className="h-7 w-7" />;
       
-      // Storage and mixing
       case "tank":
         return <Container className="h-7 w-7" />;
       case "mixer":
@@ -248,7 +240,6 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
       case "splitter":
         return <GitFork className="h-7 w-7" />;
         
-      // Solid handling equipment
       case "rotary":
         return <CircleDot className="h-7 w-7" />;
       case "belt":
@@ -270,7 +261,6 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
       case "calciner":
         return <Flame className="h-7 w-7" />;
         
-      // Mass transfer equipment
       case "spray":
         return <Droplets className="h-7 w-7" />;
       case "tray":
@@ -280,7 +270,6 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
       case "dehumidifier":
         return <Wind className="h-7 w-7" />;
         
-      // HYSYS specific operations and controls
       case "spread-sheet":
         return <Package className="h-7 w-7" />;
       case "makeup":
@@ -322,7 +311,6 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
     }
   };
 
-  // Check if the equipment type is a vessel (has multiple connection points)
   const isVessel = () => {
     return [
       "tank", "column", "reactor", "cstr", "pfr", "batch-reactor", "fluidized-bed",
@@ -332,7 +320,6 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
     ].includes(type);
   };
 
-  // Check if the equipment type is a heat exchanger
   const isHeatExchanger = () => {
     return type === "heat-exchanger" || 
            type === "shell-tube-heat-exchanger" || 
@@ -347,7 +334,6 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
            type === "spiral-heat-exchanger";
   };
 
-  // Check if equipment has top and bottom connections only
   const hasVerticalConnections = () => {
     return [
       "column", "distillation", "absorption-tower", "short-cut-column", "stripper", 
@@ -355,7 +341,6 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
     ].includes(type);
   };
 
-  // Check if equipment is a flow controller type
   const isFlowController = () => {
     return [
       "valve", "pump", "compressor", "turbine", "tee", "divider", "splitter", 
@@ -363,7 +348,6 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
     ].includes(type);
   };
 
-  // Check if equipment has multiple inputs but one output
   const isMultiInputEquipment = () => {
     return [
       "mixer", "mixer-column", "blender", "mixer-settler"
@@ -400,47 +384,32 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
         </div>
       </div>
 
-      {/* Connection points based on equipment type */}
       <div className="absolute inset-0 pointer-events-none">
-        {/* Standard horizontal flow connections (left and right) - most equipment has these */}
         {!hasVerticalConnections() && (
           <>
-            {/* Left Connection Point */}
             <div className="absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-blue-500 border-2 border-white shadow-sm z-10"></div>
-            
-            {/* Right Connection Point */}
             <div className="absolute right-0 top-1/2 translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-blue-500 border-2 border-white shadow-sm z-10"></div>
           </>
         )}
 
-        {/* For column-type equipment, add vertical connections */}
         {hasVerticalConnections() && (
           <>
-            {/* Top Connection Point */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-blue-500 border-2 border-white shadow-sm z-10"></div>
-            
-            {/* Bottom Connection Point */}
             <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-3 h-3 rounded-full bg-blue-500 border-2 border-white shadow-sm z-10"></div>
           </>
         )}
 
-        {/* For vessel-type equipment with multiple connections, add more connection points */}
         {isVessel() && !hasVerticalConnections() && (
           <>
-            {/* Top Connection Point */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-blue-500 border-2 border-white shadow-sm z-10"></div>
-            
-            {/* Bottom Connection Point */}
             <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-3 h-3 rounded-full bg-blue-500 border-2 border-white shadow-sm z-10"></div>
           </>
         )}
 
-        {/* For multi-input equipment, add extra input point */}
         {isMultiInputEquipment() && (
           <div className="absolute top-1/2 left-0 -translate-x-1/2 -translate-y-[calc(50%+15px)] w-3 h-3 rounded-full bg-blue-500 border-2 border-white shadow-sm z-10"></div>
         )}
 
-        {/* Shell-side connections (top and bottom) for shell & tube heat exchangers */}
         {isShellAndTube() && (
           <>
             <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-green-500 border-2 border-white shadow-sm z-10"></div>
