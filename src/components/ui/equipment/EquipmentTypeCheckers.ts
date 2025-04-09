@@ -21,7 +21,9 @@ export const isHeatExchanger = (type: EquipmentType): boolean => {
          type === "heater" ||
          type === "cooler" ||
          type === "plate-fin-exchanger" ||
-         type === "spiral-heat-exchanger";
+         type === "spiral-heat-exchanger" ||
+         type === "double-pipe" ||
+         type === "plate-heat-exchanger";
 };
 
 export const hasVerticalConnections = (type: EquipmentType): boolean => {
@@ -55,4 +57,13 @@ export const isPlateFin = (type: EquipmentType): boolean => {
 
 export const isSpiral = (type: EquipmentType): boolean => {
   return type === "spiral-heat-exchanger";
+};
+
+export const isDoublePipe = (type: EquipmentType): boolean => {
+  return type === "double-pipe";
+};
+
+export const isPlateHeatExchanger = (type: EquipmentType): boolean => {
+  return type === "plate-heat-exchanger" || 
+         type === "plate";
 };
