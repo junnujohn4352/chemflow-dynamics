@@ -1,3 +1,4 @@
+
 import React from "react";
 import { cn } from "@/lib/utils";
 import { 
@@ -48,6 +49,7 @@ import {
   SplitSquareVertical
 } from "lucide-react";
 
+// Define icon aliases
 const Thermometer = ThermometerIcon;
 const Pipette = PipetteIcon;
 const TestTube = TestTubeIcon;
