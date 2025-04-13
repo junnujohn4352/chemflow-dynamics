@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
-import { Search, Download, Save, RotateCw, FileText, Pen, Layers, Flask } from "lucide-react";
+import { Search, Download, Save, RotateCw, FileText, Pen, Layers, FlaskConical, Beaker } from "lucide-react";
 
 interface ChemicalDatabaseInterfaceProps {
   software: {
@@ -27,35 +26,6 @@ const ChemicalDatabaseInterface: React.FC<ChemicalDatabaseInterfaceProps> = ({ s
   
   const handleSelectCompound = (compound: string) => {
     setSelectedCompound(compound);
-  };
-
-  const renderSoftwareInterface = (software: any) => {
-    switch (software.category) {
-      case "process-simulation":
-        return <ProcessSimulationInterface software={software} />;
-      case "thermodynamic":
-        return <ThermodynamicInterface software={software} />;
-      case "reaction-engineering":
-        return <ReactionEngineeringInterface software={software} />;
-      case "data-analysis":
-        return <DataAnalysisInterface software={software} />;
-      case "process-control":
-        return <ProcessControlInterface software={software} />;
-      case "equipment-design":
-        return <EquipmentDesignInterface software={software} />;
-      case "piping-design":
-        return <PipingDesignInterface software={software} />;
-      case "environmental-safety":
-        return <EnvironmentalSafetyInterface software={software} />;
-      case "cfd":
-        return <CFDInterface software={software} />;
-      case "chemical-database":
-        return <ChemicalDatabaseInterface software={software} />;
-      case "miscellaneous":
-        return <MiscellaneousToolsInterface software={software} />;
-      default:
-        return <div>Software interface not available</div>;
-    }
   };
 
   return (
@@ -311,7 +281,7 @@ const ChemicalDatabaseInterface: React.FC<ChemicalDatabaseInterfaceProps> = ({ s
                       <p><span className="font-medium">Molecular Weight:</span> {
                         selectedCompound === "methanol" ? "32.04" :
                         selectedCompound === "ethanol" ? "46.07" :
-                        selectedCompound === "propanol" || selectedCompound === "isopropanol" ? "60.10" :
+                        selectedCompound === "propanol" ? "60.10" :
                         "74.12"
                       } g/mol</p>
                       <p><span className="font-medium">CAS Registry Number:</span> {
@@ -674,7 +644,7 @@ const ChemicalDatabaseInterface: React.FC<ChemicalDatabaseInterfaceProps> = ({ s
               <div className="border rounded-md aspect-video bg-white dark:bg-gray-800 flex items-center justify-center p-6">
                 {selectedCompound ? (
                   <div className="text-center">
-                    <Flask className="h-20 w-20 mx-auto mb-4 text-blue-500" />
+                    <FlaskConical className="h-20 w-20 mx-auto mb-4 text-blue-500" />
                     <p className="text-gray-500 dark:text-gray-400 mb-2">
                       {selectedCompound === "methanol" ? "Methanol (CH₃OH)" :
                        selectedCompound === "ethanol" ? "Ethanol (C₂H₅OH)" :
@@ -707,7 +677,7 @@ const ChemicalDatabaseInterface: React.FC<ChemicalDatabaseInterfaceProps> = ({ s
         
         <TabsContent value="prediction" className="p-4 border rounded-md mt-4">
           <div className="flex flex-col items-center justify-center p-12 border rounded-md h-96 bg-gray-50 dark:bg-gray-800">
-            <Flask className="h-16 w-16 text-gray-300 dark:text-gray-600 mb-4" />
+            <Beaker className="h-16 w-16 text-gray-300 dark:text-gray-600 mb-4" />
             <p className="text-gray-500 dark:text-gray-400">Property Prediction Tool</p>
             <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">This feature will be available in a future update</p>
           </div>
