@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -16,6 +15,11 @@ import HysysCalculations from "./pages/HysysCalculations";
 import About from "./pages/About";
 import CodeConverter from "./pages/CodeConverter";
 import Formulas from "./pages/Formulas";
+import SoftwareTools from './pages/SoftwareTools';
+import Simulations from './pages/Simulations';
+import Components from './pages/Components';
+import SignIn from './pages/SignIn';
+import SignUp from './pages/SignUp';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -111,13 +115,18 @@ function App() {
             <Routes>
               <Route path="/" element={<LandingPage />} />
               <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/create-simulation" element={<CreateSimulation />} />
-              <Route path="/unit-converter" element={<UnitConverter />} />
               <Route path="/hysys-calculations" element={<HysysCalculations />} />
-              <Route path="/formulas" element={<Formulas />} />
+              <Route path="/unit-converter" element={<UnitConverter />} />
               <Route path="/code-converter" element={<CodeConverter />} />
-              <Route path="/settings" element={<Settings />} />
+              <Route path="/create-simulation" element={<CreateSimulation />} />
+              <Route path="/formulas" element={<Formulas />} />
+              <Route path="/software-tools" element={<SoftwareTools />} />
               <Route path="/about" element={<About />} />
+              <Route path="/simulations" element={<Simulations />} />
+              <Route path="/components" element={<Components />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="/sign-in" element={<SignIn />} />
+              <Route path="/sign-up" element={<SignUp />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </TooltipProvider>

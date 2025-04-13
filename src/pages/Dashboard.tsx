@@ -9,7 +9,8 @@ import {
   Code,
   FlaskConical,
   Info,
-  Book
+  Book,
+  Database
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import LearnMoreModal from "@/components/ui/LearnMoreModal";
@@ -75,6 +76,14 @@ const Dashboard = () => {
               color="bg-teal-500"
             />
             <DashboardCard 
+              title="Software Tools"
+              description="Comprehensive database of chemical engineering software"
+              icon={<Database className="h-6 w-6" />}
+              linkTo="/software-tools"
+              color="bg-blue-600"
+              isNew={true}
+            />
+            <DashboardCard 
               title="About"
               description="Learn more about LOL Groups and our vision"
               icon={<Info className="h-6 w-6" />}
@@ -107,17 +116,23 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
   description, 
   icon, 
   linkTo, 
-  color
+  color,
+  isNew
 }) => {
   return (
     <Link 
       to={linkTo}
-      className="block rounded-xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 p-6 hover:shadow-md transition-all duration-300"
+      className="block rounded-xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 p-6 hover:shadow-md transition-all duration-300 relative"
     >
       <div className="flex justify-between items-start mb-4">
         <div className={`p-3 rounded-xl ${color} text-white`}>
           {icon}
         </div>
+        {isNew && (
+          <span className="absolute top-4 right-4 bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-green-900 dark:text-green-300">
+            New
+          </span>
+        )}
       </div>
       <h3 className="text-xl font-medium mb-2 dark:text-white">{title}</h3>
       <p className="text-gray-600 dark:text-gray-400 text-sm">{description}</p>
