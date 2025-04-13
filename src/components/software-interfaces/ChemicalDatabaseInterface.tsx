@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,7 +29,7 @@ const ChemicalDatabaseInterface: React.FC<ChemicalDatabaseInterfaceProps> = ({ s
     setSelectedCompound(compound);
   };
 
-  const renderSoftwareInterface = (software: Software) => {
+  const renderSoftwareInterface = (software: any) => {
     switch (software.category) {
       case "process-simulation":
         return <ProcessSimulationInterface software={software} />;
@@ -86,7 +87,7 @@ const ChemicalDatabaseInterface: React.FC<ChemicalDatabaseInterfaceProps> = ({ s
                       <SelectItem value="structure">Structural Search</SelectItem>
                       <SelectItem value="property">Property Range</SelectItem>
                     </SelectContent>
-                  </SelectContent>
+                  </Select>
                 </div>
                 
                 <div className="space-y-1">
@@ -109,7 +110,7 @@ const ChemicalDatabaseInterface: React.FC<ChemicalDatabaseInterfaceProps> = ({ s
                       <SelectItem value="chemspider">ChemSpider</SelectItem>
                       <SelectItem value="internal">Internal Database</SelectItem>
                     </SelectContent>
-                  </SelectContent>
+                  </Select>
                 </div>
                 
                 <div className="space-y-2">
@@ -698,3 +699,22 @@ const ChemicalDatabaseInterface: React.FC<ChemicalDatabaseInterfaceProps> = ({ s
               </div>
               
               <div className="grid grid-cols-2 gap-4">
+                {/* Placeholder for additional structure-related content */}
+              </div>
+            </div>
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="prediction" className="p-4 border rounded-md mt-4">
+          <div className="flex flex-col items-center justify-center p-12 border rounded-md h-96 bg-gray-50 dark:bg-gray-800">
+            <Flask className="h-16 w-16 text-gray-300 dark:text-gray-600 mb-4" />
+            <p className="text-gray-500 dark:text-gray-400">Property Prediction Tool</p>
+            <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">This feature will be available in a future update</p>
+          </div>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+};
+
+export default ChemicalDatabaseInterface;
