@@ -87,6 +87,31 @@ const CreateSimulation = () => {
   const componentsValid = selectedComponents.length > 0;
   const allStepsValid = componentsValid && selectedModel !== '';
 
+  // Add the missing function definitions
+  const handleComponentSelectionDone = () => {
+    if (componentsValid) {
+      setActiveTab('thermodynamics');
+    } else {
+      toast({
+        title: "Components required",
+        description: "Please select at least one component before continuing",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleModelSelectionDone = () => {
+    if (selectedModel) {
+      setActiveTab('builder');
+    } else {
+      toast({
+        title: "Thermodynamic model required",
+        description: "Please select a thermodynamic model before continuing",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleSaveSimulation = () => {
     if (simulationName.trim() === '') {
       toast({
@@ -387,15 +412,15 @@ Environmental Impact:
         let concentrationProfile;
         
         if (comp === 'Ethanol') {
-          concentrationProfile = Math.min(95, 10 + 85 * (1 - Math.exp(-0.2 * timePoint)));
+          concentrationProfile = Math.min(95, 10 + 85 * (1 - Math.exp(-0.2 * time)));
         } else if (comp === 'Water') {
-          concentrationProfile = Math.min(90, 15 + 75 * (1 - Math.exp(-0.15 * timePoint)));
+          concentrationProfile = Math.min(90, 15 + 75 * (1 - Math.exp(-0.15 * time)));
         } else if (comp === 'Methanol') {
-          concentrationProfile = Math.min(85, 5 + 80 * (1 - Math.exp(-0.25 * timePoint)));
+          concentrationProfile = Math.min(85, 5 + 80 * (1 - Math.exp(-0.25 * time)));
         } else if (comp === 'Butanol') {
-          concentrationProfile = Math.min(75, 8 + 67 * (1 - Math.exp(-0.18 * timePoint)));
+          concentrationProfile = Math.min(75, 8 + 67 * (1 - Math.exp(-0.18 * time)));
         } else {
-          concentrationProfile = Math.min(80, 10 + 70 * (1 - Math.exp(-0.2 * timePoint)));
+          concentrationProfile = Math.min(80, 10 + 70 * (1 - Math.exp(-0.2 * time)));
         }
         
         concentrationProfile *= (0.95 + Math.random() * 0.1);
@@ -703,411 +728,4 @@ ${subject.includes('Reaction') ? `The reaction kinetics follow an Arrhenius-type
           charts: (
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={[analysisData[analysisData.length - 1]]}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="time" tick={false} />
-                <YAxis label={{ value: 'Concentration (%)', angle: -90, position: 'insideLeft' }} />
-                <Tooltip />
-                <Legend />
-                {selectedComponents.map((comp, index) => {
-                  const colors = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088fe', '#00C49F'];
-                  return (
-                    <Bar 
-                      key={comp} 
-                      dataKey={comp} 
-                      fill={colors[index % colors.length]} 
-                    />
-                  );
-                })}
-              </BarChart>
-            </ResponsiveContainer>
-          )
-        },
-        {
-          id: "utilityEnvironmental",
-          title: "Utility & Environmental Analysis",
-          icon: <Leaf className="h-5 w-5" />,
-          content: utilityAnalysis,
-          charts: (
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={analysisData.filter((_, i) => i % 3 === 0)}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="time" label={{ value: 'Time (min)', position: 'insideBottom', offset: -5 }} />
-                <YAxis label={{ value: 'Resource Usage', angle: -90, position: 'insideLeft' }} />
-                <Tooltip />
-                <Legend />
-                <Line type="monotone" dataKey={(datum) => datum.temperature ? datum.temperature / 10 : 0} stroke="#0088fe" name="Steam Usage" />
-                <Line type="monotone" dataKey={(datum) => datum.pressure ? datum.pressure / 5 : 0} stroke="#00C49F" name="Cooling Water" />
-                <Line type="monotone" dataKey={(datum) => datum.conversion ? datum.conversion * 100 : 0} stroke="#FFBB28" name="Power Usage" />
-              </LineChart>
-            </ResponsiveContainer>
-          )
-        }
-      ];
-      
-      setSubjectAnalyses(analyses);
-      setActiveSubjectAnalysis(analyses[0].id);
-      
-    } catch (error) {
-      console.error("Error generating analyses:", error);
-      toast({
-        title: "Analysis Generation Failed",
-        description: "There was an error generating detailed analyses",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const stopRealTimeAnalysis = () => {
-    if (realTimeInterval) {
-      clearInterval(realTimeInterval);
-      setRealTimeInterval(null);
-    }
-    setIsRealTimeActive(false);
-  };
-
-  const renderAnalysisSection = () => {
-    if (!showAnalysis || !isSimulationComplete) return null;
-    
-    return (
-      <div className="mt-8" ref={analysisRef}>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-display font-bold">
-            {simulationSubject} Simulation Analysis
-          </h2>
-          <div className="flex gap-2">
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => setShowAnalysis(!showAnalysis)}
-            >
-              {showAnalysis ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={handleExportToPDF}
-            >
-              <FileText className="h-4 w-4 mr-2" />
-              Export to PDF
-            </Button>
-          </div>
-        </div>
-        
-        <div className="mb-6">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-medium text-blue-700 dark:text-blue-400">Real-time Analysis</h3>
-            <div className="flex gap-2">
-              <Button 
-                variant={isRealTimeActive ? "destructive" : "default"}
-                size="sm"
-                onClick={isRealTimeActive ? stopRealTimeAnalysis : startRealTimeAnalysis}
-              >
-                {isRealTimeActive ? (
-                  <>
-                    <Pause className="mr-2 h-4 w-4" />
-                    Stop Analysis
-                  </>
-                ) : (
-                  <>
-                    <Play className="mr-2 h-4 w-4" />
-                    Start Analysis
-                  </>
-                )}
-              </Button>
-              
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => setRealTimeData([])}
-              >
-                <RefreshCw className="mr-2 h-4 w-4" />
-                Reset Data
-              </Button>
-            </div>
-          </div>
-          
-          <GlassPanel className="p-6">
-            <RealTimeAnalysisCharts 
-              realTimeData={realTimeData} 
-              selectedComponents={selectedComponents}
-              isRealTimeActive={isRealTimeActive}
-            />
-          </GlassPanel>
-        </div>
-        
-        <div className="mt-4">
-          <HysysIntegration 
-            selectedComponents={selectedComponents}
-            thermodynamicModel={selectedModel}
-          />
-        </div>
-        
-        <div className="border-b border-gray-200 mb-6 mt-6">
-          <div className="flex space-x-2 overflow-x-auto pb-2">
-            {subjectAnalyses.map(analysis => (
-              <button
-                key={analysis.id}
-                className={`py-2 px-4 flex items-center rounded-t-lg text-sm font-medium transition-colors ${
-                  activeSubjectAnalysis === analysis.id
-                    ? 'bg-white border-x border-t border-gray-200 text-flow-blue' 
-                    : 'bg-gray-50 text-gray-500 hover:text-gray-700'
-                }`}
-                onClick={() => setActiveSubjectAnalysis(analysis.id)}
-              >
-                {analysis.icon}
-                <span className="ml-2">{analysis.title}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-        
-        {activeSubjectAnalysis && (
-          <GlassPanel className="p-6">
-            {subjectAnalyses.find(a => a.id === activeSubjectAnalysis)?.charts}
-            
-            <div className="mt-6 prose dark:prose-invert max-w-none">
-              <div
-                dangerouslySetInnerHTML={{ 
-                  __html: subjectAnalyses.find(a => a.id === activeSubjectAnalysis)?.content
-                    .replace(/\n/g, '<br>')
-                    .replace(/#{1,6}\s?(.*)/g, '<h4>$1</h4>') || ''
-                }}
-              />
-            </div>
-            
-            <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-              <h4 className="text-md font-medium mb-2">Mathematical Data</h4>
-              <pre className="text-xs whitespace-pre-wrap font-mono">
-                {subjectAnalyses.find(a => a.id === activeSubjectAnalysis)?.mathData || 
-                 generateMathData(activeSubjectAnalysis || "")}
-              </pre>
-            </div>
-          </GlassPanel>
-        )}
-        
-        <div className="mt-6 flex justify-between">
-          <Button 
-            variant="outline"
-            onClick={() => setShowAnalysis(false)}
-          >
-            Hide Analysis
-          </Button>
-          <Button onClick={handleExportToPDF}>
-            <Download className="mr-2 h-4 w-4" />
-            Export Results
-          </Button>
-        </div>
-      </div>
-    );
-  };
-
-  useEffect(() => {
-    return () => {
-      if (realTimeInterval) {
-        clearInterval(realTimeInterval);
-      }
-    };
-  }, [realTimeInterval]);
-
-  return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar />
-      
-      <main className="flex-1 py-6 px-6 bg-gradient-to-b from-gray-50 to-white">
-        <div className="max-w-screen-xl mx-auto">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center">
-              <button 
-                onClick={() => navigate("/simulations")}
-                className="mr-4 p-2 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </button>
-              <div>
-                <input
-                  type="text"
-                  value={simulationName}
-                  onChange={(e) => setSimulationName(e.target.value)}
-                  className="text-2xl font-display font-bold bg-transparent border-none focus:ring-0 focus:outline-none focus:border-b-2 focus:border-flow-blue"
-                  placeholder="Simulation Name"
-                />
-                <p className="text-gray-600 text-sm">Define your chemical process simulation</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <Button 
-                variant="outline"
-                onClick={() => navigate("/dashboard")}
-              >
-                Cancel
-              </Button>
-              <Button 
-                variant="default"
-                onClick={handleSaveSimulation}
-              >
-                <Save className="mr-2 h-4 w-4" />
-                Save Simulation
-              </Button>
-            </div>
-          </div>
-          
-          <div className="mb-6">
-            <div className="flex items-center">
-              <div className={`rounded-full h-8 w-8 flex items-center justify-center ${
-                componentsValid ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-500'
-              }`}>
-                {componentsValid ? <Check className="h-4 w-4" /> : '1'}
-              </div>
-              <div className={`h-1 w-12 ${
-                componentsValid ? 'bg-green-500' : 'bg-gray-200'
-              }`}></div>
-              <div className={`rounded-full h-8 w-8 flex items-center justify-center ${
-                selectedModel ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-500'
-              }`}>
-                {selectedModel ? <Check className="h-4 w-4" /> : '2'}
-              </div>
-              <div className={`h-1 w-12 ${
-                selectedModel ? 'bg-green-500' : 'bg-gray-200'
-              }`}></div>
-              <div className={`rounded-full h-8 w-8 flex items-center justify-center ${
-                isSimulationComplete ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-500'
-              }`}>
-                {isSimulationComplete ? <Check className="h-4 w-4" /> : '3'}
-              </div>
-            </div>
-          </div>
-          
-          <div className="mb-6 border-b border-gray-200">
-            <div className="flex space-x-4">
-              <button
-                className={`py-3 px-4 flex items-center border-b-2 font-medium text-sm transition-colors ${
-                  activeTab === 'components' 
-                    ? 'border-flow-blue text-flow-blue' 
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-                onClick={() => setActiveTab('components')}
-              >
-                <Database className="mr-2 h-4 w-4" />
-                Components
-                {componentsValid && <Check className="ml-2 h-3 w-3 text-green-500" />}
-              </button>
-              <button
-                className={`py-3 px-4 flex items-center border-b-2 font-medium text-sm transition-colors ${
-                  activeTab === 'thermodynamics' 
-                    ? 'border-flow-blue text-flow-blue' 
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-                onClick={() => setActiveTab('thermodynamics')}
-              >
-                <Thermometer className="mr-2 h-4 w-4" />
-                Thermodynamics
-                {selectedModel && <Check className="ml-2 h-3 w-3 text-green-500" />}
-              </button>
-              <button
-                className={`py-3 px-4 flex items-center border-b-2 font-medium text-sm transition-colors ${
-                  activeTab === 'builder' 
-                    ? 'border-flow-blue text-flow-blue' 
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-                onClick={() => setActiveTab('builder')}
-              >
-                <Layers className="mr-2 h-4 w-4" />
-                Flowsheet Builder
-                {isSimulationComplete && <Check className="ml-2 h-3 w-3 text-green-500" />}
-              </button>
-              
-              {isSimulationComplete && (
-                <button
-                  className={`py-3 px-4 flex items-center border-b-2 font-medium text-sm transition-colors
-                    ${showAnalysis ? 'border-flow-blue text-flow-blue' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
-                  onClick={() => setShowAnalysis(!showAnalysis)}
-                  id="analysis-tab"
-                >
-                  <BarChart3 className="mr-2 h-4 w-4" />
-                  Analysis
-                </button>
-              )}
-            </div>
-          </div>
-          
-          <GlassPanel className="p-6">
-            {activeTab === 'components' && (
-              <div className="flex flex-col">
-                <ComponentSelector 
-                  selectedComponents={selectedComponents}
-                  setSelectedComponents={setSelectedComponents}
-                />
-                <div className="mt-6 flex justify-end">
-                  <Button 
-                    onClick={handleComponentSelectionDone}
-                    disabled={!componentsValid}
-                  >
-                    Continue to Thermodynamics
-                  </Button>
-                </div>
-              </div>
-            )}
-            
-            {activeTab === 'thermodynamics' && (
-              <div className="flex flex-col">
-                <ThermodynamicsSelector 
-                  selectedModel={selectedModel}
-                  setSelectedModel={setSelectedModel}
-                />
-                <div className="mt-6 flex justify-between">
-                  <Button 
-                    variant="outline"
-                    onClick={() => setActiveTab('components')}
-                  >
-                    Back to Components
-                  </Button>
-                  <Button 
-                    onClick={handleModelSelectionDone}
-                    disabled={!selectedModel}
-                  >
-                    Continue to Flowsheet Builder
-                  </Button>
-                </div>
-              </div>
-            )}
-            
-            {activeTab === 'builder' && (
-              <SimulationBuilder 
-                selectedComponents={selectedComponents}
-                thermodynamicModel={selectedModel}
-                onRunSimulation={handleRunSimulation}
-              />
-            )}
-          </GlassPanel>
-          
-          {renderAnalysisSection()}
-          
-          <div className="mt-6 flex justify-between">
-            <div className="flex items-center gap-3">
-              <Button variant="outline" size="sm">
-                <Settings2 className="mr-2 h-4 w-4" />
-                Settings
-              </Button>
-              <Button variant="outline" size="sm">
-                <GitBranch className="mr-2 h-4 w-4" />
-                Version History
-              </Button>
-            </div>
-            <Button 
-              className={`${isSimulationRunning ? 'bg-amber-500 hover:bg-amber-600' : 'bg-green-600 hover:bg-green-700'}`}
-              disabled={!allStepsValid || isSimulationRunning}
-              onClick={handleRunSimulation}
-            >
-              <Play className="mr-2 h-4 w-4" />
-              {isSimulationRunning ? 'Running Simulation...' : 'Run Simulation'}
-            </Button>
-          </div>
-        </div>
-      </main>
-      
-      <Footer />
-    </div>
-  );
-};
-
-export default CreateSimulation;
+                <CartesianGrid
