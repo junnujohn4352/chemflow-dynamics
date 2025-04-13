@@ -41,6 +41,16 @@ const Navbar = () => {
       icon: <FileText className="h-4 w-4 mr-2" />,
     },
     {
+      label: "Software Tools",
+      href: "/software-tools",
+      icon: <Wrench className="h-4 w-4 mr-2" />,
+    },
+    {
+      label: "Software Topics",
+      href: "/software-topics",
+      icon: <Database className="h-4 w-4 mr-2" />,
+    },
+    {
       label: "Code Converter",
       href: "/code-converter",
       icon: <Code className="h-4 w-4 mr-2" />,

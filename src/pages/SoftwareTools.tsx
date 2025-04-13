@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -19,7 +18,8 @@ import {
   Search,
   Filter,
   ExternalLink,
-  PlayCircle
+  PlayCircle,
+  FileText
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,6 +27,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Link } from "react-router-dom";
 import ProcessSimulationInterface from "@/components/software-interfaces/ProcessSimulationInterface";
 import ThermodynamicInterface from "@/components/software-interfaces/ThermodynamicInterface";
 import ReactionEngineeringInterface from "@/components/software-interfaces/ReactionEngineeringInterface";
@@ -676,7 +677,6 @@ const SoftwareTools = () => {
 
   const handleOpenSoftware = (software: Software) => {
     setSoftwareLoading(true);
-    // Simulate loading time for software startup
     setTimeout(() => {
       setSoftwareLoading(false);
       setOpenSoftware(software);
@@ -757,6 +757,13 @@ const SoftwareTools = () => {
                   thermodynamics, equipment sizing, data analysis, and more.
                 </p>
               </div>
+              
+              <Link to="/software-topics">
+                <Button className="bg-flow-blue hover:bg-blue-600">
+                  <FileText className="h-4 w-4 mr-2" />
+                  Explore Software Topics
+                </Button>
+              </Link>
             </div>
           </div>
           
@@ -901,9 +908,9 @@ const SoftwareTools = () => {
                       )}
                       
                       <Button 
-                        variant="default"
+                        variant="success"
                         size="sm"
-                        className="ml-auto bg-green-600 hover:bg-green-700 transition-all duration-300 gap-2"
+                        className="ml-auto transition-all duration-300 gap-2"
                         onClick={() => handleOpenSoftware(software)}
                       >
                         <PlayCircle className="h-4 w-4" />
