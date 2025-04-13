@@ -5,7 +5,7 @@ import GlassPanel from "@/components/ui/GlassPanel";
 import { 
   Cpu, 
   Thermometer, 
-  Beaker,  // Replaced Flask with Beaker 
+  Beaker, 
   BarChart, 
   Sliders, 
   Square, 
@@ -125,7 +125,6 @@ const softwareCategories: CategoryInfo[] = [
 ];
 
 const softwareDatabase: Software[] = [
-  // Process Simulation & Modeling
   {
     name: "Aspen HYSYS",
     description: "Industry-standard for oil & gas, chemical process simulation.",
@@ -209,7 +208,6 @@ const softwareDatabase: Software[] = [
     ]
   },
 
-  // Thermodynamic & Property Calculation
   {
     name: "REFPROP",
     description: "Accurate thermophysical properties database developed by NIST.",
@@ -258,7 +256,6 @@ const softwareDatabase: Software[] = [
     ]
   },
 
-  // Reaction Engineering & Kinetics
   {
     name: "Kintecus",
     description: "Simulates complex chemical reactions and kinetics.",
@@ -307,7 +304,6 @@ const softwareDatabase: Software[] = [
     ]
   },
 
-  // Data Analysis & Statistics
   {
     name: "MATLAB",
     description: "Widely used for numerical analysis, simulations, and algorithm development.",
@@ -359,7 +355,6 @@ const softwareDatabase: Software[] = [
     ]
   },
 
-  // Process Control & Automation
   {
     name: "MATLAB Simulink",
     description: "Dynamic modeling and control system design.",
@@ -405,7 +400,6 @@ const softwareDatabase: Software[] = [
     ]
   },
 
-  // Equipment Design & Sizing
   {
     name: "HTRI Xchanger Suite",
     description: "Advanced heat exchanger design.",
@@ -440,7 +434,6 @@ const softwareDatabase: Software[] = [
     ]
   },
 
-  // Piping and Instrumentation Design
   {
     name: "AutoCAD P&ID / Plant 3D",
     description: "For detailed 2D/3D plant drawings.",
@@ -475,7 +468,6 @@ const softwareDatabase: Software[] = [
     ]
   },
 
-  // Environmental & Safety Engineering
   {
     name: "PHAST",
     description: "Risk assessment and consequence modeling.",
@@ -521,7 +513,6 @@ const softwareDatabase: Software[] = [
     ]
   },
 
-  // Computational Fluid Dynamics
   {
     name: "ANSYS Fluent / CFX",
     description: "Industry-leading CFD tools.",
@@ -559,7 +550,6 @@ const softwareDatabase: Software[] = [
     ]
   },
 
-  // Chemical Database & Molecular Modeling
   {
     name: "ChemDraw",
     description: "Drawing chemical structures and reaction schemes.",
@@ -605,7 +595,6 @@ const softwareDatabase: Software[] = [
     ]
   },
 
-  // Miscellaneous Tools
   {
     name: "Aspen Energy Analyzer",
     description: "Pinch analysis and energy optimization.",
@@ -670,18 +659,15 @@ const SoftwareTools = () => {
   };
 
   const filteredSoftware = softwareDatabase.filter(software => {
-    // Filter by category
     if (activeCategory !== "all" && software.category !== activeCategory) {
       return false;
     }
     
-    // Filter by search term
     if (searchTerm && !software.name.toLowerCase().includes(searchTerm.toLowerCase()) && 
         !software.description.toLowerCase().includes(searchTerm.toLowerCase())) {
       return false;
     }
     
-    // Filter by options
     if (filterOptions.showFreeOnly && !software.isFree) {
       return false;
     }
