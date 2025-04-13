@@ -87,7 +87,6 @@ const CreateSimulation = () => {
   const componentsValid = selectedComponents.length > 0;
   const allStepsValid = componentsValid && selectedModel !== '';
 
-  // Add the missing function definitions
   const handleComponentSelectionDone = () => {
     if (componentsValid) {
       setActiveTab('thermodynamics');
@@ -728,4 +727,170 @@ ${subject.includes('Reaction') ? `The reaction kinetics follow an Arrhenius-type
           charts: (
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={[analysisData[analysisData.length - 1]]}>
-                <CartesianGrid
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="time" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                {selectedComponents.slice(0, 6).map((comp, index) => {
+                  const colors = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088fe', '#00C49F'];
+                  return (
+                    <Bar 
+                      key={comp} 
+                      dataKey={comp} 
+                      fill={colors[index % colors.length]} 
+                      name={comp} 
+                    />
+                  );
+                })}
+              </BarChart>
+            </ResponsiveContainer>
+          )
+        },
+        {
+          id: "utilityEnvironmental",
+          title: "Utility & Environmental Analysis",
+          icon: <Leaf className="h-5 w-5" />,
+          content: utilityAnalysis,
+          mathData: generateMathData("utilityEnvironmental"),
+          charts: (
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={[{
+                name: 'Utilities',
+                Electricity: 100 + Math.random() * 30,
+                Steam: 20 + Math.random() * 10,
+                'Cooling Water': 40 + Math.random() * 15,
+                'Waste Treatment': 15 + Math.random() * 8
+              }]}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis label={{ value: 'Consumption (relative units)', angle: -90, position: 'insideLeft' }} />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="Electricity" fill="#8884d8" />
+                <Bar dataKey="Steam" fill="#82ca9d" />
+                <Bar dataKey="Cooling Water" fill="#ffc658" />
+                <Bar dataKey="Waste Treatment" fill="#ff8042" />
+              </BarChart>
+            </ResponsiveContainer>
+          )
+        }
+      ];
+      
+      setSubjectAnalyses(analyses);
+      setActiveSubjectAnalysis(analyses[0].id);
+      
+      return analyses;
+    } catch (error) {
+      console.error("Error generating detailed analyses:", error);
+      toast({
+        title: "Analysis Error",
+        description: "There was an error generating the analysis data",
+        variant: "destructive"
+      });
+      return [];
+    }
+  };
+
+  return (
+    <div>
+      <Navbar />
+      <div className="flex flex-col">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold">Create Simulation</h1>
+          <div className="flex items-center">
+            <Button onClick={handleComponentSelectionDone} className="mr-2">
+              <Save className="h-5 w-5" />
+              Components
+            </Button>
+            <Button onClick={handleModelSelectionDone} className="mr-2">
+              <Layers className="h-5 w-5" />
+              Thermodynamics
+            </Button>
+            <Button onClick={handleRunSimulation} className="mr-2">
+              <Play className="h-5 w-5" />
+              Run Simulation
+            </Button>
+            <Button onClick={handleSaveSimulation}>
+              <Save className="h-5 w-5" />
+              Save Simulation
+            </Button>
+          </div>
+        </div>
+        <div className="mt-4">
+          <div className="flex flex-col">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-bold">Simulation Name</h2>
+              <input
+                type="text"
+                value={simulationName}
+                onChange={(e) => setSimulationName(e.target.value)}
+                className="border border-gray-300 rounded-md p-2"
+              />
+            </div>
+            <div className="mt-4">
+              <h2 className="text-lg font-bold">Selected Components</h2>
+              <div className="mt-2">
+                {selectedComponents.map((comp, index) => (
+                  <div key={index} className="flex items-center">
+                    <span className="mr-2">{comp}</span>
+                    <button onClick={() => setSelectedComponents(selectedComponents.filter(c => c !== comp))}>
+                      <ArrowLeft className="h-5 w-5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="mt-4">
+              <h2 className="text-lg font-bold">Thermodynamic Model</h2>
+              <div className="mt-2">
+                <select
+                  value={selectedModel}
+                  onChange={(e) => setSelectedModel(e.target.value)}
+                  className="border border-gray-300 rounded-md p-2"
+                >
+                  <option value="Peng-Robinson">Peng-Robinson</option>
+                  <option value="Soave-Redlich-Kwong">Soave-Redlich-Kwong</option>
+                  <option value="NRTL">NRTL</option>
+                  <option value="UNIQUAC">UNIQUAC</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="mt-4">
+          <div className="flex flex-col">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-bold">Analysis</h2>
+              <button onClick={() => setShowAnalysis(!showAnalysis)}>
+                {showAnalysis ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+              </button>
+            </div>
+            <div className="mt-2">
+              {showAnalysis && (
+                <div ref={analysisRef}>
+                  {subjectAnalyses.map((analysis) => (
+                    <div key={analysis.id} className="mb-4">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-md font-bold">{analysis.title}</h3>
+                        <button onClick={() => setActiveSubjectAnalysis(analysis.id)}>
+                          <ChevronDown className="h-5 w-5" />
+                        </button>
+                      </div>
+                      <div className="mt-2">
+                        {analysis.charts}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+      <Footer />
+    </div>
+  );
+};
+
+export default CreateSimulation;
