@@ -1001,7 +1001,6 @@ const HysysCalculations = () => {
                           <HysysIntegration 
                             selectedComponents={selectedComponents} 
                             thermodynamicModel={thermodynamicModel}
-                            calculationType={category.id}
                             calculationResults={calculationResults[category.id]}
                           />
                         ) : (

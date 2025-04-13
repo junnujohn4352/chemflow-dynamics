@@ -1,4 +1,3 @@
-
 import React from "react";
 import { 
   CircleOff, 
@@ -70,7 +69,7 @@ export type EquipmentType =
   | "liquid-liquid-extraction" | "spread-sheet" | "makeup" | "recycle" | "ratio-control"
   | "adjust" | "balance" | "controller" | "set" | "case-study" | "logical-operator"
   | "mixer-column" | "divider" | "splitter" | "relief-valve" | "check-valve" | "plate-fin-exchanger"
-  | "generic-valve" | "spiral-heat-exchanger";
+  | "generic-valve" | "spiral-heat-exchanger" | "double-pipe" | "plate-heat-exchanger";
 
 export const getEquipmentIcon = (type: EquipmentType): React.ReactNode => {
   switch (type) {
