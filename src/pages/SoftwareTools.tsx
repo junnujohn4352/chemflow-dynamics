@@ -17,13 +17,26 @@ import {
   ChevronUp,
   Search,
   Filter,
-  ExternalLink
+  ExternalLink,
+  Play
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import ProcessSimulationInterface from "@/components/software-interfaces/ProcessSimulationInterface";
+import ThermodynamicInterface from "@/components/software-interfaces/ThermodynamicInterface";
+import ReactionEngineeringInterface from "@/components/software-interfaces/ReactionEngineeringInterface";
+import DataAnalysisInterface from "@/components/software-interfaces/DataAnalysisInterface";
+import ProcessControlInterface from "@/components/software-interfaces/ProcessControlInterface";
+import EquipmentDesignInterface from "@/components/software-interfaces/EquipmentDesignInterface";
+import PipingDesignInterface from "@/components/software-interfaces/PipingDesignInterface";
+import EnvironmentalSafetyInterface from "@/components/software-interfaces/EnvironmentalSafetyInterface";
+import CFDInterface from "@/components/software-interfaces/CFDInterface";
+import ChemicalDatabaseInterface from "@/components/software-interfaces/ChemicalDatabaseInterface";
+import MiscellaneousToolsInterface from "@/components/software-interfaces/MiscellaneousToolsInterface";
 
 interface Software {
   name: string;
@@ -649,6 +662,7 @@ const SoftwareTools = () => {
     showOpenSourceOnly: false
   });
   const [expandedSoftware, setExpandedSoftware] = useState<string | null>(null);
+  const [openSoftware, setOpenSoftware] = useState<Software | null>(null);
 
   const handleToggleExpand = (softwareName: string) => {
     if (expandedSoftware === softwareName) {
@@ -656,6 +670,14 @@ const SoftwareTools = () => {
     } else {
       setExpandedSoftware(softwareName);
     }
+  };
+
+  const handleOpenSoftware = (software: Software) => {
+    setOpenSoftware(software);
+  };
+
+  const handleCloseSoftware = () => {
+    setOpenSoftware(null);
   };
 
   const filteredSoftware = softwareDatabase.filter(software => {
@@ -678,6 +700,35 @@ const SoftwareTools = () => {
     
     return true;
   });
+
+  const renderSoftwareInterface = (software: Software) => {
+    switch (software.category) {
+      case "process-simulation":
+        return <ProcessSimulationInterface software={software} />;
+      case "thermodynamic":
+        return <ThermodynamicInterface software={software} />;
+      case "reaction-engineering":
+        return <ReactionEngineeringInterface software={software} />;
+      case "data-analysis":
+        return <DataAnalysisInterface software={software} />;
+      case "process-control":
+        return <ProcessControlInterface software={software} />;
+      case "equipment-design":
+        return <EquipmentDesignInterface software={software} />;
+      case "piping-design":
+        return <PipingDesignInterface software={software} />;
+      case "environmental-safety":
+        return <EnvironmentalSafetyInterface software={software} />;
+      case "cfd":
+        return <CFDInterface software={software} />;
+      case "chemical-database":
+        return <ChemicalDatabaseInterface software={software} />;
+      case "miscellaneous":
+        return <MiscellaneousToolsInterface software={software} />;
+      default:
+        return <div>Software interface not available</div>;
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-white to-blue-50 dark:from-gray-900 dark:to-gray-800 dark:text-white">
@@ -820,8 +871,8 @@ const SoftwareTools = () => {
                       </div>
                     </div>
                     
-                    {software.features && (
-                      <div className="mt-3">
+                    <div className="mt-4 flex justify-between items-center">
+                      {software.features && (
                         <Button
                           variant="ghost"
                           size="sm"
@@ -840,15 +891,25 @@ const SoftwareTools = () => {
                             </>
                           )}
                         </Button>
-                        
-                        {expandedSoftware === software.name && (
-                          <ul className="mt-2 space-y-1 pl-5 list-disc text-gray-600 dark:text-gray-400">
-                            {software.features.map((feature, index) => (
-                              <li key={index}>{feature}</li>
-                            ))}
-                          </ul>
-                        )}
-                      </div>
+                      )}
+                      
+                      <Button 
+                        variant="default"
+                        size="sm"
+                        className="ml-auto bg-green-600 hover:bg-green-700"
+                        onClick={() => handleOpenSoftware(software)}
+                      >
+                        <Play className="h-4 w-4 mr-1" />
+                        Open
+                      </Button>
+                    </div>
+                    
+                    {expandedSoftware === software.name && software.features && (
+                      <ul className="mt-2 space-y-1 pl-5 list-disc text-gray-600 dark:text-gray-400">
+                        {software.features.map((feature, index) => (
+                          <li key={index}>{feature}</li>
+                        ))}
+                      </ul>
                     )}
                   </div>
                 ))
@@ -878,6 +939,17 @@ const SoftwareTools = () => {
           </div>
         </div>
       </main>
+      
+      <Dialog open={openSoftware !== null} onOpenChange={handleCloseSoftware}>
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl">
+              {openSoftware?.name}
+            </DialogTitle>
+          </DialogHeader>
+          {openSoftware && renderSoftwareInterface(openSoftware)}
+        </DialogContent>
+      </Dialog>
       
       <Footer />
     </div>
