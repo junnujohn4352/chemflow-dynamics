@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -18,7 +19,7 @@ import {
   Search,
   Filter,
   ExternalLink,
-  Play
+  PlayCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -663,6 +664,7 @@ const SoftwareTools = () => {
   });
   const [expandedSoftware, setExpandedSoftware] = useState<string | null>(null);
   const [openSoftware, setOpenSoftware] = useState<Software | null>(null);
+  const [softwareLoading, setSoftwareLoading] = useState<boolean>(false);
 
   const handleToggleExpand = (softwareName: string) => {
     if (expandedSoftware === softwareName) {
@@ -673,7 +675,12 @@ const SoftwareTools = () => {
   };
 
   const handleOpenSoftware = (software: Software) => {
-    setOpenSoftware(software);
+    setSoftwareLoading(true);
+    // Simulate loading time for software startup
+    setTimeout(() => {
+      setSoftwareLoading(false);
+      setOpenSoftware(software);
+    }, 1200);
   };
 
   const handleCloseSoftware = () => {
@@ -896,11 +903,11 @@ const SoftwareTools = () => {
                       <Button 
                         variant="default"
                         size="sm"
-                        className="ml-auto bg-green-600 hover:bg-green-700"
+                        className="ml-auto bg-green-600 hover:bg-green-700 transition-all duration-300 gap-2"
                         onClick={() => handleOpenSoftware(software)}
                       >
-                        <Play className="h-4 w-4 mr-1" />
-                        Open
+                        <PlayCircle className="h-4 w-4" />
+                        Open Software
                       </Button>
                     </div>
                     
@@ -943,11 +950,21 @@ const SoftwareTools = () => {
       <Dialog open={openSoftware !== null} onOpenChange={handleCloseSoftware}>
         <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-2xl">
+            <DialogTitle className="text-2xl flex items-center gap-2">
               {openSoftware?.name}
+              {softwareLoading && <span className="ml-2 text-sm font-normal text-gray-500 animate-pulse">Starting software...</span>}
             </DialogTitle>
           </DialogHeader>
-          {openSoftware && renderSoftwareInterface(openSoftware)}
+          
+          {softwareLoading ? (
+            <div className="flex flex-col items-center justify-center py-16">
+              <div className="w-16 h-16 border-4 border-gray-200 border-t-blue-500 rounded-full animate-spin mb-4"></div>
+              <p className="text-gray-500">Launching {openSoftware?.name}...</p>
+              <p className="text-sm text-gray-400 mt-2">Preparing simulation environment</p>
+            </div>
+          ) : (
+            openSoftware && renderSoftwareInterface(openSoftware)
+          )}
         </DialogContent>
       </Dialog>
       
