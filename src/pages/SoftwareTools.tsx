@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -6,7 +5,7 @@ import GlassPanel from "@/components/ui/GlassPanel";
 import { 
   Cpu, 
   Thermometer, 
-  Flask, 
+  Beaker,  // Replaced Flask with Beaker 
   BarChart, 
   Sliders, 
   Square, 
@@ -72,7 +71,7 @@ const softwareCategories: CategoryInfo[] = [
   {
     id: "reaction-engineering",
     name: "Reaction Engineering & Kinetics",
-    icon: <Flask className="h-5 w-5" />,
+    icon: <Beaker className="h-5 w-5" />,
     description: "Used for modeling chemical reactors, reaction kinetics, and complex reaction mechanisms."
   },
   {
