@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
-import { Search, Download, Save, RotateCw, FileText, Pen, Layers, Molecule } from "lucide-react";
+import { Search, Download, Save, RotateCw, FileText, Pen, Layers, Flask } from "lucide-react";
 
 interface ChemicalDatabaseInterfaceProps {
   software: {
@@ -27,6 +26,35 @@ const ChemicalDatabaseInterface: React.FC<ChemicalDatabaseInterfaceProps> = ({ s
   
   const handleSelectCompound = (compound: string) => {
     setSelectedCompound(compound);
+  };
+
+  const renderSoftwareInterface = (software: Software) => {
+    switch (software.category) {
+      case "process-simulation":
+        return <ProcessSimulationInterface software={software} />;
+      case "thermodynamic":
+        return <ThermodynamicInterface software={software} />;
+      case "reaction-engineering":
+        return <ReactionEngineeringInterface software={software} />;
+      case "data-analysis":
+        return <DataAnalysisInterface software={software} />;
+      case "process-control":
+        return <ProcessControlInterface software={software} />;
+      case "equipment-design":
+        return <EquipmentDesignInterface software={software} />;
+      case "piping-design":
+        return <PipingDesignInterface software={software} />;
+      case "environmental-safety":
+        return <EnvironmentalSafetyInterface software={software} />;
+      case "cfd":
+        return <CFDInterface software={software} />;
+      case "chemical-database":
+        return <ChemicalDatabaseInterface software={software} />;
+      case "miscellaneous":
+        return <MiscellaneousToolsInterface software={software} />;
+      default:
+        return <div>Software interface not available</div>;
+    }
   };
 
   return (
@@ -58,7 +86,7 @@ const ChemicalDatabaseInterface: React.FC<ChemicalDatabaseInterfaceProps> = ({ s
                       <SelectItem value="structure">Structural Search</SelectItem>
                       <SelectItem value="property">Property Range</SelectItem>
                     </SelectContent>
-                  </Select>
+                  </SelectContent>
                 </div>
                 
                 <div className="space-y-1">
@@ -81,7 +109,7 @@ const ChemicalDatabaseInterface: React.FC<ChemicalDatabaseInterfaceProps> = ({ s
                       <SelectItem value="chemspider">ChemSpider</SelectItem>
                       <SelectItem value="internal">Internal Database</SelectItem>
                     </SelectContent>
-                  </Select>
+                  </SelectContent>
                 </div>
                 
                 <div className="space-y-2">
@@ -645,7 +673,7 @@ const ChemicalDatabaseInterface: React.FC<ChemicalDatabaseInterfaceProps> = ({ s
               <div className="border rounded-md aspect-video bg-white dark:bg-gray-800 flex items-center justify-center p-6">
                 {selectedCompound ? (
                   <div className="text-center">
-                    <Molecule className="h-20 w-20 mx-auto mb-4 text-blue-500" />
+                    <Flask className="h-20 w-20 mx-auto mb-4 text-blue-500" />
                     <p className="text-gray-500 dark:text-gray-400 mb-2">
                       {selectedCompound === "methanol" ? "Methanol (CH₃OH)" :
                        selectedCompound === "ethanol" ? "Ethanol (C₂H₅OH)" :
@@ -670,345 +698,3 @@ const ChemicalDatabaseInterface: React.FC<ChemicalDatabaseInterfaceProps> = ({ s
               </div>
               
               <div className="grid grid-cols-2 gap-4">
-                <div className="border rounded-md p-4 bg-white dark:bg-gray-800">
-                  <h4 className="text-sm font-medium mb-2">Structure Information</h4>
-                  
-                  {selectedCompound ? (
-                    <div className="space-y-2 text-sm">
-                      <p><span className="font-medium">Molecular Formula:</span> {
-                        selectedCompound === "methanol" ? "CH₄O" :
-                        selectedCompound === "ethanol" ? "C₂H₆O" :
-                        selectedCompound === "propanol" || selectedCompound === "isopropanol" ? "C₃H₈O" :
-                        "C₄H₁₀O"
-                      }</p>
-                      <p><span className="font-medium">Exact Mass:</span> {
-                        selectedCompound === "methanol" ? "32.0262" :
-                        selectedCompound === "ethanol" ? "46.0419" :
-                        selectedCompound === "propanol" || selectedCompound === "isopropanol" ? "60.0575" :
-                        "74.0732"
-                      } g/mol</p>
-                      <p><span className="font-medium">SMILES:</span> {
-                        selectedCompound === "methanol" ? "CO" :
-                        selectedCompound === "ethanol" ? "CCO" :
-                        selectedCompound === "propanol" ? "CCCO" :
-                        selectedCompound === "isopropanol" ? "CC(C)O" :
-                        "CCCCO"
-                      }</p>
-                      <p><span className="font-medium">InChI:</span> {
-                        selectedCompound === "methanol" ? "InChI=1S/CH4O/c1-2/h2H,1H3" :
-                        selectedCompound === "ethanol" ? "InChI=1S/C2H6O/c1-2-3/h3H,2H2,1H3" :
-                        selectedCompound === "propanol" ? "InChI=1S/C3H8O/c1-2-3-4/h4H,2-3H2,1H3" :
-                        selectedCompound === "isopropanol" ? "InChI=1S/C3H8O/c1-3(2)4/h3-4H,1-2H3" :
-                        "InChI=1S/C4H10O/c1-2-3-4-5/h5H,2-4H2,1H3"
-                      }</p>
-                    </div>
-                  ) : (
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      Draw or import a structure to see information
-                    </p>
-                  )}
-                </div>
-                
-                <div className="border rounded-md p-4 bg-white dark:bg-gray-800">
-                  <h4 className="text-sm font-medium mb-2">3D Structure</h4>
-                  
-                  {selectedCompound ? (
-                    <div className="h-32 flex items-center justify-center">
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                        [3D molecular viewer would appear here]
-                      </p>
-                    </div>
-                  ) : (
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      Draw or import a structure to generate 3D model
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="prediction" className="p-4 border rounded-md mt-4">
-          <div className="grid grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <h3 className="font-medium">Property Prediction Methods</h3>
-              
-              <div className="border rounded-md p-4 bg-white dark:bg-gray-800 space-y-3">
-                <div>
-                  <Label htmlFor="prediction-method">Estimation Method</Label>
-                  <Select defaultValue="group">
-                    <SelectTrigger id="prediction-method">
-                      <SelectValue placeholder="Select method" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="group">Group Contribution</SelectItem>
-                      <SelectItem value="qspr">QSPR/QSAR</SelectItem>
-                      <SelectItem value="corresponding">Corresponding States</SelectItem>
-                      <SelectItem value="ml">Machine Learning</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div>
-                  <Label htmlFor="property-type">Property Type</Label>
-                  <Select defaultValue="thermo">
-                    <SelectTrigger id="property-type">
-                      <SelectValue placeholder="Select property type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="thermo">Thermodynamic</SelectItem>
-                      <SelectItem value="transport">Transport</SelectItem>
-                      <SelectItem value="environmental">Environmental</SelectItem>
-                      <SelectItem value="safety">Safety</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label>Properties to Predict</Label>
-                  
-                  <div className="space-y-2">
-                    <div className="flex items-center space-x-2">
-                      <Checkbox id="pred-bp" defaultChecked />
-                      <Label htmlFor="pred-bp" className="text-sm">Boiling Point</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Checkbox id="pred-mp" defaultChecked />
-                      <Label htmlFor="pred-mp" className="text-sm">Melting Point</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Checkbox id="pred-cp" defaultChecked />
-                      <Label htmlFor="pred-cp" className="text-sm">Heat Capacity</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Checkbox id="pred-antoine" defaultChecked />
-                      <Label htmlFor="pred-antoine" className="text-sm">Antoine Parameters</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Checkbox id="pred-viscosity" />
-                      <Label htmlFor="pred-viscosity" className="text-sm">Viscosity</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Checkbox id="pred-conductivity" />
-                      <Label htmlFor="pred-conductivity" className="text-sm">Thermal Conductivity</Label>
-                    </div>
-                  </div>
-                </div>
-                
-                <div>
-                  <Label htmlFor="temperature">Temperature</Label>
-                  <Input id="temperature" defaultValue="298.15" />
-                  <p className="text-xs text-gray-500 mt-1">K</p>
-                </div>
-                
-                <div>
-                  <Label htmlFor="pressure">Pressure</Label>
-                  <Input id="pressure" defaultValue="101.325" />
-                  <p className="text-xs text-gray-500 mt-1">kPa</p>
-                </div>
-                
-                <div className="pt-2">
-                  <Button className="w-full">
-                    <Play className="h-4 w-4 mr-1" />
-                    Predict Properties
-                  </Button>
-                </div>
-              </div>
-              
-              <div className="border rounded-md p-4 bg-white dark:bg-gray-800">
-                <h4 className="text-sm font-medium mb-3">Estimation Methods Information</h4>
-                
-                <div className="text-sm space-y-2">
-                  <p><span className="font-medium">Group Contribution:</span> Estimates properties based on the contribution of functional groups in the molecule (Joback, Lydersen, Benson methods).</p>
-                  <p><span className="font-medium">QSPR/QSAR:</span> Quantitative Structure-Property/Activity Relationships correlate molecular descriptors with properties.</p>
-                  <p><span className="font-medium">Corresponding States:</span> Uses reduced properties and the principle of corresponding states for predictions.</p>
-                  <p><span className="font-medium">Machine Learning:</span> Applies trained ML models on molecular features to predict properties.</p>
-                </div>
-              </div>
-            </div>
-            
-            <div className="space-y-4">
-              <h3 className="font-medium">Prediction Results</h3>
-              
-              {selectedCompound ? (
-                <div className="border rounded-md p-4 bg-white dark:bg-gray-800">
-                  <div className="flex justify-between items-center mb-3">
-                    <h4 className="text-sm font-medium">
-                      {selectedCompound === "methanol" ? "Methanol" :
-                       selectedCompound === "ethanol" ? "Ethanol" :
-                       selectedCompound === "propanol" ? "1-Propanol" :
-                       selectedCompound === "isopropanol" ? "2-Propanol (Isopropanol)" :
-                       "1-Butanol"}
-                    </h4>
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm">
-                        <Download className="h-4 w-4 mr-1" />
-                        Export Results
-                      </Button>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-4">
-                    <div>
-                      <h5 className="text-sm font-medium mb-2">Predicted Thermodynamic Properties</h5>
-                      <table className="w-full text-sm">
-                        <thead>
-                          <tr className="border-b">
-                            <th className="text-left pb-2">Property</th>
-                            <th className="text-right pb-2">Predicted Value</th>
-                            <th className="text-right pb-2">Experimental</th>
-                            <th className="text-right pb-2">Error (%)</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr className="border-b">
-                            <td className="py-1.5">Normal Boiling Point</td>
-                            <td className="text-right">
-                              {selectedCompound === "methanol" ? "63.9" :
-                               selectedCompound === "ethanol" ? "77.1" :
-                               selectedCompound === "propanol" ? "96.5" :
-                               selectedCompound === "isopropanol" ? "81.3" :
-                               "116.9"} °C
-                            </td>
-                            <td className="text-right">
-                              {selectedCompound === "methanol" ? "64.7" :
-                               selectedCompound === "ethanol" ? "78.2" :
-                               selectedCompound === "propanol" ? "97.2" :
-                               selectedCompound === "isopropanol" ? "82.6" :
-                               "117.7"} °C
-                            </td>
-                            <td className="text-right">
-                              {selectedCompound === "methanol" ? "1.2" :
-                               selectedCompound === "ethanol" ? "1.4" :
-                               selectedCompound === "propanol" ? "0.7" :
-                               selectedCompound === "isopropanol" ? "1.6" :
-                               "0.7"}%
-                            </td>
-                          </tr>
-                          <tr className="border-b">
-                            <td className="py-1.5">Normal Melting Point</td>
-                            <td className="text-right">
-                              {selectedCompound === "methanol" ? "-95.1" :
-                               selectedCompound === "ethanol" ? "-112.3" :
-                               selectedCompound === "propanol" ? "-124.7" :
-                               selectedCompound === "isopropanol" ? "-91.8" :
-                               "-88.2"} °C
-                            </td>
-                            <td className="text-right">
-                              {selectedCompound === "methanol" ? "-97.6" :
-                               selectedCompound === "ethanol" ? "-114.1" :
-                               selectedCompound === "propanol" ? "-126.2" :
-                               selectedCompound === "isopropanol" ? "-89.5" :
-                               "-89.8"} °C
-                            </td>
-                            <td className="text-right">
-                              {selectedCompound === "methanol" ? "2.6" :
-                               selectedCompound === "ethanol" ? "1.6" :
-                               selectedCompound === "propanol" ? "1.2" :
-                               selectedCompound === "isopropanol" ? "2.6" :
-                               "1.8"}%
-                            </td>
-                          </tr>
-                          <tr className="border-b">
-                            <td className="py-1.5">Heat Capacity (liq, 298K)</td>
-                            <td className="text-right">
-                              {selectedCompound === "methanol" ? "79.8" :
-                               selectedCompound === "ethanol" ? "112.4" :
-                               selectedCompound === "propanol" ? "144.2" :
-                               selectedCompound === "isopropanol" ? "149.5" :
-                               "176.3"} J/(mol·K)
-                            </td>
-                            <td className="text-right">
-                              {selectedCompound === "methanol" ? "81.6" :
-                               selectedCompound === "ethanol" ? "114.8" :
-                               selectedCompound === "propanol" ? "146.7" :
-                               selectedCompound === "isopropanol" ? "152.6" :
-                               "177.9"} J/(mol·K)
-                            </td>
-                            <td className="text-right">
-                              {selectedCompound === "methanol" ? "2.2" :
-                               selectedCompound === "ethanol" ? "2.1" :
-                               selectedCompound === "propanol" ? "1.7" :
-                               selectedCompound === "isopropanol" ? "2.0" :
-                               "0.9"}%
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                    
-                    <div>
-                      <h5 className="text-sm font-medium mb-2">Antoine Parameters</h5>
-                      <div className="text-sm">
-                        <p className="mb-2">log₁₀(P) = A - B/(T + C) where P is in mmHg and T is in °C</p>
-                        <div className="grid grid-cols-3 gap-4">
-                          <div>
-                            <p className="text-gray-500 dark:text-gray-400">A:</p>
-                            <p className="font-medium">
-                              {selectedCompound === "methanol" ? "7.8975" :
-                               selectedCompound === "ethanol" ? "8.3211" :
-                               selectedCompound === "propanol" ? "8.3761" :
-                               selectedCompound === "isopropanol" ? "8.4532" :
-                               "8.6342"}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-gray-500 dark:text-gray-400">B:</p>
-                            <p className="font-medium">
-                              {selectedCompound === "methanol" ? "1582.271" :
-                               selectedCompound === "ethanol" ? "1718.643" :
-                               selectedCompound === "propanol" ? "1802.169" :
-                               selectedCompound === "isopropanol" ? "1793.684" :
-                               "1889.897"}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-gray-500 dark:text-gray-400">C:</p>
-                            <p className="font-medium">
-                              {selectedCompound === "methanol" ? "239.726" :
-                               selectedCompound === "ethanol" ? "237.217" :
-                               selectedCompound === "propanol" ? "225.373" :
-                               selectedCompound === "isopropanol" ? "233.294" :
-                               "221.523"}
-                            </p>
-                          </div>
-                        </div>
-                        <p className="text-xs text-gray-500 mt-2">Valid temperature range: -10°C to 100°C</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center p-12 border rounded-md h-96 bg-gray-50 dark:bg-gray-800">
-                  <Molecule className="h-16 w-16 text-gray-300 dark:text-gray-600 mb-4" />
-                  <p className="text-gray-500 dark:text-gray-400">No compound selected</p>
-                  <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
-                    Select a compound and run predictions to see results
-                  </p>
-                </div>
-              )}
-              
-              <div className="border rounded-md p-4 bg-white dark:bg-gray-800">
-                <h4 className="text-sm font-medium mb-3">Reliability Analysis</h4>
-                
-                {selectedCompound ? (
-                  <div className="space-y-3 text-sm">
-                    <p>The predictions were generated using the Group Contribution method and have an average deviation of 1.8% from experimental values. The reliability of the predictions is highest for boiling point (confidence 92%) and heat capacity (confidence 90%), with somewhat lower confidence for melting point predictions (confidence 82%).</p>
-                    <p>The alcohol family compounds generally show good predictability with group contribution methods due to well-established group parameters for hydroxyl and alkyl groups.</p>
-                  </div>
-                ) : (
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Run predictions to see reliability analysis
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
-        </TabsContent>
-      </Tabs>
-    </div>
-  );
-};
-
-export default ChemicalDatabaseInterface;

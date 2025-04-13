@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -252,7 +251,7 @@ const MiscellaneousToolsInterface: React.FC<MiscellaneousToolsInterfaceProps> = 
                   
                   <div className="space-y-1">
                     <Label htmlFor="process-gain">Process Gain (K)</Label>
-                    <Input i="process-gain" defaultValue="2.5" />
+                    <Input id="process-gain" defaultValue="2.5" />
                   </div>
                 </div>
                 
