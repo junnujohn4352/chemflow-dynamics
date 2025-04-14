@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -19,7 +20,15 @@ import {
   Filter,
   ExternalLink,
   PlayCircle,
-  FileText
+  FileText,
+  Flask,
+  FlaskConical,
+  Atom,
+  GraduationCap,
+  ShieldAlert,
+  Factory,
+  GitBranch,
+  CloudLightning
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -48,6 +57,7 @@ interface Software {
   isOpenSource?: boolean;
   url?: string;
   features?: string[];
+  supportsRSM?: boolean;
 }
 
 type SoftwareCategory = 
@@ -61,6 +71,8 @@ type SoftwareCategory =
   | "environmental-safety"
   | "cfd"
   | "chemical-database"
+  | "molecular-modeling"
+  | "educational"
   | "miscellaneous";
 
 interface CategoryInfo {
@@ -116,7 +128,7 @@ const softwareCategories: CategoryInfo[] = [
   {
     id: "environmental-safety",
     name: "Environmental & Safety Engineering",
-    icon: <Wind className="h-5 w-5" />,
+    icon: <ShieldAlert className="h-5 w-5" />,
     description: "Tools for assessing process safety, emissions modeling, and environmental impact analysis."
   },
   {
@@ -127,9 +139,21 @@ const softwareCategories: CategoryInfo[] = [
   },
   {
     id: "chemical-database",
-    name: "Chemical Database & Molecular Modeling",
+    name: "Chemical Database & Properties",
     icon: <Database className="h-5 w-5" />,
-    description: "Used for molecular design, chemical structure analysis, and accessing chemical property databases."
+    description: "Used for accessing chemical property databases and property estimation."
+  },
+  {
+    id: "molecular-modeling",
+    name: "Molecular Modeling & Materials Design",
+    icon: <Atom className="h-5 w-5" />,
+    description: "Tools for molecular design, structure analysis, and material property prediction."
+  },
+  {
+    id: "educational",
+    name: "Educational Tools",
+    icon: <GraduationCap className="h-5 w-5" />,
+    description: "Software used for teaching and learning chemical engineering concepts."
   },
   {
     id: "miscellaneous",
@@ -140,6 +164,7 @@ const softwareCategories: CategoryInfo[] = [
 ];
 
 const softwareDatabase: Software[] = [
+  // Process Simulation & Modeling
   {
     name: "Aspen HYSYS",
     description: "Industry-standard for oil & gas, chemical process simulation.",
@@ -148,8 +173,10 @@ const softwareDatabase: Software[] = [
       "Process flowsheeting",
       "Oil & gas specific models",
       "Dynamic simulation capabilities",
-      "Pipe sizing and pressure drop calculations"
-    ]
+      "Pipe sizing and pressure drop calculations",
+      "Support for RSM (Response Surface Methodology)"
+    ],
+    supportsRSM: true
   },
   {
     name: "Aspen Plus",
@@ -159,19 +186,23 @@ const softwareDatabase: Software[] = [
       "Detailed chemical process modeling",
       "Rigorous distillation calculations",
       "Solid handling capabilities",
-      "Rate-based separation models"
-    ]
+      "Rate-based separation models",
+      "RSM for optimization studies"
+    ],
+    supportsRSM: true
   },
   {
-    name: "ChemCAD",
+    name: "CHEMCAD",
     description: "Process simulation with a user-friendly interface.",
     category: "process-simulation",
     features: [
       "Flowsheet simulation",
       "Equipment sizing",
       "Thermodynamic calculations",
-      "Heat exchanger design"
-    ]
+      "Heat exchanger design",
+      "RSM integration available"
+    ],
+    supportsRSM: true
   },
   {
     name: "ProSim",
@@ -222,7 +253,69 @@ const softwareDatabase: Software[] = [
       "Economic evaluation"
     ]
   },
+  {
+    name: "gPROMS",
+    description: "Advanced process modeling platform with custom model development capabilities.",
+    category: "process-simulation",
+    features: [
+      "Custom model development",
+      "Advanced optimization",
+      "Parameter estimation",
+      "Integrated RSM capabilities",
+      "Digital twin development"
+    ],
+    supportsRSM: true
+  },
+  {
+    name: "VMGSim",
+    description: "Process simulator with advanced thermodynamic capabilities.",
+    category: "process-simulation",
+    features: [
+      "Advanced equation of state models",
+      "Fluid characterization",
+      "Process modeling",
+      "Dynamic simulation"
+    ]
+  },
+  {
+    name: "BioWin",
+    description: "Specialized simulator for wastewater treatment processes.",
+    category: "process-simulation",
+    features: [
+      "Biological wastewater treatment modeling",
+      "Process design and optimization",
+      "Operational troubleshooting",
+      "Plant capacity analysis"
+    ]
+  },
+  {
+    name: "SimSci PRO/II",
+    description: "Comprehensive process engineering design and optimization tool.",
+    category: "process-simulation",
+    features: [
+      "Process modeling",
+      "Heat and material balances",
+      "Equipment sizing",
+      "Economics evaluation",
+      "RSM capabilities"
+    ],
+    supportsRSM: true
+  },
+  {
+    name: "UniSim Design",
+    description: "Honeywell's process simulation and optimization software.",
+    category: "process-simulation",
+    features: [
+      "Process modeling",
+      "Refinery and gas processing",
+      "Equipment sizing",
+      "Dynamic simulation",
+      "RSM implementation"
+    ],
+    supportsRSM: true
+  },
 
+  // Thermodynamic & Property Calculation
   {
     name: "REFPROP",
     description: "Accurate thermophysical properties database developed by NIST.",
@@ -260,17 +353,18 @@ const softwareDatabase: Software[] = [
     ]
   },
   {
-    name: "VMGSim",
-    description: "Advanced simulator for complex thermodynamics.",
+    name: "OLI Systems",
+    description: "Specialized in electrolyte chemistry and corrosion modeling.",
     category: "thermodynamic",
     features: [
-      "Advanced equation of state models",
-      "Fluid characterization",
-      "Electrolyte modeling",
-      "Acid gas processing"
+      "Electrolyte thermodynamics",
+      "Corrosion prediction",
+      "Scale formation modeling",
+      "Aqueous chemistry"
     ]
   },
 
+  // Reaction Engineering & Kinetics
   {
     name: "Kintecus",
     description: "Simulates complex chemical reactions and kinetics.",
@@ -318,7 +412,20 @@ const softwareDatabase: Software[] = [
       "Data analysis tools"
     ]
   },
+  {
+    name: "ReactorLab",
+    description: "Educational software for reaction engineering concepts.",
+    category: "reaction-engineering",
+    isFree: true,
+    features: [
+      "Interactive reactor models",
+      "Kinetics visualization",
+      "Educational examples",
+      "Parameter sensitivity"
+    ]
+  },
 
+  // Data Analysis & Statistics
   {
     name: "MATLAB",
     description: "Widely used for numerical analysis, simulations, and algorithm development.",
@@ -327,8 +434,10 @@ const softwareDatabase: Software[] = [
       "Numerical computing",
       "Visualization",
       "Programming environment",
-      "Advanced toolboxes for specialized analyses"
-    ]
+      "Advanced toolboxes for specialized analyses",
+      "Built-in RSM capabilities"
+    ],
+    supportsRSM: true
   },
   {
     name: "Python (with NumPy, SciPy, Pandas)",
@@ -341,8 +450,10 @@ const softwareDatabase: Software[] = [
       "Numerical computing",
       "Data manipulation",
       "Statistical analysis",
-      "Machine learning capabilities"
-    ]
+      "Machine learning capabilities",
+      "RSM packages available"
+    ],
+    supportsRSM: true
   },
   {
     name: "R",
@@ -355,8 +466,10 @@ const softwareDatabase: Software[] = [
       "Statistical computing",
       "Data visualization",
       "Extensive statistical packages",
-      "Reproducible research"
-    ]
+      "Reproducible research",
+      "Comprehensive RSM packages"
+    ],
+    supportsRSM: true
   },
   {
     name: "Excel with VBA",
@@ -366,10 +479,64 @@ const softwareDatabase: Software[] = [
       "Spreadsheet calculations",
       "Basic data analysis",
       "Visual Basic programming",
-      "Data visualization"
-    ]
+      "Data visualization",
+      "RSM add-ins available"
+    ],
+    supportsRSM: true
+  },
+  {
+    name: "GAMS",
+    description: "General Algebraic Modeling System for optimization.",
+    category: "data-analysis",
+    features: [
+      "Mathematical programming",
+      "Optimization modeling language",
+      "Multiple solver interfaces",
+      "RSM implementation"
+    ],
+    supportsRSM: true
+  },
+  {
+    name: "AMPL",
+    description: "Algebraic modeling language for optimization problems.",
+    category: "data-analysis",
+    features: [
+      "Optimization modeling",
+      "Mathematical programming",
+      "Multiple solver support",
+      "RSM functionality"
+    ],
+    supportsRSM: true
+  },
+  {
+    name: "KNIME",
+    description: "Open-source data analytics, reporting and integration platform.",
+    category: "data-analysis",
+    isOpenSource: true,
+    isFree: true,
+    features: [
+      "Visual workflow creation",
+      "Data mining",
+      "Machine learning",
+      "RSM workflow templates"
+    ],
+    supportsRSM: true
+  },
+  {
+    name: "RapidMiner",
+    description: "Data science platform for analytics teams.",
+    category: "data-analysis",
+    features: [
+      "Predictive analytics",
+      "Machine learning",
+      "Data mining",
+      "Visual workflow design",
+      "RSM capabilities"
+    ],
+    supportsRSM: true
   },
 
+  // Process Control & Automation
   {
     name: "MATLAB Simulink",
     description: "Dynamic modeling and control system design.",
@@ -414,7 +581,30 @@ const softwareDatabase: Software[] = [
       "Diagnostics"
     ]
   },
+  {
+    name: "DeltaV DCS",
+    description: "Distributed control system by Emerson.",
+    category: "process-control",
+    features: [
+      "Process automation",
+      "Control strategy implementation",
+      "Batch control",
+      "Plant operations"
+    ]
+  },
+  {
+    name: "PID Tuner",
+    description: "Tool for designing and tuning control loops.",
+    category: "process-control",
+    features: [
+      "PID controller tuning",
+      "Control performance analysis",
+      "Stability assessment",
+      "Loop optimization"
+    ]
+  },
 
+  // Equipment Design & Sizing
   {
     name: "HTRI Xchanger Suite",
     description: "Advanced heat exchanger design.",
@@ -448,7 +638,19 @@ const softwareDatabase: Software[] = [
       "Integration with CHEMCAD process simulation"
     ]
   },
+  {
+    name: "Aspen Capital Cost Estimator",
+    description: "Equipment sizing and cost estimation.",
+    category: "equipment-design",
+    features: [
+      "Cost estimation",
+      "Equipment sizing",
+      "Project scheduling",
+      "Capital expenditure planning"
+    ]
+  },
 
+  // Piping and Instrumentation Design
   {
     name: "AutoCAD P&ID / Plant 3D",
     description: "For detailed 2D/3D plant drawings.",
@@ -482,7 +684,30 @@ const softwareDatabase: Software[] = [
       "Construction planning"
     ]
   },
+  {
+    name: "AFT Fathom",
+    description: "Pipe flow analysis tool for liquid systems.",
+    category: "piping-design",
+    features: [
+      "Pipe sizing",
+      "Pressure drop calculations",
+      "Pump selection",
+      "System optimization"
+    ]
+  },
+  {
+    name: "AFT Arrow",
+    description: "Gas piping system design and analysis.",
+    category: "piping-design",
+    features: [
+      "Gas flow modeling",
+      "Compressor selection",
+      "Pressure drop analysis",
+      "System optimization"
+    ]
+  },
 
+  // Environmental & Safety Engineering
   {
     name: "PHAST",
     description: "Risk assessment and consequence modeling.",
@@ -517,7 +742,7 @@ const softwareDatabase: Software[] = [
     ]
   },
   {
-    name: "GASP",
+    name: "GEMS",
     description: "Greenhouse gas simulation and analysis.",
     category: "environmental-safety",
     features: [
@@ -527,7 +752,31 @@ const softwareDatabase: Software[] = [
       "Abatement scenario modeling"
     ]
   },
+  {
+    name: "PHREEQC",
+    description: "Geochemical modeling software for water chemistry.",
+    category: "environmental-safety",
+    features: [
+      "Aqueous geochemical calculations",
+      "Reaction path modeling",
+      "Speciation analysis",
+      "Transport modeling"
+    ]
+  },
+  {
+    name: "Toxicity Estimation Software Tool",
+    description: "EPA tool for chemical toxicity estimation.",
+    category: "environmental-safety",
+    isFree: true,
+    features: [
+      "Toxicity prediction",
+      "QSAR models",
+      "Environmental fate modeling",
+      "Regulatory support"
+    ]
+  },
 
+  // Computational Fluid Dynamics (CFD)
   {
     name: "ANSYS Fluent / CFX",
     description: "Industry-leading CFD tools.",
@@ -564,7 +813,30 @@ const softwareDatabase: Software[] = [
       "Pre and post-processing tools"
     ]
   },
+  {
+    name: "STAR-CCM+",
+    description: "CFD software with extensive physics modeling.",
+    category: "cfd",
+    features: [
+      "Multiphysics modeling",
+      "Automated meshing",
+      "Flow, thermal and stress simulation",
+      "Design exploration"
+    ]
+  },
+  {
+    name: "PEMFC Simulations",
+    description: "Specialized tools for fuel cell modeling.",
+    category: "cfd",
+    features: [
+      "Electrochemical modeling",
+      "Mass transport",
+      "Heat transfer",
+      "Performance optimization"
+    ]
+  },
 
+  // Chemical Database & Properties
   {
     name: "ChemDraw",
     description: "Drawing chemical structures and reaction schemes.",
@@ -577,9 +849,46 @@ const softwareDatabase: Software[] = [
     ]
   },
   {
+    name: "ChemAxon",
+    description: "Cheminformatics platform for chemistry data management.",
+    category: "chemical-database",
+    features: [
+      "Chemical database management",
+      "Structure search",
+      "Property prediction",
+      "Reaction planning"
+    ]
+  },
+
+  // Molecular Modeling & Materials Design
+  {
+    name: "Materials Studio",
+    description: "Comprehensive materials modeling and simulation environment.",
+    category: "molecular-modeling",
+    features: [
+      "Crystal structure prediction",
+      "Molecular dynamics",
+      "Quantum mechanics",
+      "Property prediction"
+    ]
+  },
+  {
+    name: "LAMMPS",
+    description: "Large-scale Atomic/Molecular Massively Parallel Simulator.",
+    category: "molecular-modeling",
+    isOpenSource: true,
+    isFree: true,
+    features: [
+      "Molecular dynamics",
+      "Soft materials modeling",
+      "Parallel computing",
+      "Extensible architecture"
+    ]
+  },
+  {
     name: "Gaussian",
     description: "Molecular modeling and quantum chemistry.",
-    category: "chemical-database",
+    category: "molecular-modeling",
     features: [
       "Quantum chemical calculations",
       "Electronic structure methods",
@@ -588,9 +897,46 @@ const softwareDatabase: Software[] = [
     ]
   },
   {
+    name: "ORCA",
+    description: "Quantum chemistry program package.",
+    category: "molecular-modeling",
+    isFree: true,
+    features: [
+      "Electronic structure calculations",
+      "Spectroscopy prediction",
+      "Transition states",
+      "Properties prediction"
+    ]
+  },
+  {
+    name: "VASP",
+    description: "Vienna Ab initio Simulation Package for electronic structure calculations.",
+    category: "molecular-modeling",
+    features: [
+      "Density functional theory",
+      "Material properties",
+      "Electronic structure",
+      "Transition states"
+    ]
+  },
+  {
+    name: "Avogadro",
+    description: "Advanced molecule editor and visualizer.",
+    category: "molecular-modeling",
+    isOpenSource: true,
+    isFree: true,
+    url: "https://avogadro.cc/",
+    features: [
+      "Molecule building",
+      "Visualization",
+      "Structure optimization",
+      "Integration with quantum chemistry"
+    ]
+  },
+  {
     name: "Spartan",
     description: "3D chemical structure analysis and modeling.",
-    category: "chemical-database",
+    category: "molecular-modeling",
     features: [
       "Molecular mechanics",
       "Quantum chemistry",
@@ -601,7 +947,7 @@ const softwareDatabase: Software[] = [
   {
     name: "HyperChem",
     description: "Visualization and molecular mechanics/dynamics.",
-    category: "chemical-database",
+    category: "molecular-modeling",
     features: [
       "Molecular mechanics",
       "Quantum chemistry",
@@ -610,6 +956,54 @@ const softwareDatabase: Software[] = [
     ]
   },
 
+  // Educational Tools
+  {
+    name: "Engineering Equation Solver",
+    description: "Specialized solver for engineering thermodynamics and heat transfer.",
+    category: "educational",
+    features: [
+      "Thermodynamic property lookup",
+      "Equation solving",
+      "Parametric tables",
+      "Engineering calculations"
+    ]
+  },
+  {
+    name: "LearnChemE",
+    description: "Collection of educational resources for chemical engineering.",
+    category: "educational",
+    isFree: true,
+    features: [
+      "Interactive simulations",
+      "Concept demonstrations",
+      "Educational modules",
+      "Problem solving resources"
+    ]
+  },
+  {
+    name: "Virtual Lab Simulations",
+    description: "Interactive laboratory simulations for education.",
+    category: "educational",
+    features: [
+      "Virtual experiments",
+      "Safety training",
+      "Equipment operation",
+      "Process visualization"
+    ]
+  },
+  {
+    name: "Polymath",
+    description: "Educational software for solving equations and ODEs.",
+    category: "educational",
+    features: [
+      "Nonlinear equation solving",
+      "ODE integration",
+      "Regression analysis",
+      "Educational interface"
+    ]
+  },
+
+  // Miscellaneous Tools
   {
     name: "Aspen Energy Analyzer",
     description: "Pinch analysis and energy optimization.",
@@ -633,25 +1027,14 @@ const softwareDatabase: Software[] = [
     ]
   },
   {
-    name: "SimSci PRO/II",
-    description: "Process modeling with steady-state focus.",
+    name: "CALPUFF",
+    description: "Advanced air quality modeling system.",
     category: "miscellaneous",
     features: [
-      "Process simulation",
-      "Equipment sizing",
-      "Thermodynamic calculations",
-      "Heat and material balances"
-    ]
-  },
-  {
-    name: "UNISIM",
-    description: "Honeywell's process simulation alternative to HYSYS.",
-    category: "miscellaneous",
-    features: [
-      "Process modeling",
-      "Dynamic simulation",
-      "Rigorous equipment models",
-      "Thermodynamic calculations"
+      "Air dispersion modeling",
+      "Long-range transport",
+      "Complex terrain effects",
+      "Chemical transformation"
     ]
   }
 ];
@@ -661,7 +1044,8 @@ const SoftwareTools = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterOptions, setFilterOptions] = useState({
     showFreeOnly: false,
-    showOpenSourceOnly: false
+    showOpenSourceOnly: false,
+    showRSMOnly: false
   });
   const [expandedSoftware, setExpandedSoftware] = useState<string | null>(null);
   const [openSoftware, setOpenSoftware] = useState<Software | null>(null);
@@ -705,6 +1089,10 @@ const SoftwareTools = () => {
       return false;
     }
     
+    if (filterOptions.showRSMOnly && !software.supportsRSM) {
+      return false;
+    }
+    
     return true;
   });
 
@@ -729,7 +1117,9 @@ const SoftwareTools = () => {
       case "cfd":
         return <CFDInterface software={software} />;
       case "chemical-database":
+      case "molecular-modeling":
         return <ChemicalDatabaseInterface software={software} />;
+      case "educational":
       case "miscellaneous":
         return <MiscellaneousToolsInterface software={software} />;
       default:
@@ -799,6 +1189,15 @@ const SoftwareTools = () => {
                 <Filter className="h-4 w-4" />
                 Open Source
               </Button>
+              <Button
+                variant={filterOptions.showRSMOnly ? "default" : "outline"}
+                size="sm"
+                onClick={() => setFilterOptions({...filterOptions, showRSMOnly: !filterOptions.showRSMOnly})}
+                className="flex items-center gap-1"
+              >
+                <Filter className="h-4 w-4" />
+                RSM Support
+              </Button>
             </div>
           </div>
           
@@ -867,7 +1266,7 @@ const SoftwareTools = () => {
                         <p className="text-gray-600 dark:text-gray-400 mt-1">{software.description}</p>
                       </div>
                       <div className="flex flex-col items-end justify-start gap-2">
-                        <div className="flex gap-1">
+                        <div className="flex gap-1 flex-wrap justify-end">
                           {software.isFree && (
                             <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
                               Free
@@ -876,6 +1275,11 @@ const SoftwareTools = () => {
                           {software.isOpenSource && (
                             <Badge variant="secondary" className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300">
                               Open Source
+                            </Badge>
+                          )}
+                          {software.supportsRSM && (
+                            <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300">
+                              RSM
                             </Badge>
                           )}
                         </div>
@@ -941,7 +1345,7 @@ const SoftwareTools = () => {
                     className="mt-4"
                     onClick={() => {
                       setSearchTerm("");
-                      setFilterOptions({ showFreeOnly: false, showOpenSourceOnly: false });
+                      setFilterOptions({ showFreeOnly: false, showOpenSourceOnly: false, showRSMOnly: false });
                       setActiveCategory("all");
                     }}
                   >
@@ -959,6 +1363,11 @@ const SoftwareTools = () => {
           <DialogHeader>
             <DialogTitle className="text-2xl flex items-center gap-2">
               {openSoftware?.name}
+              {openSoftware?.supportsRSM && (
+                <Badge variant="outline" className="ml-2 bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300">
+                  RSM Supported
+                </Badge>
+              )}
               {softwareLoading && <span className="ml-2 text-sm font-normal text-gray-500 animate-pulse">Starting software...</span>}
             </DialogTitle>
           </DialogHeader>
