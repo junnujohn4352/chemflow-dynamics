@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
@@ -690,7 +691,8 @@ const softwareDatabase: Software[] = [
 const defaultSoftware = {
   name: "Sample Software",
   description: "This is a demonstration of the software interface.",
-  category: "General"
+  category: "miscellaneous",
+  url: "#"
 };
 
 const SoftwareTools = () => {
