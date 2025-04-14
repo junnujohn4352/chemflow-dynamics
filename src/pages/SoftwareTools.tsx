@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -1133,3 +1134,347 @@ const SoftwareTools = () => {
         <div className="max-w-screen-xl mx-auto">
           <div className="mb-8 relative">
             <div className="absolute -top-20 -left-20 w-64 h-64 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float"></div>
+            
+            <h1 className="text-4xl md:text-5xl font-bold mb-3 relative z-10">Chemical Engineering Software Tools</h1>
+            <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-3xl">
+              Comprehensive database of software tools used in chemical engineering for process simulation, analysis, design, and more.
+            </p>
+          </div>
+
+          <div className="mb-8">
+            <div className="flex flex-col sm:flex-row gap-4 mb-6">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                <Input
+                  type="text"
+                  placeholder="Search software by name or description..."
+                  className="pl-10"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+              
+              <div className="flex gap-2 flex-wrap">
+                <Button
+                  variant={filterOptions.showFreeOnly ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setFilterOptions({...filterOptions, showFreeOnly: !filterOptions.showFreeOnly})}
+                  className="whitespace-nowrap"
+                >
+                  <Filter className="h-4 w-4 mr-2" />
+                  Free Software
+                </Button>
+                <Button
+                  variant={filterOptions.showOpenSourceOnly ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setFilterOptions({...filterOptions, showOpenSourceOnly: !filterOptions.showOpenSourceOnly})}
+                  className="whitespace-nowrap"
+                >
+                  <GitBranch className="h-4 w-4 mr-2" />
+                  Open Source
+                </Button>
+                <Button
+                  variant={filterOptions.showRSMOnly ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setFilterOptions({...filterOptions, showRSMOnly: !filterOptions.showRSMOnly})}
+                  className="whitespace-nowrap"
+                >
+                  <BarChart className="h-4 w-4 mr-2" />
+                  RSM Support
+                </Button>
+              </div>
+            </div>
+            
+            <Tabs defaultValue="all" className="space-y-6" onValueChange={(value) => setActiveCategory(value as SoftwareCategory | "all")}>
+              <TabsList className="flex flex-wrap h-auto p-1 bg-gray-100 dark:bg-gray-800 rounded-lg">
+                <TabsTrigger value="all" className="rounded data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700">
+                  All Categories
+                </TabsTrigger>
+                {softwareCategories.map((category) => (
+                  <TabsTrigger 
+                    key={category.id} 
+                    value={category.id}
+                    className="rounded data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 flex items-center gap-1.5"
+                  >
+                    <span className="hidden md:inline">{category.icon}</span>
+                    <span>{category.name}</span>
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+              
+              <TabsContent value="all" className="mt-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {softwareCategories.map((category) => (
+                    <Button
+                      key={category.id}
+                      variant="outline"
+                      className={cn(
+                        "h-auto p-4 flex flex-col items-start text-left justify-start gap-2 border-2 transition-all duration-300",
+                        activeCategory === category.id && "border-blue-500 bg-blue-50 dark:bg-blue-900/10"
+                      )}
+                      onClick={() => setActiveCategory(category.id)}
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className="p-2 rounded-md bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300">
+                          {category.icon}
+                        </div>
+                        <span className="font-semibold">{category.name}</span>
+                      </div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 font-normal">
+                        {category.description}
+                      </p>
+                    </Button>
+                  ))}
+                </div>
+              </TabsContent>
+              
+              {softwareCategories.map((category) => (
+                <TabsContent key={category.id} value={category.id} className="mt-6 animate-fade-in">
+                  <div className="mb-6">
+                    <h2 className="text-2xl font-bold flex items-center gap-2">
+                      <div className="p-1 rounded-md bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300">
+                        {category.icon}
+                      </div>
+                      {category.name}
+                    </h2>
+                    <p className="text-gray-600 dark:text-gray-400 mt-2">
+                      {category.description}
+                    </p>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredSoftware
+                      .filter(software => software.category === category.id)
+                      .map(software => (
+                        <GlassPanel
+                          key={software.name}
+                          className="relative overflow-hidden border-2 hover:border-blue-300 dark:hover:border-blue-700 transition-all duration-300"
+                        >
+                          <div className="absolute right-3 top-3 flex flex-wrap gap-1 z-10">
+                            {software.isFree && (
+                              <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100">
+                                Free
+                              </Badge>
+                            )}
+                            {software.isOpenSource && (
+                              <Badge variant="secondary" className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-100">
+                                Open Source
+                              </Badge>
+                            )}
+                            {software.supportsRSM && (
+                              <Badge variant="secondary" className="bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-100">
+                                RSM Support
+                              </Badge>
+                            )}
+                          </div>
+                          
+                          <h3 className="text-xl font-bold mb-2 pr-20">{software.name}</h3>
+                          <p className="text-gray-600 dark:text-gray-400 mb-4">{software.description}</p>
+                          
+                          <div className="flex flex-wrap gap-2 mb-4">
+                            {software.url && (
+                              <a 
+                                href={software.url} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center text-sm text-blue-600 dark:text-blue-400 hover:underline"
+                              >
+                                <ExternalLink className="h-3.5 w-3.5 mr-1" />
+                                Website
+                              </a>
+                            )}
+                          </div>
+                          
+                          <div className="flex justify-between items-center">
+                            <Button 
+                              onClick={() => handleOpenSoftware(software)}
+                              variant="default"
+                              size="sm"
+                              className="gap-1.5"
+                            >
+                              <PlayCircle className="h-4 w-4" />
+                              Open Software
+                            </Button>
+                            
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleToggleExpand(software.name)}
+                              className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                            >
+                              {expandedSoftware === software.name ? (
+                                <>
+                                  <ChevronUp className="h-4 w-4 mr-1" />
+                                  Less
+                                </>
+                              ) : (
+                                <>
+                                  <ChevronDown className="h-4 w-4 mr-1" />
+                                  More
+                                </>
+                              )}
+                            </Button>
+                          </div>
+                          
+                          {expandedSoftware === software.name && software.features && (
+                            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 animate-accordion-down">
+                              <h4 className="font-medium mb-2 flex items-center gap-1.5">
+                                <FileText className="h-4 w-4" />
+                                Key Features
+                              </h4>
+                              <ul className="list-disc pl-5 text-sm space-y-1 text-gray-600 dark:text-gray-400">
+                                {software.features.map((feature, index) => (
+                                  <li key={index}>{feature}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </GlassPanel>
+                      ))}
+                  </div>
+                </TabsContent>
+              ))}
+            </Tabs>
+          </div>
+          
+          <div className="grid grid-cols-1 gap-6">
+            {activeCategory !== "all" && (
+              <>
+                <h2 className="text-2xl font-bold">
+                  {filteredSoftware.length ? "Available Software" : "No matching software"}
+                </h2>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredSoftware.map(software => (
+                    <GlassPanel
+                      key={software.name}
+                      className="relative overflow-hidden border-2 hover:border-blue-300 dark:hover:border-blue-700 transition-all duration-300"
+                    >
+                      <div className="absolute right-3 top-3 flex flex-wrap gap-1 z-10">
+                        {software.isFree && (
+                          <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100">
+                            Free
+                          </Badge>
+                        )}
+                        {software.isOpenSource && (
+                          <Badge variant="secondary" className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-100">
+                            Open Source
+                          </Badge>
+                        )}
+                        {software.supportsRSM && (
+                          <Badge variant="secondary" className="bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-100">
+                            RSM Support
+                          </Badge>
+                        )}
+                      </div>
+                      
+                      <h3 className="text-xl font-bold mb-2 pr-20">{software.name}</h3>
+                      <p className="text-gray-600 dark:text-gray-400 mb-4">{software.description}</p>
+                      
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        {software.url && (
+                          <a 
+                            href={software.url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center text-sm text-blue-600 dark:text-blue-400 hover:underline"
+                          >
+                            <ExternalLink className="h-3.5 w-3.5 mr-1" />
+                            Website
+                          </a>
+                        )}
+                      </div>
+                      
+                      <div className="flex justify-between items-center">
+                        <Button 
+                          onClick={() => handleOpenSoftware(software)}
+                          variant="default"
+                          size="sm"
+                          className="gap-1.5"
+                        >
+                          <PlayCircle className="h-4 w-4" />
+                          Open Software
+                        </Button>
+                        
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleToggleExpand(software.name)}
+                          className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                        >
+                          {expandedSoftware === software.name ? (
+                            <>
+                              <ChevronUp className="h-4 w-4 mr-1" />
+                              Less
+                            </>
+                          ) : (
+                            <>
+                              <ChevronDown className="h-4 w-4 mr-1" />
+                              More
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                      
+                      {expandedSoftware === software.name && software.features && (
+                        <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 animate-accordion-down">
+                          <h4 className="font-medium mb-2 flex items-center gap-1.5">
+                            <FileText className="h-4 w-4" />
+                            Key Features
+                          </h4>
+                          <ul className="list-disc pl-5 text-sm space-y-1 text-gray-600 dark:text-gray-400">
+                            {software.features.map((feature, index) => (
+                              <li key={index}>{feature}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </GlassPanel>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      </main>
+
+      <Footer />
+      
+      <Dialog 
+        open={openSoftware !== null} 
+        onOpenChange={(open) => {
+          if (!open) handleCloseSoftware();
+        }}
+      >
+        <DialogContent className="max-w-4xl w-[90vw] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl">
+              {openSoftware?.name}
+            </DialogTitle>
+          </DialogHeader>
+          
+          {softwareLoading ? (
+            <div className="flex justify-center items-center py-20">
+              <div className="relative w-20 h-20">
+                <div className="absolute inset-0 rounded-full border-t-4 border-blue-500 animate-spin"></div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <CloudLightning className="h-8 w-8 text-blue-500" />
+                </div>
+              </div>
+              <div className="ml-6">
+                <h3 className="text-xl font-semibold mb-2">Loading Software</h3>
+                <p className="text-gray-500">Initializing {openSoftware?.name}...</p>
+              </div>
+            </div>
+          ) : openSoftware && (
+            <div className="mt-2">
+              {renderSoftwareInterface(openSoftware)}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
+
+export default SoftwareTools;
