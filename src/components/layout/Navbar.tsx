@@ -1,7 +1,7 @@
 
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Moon, Sun, Settings, FileText, FlaskConical, Calculator, Book, Code, Info } from "lucide-react";
+import { Menu, X, Moon, Sun, Settings, FileText, FlaskConical, Calculator, Book, Code, Info, Wrench, Database } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
 import { Button } from "@/components/ui/button";
 
