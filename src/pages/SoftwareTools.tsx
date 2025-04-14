@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
@@ -688,6 +687,12 @@ const softwareDatabase: Software[] = [
   }
 ];
 
+const defaultSoftware = {
+  name: "Sample Software",
+  description: "This is a demonstration of the software interface.",
+  category: "General"
+};
+
 const SoftwareTools = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState<{
@@ -739,30 +744,30 @@ const SoftwareTools = () => {
 
   const sortedCategories = [...softwareCategories].sort((a, b) => a.name.localeCompare(b.name));
 
-  const renderSoftwareInterface = (category: SoftwareCategory) => {
+  const renderSoftwareInterface = (category: string) => {
     switch (category) {
-      case "process-simulation":
-        return <ProcessSimulationInterface />;
-      case "thermodynamic":
-        return <ThermodynamicInterface />;
-      case "reaction-engineering":
-        return <ReactionEngineeringInterface />;
-      case "data-analysis":
-        return <DataAnalysisInterface />;
-      case "process-control":
-        return <ProcessControlInterface />;
-      case "equipment-design":
-        return <EquipmentDesignInterface />;
-      case "piping-design":
-        return <PipingDesignInterface />;
-      case "environmental-safety":
-        return <EnvironmentalSafetyInterface />;
-      case "cfd":
-        return <CFDInterface />;
-      case "chemical-database":
-        return <ChemicalDatabaseInterface />;
+      case "Process Simulation":
+        return <ProcessSimulationInterface software={defaultSoftware} />;
+      case "Thermodynamics":
+        return <ThermodynamicInterface software={defaultSoftware} />;
+      case "Reaction Engineering":
+        return <ReactionEngineeringInterface software={defaultSoftware} />;
+      case "Data Analysis":
+        return <DataAnalysisInterface software={defaultSoftware} />;
+      case "Process Control":
+        return <ProcessControlInterface software={defaultSoftware} />;
+      case "Equipment Design":
+        return <EquipmentDesignInterface software={defaultSoftware} />;
+      case "Piping Design":
+        return <PipingDesignInterface software={defaultSoftware} />;
+      case "Environmental & Safety":
+        return <EnvironmentalSafetyInterface software={defaultSoftware} />;
+      case "CFD & Transport Phenomena":
+        return <CFDInterface software={defaultSoftware} />;
+      case "Chemical Database":
+        return <ChemicalDatabaseInterface software={defaultSoftware} />;
       default:
-        return <MiscellaneousToolsInterface />;
+        return <MiscellaneousToolsInterface software={defaultSoftware} />;
     }
   };
 
