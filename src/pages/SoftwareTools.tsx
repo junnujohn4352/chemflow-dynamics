@@ -36,13 +36,11 @@ import CFDInterface from "@/components/software-interfaces/CFDInterface";
 import ChemicalDatabaseInterface from "@/components/software-interfaces/ChemicalDatabaseInterface";
 import MiscellaneousToolsInterface from "@/components/software-interfaces/MiscellaneousToolsInterface";
 
-// Define the structure for software features
 interface Feature {
   title: string;
   description: string;
 }
 
-// Define the structure for software
 interface Software {
   id: string;
   name: string;
@@ -57,7 +55,6 @@ interface Software {
   votes?: number;
 }
 
-// Define the structure for educational resources
 interface EducationalResource {
   id: string;
   title: string;
@@ -65,15 +62,15 @@ interface EducationalResource {
   type: string;
   url: string;
   tags: string[];
+  subject?: string;
+  platform?: string;
 }
 
-// Define the structure for the database
 interface SoftwareDatabase {
   software: Software[];
   educationalResources: EducationalResource[];
 }
 
-// Mock software database
 const mockSoftwareDatabase: SoftwareDatabase = {
   software: [
     {
@@ -360,23 +357,79 @@ const mockSoftwareDatabase: SoftwareDatabase = {
       type: "Course",
       url: "https://ocw.mit.edu/courses/chemical-engineering/",
       tags: ["chemical engineering", "courses", "MIT", "open courseware"],
+      subject: "General Chemical Engineering",
+      platform: "MIT OCW"
     },
     {
-      id: "102",
-      title: "LearnChemE",
-      description: "Interactive simulations and screencasts for chemical engineering concepts.",
-      type: "Simulation",
-      url: "https://learncheme.com/",
-      tags: ["chemical engineering", "simulations", "screencasts", "interactive"],
+      id: "201",
+      title: "Mass Transfer Operations Playlist",
+      description: "Comprehensive video series covering mass transfer operations, separation processes, and unit operations.",
+      type: "Video Series",
+      url: "https://www.youtube.com/playlist?list=PLhPfNw4V4_YT-vbdXZj_ppJUX94qBnAV_",
+      tags: ["mass transfer", "separation processes", "unit operations"],
+      subject: "Mass Transfer",
+      platform: "YouTube"
     },
     {
-      id: "103",
-      title: "Chemical Engineering Stack Exchange",
-      description: "A community-driven Q&A site for chemical engineering professionals and students.",
-      type: "Forum",
-      url: "https://engineering.stackexchange.com/questions/tagged/chemical-engineering",
-      tags: ["chemical engineering", "forum", "Q&A", "community"],
+      id: "202",
+      title: "Chemical Reaction Engineering Lectures",
+      description: "Detailed lectures on reaction kinetics, reactor design, and catalysis.",
+      type: "Video Series",
+      url: "https://www.youtube.com/playlist?list=PLbMVogVj5nJQXpq-EZYlAqKWfmfKZwSL3",
+      tags: ["reaction engineering", "kinetics", "reactor design"],
+      subject: "Reaction Engineering",
+      platform: "YouTube"
     },
+    {
+      id: "203",
+      title: "Fluid Mechanics Fundamentals",
+      description: "Complete course covering fluid statics, dynamics, and transport phenomena.",
+      type: "Video Series",
+      url: "https://www.youtube.com/playlist?list=PLZOZfX_TaWAH0baD9gTM090DL_W3pXwjv",
+      tags: ["fluid mechanics", "transport phenomena"],
+      subject: "Fluid Mechanics",
+      platform: "YouTube"
+    },
+    {
+      id: "204",
+      title: "Thermodynamics for Chemical Engineers",
+      description: "In-depth coverage of thermodynamic principles, cycles, and applications.",
+      type: "Video Series",
+      url: "https://www.youtube.com/playlist?list=PLbMVogVj5nJT2xc0JvhXxWtJqDRh_7s2F",
+      tags: ["thermodynamics", "energy balances"],
+      subject: "Thermodynamics",
+      platform: "YouTube"
+    },
+    {
+      id: "205",
+      title: "Process Control and Instrumentation",
+      description: "Video series on process control principles, PID control, and instrumentation.",
+      type: "Video Series",
+      url: "https://www.youtube.com/playlist?list=PLLy_2iUCG87D1CqDwqibxbzKvDcYFZsyA",
+      tags: ["process control", "instrumentation", "PID control"],
+      subject: "Process Control",
+      platform: "YouTube"
+    },
+    {
+      id: "206",
+      title: "Heat Transfer Operations",
+      description: "Comprehensive coverage of conduction, convection, and radiation heat transfer.",
+      type: "Video Series",
+      url: "https://www.youtube.com/playlist?list=PLZOZfX_TaWAE6nTX50dJl0Jia8iQTIhrG",
+      tags: ["heat transfer", "unit operations"],
+      subject: "Heat Transfer",
+      platform: "YouTube"
+    },
+    {
+      id: "207",
+      title: "Chemical Process Safety",
+      description: "Lectures on process safety, risk assessment, and hazard analysis.",
+      type: "Video Series",
+      url: "https://www.youtube.com/playlist?list=PLbMVogVj5nJQR1L7xeDcEAD_VR5WL8bGf",
+      tags: ["process safety", "risk assessment"],
+      subject: "Process Safety",
+      platform: "YouTube"
+    }
   ],
 };
 
@@ -440,7 +493,6 @@ const SoftwareTools: React.FC = () => {
           <TabsTrigger value="educational">Educational Resources</TabsTrigger>
         </TabsList>
         
-        {/* Software Tools Tab */}
         <TabsContent value="software">
           <div className="mb-6 flex items-center space-x-4">
             <Input
@@ -502,7 +554,6 @@ const SoftwareTools: React.FC = () => {
             ))}
           </div>
           
-          {/* Software detail dialog */}
           {selectedSoftware && (
             <Dialog open={!!selectedSoftware} onOpenChange={(open) => !open && setSelectedSoftware(null)}>
               <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
@@ -541,7 +592,6 @@ const SoftwareTools: React.FC = () => {
                       </div>
                     )}
                     
-                    {/* Render the appropriate interface based on the software category */}
                     {renderSoftwareInterface(selectedSoftware)}
                   </div>
                 </ScrollArea>
@@ -576,33 +626,62 @@ const SoftwareTools: React.FC = () => {
           )}
         </TabsContent>
         
-        {/* Educational Resources Tab */}
         <TabsContent value="educational">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {softwareData.educationalResources.map((resource) => (
-              <Card key={resource.id} className="bg-white dark:bg-gray-800 shadow-md rounded-md">
-                <CardHeader>
-                  <CardTitle className="text-lg font-semibold">{resource.title}</CardTitle>
-                  <CardDescription className="text-gray-500 dark:text-gray-400">{resource.type}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-gray-700 dark:text-gray-300">{resource.description}</p>
-                  <div className="mt-2 flex flex-wrap gap-1">
-                    {resource.tags.map((tag) => (
-                      <Badge key={tag} variant="secondary">{tag}</Badge>
-                    ))}
-                  </div>
-                </CardContent>
-                <CardFooter>
-                  <Button variant="outline" size="sm" asChild>
-                    <a href={resource.url} target="_blank" rel="noopener noreferrer" className="flex items-center">
-                      <Book className="h-4 w-4 mr-1" />
-                      View Resource
-                    </a>
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))}
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold mb-4">Educational Resources by Subject</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {softwareData.educationalResources.map((resource) => (
+                <Card key={resource.id} className="bg-white dark:bg-gray-800 shadow-md rounded-md">
+                  <CardHeader>
+                    <CardTitle className="text-lg font-semibold">{resource.title}</CardTitle>
+                    <CardDescription>
+                      {resource.subject && (
+                        <Badge variant="secondary" className="mb-2">
+                          {resource.subject}
+                        </Badge>
+                      )}
+                      {resource.platform && (
+                        <Badge variant="outline" className="ml-2">
+                          {resource.platform}
+                        </Badge>
+                      )}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-gray-700 dark:text-gray-300 mb-3">{resource.description}</p>
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {resource.tags.map((tag) => (
+                        <Badge key={tag} variant="secondary" className="text-xs">
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  </CardContent>
+                  <CardFooter>
+                    <Button variant="outline" size="sm" asChild>
+                      <a
+                        href={resource.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center"
+                      >
+                        {resource.platform === "YouTube" ? (
+                          <>
+                            <FileText className="h-4 w-4 mr-1" />
+                            Watch Videos
+                          </>
+                        ) : (
+                          <>
+                            <Book className="h-4 w-4 mr-1" />
+                            View Resource
+                          </>
+                        )}
+                      </a>
+                    </Button>
+                  </CardFooter>
+                </Card>
+              ))}
+            </div>
           </div>
         </TabsContent>
       </Tabs>
