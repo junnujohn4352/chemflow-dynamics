@@ -162,7 +162,6 @@ const softwareCategories: CategoryInfo[] = [
 ];
 
 const softwareDatabase: Software[] = [
-  // Process Simulation
   {
     name: "Aspen Plus",
     description: "Industry-standard process simulation software for steady-state chemical processes with extensive thermodynamic databases and equipment models.",
@@ -222,7 +221,6 @@ const softwareDatabase: Software[] = [
     url: "https://www.mathworks.com/products/simulink.html"
   },
   
-  // Thermodynamic Analysis
   {
     name: "Aspen Properties",
     description: "Comprehensive thermodynamic property package with extensive pure component database and physical property estimation methods.",
@@ -260,7 +258,6 @@ const softwareDatabase: Software[] = [
     url: "https://www.kbc.global/software/simulation-and-optimization/multiflash/"
   },
   
-  // Reaction Engineering
   {
     name: "Reaction Workbench (Aspen Plus)",
     description: "Reaction kinetics modeling environment for developing and analyzing reaction mechanisms in chemical processes.",
@@ -299,7 +296,6 @@ const softwareDatabase: Software[] = [
     url: "https://www.ansys.com/products/fluids/ansys-chemkin-pro"
   },
   
-  // Data Analysis
   {
     name: "Python (with NumPy, Pandas, Scikit-learn)",
     description: "Open-source programming language with powerful libraries for data manipulation, analysis, visualization, and machine learning.",
@@ -347,7 +343,6 @@ const softwareDatabase: Software[] = [
     url: "https://www.jmp.com/"
   },
   
-  // Process Control
   {
     name: "MATLAB with Control System Toolbox",
     description: "Comprehensive environment for analyzing and designing control systems with specialized control engineering tools.",
@@ -384,7 +379,6 @@ const softwareDatabase: Software[] = [
     url: "https://new.siemens.com/global/en/products/automation/process-control/simatic-pcs-7.html"
   },
   
-  // Equipment Design
   {
     name: "Aspen Exchanger Design & Rating (EDR)",
     description: "Comprehensive heat exchanger design and simulation software for thermal and hydraulic analysis.",
@@ -421,7 +415,6 @@ const softwareDatabase: Software[] = [
     url: "https://www.autodesk.com/products/inventor/overview"
   },
   
-  // Piping Design
   {
     name: "AutoCAD Plant 3D",
     description: "Plant design and layout software with piping specification-driven design and P&ID functionality.",
@@ -458,7 +451,6 @@ const softwareDatabase: Software[] = [
     url: "https://www.sunrise-sys.com/pipenet/"
   },
   
-  // Environmental & Safety
   {
     name: "PHAST (Process Hazard Analysis Software Tool)",
     description: "Consequence modeling software for process safety hazards and risk assessment in chemical facilities.",
@@ -496,7 +488,6 @@ const softwareDatabase: Software[] = [
     url: "https://www.bre.com/software/promax/"
   },
   
-  // CFD Software
   {
     name: "ANSYS Fluent",
     description: "Comprehensive computational fluid dynamics software for modeling flow, turbulence, heat transfer, and reactions.",
@@ -535,7 +526,6 @@ const softwareDatabase: Software[] = [
     url: "https://www.autodesk.com/products/cfd/overview"
   },
   
-  // Chemical Database
   {
     name: "ChemSpider",
     description: "Free chemical structure database providing access to properties, spectra, and information for millions of compounds.",
@@ -574,7 +564,6 @@ const softwareDatabase: Software[] = [
     url: "https://www.elsevier.com/solutions/knovel-engineering-information"
   },
   
-  // Molecular Modeling
   {
     name: "Materials Studio",
     description: "Modeling and simulation software for materials science and chemistry research with specialized modules.",
@@ -614,7 +603,6 @@ const softwareDatabase: Software[] = [
     url: "https://www.vasp.at/"
   },
   
-  // Educational Tools
   {
     name: "LearnChemE",
     description: "Collection of interactive simulations and educational resources for chemical engineering concepts.",
@@ -654,7 +642,6 @@ const softwareDatabase: Software[] = [
     url: "https://www.che.com/calculators/"
   },
   
-  // Miscellaneous Tools
   {
     name: "UniSim Design",
     description: "Process simulation software for oil and gas, refining, and chemical processes with intuitive interface.",
@@ -686,7 +673,6 @@ const softwareDatabase: Software[] = [
     url: "https://www.prosim.net/en/"
   },
   
-  // New entries for General Chemical Engineering
   {
     name: "MATLAB with Simulink",
     description: "Comprehensive mathematical computing environment with visual programming for modeling, control systems, and optimization in chemical engineering.",
@@ -695,7 +681,6 @@ const softwareDatabase: Software[] = [
     url: "https://www.mathworks.com/products/matlab.html"
   },
   
-  // Petrochemical Technology
   {
     name: "PETRO-SIM",
     description: "KBC's refinery-wide process simulation and optimization platform for petroleum refining and gas processing.",
@@ -717,4 +702,136 @@ const softwareDatabase: Software[] = [
     features: ["Flare system design", "Radiation analysis", "Noise prediction", "Regulatory compliance"],
     url: "https://www.dnv.com/software/flaresim/"
   },
+  
   {
+    name: "Petrel",
+    description: "Reservoir modeling and geophysical interpretation platform for oil and gas exploration and production.",
+    category: "miscellaneous",
+    features: ["Reservoir modeling", "Geological interpretation", "Seismic analysis", "Well planning"],
+    url: "https://www.software.slb.com/products/petrel"
+  },
+  {
+    name: "ECLIPSE",
+    description: "Industry-reference reservoir simulator for predicting dynamic behavior of all types of reservoirs and recovery strategies.",
+    category: "miscellaneous",
+    features: ["Reservoir simulation", "Recovery forecasting", "Production optimization", "History matching"],
+    url: "https://www.software.slb.com/products/eclipse"
+  },
+  {
+    name: "PIPESIM",
+    description: "Steady-state multiphase flow simulator for well and pipeline design and flow assurance analysis.",
+    category: "piping-design",
+    features: ["Well flow modeling", "Pipeline simulation", "Flow assurance", "Network optimization"],
+    url: "https://www.software.slb.com/products/pipesim"
+  },
+  {
+    name: "OLGA",
+    description: "Dynamic multiphase flow simulator for design and operational analysis of oil and gas production systems.",
+    category: "piping-design",
+    features: ["Dynamic simulation", "Multiphase flow", "Transient analysis", "Flow assurance"],
+    url: "https://www.software.slb.com/products/olga"
+  },
+  
+  {
+    name: "SuperPro Designer (Food)",
+    description: "Process simulation software optimized for food processing operations, batch and continuous systems.",
+    category: "process-simulation",
+    features: ["Food processing", "Batch operations", "Mass/energy balances", "Economic analysis"],
+    url: "https://intelligen.com/superpro-designer/"
+  },
+  {
+    name: "ESHA Food Processor",
+    description: "Nutrient analysis and recipe formulation software for food product development.",
+    category: "data-analysis",
+    features: ["Nutrient analysis", "Recipe formulation", "Nutrition labeling", "Regulatory compliance"],
+    url: "https://esha.com/products/food-processor/"
+  },
+  
+  {
+    name: "GPS-X",
+    description: "Advanced wastewater treatment plant modeling and simulation software.",
+    category: "environmental-safety",
+    features: ["Wastewater modeling", "Process optimization", "Plant design", "Operational analysis"],
+    url: "https://www.hydromantis.com/GPS-X.html"
+  },
+  {
+    name: "BioWin",
+    description: "Wastewater treatment process simulator for biological nutrient removal system design and optimization.",
+    category: "environmental-safety",
+    features: ["Biological modeling", "Nutrient removal", "Process optimization", "Plant operations"],
+    url: "https://www.envirosim.com/products/biowin/"
+  },
+  {
+    name: "AQUASIM",
+    description: "Software for simulation and analysis of aquatic systems and water quality.",
+    category: "environmental-safety",
+    features: ["Water quality modeling", "Aquatic ecosystems", "Transport processes", "Biogeochemical transformations"],
+    url: "https://www.eawag.ch/en/department/siam/software/"
+  },
+  {
+    name: "PHREEQC",
+    description: "Computer program for geochemical calculations, speciation, and contaminant transport modeling.",
+    category: "environmental-safety",
+    isFree: true,
+    features: ["Geochemical modeling", "Contaminant transport", "Solution chemistry", "Reaction modeling"],
+    url: "https://www.usgs.gov/software/phreeqc-version-3"
+  },
+  
+  {
+    name: "BioSolve Process",
+    description: "Economic modeling software for bioprocesses and manufacturing cost analysis.",
+    category: "miscellaneous",
+    features: ["Cost modeling", "Process economics", "Sensitivity analysis", "Bioprocess optimization"],
+    url: "https://www.biopharmservices.com/biosolve-process/"
+  },
+  {
+    name: "COPASI",
+    description: "Simulation and analysis software for biochemical networks and their dynamics.",
+    category: "reaction-engineering",
+    isFree: true,
+    isOpenSource: true,
+    features: ["Biochemical networks", "Metabolic pathways", "Dynamic simulation", "Parameter estimation"],
+    url: "http://copasi.org/"
+  },
+  
+  {
+    name: "HOMER Energy",
+    description: "Modeling software for hybrid renewable energy systems optimization and feasibility analysis.",
+    category: "miscellaneous",
+    features: ["Renewable energy", "Hybrid systems", "Economic analysis", "System optimization"],
+    url: "https://www.homerenergy.com/"
+  },
+  
+  {
+    name: "BowTieXP",
+    description: "Risk assessment software for visualization and analysis of risk scenarios using the bowtie method.",
+    category: "environmental-safety",
+    features: ["Risk visualization", "Barrier management", "Incident analysis", "Risk communication"],
+    url: "https://www.bowtiexp.com/"
+  },
+  
+  {
+    name: "Primavera P6",
+    description: "Enterprise project portfolio management software for planning, scheduling and controlling projects.",
+    category: "miscellaneous",
+    features: ["Project scheduling", "Resource management", "Critical path analysis", "Progress tracking"],
+    url: "https://www.oracle.com/industries/construction-engineering/primavera-p6/"
+  },
+  {
+    name: "CO$TPER",
+    description: "Process economics and equipment costing software for chemical process industries.",
+    category: "miscellaneous",
+    features: ["Process economics", "Equipment cost", "Operating cost", "Investment analysis"],
+    url: "https://www.costper.com/"
+  }
+];
+
+const SoftwareTools = () => {
+  return (
+    <div>
+      {/* Component implementation */}
+    </div>
+  );
+}
+
+export default SoftwareTools;
