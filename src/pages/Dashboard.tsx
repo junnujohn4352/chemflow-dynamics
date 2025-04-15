@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
@@ -9,8 +8,7 @@ import {
   Code,
   FlaskConical,
   Info,
-  Book,
-  Database
+  Book
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import LearnMoreModal from "@/components/ui/LearnMoreModal";
@@ -74,14 +72,6 @@ const Dashboard = () => {
               icon={<Code className="h-6 w-6" />}
               linkTo="/code-converter"
               color="bg-teal-500"
-            />
-            <DashboardCard 
-              title="Software Tools"
-              description="Comprehensive database of chemical engineering software"
-              icon={<Database className="h-6 w-6" />}
-              linkTo="/software-tools"
-              color="bg-blue-600"
-              isNew={true}
             />
             <DashboardCard 
               title="About"
