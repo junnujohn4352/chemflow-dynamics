@@ -704,76 +704,118 @@ const softwareDatabase: Software[] = [
   },
   
   {
+    name: "Crude Assay Manager",
+    description: "AspenTech software for managing and characterizing crude oil properties for refinery operations.",
+    category: "process-simulation",
+    features: ["Crude oil characterization", "Blend optimization", "Property analysis", "Refinery planning"],
+    url: "https://www.aspentech.com/"
+  },
+  
+  {
     name: "Petrel",
-    description: "Reservoir modeling and geophysical interpretation platform for oil and gas exploration and production.",
+    description: "Schlumberger's software for reservoir modeling and geophysical interpretation in petroleum exploration.",
     category: "miscellaneous",
-    features: ["Reservoir modeling", "Geological interpretation", "Seismic analysis", "Well planning"],
+    features: ["Reservoir modeling", "Geophysical interpretation", "Well planning", "Formation evaluation"],
     url: "https://www.software.slb.com/products/petrel"
   },
   {
     name: "ECLIPSE",
     description: "Industry-reference reservoir simulator for predicting dynamic behavior of all types of reservoirs and recovery strategies.",
     category: "miscellaneous",
-    features: ["Reservoir simulation", "Recovery forecasting", "Production optimization", "History matching"],
+    features: ["Reservoir simulation", "Enhanced oil recovery", "Compositional modeling", "Field development planning"],
     url: "https://www.software.slb.com/products/eclipse"
   },
   {
+    name: "CMG GEM",
+    description: "Compositional and unconventional reservoir simulator for modeling complex recovery processes.",
+    category: "miscellaneous",
+    features: ["Compositional modeling", "Enhanced oil recovery", "Unconventional reservoirs", "Gas injection"],
+    url: "https://www.cmgl.ca/gem"
+  },
+  {
     name: "PIPESIM",
-    description: "Steady-state multiphase flow simulator for well and pipeline design and flow assurance analysis.",
+    description: "Schlumberger's steady-state multiphase flow simulator for well and pipeline design optimization.",
     category: "piping-design",
-    features: ["Well flow modeling", "Pipeline simulation", "Flow assurance", "Network optimization"],
+    features: ["Multiphase flow", "Well performance", "Pipeline design", "Network analysis"],
     url: "https://www.software.slb.com/products/pipesim"
   },
   {
     name: "OLGA",
-    description: "Dynamic multiphase flow simulator for design and operational analysis of oil and gas production systems.",
+    description: "Dynamic multiphase flow simulator for production optimization and flow assurance challenges.",
     category: "piping-design",
-    features: ["Dynamic simulation", "Multiphase flow", "Transient analysis", "Flow assurance"],
+    features: ["Dynamic simulation", "Flow assurance", "Multiphase flow", "Transient analysis"],
     url: "https://www.software.slb.com/products/olga"
+  },
+  {
+    name: "IPM Suite",
+    description: "Petroleum Experts' integrated production modeling suite including PROSPER, GAP, and MBAL tools.",
+    category: "process-simulation",
+    features: ["Production modeling", "Well performance", "Network optimization", "Reservoir coupling"],
+    url: "https://www.petex.com/products/ipm-suite/"
   },
   
   {
-    name: "SuperPro Designer (Food)",
-    description: "Process simulation software optimized for food processing operations, batch and continuous systems.",
+    name: "SuperPro Designer",
+    description: "Process simulation software with specialized capabilities for food processing operations.",
     category: "process-simulation",
-    features: ["Food processing", "Batch operations", "Mass/energy balances", "Economic analysis"],
+    features: ["Batch processing", "Continuous processes", "Economic analysis", "Scheduling"],
     url: "https://intelligen.com/superpro-designer/"
   },
   {
+    name: "COMSOL Food Module",
+    description: "Specialized module for modeling heat/mass transfer in food processing operations.",
+    category: "cfd",
+    features: ["Heat transfer", "Mass transfer", "Drying", "Sterilization modeling"],
+    url: "https://www.comsol.com/"
+  },
+  {
+    name: "FoodProcess-Lab",
+    description: "Specialized software for modeling food processing operations including drying, baking, and frying.",
+    category: "process-simulation",
+    features: ["Drying kinetics", "Baking processes", "Frying simulation", "Thermal processing"],
+    url: "https://foodprocess-lab.com/"
+  },
+  {
     name: "ESHA Food Processor",
-    description: "Nutrient analysis and recipe formulation software for food product development.",
-    category: "data-analysis",
-    features: ["Nutrient analysis", "Recipe formulation", "Nutrition labeling", "Regulatory compliance"],
+    description: "Nutrition analysis software for food product development and labeling compliance.",
+    category: "miscellaneous",
+    features: ["Nutrient analysis", "Formulation", "Recipe development", "Labeling compliance"],
     url: "https://esha.com/products/food-processor/"
   },
   
   {
     name: "GPS-X",
-    description: "Advanced wastewater treatment plant modeling and simulation software.",
+    description: "Comprehensive wastewater treatment plant modeling and simulation software.",
     category: "environmental-safety",
-    features: ["Wastewater modeling", "Process optimization", "Plant design", "Operational analysis"],
+    features: ["Wastewater treatment", "Process optimization", "Control strategies", "Plant design"],
     url: "https://www.hydromantis.com/GPS-X.html"
   },
   {
     name: "BioWin",
-    description: "Wastewater treatment process simulator for biological nutrient removal system design and optimization.",
+    description: "Wastewater treatment process simulator for biological nutrient removal process design and optimization.",
     category: "environmental-safety",
-    features: ["Biological modeling", "Nutrient removal", "Process optimization", "Plant operations"],
-    url: "https://www.envirosim.com/products/biowin/"
+    features: ["Biological processes", "Nutrient removal", "Process design", "Control strategies"],
+    url: "https://envirosim.com/products/biowin"
   },
   {
     name: "AQUASIM",
-    description: "Software for simulation and analysis of aquatic systems and water quality.",
+    description: "Software for modeling and simulating aquatic systems and water quality processes.",
     category: "environmental-safety",
-    features: ["Water quality modeling", "Aquatic ecosystems", "Transport processes", "Biogeochemical transformations"],
+    features: ["Water quality modeling", "Aquatic ecosystems", "Parameter estimation", "Sensitivity analysis"],
     url: "https://www.eawag.ch/en/department/siam/software/"
   },
   {
-    name: "PHREEQC",
-    description: "Computer program for geochemical calculations, speciation, and contaminant transport modeling.",
+    name: "TOXCHEM",
+    description: "Modeling software for estimating fate of volatile compounds in wastewater treatment plants.",
     category: "environmental-safety",
-    isFree: true,
-    features: ["Geochemical modeling", "Contaminant transport", "Solution chemistry", "Reaction modeling"],
+    features: ["VOC emissions", "Hazardous compounds", "Fate modeling", "Regulatory compliance"],
+    url: "https://www.enviromega.ca/toxchem/"
+  },
+  {
+    name: "PHREEQC",
+    description: "Computer program for simulating chemical reactions and transport processes in natural or polluted water.",
+    category: "environmental-safety",
+    features: ["Geochemical modeling", "Contaminant transport", "Solution chemistry", "Reaction paths"],
     url: "https://www.usgs.gov/software/phreeqc-version-3"
   },
   
@@ -782,15 +824,13 @@ const softwareDatabase: Software[] = [
     description: "Economic modeling software for bioprocesses and manufacturing cost analysis.",
     category: "miscellaneous",
     features: ["Cost modeling", "Process economics", "Sensitivity analysis", "Bioprocess optimization"],
-    url: "https://www.biopharmservices.com/biosolve-process/"
+    url: "https://www.biopharmservices.com/software/biosolve-process/"
   },
   {
     name: "COPASI",
     description: "Simulation and analysis software for biochemical networks and their dynamics.",
     category: "reaction-engineering",
-    isFree: true,
-    isOpenSource: true,
-    features: ["Biochemical networks", "Metabolic pathways", "Dynamic simulation", "Parameter estimation"],
+    features: ["Biochemical networks", "Metabolic modeling", "Parameter estimation", "Stochastic simulation"],
     url: "http://copasi.org/"
   },
   
@@ -818,10 +858,17 @@ const softwareDatabase: Software[] = [
     url: "https://www.oracle.com/industries/construction-engineering/primavera-p6/"
   },
   {
-    name: "CO$TPER",
-    description: "Process economics and equipment costing software for chemical process industries.",
+    name: "MS Project",
+    description: "Project management software for developing plans, assigning resources, and tracking progress.",
     category: "miscellaneous",
-    features: ["Process economics", "Equipment cost", "Operating cost", "Investment analysis"],
+    features: ["Project planning", "Resource management", "Timeline visualization", "Progress tracking"],
+    url: "https://www.microsoft.com/microsoft-365/project/project-management-software"
+  },
+  {
+    name: "CO$TPER",
+    description: "Process economics software with equipment lists and detailed cost reporting capabilities.",
+    category: "miscellaneous",
+    features: ["Cost estimation", "Equipment sizing", "Economic evaluation", "Capital cost analysis"],
     url: "https://www.costper.com/"
   }
 ];
