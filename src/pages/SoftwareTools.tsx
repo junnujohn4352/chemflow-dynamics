@@ -1,7 +1,5 @@
-import React, { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
+import React, { useState, useEffect } from "react";
+import { Layout } from "@/components/layout/Layout";
 import GlassPanel from "@/components/ui/GlassPanel";
 import { 
   Cpu, 
@@ -19,15 +17,10 @@ import {
   Search,
   Filter,
   ExternalLink,
-  PlayCircle,
-  FileText,
-  FlaskConical,
   Atom,
   GraduationCap,
   ShieldAlert,
-  Factory,
-  GitBranch,
-  CloudLightning
+  Book
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -874,11 +867,434 @@ const softwareDatabase: Software[] = [
 ];
 
 const SoftwareTools = () => {
+  const [selectedCategory, setSelectedCategory] = useState<SoftwareCategory | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedSoftware, setSelectedSoftware] = useState<Software | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [expandedFeatures, setExpandedFeatures] = useState<{[key: string]: boolean}>({});
+
+  const filteredSoftware = softwareDatabase.filter(software => {
+    const matchesCategory = selectedCategory ? software.category === selectedCategory : true;
+    const matchesSearch = searchQuery.trim() === "" ? 
+      true : 
+      software.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      software.description.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    return matchesCategory && matchesSearch;
+  });
+
+  const toggleFeatures = (softwareName: string) => {
+    setExpandedFeatures(prev => ({
+      ...prev,
+      [softwareName]: !prev[softwareName]
+    }));
+  };
+
+  const openSoftwareDialog = (software: Software) => {
+    setSelectedSoftware(software);
+    setDialogOpen(true);
+  };
+
+  const getCategoryInterface = (categoryId: SoftwareCategory) => {
+    switch (categoryId) {
+      case "process-simulation":
+        return <ProcessSimulationInterface />;
+      case "thermodynamic":
+        return <ThermodynamicInterface />;
+      case "reaction-engineering":
+        return <ReactionEngineeringInterface />;
+      case "data-analysis":
+        return <DataAnalysisInterface />;
+      case "process-control":
+        return <ProcessControlInterface />;
+      case "equipment-design":
+        return <EquipmentDesignInterface />;
+      case "piping-design":
+        return <PipingDesignInterface />;
+      case "environmental-safety":
+        return <EnvironmentalSafetyInterface />;
+      case "cfd":
+        return <CFDInterface />;
+      case "chemical-database":
+        return <ChemicalDatabaseInterface />;
+      case "miscellaneous":
+        return <MiscellaneousToolsInterface />;
+      default:
+        return null;
+    }
+  };
+
   return (
-    <div>
-      {/* Component implementation */}
-    </div>
+    <Layout>
+      <div className="container mx-auto py-8 px-4">
+        <h1 className="text-3xl font-bold mb-2">Chemical Engineering Software Tools</h1>
+        <p className="text-gray-600 mb-8">
+          Browse our comprehensive database of software tools commonly used in chemical engineering practice and research.
+        </p>
+
+        {/* Search and filter bar */}
+        <div className="flex flex-col md:flex-row gap-4 mb-8">
+          <div className="relative flex-grow">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+            <Input
+              placeholder="Search software by name or description..."
+              className="pl-10"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          <div>
+            <Button 
+              variant={selectedCategory ? "default" : "outline"} 
+              onClick={() => setSelectedCategory(null)}
+              className="w-full md:w-auto"
+            >
+              <Filter className="mr-2 h-4 w-4" />
+              {selectedCategory ? "Clear Filter" : "All Categories"}
+            </Button>
+          </div>
+        </div>
+
+        {/* Category selection */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
+          {softwareCategories.map((category) => (
+            <div
+              key={category.id}
+              className={cn(
+                "p-4 rounded-lg border cursor-pointer transition-all hover:shadow-md",
+                selectedCategory === category.id 
+                  ? "border-primary bg-primary/10"
+                  : "border-gray-200 hover:border-primary/30"
+              )}
+              onClick={() => setSelectedCategory(category.id)}
+            >
+              <div className="flex items-center mb-2">
+                <div className={cn(
+                  "p-2 rounded-full mr-3",
+                  selectedCategory === category.id ? "bg-primary/20" : "bg-gray-100"
+                )}>
+                  {category.icon}
+                </div>
+                <h3 className="font-medium text-sm">{category.name}</h3>
+              </div>
+              <p className="text-gray-500 text-xs">{category.description}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Educational resources section */}
+        <GlassPanel className="mb-8 p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <Book className="h-6 w-6 text-primary" />
+            <h2 className="text-xl font-semibold">Educational Resources</h2>
+          </div>
+          <p className="text-gray-600 mb-4">
+            For your academic needs, we recommend these freely accessible educational resources:
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <a 
+              href="https://ocw.mit.edu/search/?d=Chemistry&d=Chemical%20Engineering" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="p-4 border border-gray-200 rounded-lg hover:shadow-md transition-all"
+            >
+              <div className="flex justify-between items-start">
+                <h3 className="font-medium">MIT OpenCourseWare</h3>
+                <ExternalLink className="h-4 w-4 text-gray-400" />
+              </div>
+              <p className="text-sm text-gray-500 mt-2">
+                Free lecture notes, exams, and videos from MIT's chemical engineering courses.
+              </p>
+            </a>
+            <a 
+              href="https://open.umn.edu/opentextbooks/subjects/chemistry" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="p-4 border border-gray-200 rounded-lg hover:shadow-md transition-all"
+            >
+              <div className="flex justify-between items-start">
+                <h3 className="font-medium">Open Textbook Library</h3>
+                <ExternalLink className="h-4 w-4 text-gray-400" />
+              </div>
+              <p className="text-sm text-gray-500 mt-2">
+                Freely available, peer-reviewed textbooks for chemical engineering and related subjects.
+              </p>
+            </a>
+            <a 
+              href="https://www.khanacademy.org/science/chemistry" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="p-4 border border-gray-200 rounded-lg hover:shadow-md transition-all"
+            >
+              <div className="flex justify-between items-start">
+                <h3 className="font-medium">Khan Academy</h3>
+                <ExternalLink className="h-4 w-4 text-gray-400" />
+              </div>
+              <p className="text-sm text-gray-500 mt-2">
+                Free video lectures and practice exercises for chemistry and engineering fundamentals.
+              </p>
+            </a>
+          </div>
+        </GlassPanel>
+
+        {/* Software listing */}
+        <div className="space-y-4 mb-8">
+          <h2 className="text-xl font-semibold mb-4">
+            {selectedCategory 
+              ? `${softwareCategories.find(c => c.id === selectedCategory)?.name} Software` 
+              : "All Software Tools"}
+            <span className="ml-2 text-sm font-normal text-gray-500">
+              ({filteredSoftware.length} tools)
+            </span>
+          </h2>
+
+          {filteredSoftware.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-500">No software tools match your criteria.</p>
+              <Button 
+                variant="outline" 
+                className="mt-4" 
+                onClick={() => {
+                  setSelectedCategory(null);
+                  setSearchQuery("");
+                }}
+              >
+                Clear filters
+              </Button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredSoftware.map((software) => (
+                <div 
+                  key={software.name} 
+                  className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-all"
+                >
+                  <div className="p-5">
+                    <div className="flex justify-between items-start mb-3">
+                      <h3 className="font-semibold">{software.name}</h3>
+                      <div className="flex gap-1">
+                        {software.isFree && (
+                          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                            Free
+                          </Badge>
+                        )}
+                        {software.isOpenSource && (
+                          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                            Open Source
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <p className="text-sm text-gray-600 mb-4 line-clamp-3">
+                      {software.description}
+                    </p>
+                    
+                    {software.features && (
+                      <div className="mb-4">
+                        <div 
+                          className="flex items-center text-sm text-primary cursor-pointer hover:text-primary/80"
+                          onClick={() => toggleFeatures(software.name)}
+                        >
+                          {expandedFeatures[software.name] ? (
+                            <>
+                              <ChevronUp className="h-4 w-4 mr-1" />
+                              Hide features
+                            </>
+                          ) : (
+                            <>
+                              <ChevronDown className="h-4 w-4 mr-1" />
+                              Show features
+                            </>
+                          )}
+                        </div>
+                        
+                        {expandedFeatures[software.name] && (
+                          <ul className="mt-2 ml-5 list-disc text-sm text-gray-600 space-y-1">
+                            {software.features.map((feature, index) => (
+                              <li key={index}>{feature}</li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    )}
+                    
+                    <div className="flex flex-wrap gap-2 mt-auto">
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        onClick={() => openSoftwareDialog(software)}
+                      >
+                        Learn More
+                      </Button>
+                      
+                      {software.url && (
+                        <a 
+                          href={software.url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                        >
+                          <Button size="sm" variant="default">
+                            Visit Website
+                            <ExternalLink className="h-3 w-3 ml-1" />
+                          </Button>
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Tabs for related content */}
+        {selectedCategory && (
+          <Tabs defaultValue="interface" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="interface">Interactive Demo</TabsTrigger>
+              <TabsTrigger value="resources">Related Resources</TabsTrigger>
+            </TabsList>
+            <TabsContent value="interface" className="p-4 border rounded-md mt-2">
+              {getCategoryInterface(selectedCategory)}
+            </TabsContent>
+            <TabsContent value="resources" className="p-4 border rounded-md mt-2">
+              <h3 className="font-medium mb-3">Recommended Learning Resources</h3>
+              <ul className="space-y-2">
+                <li className="flex items-center">
+                  <Book className="h-4 w-4 mr-2 text-primary" />
+                  <a 
+                    href="https://www.aiche.org/academy" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline"
+                  >
+                    AIChE Academy Courses
+                  </a>
+                </li>
+                <li className="flex items-center">
+                  <Book className="h-4 w-4 mr-2 text-primary" />
+                  <a 
+                    href="https://www.edx.org/search?q=chemical+engineering" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline"
+                  >
+                    edX Chemical Engineering Courses
+                  </a>
+                </li>
+                <li className="flex items-center">
+                  <Book className="h-4 w-4 mr-2 text-primary" />
+                  <a 
+                    href="https://www.coursera.org/courses?query=chemical%20engineering" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline"
+                  >
+                    Coursera Chemical Engineering Specializations
+                  </a>
+                </li>
+              </ul>
+            </TabsContent>
+          </Tabs>
+        )}
+
+        {/* Software detail dialog */}
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          {selectedSoftware && (
+            <DialogContent className="max-w-3xl">
+              <DialogHeader>
+                <DialogTitle className="flex justify-between items-center">
+                  <span>{selectedSoftware.name}</span>
+                  <div className="flex gap-1">
+                    {selectedSoftware.isFree && (
+                      <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                        Free
+                      </Badge>
+                    )}
+                    {selectedSoftware.isOpenSource && (
+                      <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                        Open Source
+                      </Badge>
+                    )}
+                  </div>
+                </DialogTitle>
+              </DialogHeader>
+              
+              <div className="mt-4">
+                <p className="text-gray-700 mb-6">{selectedSoftware.description}</p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <h3 className="font-medium mb-2">Key Features</h3>
+                    {selectedSoftware.features ? (
+                      <ul className="list-disc pl-5 space-y-1 text-gray-600">
+                        {selectedSoftware.features.map((feature, index) => (
+                          <li key={index}>{feature}</li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-gray-500 italic">No features listed</p>
+                    )}
+                  </div>
+                  
+                  <div>
+                    <h3 className="font-medium mb-2">Category</h3>
+                    <p className="text-gray-600 mb-4">
+                      {softwareCategories.find(c => c.id === selectedSoftware.category)?.name}
+                    </p>
+                    
+                    {selectedSoftware.url && (
+                      <div>
+                        <h3 className="font-medium mb-2">Official Website</h3>
+                        <a 
+                          href={selectedSoftware.url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:underline flex items-center"
+                        >
+                          Visit {selectedSoftware.name} website
+                          <ExternalLink className="h-3 w-3 ml-1" />
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="mt-8 pt-6 border-t">
+                  <h3 className="font-medium mb-3">Alternative Learning Resources</h3>
+                  <ul className="space-y-2">
+                    <li>
+                      <a 
+                        href={`https://www.youtube.com/results?search_query=${encodeURIComponent(selectedSoftware.name + " tutorial")}`}
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:underline flex items-center"
+                      >
+                        <ExternalLink className="h-3 w-3 mr-1" />
+                        Find tutorials on YouTube
+                      </a>
+                    </li>
+                    <li>
+                      <a 
+                        href={`https://scholar.google.com/scholar?q=${encodeURIComponent(selectedSoftware.name + " chemical engineering")}`}
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:underline flex items-center"
+                      >
+                        <ExternalLink className="h-3 w-3 mr-1" />
+                        Find academic papers using this software
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </DialogContent>
+          )}
+        </Dialog>
+      </div>
+    </Layout>
   );
-}
+};
 
 export default SoftwareTools;
