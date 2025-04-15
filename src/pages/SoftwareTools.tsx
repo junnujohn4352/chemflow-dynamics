@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { 
   Dialog, 
@@ -544,86 +545,86 @@ const SoftwareTools: React.FC = () => {
                     <Info className="h-4 w-4" />
                     {software.rating || "N/A"} ({software.votes || 0} votes)
                   </div>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" size="sm">
-                      Learn More
-                    </Button>
-                  </DialogTrigger>
+                  {/* Add Dialog wrapper around each DialogTrigger */}
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="sm" onClick={() => setSelectedSoftware(software)}>
+                        Learn More
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+                      <DialogHeader>
+                        <DialogTitle className="text-2xl">{software.name}</DialogTitle>
+                        <DialogDescription>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Badge variant="outline">{software.category}</Badge>
+                            {software.price === "Free" ? (
+                              <Badge className="bg-green-600">Free</Badge>
+                            ) : (
+                              <Badge className="bg-blue-600">{software.price}</Badge>
+                            )}
+                            {software.openSource && (
+                              <Badge className="bg-orange-600">Open Source</Badge>
+                            )}
+                          </div>
+                        </DialogDescription>
+                      </DialogHeader>
+                      
+                      <ScrollArea className="flex-1 -mx-6 px-6">
+                        <div className="space-y-4 mb-4">
+                          <div>
+                            <h3 className="font-medium">Description</h3>
+                            <p className="text-gray-700 dark:text-gray-300 mt-1">{software.description}</p>
+                          </div>
+                          
+                          {software.features && (
+                            <div>
+                              <h3 className="font-medium">Key Features</h3>
+                              <ul className="list-disc list-inside mt-1 space-y-1">
+                                {software.features.map((feature, index) => (
+                                  <li key={index} className="text-gray-700 dark:text-gray-300">{feature}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                          
+                          {renderSoftwareInterface(software)}
+                        </div>
+                      </ScrollArea>
+                      
+                      <DialogFooter className="border-t pt-4 mt-4">
+                        <div className="flex w-full justify-between items-center">
+                          <div className="flex items-center gap-2">
+                            {software.website && (
+                              <Button variant="outline" size="sm" asChild>
+                                <a href={software.website} target="_blank" rel="noopener noreferrer">
+                                  <ExternalLink className="h-4 w-4 mr-1" />
+                                  Visit Website
+                                </a>
+                              </Button>
+                            )}
+                            {software.openSource && software.repository && (
+                              <Button variant="outline" size="sm" asChild>
+                                <a href={software.repository} target="_blank" rel="noopener noreferrer">
+                                  <Github className="h-4 w-4 mr-1" />
+                                  Source Code
+                                </a>
+                              </Button>
+                            )}
+                          </div>
+                          <Button variant="outline" onClick={() => setSelectedSoftware(null)}>
+                            Close
+                          </Button>
+                        </div>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
                 </CardFooter>
               </Card>
             ))}
           </div>
           
-          {selectedSoftware && (
-            <Dialog open={!!selectedSoftware} onOpenChange={(open) => !open && setSelectedSoftware(null)}>
-              <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
-                <DialogHeader>
-                  <DialogTitle className="text-2xl">{selectedSoftware.name}</DialogTitle>
-                  <DialogDescription>
-                    <div className="flex items-center gap-2 mt-1">
-                      <Badge variant="outline">{selectedSoftware.category}</Badge>
-                      {selectedSoftware.price === "Free" ? (
-                        <Badge className="bg-green-600">Free</Badge>
-                      ) : (
-                        <Badge className="bg-blue-600">{selectedSoftware.price}</Badge>
-                      )}
-                      {selectedSoftware.openSource && (
-                        <Badge className="bg-orange-600">Open Source</Badge>
-                      )}
-                    </div>
-                  </DialogDescription>
-                </DialogHeader>
-                
-                <ScrollArea className="flex-1 -mx-6 px-6">
-                  <div className="space-y-4 mb-4">
-                    <div>
-                      <h3 className="font-medium">Description</h3>
-                      <p className="text-gray-700 dark:text-gray-300 mt-1">{selectedSoftware.description}</p>
-                    </div>
-                    
-                    {selectedSoftware.features && (
-                      <div>
-                        <h3 className="font-medium">Key Features</h3>
-                        <ul className="list-disc list-inside mt-1 space-y-1">
-                          {selectedSoftware.features.map((feature, index) => (
-                            <li key={index} className="text-gray-700 dark:text-gray-300">{feature}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                    
-                    {renderSoftwareInterface(selectedSoftware)}
-                  </div>
-                </ScrollArea>
-                
-                <DialogFooter className="border-t pt-4 mt-4">
-                  <div className="flex w-full justify-between items-center">
-                    <div className="flex items-center gap-2">
-                      {selectedSoftware.website && (
-                        <Button variant="outline" size="sm" asChild>
-                          <a href={selectedSoftware.website} target="_blank" rel="noopener noreferrer">
-                            <ExternalLink className="h-4 w-4 mr-1" />
-                            Visit Website
-                          </a>
-                        </Button>
-                      )}
-                      {selectedSoftware.openSource && selectedSoftware.repository && (
-                        <Button variant="outline" size="sm" asChild>
-                          <a href={selectedSoftware.repository} target="_blank" rel="noopener noreferrer">
-                            <Github className="h-4 w-4 mr-1" />
-                            Source Code
-                          </a>
-                        </Button>
-                      )}
-                    </div>
-                    <Button variant="outline" onClick={() => setSelectedSoftware(null)}>
-                      Close
-                    </Button>
-                  </div>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          )}
+          {/* Remove the standalone Dialog that uses selectedSoftware since we now have individual dialogs */}
         </TabsContent>
         
         <TabsContent value="educational">
