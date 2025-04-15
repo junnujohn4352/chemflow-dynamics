@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { 
   Dialog, 
@@ -545,7 +544,6 @@ const SoftwareTools: React.FC = () => {
                     <Info className="h-4 w-4" />
                     {software.rating || "N/A"} ({software.votes || 0} votes)
                   </div>
-                  {/* Add Dialog wrapper around each DialogTrigger */}
                   <Dialog>
                     <DialogTrigger asChild>
                       <Button variant="outline" size="sm" onClick={() => setSelectedSoftware(software)}>
@@ -623,8 +621,6 @@ const SoftwareTools: React.FC = () => {
               </Card>
             ))}
           </div>
-          
-          {/* Remove the standalone Dialog that uses selectedSoftware since we now have individual dialogs */}
         </TabsContent>
         
         <TabsContent value="educational">

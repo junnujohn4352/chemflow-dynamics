@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Play, Pause, Save, RotateCw, Settings, LineChart } from "lucide-react";
+import { LineChart as RechartLineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
 interface ProcessControlInterfaceProps {
   software: {
@@ -22,6 +23,10 @@ const ProcessControlInterface: React.FC<ProcessControlInterfaceProps> = ({ softw
   const [elapsedTime, setElapsedTime] = useState(0);
   const [setpoint, setSetpoint] = useState(50);
   const [processValue, setProcessValue] = useState(30);
+  const [chartData, setChartData] = useState<{time: number, setpoint: number, processValue: number}[]>([]);
+  const [kp, setKp] = useState(2.5);
+  const [ki, setKi] = useState(0.5);
+  const [kd, setKd] = useState(0.2);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -37,11 +42,25 @@ const ProcessControlInterface: React.FC<ProcessControlInterfaceProps> = ({ softw
           const newValue = prev + (diff * 0.1) + noise;
           return Number(newValue.toFixed(1));
         });
+        
+        // Update chart data
+        setChartData(prevData => {
+          const newData = [...prevData];
+          if (newData.length > 30) {
+            newData.shift(); // Remove oldest data point if we have more than 30
+          }
+          newData.push({
+            time: elapsedTime,
+            setpoint: setpoint,
+            processValue: processValue
+          });
+          return newData;
+        });
       }, 1000);
     }
     
     return () => clearInterval(interval);
-  }, [isRunning, setpoint]);
+  }, [isRunning, setpoint, processValue, elapsedTime]);
 
   const handleToggleSimulation = () => {
     setIsRunning(prev => !prev);
@@ -51,10 +70,23 @@ const ProcessControlInterface: React.FC<ProcessControlInterfaceProps> = ({ softw
     setIsRunning(false);
     setElapsedTime(0);
     setProcessValue(30);
+    setChartData([]);
   };
 
   const handleSetpointChange = (value: number[]) => {
     setSetpoint(value[0]);
+  };
+  
+  const handleKpChange = (value: number[]) => {
+    setKp(value[0]);
+  };
+  
+  const handleKiChange = (value: number[]) => {
+    setKi(value[0]);
+  };
+  
+  const handleKdChange = (value: number[]) => {
+    setKd(value[0]);
   };
 
   return (
@@ -90,24 +122,24 @@ const ProcessControlInterface: React.FC<ProcessControlInterfaceProps> = ({ softw
               <div className="space-y-2">
                 <Label htmlFor="kp-value">Kp (Proportional Gain)</Label>
                 <div className="flex items-center gap-2">
-                  <Slider defaultValue={[2.5]} min={0} max={10} step={0.1} onValueChange={handleSetpointChange} className="flex-1" />
-                  <Input type="number" value="2.5" className="w-16" />
+                  <Slider defaultValue={[kp]} min={0} max={10} step={0.1} onValueChange={handleKpChange} className="flex-1" />
+                  <Input type="number" value={kp} onChange={(e) => setKp(Number(e.target.value))} className="w-16" />
                 </div>
               </div>
               
               <div className="space-y-2">
                 <Label htmlFor="ki-value">Ki (Integral Gain)</Label>
                 <div className="flex items-center gap-2">
-                  <Slider defaultValue={[0.5]} min={0} max={5} step={0.1} className="flex-1" />
-                  <Input type="number" value="0.5" className="w-16" />
+                  <Slider defaultValue={[ki]} min={0} max={5} step={0.1} onValueChange={handleKiChange} className="flex-1" />
+                  <Input type="number" value={ki} onChange={(e) => setKi(Number(e.target.value))} className="w-16" />
                 </div>
               </div>
               
               <div className="space-y-2">
                 <Label htmlFor="kd-value">Kd (Derivative Gain)</Label>
                 <div className="flex items-center gap-2">
-                  <Slider defaultValue={[0.2]} min={0} max={2} step={0.05} className="flex-1" />
-                  <Input type="number" value="0.2" className="w-16" />
+                  <Slider defaultValue={[kd]} min={0} max={2} step={0.05} onValueChange={handleKdChange} className="flex-1" />
+                  <Input type="number" value={kd} onChange={(e) => setKd(Number(e.target.value))} className="w-16" />
                 </div>
               </div>
               
@@ -152,11 +184,27 @@ const ProcessControlInterface: React.FC<ProcessControlInterfaceProps> = ({ softw
                 </div>
                 
                 <div className="flex-1 flex items-center justify-center border bg-white dark:bg-gray-900 rounded-md mb-4">
-                  <div className="w-full h-full p-4 flex items-center justify-center">
-                    <div className="text-center">
-                      <LineChart className="h-12 w-12 mx-auto mb-2 text-blue-500" />
-                      <p className="text-sm text-gray-500 dark:text-gray-400">[Real-time trend would appear here]</p>
-                    </div>
+                  <div className="w-full h-full p-4">
+                    {chartData.length > 0 ? (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <RechartLineChart data={chartData}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="time" label={{ value: 'Time (s)', position: 'insideBottomRight', offset: -5 }} />
+                          <YAxis label={{ value: 'Temperature (°C)', angle: -90, position: 'insideLeft' }} />
+                          <Tooltip />
+                          <Legend />
+                          <Line type="monotone" dataKey="setpoint" stroke="#8884d8" name="Setpoint" />
+                          <Line type="monotone" dataKey="processValue" stroke="#82ca9d" name="Process Value" />
+                        </RechartLineChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div className="h-full flex items-center justify-center">
+                        <div className="text-center">
+                          <LineChart className="h-12 w-12 mx-auto mb-2 text-blue-500" />
+                          <p className="text-sm text-gray-500 dark:text-gray-400">Start simulation to see real-time trend</p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
                 
@@ -385,10 +433,25 @@ const ProcessControlInterface: React.FC<ProcessControlInterfaceProps> = ({ softw
                 <h4 className="text-sm font-medium mb-3">Response Comparison</h4>
                 
                 <div className="aspect-video bg-gray-50 dark:bg-gray-900 rounded-md flex items-center justify-center mb-4">
-                  <div className="text-center">
-                    <LineChart className="h-12 w-12 mx-auto mb-2 text-blue-500" />
-                    <p className="text-sm text-gray-500 dark:text-gray-400">[Response comparison chart would appear here]</p>
-                  </div>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <RechartLineChart data={[
+                      { time: 0, current: 30, proposed: 30 },
+                      { time: 5, current: 40, proposed: 45 },
+                      { time: 10, current: 46, proposed: 49 },
+                      { time: 15, current: 48, proposed: 50 },
+                      { time: 20, current: 49, proposed: 50 },
+                      { time: 25, current: 49.5, proposed: 50 },
+                      { time: 30, current: 49.8, proposed: 50 }
+                    ]}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="time" label={{ value: 'Time (s)', position: 'insideBottomRight', offset: -5 }} />
+                      <YAxis label={{ value: 'Temperature (°C)', angle: -90, position: 'insideLeft' }} />
+                      <Tooltip />
+                      <Legend />
+                      <Line type="monotone" dataKey="current" stroke="#3b82f6" name="Current Tuning" />
+                      <Line type="monotone" dataKey="proposed" stroke="#22c55e" name="Proposed Tuning" />
+                    </RechartLineChart>
+                  </ResponsiveContainer>
                 </div>
                 
                 <div className="flex justify-between text-sm">
@@ -476,11 +539,31 @@ const ProcessControlInterface: React.FC<ProcessControlInterfaceProps> = ({ softw
                   </div>
                 </div>
                 
-                <div className="flex-1 flex items-center justify-center">
-                  <div className="text-center">
-                    <LineChart className="h-16 w-16 mx-auto mb-2 text-blue-500" />
-                    <p className="text-sm text-gray-500 dark:text-gray-400">[Control response visualization would appear here]</p>
-                  </div>
+                <div className="flex-1">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <RechartLineChart
+                      data={[
+                        { time: 0, pv: 30, sp: 50, error: 20, output: 100 },
+                        { time: 10, pv: 35, sp: 50, error: 15, output: 90 },
+                        { time: 20, pv: 42, sp: 50, error: 8, output: 70 },
+                        { time: 30, pv: 46, sp: 50, error: 4, output: 60 },
+                        { time: 40, pv: 48, sp: 50, error: 2, output: 55 },
+                        { time: 50, pv: 49, sp: 50, error: 1, output: 52 },
+                        { time: 60, pv: 49.5, sp: 50, error: 0.5, output: 50 }
+                      ]}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="time" label={{ value: 'Time (s)', position: 'insideBottomRight', offset: -5 }} />
+                      <YAxis yAxisId="left" label={{ value: 'Temperature (°C)', angle: -90, position: 'insideLeft' }} />
+                      <YAxis yAxisId="right" orientation="right" label={{ value: 'Output (%)', angle: 90, position: 'insideRight' }} />
+                      <Tooltip />
+                      <Legend />
+                      <Line yAxisId="left" type="monotone" dataKey="pv" stroke="#3b82f6" name="Process Value" />
+                      <Line yAxisId="left" type="monotone" dataKey="sp" stroke="#8884d8" name="Setpoint" strokeDasharray="5 5" />
+                      <Line yAxisId="left" type="monotone" dataKey="error" stroke="#d97706" name="Error" />
+                      <Line yAxisId="right" type="monotone" dataKey="output" stroke="#ef4444" name="Control Output" />
+                    </RechartLineChart>
+                  </ResponsiveContainer>
                 </div>
               </div>
             </div>
