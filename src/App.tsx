@@ -1,3 +1,4 @@
+
 import React, { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -19,6 +20,7 @@ import Simulations from './pages/Simulations';
 import Components from './pages/Components';
 import SignIn from './pages/SignIn';
 import SignUp from './pages/SignUp';
+import IntelligentSimulation from './pages/IntelligentSimulation';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -118,6 +120,7 @@ function App() {
               <Route path="/unit-converter" element={<UnitConverter />} />
               <Route path="/code-converter" element={<CodeConverter />} />
               <Route path="/create-simulation" element={<CreateSimulation />} />
+              <Route path="/intelligent-simulation" element={<IntelligentSimulation />} />
               <Route path="/formulas" element={<Formulas />} />
               <Route path="/about" element={<About />} />
               <Route path="/simulations" element={<Simulations />} />

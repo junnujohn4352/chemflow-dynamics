@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
@@ -8,7 +9,8 @@ import {
   Code,
   FlaskConical,
   Info,
-  Book
+  Book,
+  Cpu
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import LearnMoreModal from "@/components/ui/LearnMoreModal";
@@ -44,6 +46,14 @@ const Dashboard = () => {
               icon={<FlaskConical className="h-6 w-6" />}
               linkTo="/create-simulation"
               color="bg-purple-500"
+            />
+            <DashboardCard 
+              title="Intelligent Simulation"
+              description="Compound selection and real-time thermodynamic analysis"
+              icon={<Cpu className="h-6 w-6" />}
+              linkTo="/intelligent-simulation"
+              color="bg-indigo-600"
+              isNew={true}
             />
             <DashboardCard 
               title="HYSYS Calculations"
