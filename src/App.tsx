@@ -1,3 +1,4 @@
+
 import React, { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -15,8 +16,7 @@ import HysysCalculations from "./pages/HysysCalculations";
 import About from "./pages/About";
 import CodeConverter from "./pages/CodeConverter";
 import Formulas from "./pages/Formulas";
-import SoftwareTools from "@/pages/SoftwareTools";
-import SoftwareTopics from "@/pages/SoftwareTopics";
+import IntelligentSimulation from "./pages/IntelligentSimulation";
 import Simulations from './pages/Simulations';
 import Components from './pages/Components';
 import SignIn from './pages/SignIn';
@@ -120,9 +120,8 @@ function App() {
               <Route path="/unit-converter" element={<UnitConverter />} />
               <Route path="/code-converter" element={<CodeConverter />} />
               <Route path="/create-simulation" element={<CreateSimulation />} />
+              <Route path="/intelligent-simulation" element={<IntelligentSimulation />} />
               <Route path="/formulas" element={<Formulas />} />
-              <Route path="/software-tools" element={<SoftwareTools />} />
-              <Route path="/software-topics" element={<SoftwareTopics />} />
               <Route path="/about" element={<About />} />
               <Route path="/simulations" element={<Simulations />} />
               <Route path="/components" element={<Components />} />

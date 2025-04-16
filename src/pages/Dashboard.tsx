@@ -10,7 +10,7 @@ import {
   FlaskConical,
   Info,
   Book,
-  Database
+  Lightbulb
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import LearnMoreModal from "@/components/ui/LearnMoreModal";
@@ -48,6 +48,14 @@ const Dashboard = () => {
               color="bg-purple-500"
             />
             <DashboardCard 
+              title="Intelligent Simulation"
+              description="Build a simulation with real-time analysis and results"
+              icon={<Lightbulb className="h-6 w-6" />}
+              linkTo="/intelligent-simulation"
+              color="bg-amber-500"
+              isNew={true}
+            />
+            <DashboardCard 
               title="HYSYS Calculations"
               description="Access comprehensive Aspen HYSYS calculations library"
               icon={<Calculator className="h-6 w-6" />}
@@ -74,14 +82,6 @@ const Dashboard = () => {
               icon={<Code className="h-6 w-6" />}
               linkTo="/code-converter"
               color="bg-teal-500"
-            />
-            <DashboardCard 
-              title="Software Tools"
-              description="Comprehensive database of chemical engineering software"
-              icon={<Database className="h-6 w-6" />}
-              linkTo="/software-tools"
-              color="bg-blue-600"
-              isNew={true}
             />
             <DashboardCard 
               title="About"
