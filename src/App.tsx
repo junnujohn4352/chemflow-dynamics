@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -21,6 +20,7 @@ import Simulations from './pages/Simulations';
 import Components from './pages/Components';
 import SignIn from './pages/SignIn';
 import SignUp from './pages/SignUp';
+import ProcessFlow from './components/ui/ProcessFlow';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -128,6 +128,7 @@ function App() {
               <Route path="/settings" element={<Settings />} />
               <Route path="/sign-in" element={<SignIn />} />
               <Route path="/sign-up" element={<SignUp />} />
+              <Route path="/process-flow" element={<ProcessFlow />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </TooltipProvider>
