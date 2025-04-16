@@ -9,8 +9,7 @@ import {
   Code,
   FlaskConical,
   Info,
-  Book,
-  Lightbulb
+  Book
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import LearnMoreModal from "@/components/ui/LearnMoreModal";
@@ -27,7 +26,7 @@ const Dashboard = () => {
           <div className="mb-8 flex justify-between items-center">
             <div>
               <h1 className="text-3xl font-display font-bold mb-2 dark:text-white">Dashboard</h1>
-              <p className="text-gray-600 dark:text-gray-400">Welcome to ChemFlow - Your Chemical Process Simulation Platform</p>
+              <p className="text-gray-600 dark:text-gray-400">Welcome to Lolby - Your Process Simulation Platform</p>
             </div>
             <Button 
               variant="outline" 
@@ -46,14 +45,6 @@ const Dashboard = () => {
               icon={<FlaskConical className="h-6 w-6" />}
               linkTo="/create-simulation"
               color="bg-purple-500"
-            />
-            <DashboardCard 
-              title="Intelligent Simulation"
-              description="Build a simulation with real-time analysis and results"
-              icon={<Lightbulb className="h-6 w-6" />}
-              linkTo="/intelligent-simulation"
-              color="bg-amber-500"
-              isNew={true}
             />
             <DashboardCard 
               title="HYSYS Calculations"
@@ -85,7 +76,7 @@ const Dashboard = () => {
             />
             <DashboardCard 
               title="About"
-              description="Learn more about LOL Groups and our vision"
+              description="Learn more about Lolby and our vision"
               icon={<Info className="h-6 w-6" />}
               linkTo="/about"
               color="bg-amber-500"

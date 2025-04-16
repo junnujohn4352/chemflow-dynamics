@@ -1,7 +1,7 @@
 
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Moon, Sun, Settings, FileText, FlaskConical, Calculator, Book, Code, Info, Lightbulb } from "lucide-react";
+import { Menu, X, Moon, Sun, Settings, FileText, FlaskConical, Calculator, Book, Code, Info } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
 import { Button } from "@/components/ui/button";
 
@@ -24,11 +24,6 @@ const Navbar = () => {
       label: "Create Simulation",
       href: "/create-simulation",
       icon: <FlaskConical className="h-4 w-4 mr-2" />,
-    },
-    {
-      label: "Intelligent Simulation",
-      href: "/intelligent-simulation",
-      icon: <Lightbulb className="h-4 w-4 mr-2" />,
     },
     {
       label: "HYSYS Calculations",
@@ -69,7 +64,7 @@ const Navbar = () => {
           <div className="flex items-center">
             <Link to="/" className="flex-shrink-0 flex items-center">
               <span className="text-xl font-display font-bold text-gray-900 dark:text-white">
-                Chem<span className="text-flow-blue">Flow</span>
+                <span className="text-purple-600">Lolby</span>
               </span>
             </Link>
           </div>
@@ -82,7 +77,7 @@ const Navbar = () => {
                   to={item.href}
                   className={`px-3 py-2 rounded-md text-sm font-medium ${
                     isActiveRoute(item.href)
-                      ? "bg-flow-blue text-white dark:bg-flow-blue/80"
+                      ? "bg-purple-600 text-white dark:bg-purple-600/80"
                       : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                   }`}
                 >
@@ -141,7 +136,7 @@ const Navbar = () => {
                 to={item.href}
                 className={`block px-3 py-2 rounded-md text-base font-medium ${
                   isActiveRoute(item.href)
-                    ? "bg-flow-blue text-white dark:bg-flow-blue/80"
+                    ? "bg-purple-600 text-white dark:bg-purple-600/80"
                     : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                 }`}
                 onClick={() => setIsOpen(false)}

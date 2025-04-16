@@ -2,10 +2,8 @@
 import React, { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import Index from "./pages/Index";
 import LandingPage from "./pages/LandingPage";
 import Dashboard from "./pages/Dashboard";
 import CreateSimulation from "./pages/CreateSimulation";
@@ -16,7 +14,6 @@ import HysysCalculations from "./pages/HysysCalculations";
 import About from "./pages/About";
 import CodeConverter from "./pages/CodeConverter";
 import Formulas from "./pages/Formulas";
-import IntelligentSimulation from "./pages/IntelligentSimulation";
 import Simulations from './pages/Simulations';
 import Components from './pages/Components';
 import SignIn from './pages/SignIn';
@@ -44,9 +41,9 @@ function App() {
 
   React.useEffect(() => {
     const handleBeforeUnload = () => {
-      const activeSimulation = localStorage.getItem('chemflow-active-simulation');
+      const activeSimulation = localStorage.getItem('lolby-active-simulation');
       if (activeSimulation === 'true') {
-        const simDataStr = localStorage.getItem('chemflow-simulation-data');
+        const simDataStr = localStorage.getItem('lolby-simulation-data');
         if (simDataStr) {
           try {
             const simData = JSON.parse(simDataStr);
@@ -74,7 +71,7 @@ function App() {
                 
                 fullSimData.lastUpdated = new Date().toISOString();
                 
-                const existingSimsStr = localStorage.getItem('chemflow-simulations') || '[]';
+                const existingSimsStr = localStorage.getItem('lolby-simulations') || '[]';
                 const existingSims = JSON.parse(existingSimsStr);
                 
                 const simIndex = existingSims.findIndex((s: any) => s.id === simId);
@@ -85,7 +82,7 @@ function App() {
                   existingSims.push(fullSimData);
                 }
                 
-                localStorage.setItem('chemflow-simulations', JSON.stringify(existingSims));
+                localStorage.setItem('lolby-simulations', JSON.stringify(existingSims));
                 console.log('Simulation saved', fullSimData.name);
               } catch (error) {
                 console.error('Error saving simulation:', error);
@@ -111,8 +108,6 @@ function App() {
     <div className="app">
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
-          {/* The TooltipProvider is imported from Radix UI and should not be used as a separate wrapper.
-              Instead, we'll use it properly inside each component that needs tooltips. */}
           <Toaster />
           <Sonner />
           <Routes>
@@ -122,7 +117,6 @@ function App() {
             <Route path="/unit-converter" element={<UnitConverter />} />
             <Route path="/code-converter" element={<CodeConverter />} />
             <Route path="/create-simulation" element={<CreateSimulation />} />
-            <Route path="/intelligent-simulation" element={<IntelligentSimulation />} />
             <Route path="/formulas" element={<Formulas />} />
             <Route path="/about" element={<About />} />
             <Route path="/simulations" element={<Simulations />} />

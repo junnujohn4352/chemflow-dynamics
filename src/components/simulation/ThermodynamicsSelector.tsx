@@ -60,6 +60,48 @@ const models = [
     bestFor: ["Electrolyte solutions", "Acid gases", "Water treatment"],
     limitations: ["Non-aqueous systems", "High concentrations", "High temperatures"],
   },
+  {
+    id: "SAFT",
+    name: "SAFT",
+    description: "Statistical Associating Fluid Theory for associating fluids",
+    bestFor: ["Associating fluids", "Hydrogen bonding", "Polymer systems"],
+    limitations: ["Complex mixtures", "Implementation complexity", "Computational cost"],
+  },
+  {
+    id: "PC-SAFT",
+    name: "PC-SAFT",
+    description: "Perturbed-Chain SAFT - improved version of SAFT",
+    bestFor: ["Polymers", "Hydrogen bonding", "Asymmetric systems"],
+    limitations: ["Computational cost", "Ionic liquids", "Very high pressures"],
+  },
+  {
+    id: "CPA",
+    name: "CPA",
+    description: "Cubic-Plus-Association EoS for associating components",
+    bestFor: ["Water-hydrocarbon", "Glycols", "Alcohols"],
+    limitations: ["Multi-component systems", "Parameter estimation", "Polymer solutions"],
+  },
+  {
+    id: "GERG-2008",
+    name: "GERG-2008",
+    description: "High accuracy equation for natural gas mixtures",
+    bestFor: ["Natural gas", "LNG", "Gas processing"],
+    limitations: ["Components not in database", "Some properties", "Complex implementation"],
+  },
+  {
+    id: "PSRK",
+    name: "PSRK",
+    description: "Predictive SRK model with group contribution method",
+    bestFor: ["Gas solubility", "Supercritical CO2", "High pressure"],
+    limitations: ["Complex systems", "Some polar mixtures", "Parameter availability"],
+  },
+  {
+    id: "SRKM",
+    name: "SRKM",
+    description: "Modified SRK with Mathias-Copeman alpha function",
+    bestFor: ["Hydrocarbons", "High temperatures", "Refinery applications"],
+    limitations: ["Polar compounds", "Parameter estimation", "Association effects"],
+  },
 ];
 
 // Helper function to recommend models based on components
@@ -82,19 +124,51 @@ const recommendModels = (components: string[]): string[] => {
   
   const hasWater = components.includes("Water");
   
+  const hasPolymers = components.some(c => 
+    ["Polyethylene", "Polypropylene", "PVC"].includes(c)
+  );
+  
+  const hasNaturalGas = components.some(c => 
+    ["Methane", "Ethane", "Propane", "Carbon-Dioxide", "Nitrogen"].every(comp => 
+      components.includes(comp)
+    )
+  );
+  
+  const recommendations = [];
+  
   if (hasElectrolytes && hasWater) {
-    return ["Electrolyte-NRTL"];
-  } else if (hasAcids || (hasAlcohols && hasWater)) {
-    return ["NRTL", "UNIQUAC", "Wilson"];
-  } else if (hasAlcohols && !hasWater) {
-    return ["Wilson", "UNIQUAC", "Peng-Robinson"];
-  } else if (hasHydrocarbons && !hasWater) {
-    return ["Peng-Robinson", "SRK"];
-  } else if (hasHydrocarbons && hasWater) {
-    return ["SRK", "Peng-Robinson"];
+    recommendations.push("Electrolyte-NRTL");
   }
   
-  return ["Peng-Robinson"]; // Default recommendation
+  if (hasAcids || (hasAlcohols && hasWater)) {
+    recommendations.push("NRTL", "UNIQUAC", "Wilson");
+  }
+  
+  if (hasAlcohols && !hasWater) {
+    recommendations.push("Wilson", "UNIQUAC", "Peng-Robinson");
+  }
+  
+  if (hasHydrocarbons && !hasWater) {
+    recommendations.push("Peng-Robinson", "SRK");
+  }
+  
+  if (hasHydrocarbons && hasWater) {
+    recommendations.push("SRK", "Peng-Robinson", "CPA");
+  }
+  
+  if (hasPolymers) {
+    recommendations.push("PC-SAFT", "SAFT");
+  }
+  
+  if (hasNaturalGas) {
+    recommendations.push("GERG-2008", "Peng-Robinson", "SRK");
+  }
+  
+  if (recommendations.length === 0) {
+    return ["Peng-Robinson"]; // Default recommendation
+  }
+  
+  return [...new Set(recommendations)]; // Remove duplicates
 };
 
 const ThermodynamicsSelector: React.FC<ThermodynamicsSelectorProps> = ({ 
@@ -132,15 +206,15 @@ const ThermodynamicsSelector: React.FC<ThermodynamicsSelectorProps> = ({
             key={model.id}
             className={`p-4 cursor-pointer border-2 transition-colors ${
               selectedModel === model.id
-                ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
-                : "border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-700"
+                ? "border-purple-500 bg-purple-50 dark:bg-purple-900/20"
+                : "border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-700"
             }`}
             onClick={() => setSelectedModel(model.id)}
           >
             <div className="flex justify-between items-start mb-2">
               <h4 className="font-medium">{model.name}</h4>
               {selectedModel === model.id && (
-                <Check className="h-5 w-5 text-blue-500" />
+                <Check className="h-5 w-5 text-purple-500" />
               )}
             </div>
             
