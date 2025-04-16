@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
@@ -58,7 +57,6 @@ const CreateSimulation = () => {
   }, []);
   
   useEffect(() => {
-    // Update progress based on completed steps
     let progress = 0;
     if (selectedComponents.length > 0) progress += 33;
     if (selectedModel !== '') progress += 33;
@@ -241,8 +239,6 @@ const CreateSimulation = () => {
     setSimulationSubject(subject);
     localStorage.setItem('chemflow-simulation-subject', subject);
     
-    // Simulation process would run here, generating analysis data
-    
     setTimeout(() => {
       setIsSimulationRunning(false);
       setIsSimulationComplete(true);
@@ -268,7 +264,6 @@ const CreateSimulation = () => {
       <Navbar />
       
       <main className="flex-1 container mx-auto px-4 py-6">
-        {/* Workflow Header */}
         <div className="mb-6">
           <div className="flex justify-between items-center mb-2">
             <div className="flex items-center">
@@ -323,7 +318,6 @@ const CreateSimulation = () => {
             </div>
           </div>
           
-          {/* Progress Indicator */}
           <div className="mb-6">
             <div className="flex justify-between text-sm mb-1">
               <span className={`${currentStep === 'components' ? 'font-medium text-blue-600' : ''}`}>1. Select Components</span>
@@ -334,7 +328,6 @@ const CreateSimulation = () => {
           </div>
         </div>
         
-        {/* Step Content */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 mb-6">
           {currentStep === 'components' && (
             <div className="animate-fade-in">
