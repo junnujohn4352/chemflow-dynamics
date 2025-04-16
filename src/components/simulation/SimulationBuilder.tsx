@@ -1,9 +1,21 @@
+
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { Plus, Minus, Thermometer, Droplets, Settings2, Container, FlaskConical, Columns, Gauge, Save, Trash2, X, Sliders, Move, ArrowLeft, Play, ChevronsUpDown, Circle, Network } from "lucide-react";
+import { 
+  Plus, Minus, Thermometer, Droplets, Settings2, Container, 
+  FlaskConical, Columns, Gauge, Save, Trash2, X, Sliders, 
+  Move, Play, ChevronsUpDown, Circle, Network, Maximize, 
+  Minimize, RotateCw, MousePointer, Hand, CornerUpLeft
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import EquipmentSettings from "./EquipmentSettings";
 import { useNavigate } from "react-router-dom";
+import TooltipWrapper from "@/components/ui/TooltipWrapper";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface SimulationBuilderProps {
   selectedComponents: string[];
@@ -32,22 +44,6 @@ export interface Stream {
   properties: Record<string, any>;
 }
 
-const safeStringify = (value: any): string => {
-  if (value === null || value === undefined) {
-    return '';
-  }
-  
-  if (typeof value === 'object') {
-    try {
-      return JSON.stringify(value);
-    } catch (e) {
-      return '[Object]';
-    }
-  }
-  
-  return String(value);
-};
-
 const SimulationBuilder: React.FC<SimulationBuilderProps> = ({ 
   selectedComponents,
   thermodynamicModel,
@@ -55,13 +51,12 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
 }) => {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [activeEquipment, setActiveEquipment] = useState<string | null>(null);
-  const [activeSubType, setActiveSubType] = useState<string | null>(null);
   const [equipment, setEquipment] = useState<Equipment[]>([]);
   const [streams, setStreams] = useState<Stream[]>([]);
   const [isConnecting, setIsConnecting] = useState<{ id: string; portId?: string } | null>(null);
   const [selectedElement, setSelectedElement] = useState<string | null>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
+  const sidebarRef = useRef<HTMLDivElement>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [zoom, setZoom] = useState(100);
   const [isDragging, setIsDragging] = useState(false);
@@ -69,10 +64,11 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
   const [dragStartPos, setDragStartPos] = useState({ x: 0, y: 0 });
   const [editingEquipment, setEditingEquipment] = useState<Equipment | null>(null);
   const [simulationRunning, setSimulationRunning] = useState(false);
-  const [showSubTypes, setShowSubTypes] = useState(false);
   const [isMoving, setIsMoving] = useState(false);
   const [canvasOffset, setCanvasOffset] = useState({ x: 0, y: 0 });
-  const [canvasDimensions, setCanvasDimensions] = useState({ width: 6000, height: 6000 });
+  const [canvasDimensions] = useState({ width: 6000, height: 6000 });
+  const [interactionMode, setInteractionMode] = useState<'select' | 'pan' | 'connect'>('select');
+  const [sidebarExpanded, setSidebarExpanded] = useState(true);
   const [streamAnimations, setStreamAnimations] = useState<Record<string, boolean>>({});
   
   const defaultParameters = {
@@ -266,18 +262,36 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     }));
   };
 
-  const handleAddEquipment = (type: string, subType?: string) => {
+  const handleDragStart = (e: React.DragEvent, type: string, subType?: string) => {
+    e.dataTransfer.setData("equipmentType", type);
+    if (subType) {
+      e.dataTransfer.setData("subType", subType);
+    }
+    e.dataTransfer.effectAllowed = "copy";
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const type = e.dataTransfer.getData("equipmentType");
+    const subType = e.dataTransfer.getData("subType") || undefined;
+    
+    if (!type || !canvasRef.current) return;
+    
+    const rect = canvasRef.current.getBoundingClientRect();
+    const scale = zoom / 100;
+    
+    const x = (e.clientX - rect.left) / scale - canvasOffset.x;
+    const y = (e.clientY - rect.top) / scale - canvasOffset.y;
+    
     const id = `${type}-${Date.now()}`;
-    
     const ports = equipmentPorts[type as keyof typeof equipmentPorts] || [];
-    
     const settings = defaultParameters[type as keyof typeof defaultParameters] || {};
     
     const newEquipment: Equipment = {
       id,
       type,
       name: `${type.charAt(0).toUpperCase() + type.slice(1)} ${equipment.filter(e => e.type === type).length + 1}`,
-      position: { x: 500, y: 500 },
+      position: { x, y },
       connections: [],
       settings,
       subType,
@@ -285,9 +299,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     };
     
     setEquipment(prev => [...prev, newEquipment]);
-    setActiveEquipment(null);
-    setActiveSubType(null);
-    setShowSubTypes(false);
     
     localStorage.setItem('chemflow-equipment', JSON.stringify([...equipment, newEquipment]));
     
@@ -295,6 +306,11 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
       title: "Equipment added",
       description: `Added ${newEquipment.name} to the flowsheet`
     });
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "copy";
   };
 
   const handleClearCanvas = () => {
@@ -315,7 +331,7 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     }
   };
 
-  const handleStartSimulation = () => {
+  const handleRunSimulation = () => {
     if (equipment.length === 0) {
       toast({
         title: "No equipment",
@@ -380,6 +396,10 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
   };
 
   const handleCanvasClick = (e: React.MouseEvent) => {
+    if (interactionMode === 'pan') {
+      return; // Don't clear selection in pan mode
+    }
+    
     if (isMoving && selectedElement) {
       const rect = canvasRef.current?.getBoundingClientRect();
       if (rect) {
@@ -421,9 +441,9 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
       return;
     }
     
-    if (isConnecting) {
+    if (isConnecting && interactionMode === 'connect') {
       setIsConnecting(null);
-    } else {
+    } else if (interactionMode === 'select') {
       setSelectedElement(null);
     }
     setIsMoving(false);
@@ -433,7 +453,8 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
   const [lastPanPoint, setLastPanPoint] = useState({ x: 0, y: 0 });
 
   const handleMouseDown = (e: React.MouseEvent) => {
-    if (e.button === 1) {
+    // Middle click or in pan mode
+    if (e.button === 1 || interactionMode === 'pan') {
       e.preventDefault();
       setIsPanning(true);
       setLastPanPoint({ x: e.clientX, y: e.clientY });
@@ -441,7 +462,7 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
   };
 
   const handleMouseUp = (e: React.MouseEvent) => {
-    if (e.button === 1) {
+    if (e.button === 1 || interactionMode === 'pan') {
       setIsPanning(false);
     }
     
@@ -482,11 +503,36 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
 
   const handleEquipmentClick = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
-    setSelectedElement(id);
+    
+    // If double click and in select mode, enter move mode
+    if (e.detail === 2 && interactionMode === 'select') {
+      setIsMoving(true);
+      setSelectedElement(id);
+      
+      toast({
+        title: "Move mode activated",
+        description: "Click on the canvas to place the equipment",
+      });
+      return;
+    }
+    
+    // Single click behavior
+    if (interactionMode === 'select') {
+      setSelectedElement(id);
+    } else if (interactionMode === 'connect') {
+      if (!isConnecting) {
+        setIsConnecting({ id });
+        setSelectedElement(id);
+      }
+    }
   };
 
   const handlePortClick = (e: React.MouseEvent, equipmentId: string, portId: string) => {
     e.stopPropagation();
+    
+    if (interactionMode !== 'connect' && interactionMode !== 'select') {
+      return;
+    }
     
     if (isConnecting && isConnecting.id !== equipmentId) {
       const sourceEquipment = equipment.find(eq => eq.id === isConnecting.id);
@@ -495,59 +541,75 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
       const targetEquipment = equipment.find(eq => eq.id === equipmentId);
       const targetPort = targetEquipment?.ports?.find(port => port.id === portId);
       
-      if (sourceEquipment && targetEquipment && sourcePort && targetPort) {
-        if (sourcePort.type === 'output' && targetPort.type === 'input') {
-          const newStream: Stream = {
-            id: `stream-${Date.now()}`,
-            from: isConnecting.id,
-            fromPort: isConnecting.portId,
-            to: equipmentId,
-            toPort: portId,
-            type: "material",
-            properties: {}
-          };
-          
-          setStreams(prev => [...prev, newStream]);
-          
-          setEquipment(prev => prev.map(eq => {
-            if (eq.id === isConnecting.id || eq.id === equipmentId) {
-              return {
-                ...eq,
-                connections: [...eq.connections, newStream.id]
-              };
-            }
-            return eq;
-          }));
-          
-          localStorage.setItem('chemflow-streams', JSON.stringify([...streams, newStream]));
-          
-          toast({
-            title: "Connection created",
-            description: "Stream connection established successfully"
-          });
-        } else {
-          toast({
-            title: "Invalid connection",
-            description: "You can only connect from an output port to an input port",
-            variant: "destructive"
-          });
+      if (sourceEquipment && targetEquipment && ((sourcePort && targetPort) || (!sourcePort && !targetPort))) {
+        // Case 1: Both have ports defined
+        if (sourcePort && targetPort) {
+          if (sourcePort.type === 'output' && targetPort.type === 'input') {
+            createConnection(equipmentId, portId);
+          } else {
+            toast({
+              title: "Invalid connection",
+              description: "You can only connect from an output port to an input port",
+              variant: "destructive"
+            });
+          }
+        } 
+        // Case 2: Neither have ports defined
+        else {
+          createConnection(equipmentId, portId);
         }
       }
       
       setIsConnecting(null);
-    } else if (!isConnecting) {
+    } else if (!isConnecting || (isConnecting && !isConnecting.portId)) {
       setIsConnecting({ id: equipmentId, portId });
     } else {
       setIsConnecting(null);
     }
   };
   
+  const createConnection = (toEquipmentId: string, toPortId?: string) => {
+    if (!isConnecting) return;
+    
+    const newStream: Stream = {
+      id: `stream-${Date.now()}`,
+      from: isConnecting.id,
+      fromPort: isConnecting.portId,
+      to: toEquipmentId,
+      toPort: toPortId,
+      type: "material",
+      properties: {}
+    };
+    
+    setStreams(prev => [...prev, newStream]);
+    
+    setEquipment(prev => prev.map(eq => {
+      if (eq.id === isConnecting.id || eq.id === toEquipmentId) {
+        return {
+          ...eq,
+          connections: [...eq.connections, newStream.id]
+        };
+      }
+      return eq;
+    }));
+    
+    localStorage.setItem('chemflow-streams', JSON.stringify([...streams, newStream]));
+    
+    toast({
+      title: "Connection created",
+      description: "Stream connection established successfully"
+    });
+  };
+  
   const handleStartConnection = (e: React.MouseEvent, id: string, portId?: string) => {
     e.stopPropagation();
+    setInteractionMode('connect');
     setIsConnecting({ id, portId });
   };
   
   const handleEquipmentDragStart = (e: React.MouseEvent, id: string) => {
+    if (interactionMode !== 'select') return;
+    
     e.stopPropagation();
     setIsDragging(true);
     setDraggedEquipment(id);
@@ -639,6 +701,124 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     });
   };
 
+  // Render equipment in canvas
+  const renderEquipmentCard = (eq: Equipment) => {
+    const isSelected = selectedElement === eq.id;
+    const isSource = isConnecting?.id === eq.id;
+    const isBeingMoved = isMoving && selectedElement === eq.id;
+    
+    const equipmentType = equipmentList.find(e => e.id === eq.type);
+    
+    return (
+      <div 
+        key={eq.id}
+        className={`absolute p-2 rounded-lg shadow-xl backdrop-blur-sm hover:shadow-blue-200/50 animate-fade-in transition-all ${
+          isSelected 
+            ? 'border-[3px] border-flow-blue shadow-lg bg-gradient-to-b from-white to-blue-50' 
+            : isSource 
+              ? 'border-[3px] border-amber-500 bg-white'
+              : isBeingMoved
+                ? 'border-[3px] border-green-500 bg-white'
+                : 'border-2 border-gray-200 bg-white hover:border-flow-blue/50'
+        }`}
+        style={{
+          left: `${eq.position.x}px`,
+          top: `${eq.position.y}px`,
+          zIndex: isSelected ? 10 : 1,
+          cursor: interactionMode === 'select' ? (isDragging && draggedEquipment === eq.id ? 'grabbing' : 'grab') : 'default',
+          transform: 'translate3d(0, 0, 0)', // Force GPU acceleration
+        }}
+        onClick={(e) => handleEquipmentClick(e, eq.id)}
+      >
+        <div 
+          className="w-20 h-20 flex flex-col items-center justify-center gap-1 relative"
+          onMouseDown={interactionMode === 'select' ? (e) => handleEquipmentDragStart(e, eq.id) : undefined}
+          onMouseUp={handleEquipmentDragEnd}
+        >
+          {eq.ports?.map(port => renderPort(eq, port))}
+          
+          <div className="text-flow-blue flex items-center justify-center w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-50 rounded-full transition-all hover:scale-105">
+            {equipmentType?.icon || <Container className="h-8 w-8 text-flow-blue" />}
+          </div>
+          <span className="text-xs text-center font-medium">{eq.name}</span>
+          {eq.subType && (
+            <span className="text-xs text-gray-500">{
+              equipmentType?.subTypes?.find(sub => sub.id === eq.subType)?.name || eq.subType
+            }</span>
+          )}
+          
+          {isSelected && (
+            <div className="absolute -top-1 -right-1 flex gap-1">
+              <TooltipWrapper>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button 
+                      className="p-1 rounded-full bg-amber-100 hover:bg-amber-200 text-amber-600 shadow-sm hover:scale-110 transition-all"
+                      onClick={(e) => handleStartConnection(e, eq.id)}
+                    >
+                      <Play className="h-3 w-3" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Connect to another equipment</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipWrapper>
+              
+              <TooltipWrapper>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button 
+                      className="p-1 rounded-full bg-green-100 hover:bg-green-200 text-green-600 shadow-sm hover:scale-110 transition-all"
+                      onClick={(e) => handleStartMove(e, eq.id)}
+                    >
+                      <Move className="h-3 w-3" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Move to specific location</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipWrapper>
+              
+              <TooltipWrapper>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button 
+                      className="p-1 rounded-full bg-blue-100 hover:bg-blue-200 text-blue-600 shadow-sm hover:scale-110 transition-all"
+                      onClick={(e) => handleOpenSettings(e, eq.id)}
+                    >
+                      <Settings2 className="h-3 w-3" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Equipment settings</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipWrapper>
+              
+              <TooltipWrapper>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button 
+                      className="p-1 rounded-full bg-red-100 hover:bg-red-200 text-red-600 shadow-sm hover:scale-110 transition-all"
+                      onClick={(e) => handleDeleteEquipment(e, eq.id)}
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Delete equipment</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipWrapper>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   const renderPort = (eq: Equipment, port: { id: string; type: string; position: string }) => {
     const isPortConnecting = isConnecting?.id === eq.id && isConnecting?.portId === port.id;
     const isConnected = streams.some(
@@ -676,88 +856,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
         title={`${port.type === 'input' ? 'Input' : 'Output'} port: ${port.id}`}
       >
         <Circle className="h-2 w-2 text-white" />
-      </div>
-    );
-  };
-
-  const renderEquipmentCard = (eq: Equipment) => {
-    const isSelected = selectedElement === eq.id;
-    const isSource = isConnecting?.id === eq.id;
-    const isBeingMoved = isMoving && selectedElement === eq.id;
-    
-    const equipmentType = equipmentList.find(e => e.id === eq.type);
-    
-    return (
-      <div 
-        key={eq.id}
-        className={`absolute p-2 rounded-lg shadow-xl backdrop-blur-sm hover:shadow-blue-200/50 animate-fade-in transition-all ${
-          isSelected 
-            ? 'border-[3px] border-flow-blue shadow-lg bg-gradient-to-b from-white to-blue-50' 
-            : isSource 
-              ? 'border-[3px] border-amber-500 bg-white'
-              : isBeingMoved
-                ? 'border-[3px] border-green-500 bg-white'
-                : 'border-2 border-gray-200 bg-white hover:border-flow-blue/50'
-        }`}
-        style={{
-          left: `${eq.position.x}px`,
-          top: `${eq.position.y}px`,
-          zIndex: isSelected ? 10 : 1,
-          cursor: isDragging && draggedEquipment === eq.id ? 'grabbing' : 'grab',
-          transform: 'translate3d(0, 0, 0)', // Force GPU acceleration
-        }}
-        onClick={(e) => handleEquipmentClick(e, eq.id)}
-      >
-        <div 
-          className="w-20 h-20 flex flex-col items-center justify-center gap-1 relative"
-          onMouseDown={(e) => handleEquipmentDragStart(e, eq.id)}
-          onMouseUp={handleEquipmentDragEnd}
-        >
-          {eq.ports?.map(port => renderPort(eq, port))}
-          
-          <div className="text-flow-blue flex items-center justify-center w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-50 rounded-full transition-all hover:scale-105">
-            {equipmentType?.icon || <Container className="h-8 w-8 text-flow-blue" />}
-          </div>
-          <span className="text-xs text-center font-medium">{eq.name}</span>
-          {eq.subType && (
-            <span className="text-xs text-gray-500">{
-              equipmentType?.subTypes?.find(sub => sub.id === eq.subType)?.name || eq.subType
-            }</span>
-          )}
-          
-          {isSelected && (
-            <div className="absolute -top-1 -right-1 flex gap-1">
-              <button 
-                className="p-1 rounded-full bg-amber-100 hover:bg-amber-200 text-amber-600 shadow-sm hover:scale-110 transition-all"
-                onClick={(e) => handleStartConnection(e, eq.id)}
-                title="Connect to another equipment"
-              >
-                <Play className="h-3 w-3" />
-              </button>
-              <button 
-                className="p-1 rounded-full bg-green-100 hover:bg-green-200 text-green-600 shadow-sm hover:scale-110 transition-all"
-                onClick={(e) => handleStartMove(e, eq.id)}
-                title="Move to specific location"
-              >
-                <Move className="h-3 w-3" />
-              </button>
-              <button 
-                className="p-1 rounded-full bg-blue-100 hover:bg-blue-200 text-blue-600 shadow-sm hover:scale-110 transition-all"
-                onClick={(e) => handleOpenSettings(e, eq.id)}
-                title="Equipment settings"
-              >
-                <Settings2 className="h-3 w-3" />
-              </button>
-              <button 
-                className="p-1 rounded-full bg-red-100 hover:bg-red-200 text-red-600 shadow-sm hover:scale-110 transition-all"
-                onClick={(e) => handleDeleteEquipment(e, eq.id)}
-                title="Delete equipment"
-              >
-                <Trash2 className="h-3 w-3" />
-              </button>
-            </div>
-          )}
-        </div>
       </div>
     );
   };
@@ -887,6 +985,44 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     );
   };
 
+  // Render sidebar equipment list
+  const renderEquipmentItem = (item: typeof equipmentList[0]) => {
+    return (
+      <div key={item.id} className="mb-2">
+        <div
+          className="bg-white rounded-lg p-3 shadow-sm border border-gray-200 flex items-center justify-between cursor-grab"
+          draggable={true}
+          onDragStart={(e) => handleDragStart(e, item.id)}
+        >
+          <div className="flex items-center">
+            <div className="rounded-full p-2 bg-blue-100 mr-3">
+              {item.icon}
+            </div>
+            <span className="text-sm font-medium">{item.name}</span>
+          </div>
+          {item.subTypes && item.subTypes.length > 0 && (
+            <ChevronDown className="h-4 w-4 text-gray-400" />
+          )}
+        </div>
+        
+        {item.subTypes && item.subTypes.length > 0 && (
+          <div className="pl-4 mt-1 border-l-2 border-gray-200 space-y-1">
+            {item.subTypes.map(subType => (
+              <div
+                key={subType.id}
+                className="bg-white rounded-lg p-2 shadow-sm border border-gray-200 flex items-center text-xs cursor-grab"
+                draggable={true}
+                onDragStart={(e) => handleDragStart(e, item.id, subType.id)}
+              >
+                {subType.name}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   useEffect(() => {
     const savedEquipment = localStorage.getItem('chemflow-equipment');
     const savedStreams = localStorage.getItem('chemflow-streams');
@@ -926,176 +1062,251 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
   
   return (
     <div className="flex flex-col">
-      <div className="mb-6">
-        <h3 className="text-lg font-medium mb-2 bg-gradient-to-r from-flow-blue to-blue-600 bg-clip-text text-transparent">Flowsheet Builder</h3>
-        <p className="text-gray-600 text-sm">
-          Build your process flowsheet by adding and connecting equipment from the palette below.
-        </p>
-      </div>
-      
-      <div className="p-4 border rounded-lg bg-gradient-to-b from-white to-blue-50 mb-6 shadow-md animate-fade-in">
-        <div className="flex items-center justify-between mb-4">
-          <h4 className="font-medium bg-gradient-to-r from-flow-blue to-blue-600 bg-clip-text text-transparent">Equipment Palette</h4>
-          <div className="flex items-center gap-2">
-            <button 
-              onClick={handleZoomIn}
-              className="p-1.5 rounded-lg bg-white text-gray-500 border hover:bg-blue-50 hover:text-blue-600 transition-all shadow-sm"
-            >
-              <Plus className="h-4 w-4" />
-            </button>
-            <span className="text-sm font-medium">{zoom}%</span>
-            <button 
-              onClick={handleZoomOut}
-              className="p-1.5 rounded-lg bg-white text-gray-500 border hover:bg-blue-50 hover:text-blue-600 transition-all shadow-sm"
-            >
-              <Minus className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
-        
-        <div className="flex flex-wrap gap-3">
-          {equipmentList.map((item) => (
-            <React.Fragment key={item.id}>
-              <button
-                onClick={() => {
-                  if (item.subTypes && item.subTypes.length > 0) {
-                    setActiveEquipment(item.id);
-                    setShowSubTypes(!showSubTypes);
-                  } else {
-                    handleAddEquipment(item.id);
-                  }
-                }}
-                className={`p-2 rounded-lg ${
-                  activeEquipment === item.id ? 'bg-flow-blue/10 text-flow-blue' : 'bg-white text-gray-600 hover:bg-blue-50 hover:text-blue-600'
-                } flex items-center gap-2 border border-gray-200 transition-all hover:shadow-md shadow-sm`}
-              >
-                <span className="transition-transform hover:scale-110">{item.icon}</span>
-                <span className="text-sm font-medium">{item.name}</span>
-              </button>
-              
-              {activeEquipment === item.id && showSubTypes && item.subTypes && (
-                <div className="w-full mt-2 mb-1 ml-4 pl-4 border-l-2 border-blue-200 animate-fade-in-up">
-                  <div className="flex flex-wrap gap-2">
-                    {item.subTypes.map(subType => (
-                      <button
-                        key={subType.id}
-                        onClick={() => {
-                          handleAddEquipment(item.id, subType.id);
-                        }}
-                        className={`px-3 py-1.5 rounded-lg ${
-                          activeSubType === subType.id 
-                            ? 'bg-flow-blue/10 text-flow-blue' 
-                            : 'bg-white text-gray-600 hover:bg-blue-50 hover:text-blue-600'
-                        } text-xs border border-gray-200 transition-all hover:shadow-md shadow-sm`}
-                      >
-                        {subType.name}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </React.Fragment>
-          ))}
-        </div>
-      </div>
-      
-      <div className="flex-1 relative overflow-hidden">
-        <div className="bg-gradient-to-r from-white to-blue-50 border rounded-lg p-1 mb-4 flex items-center justify-between shadow-md">
-          <div className="flex items-center gap-1">
-            <button
-              onClick={handleClearCanvas}
-              className="p-1.5 rounded-lg text-gray-500 hover:bg-red-50 hover:text-red-500 transition-all"
-              title="Clear canvas"
-            >
-              <Trash2 className="h-4 w-4" />
-            </button>
-            <button
-              onClick={() => {
-                setZoom(100);
-                setCanvasOffset({ x: 0, y: 0 });
-              }}
-              className="p-1.5 rounded-lg text-gray-500 hover:bg-blue-50 hover:text-blue-600 transition-all"
-              title="Reset view"
-            >
-              <ChevronsUpDown className="h-4 w-4" />
-            </button>
-            <span className="text-xs text-gray-500 ml-2">
-              Tip: Use middle mouse button to pan around
-            </span>
-          </div>
-          
-          <div className="text-xs text-gray-500">
-            {equipment.length} equipment · {streams.length} streams
-          </div>
-          
-          <button
-            onClick={handleStartSimulation}
-            className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 text-xs font-medium flex items-center gap-1 shadow-md transition-all hover:shadow-lg transform hover:scale-105"
-            disabled={simulationRunning}
-          >
-            {simulationRunning ? (
-              <>Running...</>
-            ) : (
-              <>
-                <Play className="h-3 w-3" />
-                Run Simulation
-              </>
-            )}
-          </button>
-        </div>
-        
+      <div className="flex h-[800px] border rounded-lg overflow-hidden shadow-md bg-gray-50">
+        {/* Left Sidebar - Equipment Palette */}
         <div 
-          ref={canvasRef}
-          className="relative border rounded-lg overflow-auto bg-gradient-to-b from-blue-50/20 to-white shadow-inner"
-          style={{ 
-            height: "800px",
-            maxHeight: "800px",
-            width: "100%",
-            overflow: "hidden"
-          }}
-          onClick={handleCanvasClick}
-          onMouseDown={handleMouseDown}
-          onMouseUp={handleMouseUp}
-          onMouseMove={handleCanvasMouseMove}
-          onMouseLeave={handleMouseUp}
+          ref={sidebarRef}
+          className={`bg-white border-r flex flex-col transition-all duration-300 ${
+            sidebarExpanded ? 'w-64' : 'w-16'
+          }`}
         >
-          <div className="absolute"
-               style={{
-                 width: `${canvasDimensions.width}px`,
-                 height: `${canvasDimensions.height}px`,
-                 transform: `scale(${zoom / 100}) translate(${canvasOffset.x}px, ${canvasOffset.y}px)`,
-                 transformOrigin: '0 0',
-                 backgroundImage: 'radial-gradient(circle, #d1d5db 1px, transparent 1px)',
-                 backgroundSize: '20px 20px'
-               }}
-          >
-            {streams.map(stream => renderStream(stream))}
-            {equipment.map(eq => renderEquipmentCard(eq))}
+          <div className="p-3 border-b flex items-center justify-between">
+            <h3 className={`font-medium text-gray-700 ${!sidebarExpanded && 'sr-only'}`}>Equipment</h3>
+            <button 
+              onClick={() => setSidebarExpanded(!sidebarExpanded)}
+              className="p-1 rounded-md hover:bg-gray-100"
+            >
+              {sidebarExpanded ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+            </button>
           </div>
           
-          {isConnecting && (
-            <div className="fixed bottom-4 right-4 bg-amber-100 text-amber-700 p-3 rounded-lg shadow-md text-sm flex items-center gap-2 animate-pulse-subtle">
-              <span>Select a port to connect</span>
-              <button 
-                onClick={() => setIsConnecting(null)}
-                className="p-1 rounded-full bg-amber-200 text-amber-700 hover:bg-amber-300 transition-all"
-              >
-                <X className="h-4 w-4" />
-              </button>
+          <div className="flex-1 overflow-y-auto p-3">
+            {sidebarExpanded ? (
+              <div className="space-y-1">
+                {equipmentList.map(renderEquipmentItem)}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center space-y-4">
+                {equipmentList.map(item => (
+                  <TooltipWrapper key={item.id}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div
+                          className="p-2 rounded-full bg-blue-100 cursor-grab"
+                          draggable={true}
+                          onDragStart={(e) => handleDragStart(e, item.id)}
+                        >
+                          {item.icon}
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent side="right">
+                        <p>{item.name}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipWrapper>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+        
+        {/* Main Canvas Area */}
+        <div className="flex-1 flex flex-col">
+          {/* Toolbar */}
+          <div className="bg-white border-b p-2 flex items-center justify-between">
+            <div className="flex items-center space-x-1">
+              <TooltipWrapper>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant={interactionMode === 'select' ? 'default' : 'outline'} 
+                      size="sm"
+                      onClick={() => setInteractionMode('select')}
+                    >
+                      <MousePointer className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Select Mode (drag equipment)</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipWrapper>
+              
+              <TooltipWrapper>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant={interactionMode === 'pan' ? 'default' : 'outline'} 
+                      size="sm"
+                      onClick={() => setInteractionMode('pan')}
+                    >
+                      <Hand className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Pan Mode (move canvas)</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipWrapper>
+              
+              <TooltipWrapper>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant={interactionMode === 'connect' ? 'default' : 'outline'} 
+                      size="sm"
+                      onClick={() => setInteractionMode('connect')}
+                    >
+                      <Play className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Connect Mode</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipWrapper>
+              
+              <div className="h-6 w-px bg-gray-300 mx-1"></div>
+              
+              <TooltipWrapper>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={handleZoomIn}
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Zoom In</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipWrapper>
+              
+              <span className="text-xs font-mono">{zoom}%</span>
+              
+              <TooltipWrapper>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={handleZoomOut}
+                    >
+                      <Minus className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Zoom Out</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipWrapper>
+              
+              <TooltipWrapper>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => {
+                        setZoom(100);
+                        setCanvasOffset({ x: 0, y: 0 });
+                      }}
+                    >
+                      <RotateCw className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Reset View</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipWrapper>
             </div>
-          )}
+            
+            <div className="flex items-center space-x-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="text-red-600 border-red-200 hover:bg-red-50"
+                onClick={handleClearCanvas}
+              >
+                <Trash2 className="h-4 w-4 mr-1" />
+                Clear Canvas
+              </Button>
+              
+              <Button 
+                onClick={handleRunSimulation}
+                disabled={simulationRunning}
+                size="sm"
+                className="bg-green-600 hover:bg-green-700 text-white"
+              >
+                <Play className="h-4 w-4 mr-1" />
+                Run
+              </Button>
+            </div>
+          </div>
           
-          {isMoving && (
-            <div className="fixed bottom-4 right-4 bg-green-100 text-green-700 p-3 rounded-lg shadow-md text-sm flex items-center gap-2 animate-pulse-subtle">
-              <span>Click on the canvas to place the equipment</span>
-              <button 
-                onClick={() => setIsMoving(false)}
-                className="p-1 rounded-full bg-green-200 text-green-700 hover:bg-green-300 transition-all"
-              >
-                <X className="h-4 w-4" />
-              </button>
+          {/* Canvas Area */}
+          <div 
+            ref={canvasRef}
+            className="flex-1 overflow-hidden bg-gray-100 relative"
+            onClick={handleCanvasClick}
+            onMouseDown={handleMouseDown}
+            onMouseUp={handleMouseUp}
+            onMouseMove={handleCanvasMouseMove}
+            onMouseLeave={handleMouseUp}
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
+          >
+            <div className="absolute"
+                 style={{
+                   width: `${canvasDimensions.width}px`,
+                   height: `${canvasDimensions.height}px`,
+                   transform: `scale(${zoom / 100}) translate(${canvasOffset.x}px, ${canvasOffset.y}px)`,
+                   transformOrigin: '0 0',
+                   backgroundImage: 'radial-gradient(circle, #d1d5db 1px, transparent 1px)',
+                   backgroundSize: '20px 20px'
+                 }}
+            >
+              {streams.map(stream => renderStream(stream))}
+              {equipment.map(eq => renderEquipmentCard(eq))}
             </div>
-          )}
+            
+            {/* Status Messages */}
+            {isConnecting && (
+              <div className="fixed bottom-4 right-4 bg-amber-100 text-amber-700 p-3 rounded-lg shadow-md text-sm flex items-center gap-2 animate-pulse-subtle">
+                <span>Select a port to connect</span>
+                <button 
+                  onClick={() => setIsConnecting(null)}
+                  className="p-1 rounded-full bg-amber-200 text-amber-700 hover:bg-amber-300 transition-all"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            )}
+            
+            {isMoving && (
+              <div className="fixed bottom-4 right-4 bg-green-100 text-green-700 p-3 rounded-lg shadow-md text-sm flex items-center gap-2 animate-pulse-subtle">
+                <span>Click on the canvas to place the equipment</span>
+                <button 
+                  onClick={() => setIsMoving(false)}
+                  className="p-1 rounded-full bg-green-200 text-green-700 hover:bg-green-300 transition-all"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            )}
+            
+            {/* Interaction Mode Indicator */}
+            <div className="absolute top-4 left-4 bg-white bg-opacity-80 p-2 rounded-md text-sm">
+              <span className="font-medium">Mode: </span>
+              {interactionMode === 'select' && 'Select & Drag'}
+              {interactionMode === 'pan' && 'Pan Canvas'}
+              {interactionMode === 'connect' && 'Connect Equipment'}
+            </div>
+          </div>
         </div>
       </div>
       
@@ -1110,16 +1321,6 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
           onSave={handleSaveSettings}
         />
       )}
-      
-      <div className="mt-6 flex justify-end">
-        <Button 
-          onClick={handleStartSimulation} 
-          disabled={simulationRunning}
-          className="bg-gradient-to-r from-flow-blue to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-md hover:shadow-lg transition-all transform hover:scale-105"
-        >
-          {simulationRunning ? 'Simulating...' : 'Run Simulation'}
-        </Button>
-      </div>
     </div>
   );
 };

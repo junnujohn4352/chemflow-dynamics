@@ -1,51 +1,29 @@
+
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import GlassPanel from "@/components/ui/GlassPanel";
 import { 
-  Save, ArrowLeft, Layers, Database, Settings2, 
-  GitBranch, Play, Check, Pause, RefreshCw,
-  BarChart3, ChevronDown, ChevronUp, FlaskConical, Waves, Zap, Droplets, Shield, Cpu, Leaf,
-  ThermometerIcon as Thermometer, Download, FileText
+  Save, ArrowLeft, Play, Check, RefreshCw, Download, 
+  FileText, ChevronRight, ChevronLeft, ChevronDown,
+  BarChart3
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import SimulationBuilder from "@/components/simulation/SimulationBuilder";
 import ComponentSelector from "@/components/simulation/ComponentSelector";
 import ThermodynamicsSelector from "@/components/simulation/ThermodynamicsSelector";
 import { Button } from "@/components/ui/button";
-import HysysIntegration from "@/components/simulation/HysysIntegration";
-import RealTimeAnalysisCharts from "@/components/charts/RealTimeAnalysisCharts";
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  BarChart,
-  Bar
-} from 'recharts';
+import TooltipWrapper from "@/components/ui/TooltipWrapper";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Progress } from "@/components/ui/progress";
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-
-interface SubjectAnalysis {
-  id: string;
-  title: string;
-  icon: React.ReactNode;
-  content: string;
-  charts: React.ReactNode;
-  mathData?: string;
-}
 
 const CreateSimulation = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState<'components' | 'thermodynamics' | 'builder'>('components');
+  const [currentStep, setCurrentStep] = useState<'components' | 'thermodynamics' | 'builder'>('components');
+  const [simulationProgress, setSimulationProgress] = useState(0);
   const [simulationName, setSimulationName] = useState('Untitled Simulation');
   const [selectedComponents, setSelectedComponents] = useState<string[]>([]);
   const [selectedModel, setSelectedModel] = useState('Peng-Robinson');
@@ -54,13 +32,8 @@ const CreateSimulation = () => {
   const [showAnalysis, setShowAnalysis] = useState(false);
   const [analysisData, setAnalysisData] = useState<any[]>([]);
   const [simulationSubject, setSimulationSubject] = useState<string | null>(null);
-  const [subjectAnalyses, setSubjectAnalyses] = useState<SubjectAnalysis[]>([]);
-  const [activeSubjectAnalysis, setActiveSubjectAnalysis] = useState<string | null>(null);
-  const [realTimeData, setRealTimeData] = useState<any[]>([]);
-  const [isRealTimeActive, setIsRealTimeActive] = useState(false);
-  const [realTimeInterval, setRealTimeInterval] = useState<number | null>(null);
   const analysisRef = useRef<HTMLDivElement>(null);
-
+  
   useEffect(() => {
     const savedSimData = localStorage.getItem('chemflow-simulation-data');
     if (savedSimData) {
@@ -83,13 +56,22 @@ const CreateSimulation = () => {
       }
     }
   }, []);
+  
+  useEffect(() => {
+    // Update progress based on completed steps
+    let progress = 0;
+    if (selectedComponents.length > 0) progress += 33;
+    if (selectedModel !== '') progress += 33;
+    if (isSimulationComplete) progress += 34;
+    setSimulationProgress(progress);
+  }, [selectedComponents, selectedModel, isSimulationComplete]);
 
   const componentsValid = selectedComponents.length > 0;
   const allStepsValid = componentsValid && selectedModel !== '';
 
   const handleComponentSelectionDone = () => {
     if (componentsValid) {
-      setActiveTab('thermodynamics');
+      setCurrentStep('thermodynamics');
     } else {
       toast({
         title: "Components required",
@@ -101,7 +83,7 @@ const CreateSimulation = () => {
 
   const handleModelSelectionDone = () => {
     if (selectedModel) {
-      setActiveTab('builder');
+      setCurrentStep('builder');
     } else {
       toast({
         title: "Thermodynamic model required",
@@ -130,13 +112,17 @@ const CreateSimulation = () => {
       return;
     }
     
-    localStorage.setItem('chemflow-simulation-name', simulationName);
-    localStorage.setItem('chemflow-selected-components', JSON.stringify(selectedComponents));
-    localStorage.setItem('chemflow-selected-model', selectedModel);
+    const simulationData = {
+      name: simulationName,
+      components: selectedComponents,
+      thermodynamicModel: selectedModel,
+      subject: simulationSubject,
+      lastUpdated: new Date().toISOString(),
+      id: `sim-${Date.now()}`
+    };
     
-    if (simulationSubject) {
-      localStorage.setItem('chemflow-simulation-subject', simulationSubject);
-    }
+    localStorage.setItem('chemflow-simulation-data', JSON.stringify(simulationData));
+    localStorage.setItem('chemflow-active-simulation', 'true');
     
     if (isSimulationComplete && analysisData.length > 0) {
       localStorage.setItem('chemflow-analysis-data', JSON.stringify(analysisData));
@@ -193,37 +179,6 @@ const CreateSimulation = () => {
       pdf.addPage();
       pdf.addImage(imgData, 'PNG', 20, 20, imgWidth, imgHeight);
       
-      pdf.addPage();
-      pdf.setFontSize(16);
-      pdf.text("Mathematical Analysis Data", 20, 20);
-      
-      let yPos = 35;
-      subjectAnalyses.forEach(analysis => {
-        if (yPos > 250) {
-          pdf.addPage();
-          yPos = 20;
-        }
-        
-        pdf.setFontSize(14);
-        pdf.text(analysis.title, 20, yPos);
-        yPos += 10;
-        
-        pdf.setFontSize(10);
-        const mathData = analysis.mathData || generateMathData(analysis.id);
-        const mathLines = mathData.split('\n');
-        
-        mathLines.forEach(line => {
-          if (yPos > 280) {
-            pdf.addPage();
-            yPos = 20;
-          }
-          pdf.text(line, 20, yPos);
-          yPos += 5;
-        });
-        
-        yPos += 15;
-      });
-      
       pdf.save(`${simulationName.replace(/\s+/g, '_')}_Analysis.pdf`);
       
       toast({
@@ -237,97 +192,6 @@ const CreateSimulation = () => {
         description: "There was an error generating the PDF report",
         variant: "destructive"
       });
-    }
-  };
-
-  const generateMathData = (analysisType: string): string => {
-    switch (analysisType) {
-      case "heatTransfer":
-        return `Heat Transfer Calculations:
-Q = U × A × LMTD
-where:
-U = Overall heat transfer coefficient = ${(25 + Math.random() * 10).toFixed(2)} W/m²·K
-A = Heat transfer area = ${(15 + Math.random() * 5).toFixed(2)} m²
-LMTD = Log Mean Temperature Difference = ${(65 + Math.random() * 15).toFixed(2)} °C
-
-Heat Duty Q = ${(24000 + Math.random() * 5000).toFixed(2)} W`;
-
-      case "fluidFlow":
-        return `Fluid Flow Calculations:
-Pressure Drop (ΔP) = f × (L/D) × (ρ × v²/2)
-where:
-f = Friction factor = ${(0.02 + Math.random() * 0.01).toFixed(4)}
-L = Pipe length = ${(10 + Math.random() * 5).toFixed(2)} m
-D = Pipe diameter = ${(0.1 + Math.random() * 0.05).toFixed(3)} m
-ρ = Fluid density = ${(800 + Math.random() * 200).toFixed(2)} kg/m³
-v = Fluid velocity = ${(1 + Math.random() * 0.5).toFixed(2)} m/s
-
-Pressure Drop = ${(10 + Math.random() * 5).toFixed(2)} kPa`;
-
-      case "thermodynamics":
-        return `Thermodynamic Properties (${selectedModel}):
-${selectedComponents.map(comp => 
-  `${comp}:
-  - Critical Temperature: ${(300 + Math.random() * 200).toFixed(2)} K
-  - Critical Pressure: ${(5 + Math.random() * 3).toFixed(2)} MPa
-  - Acentric Factor: ${(0.2 + Math.random() * 0.3).toFixed(3)}
-  - Compressibility Factor (Z): ${(0.7 + Math.random() * 0.3).toFixed(3)}`
-).join('\n\n')}
-
-Mixture Properties:
-- Fugacity Coefficients calculated using ${selectedModel} equation of state
-- Departure Functions for enthalpy and entropy calculated`;
-
-      case "massTransfer":
-        return `Mass Transfer Analysis:
-Overall Mass Transfer Coefficient (K) = ${(0.005 + Math.random() * 0.003).toFixed(5)} m/s
-Number of Transfer Units (NTU) = ${(3 + Math.random() * 2).toFixed(2)}
-Height of Transfer Unit (HTU) = ${(0.5 + Math.random() * 0.3).toFixed(2)} m
-Packing Height = NTU × HTU = ${(1.5 + Math.random() * 1).toFixed(2)} m`;
-
-      case "reactionEngineering":
-        return `Reaction Engineering:
-Reaction: ${selectedComponents[0] || "A"} → ${selectedComponents[1] || "B"} + ${selectedComponents[2] || "C"}
-Rate Constant (k) = ${(0.05 + Math.random() * 0.03).toFixed(4)} s⁻¹
-Activation Energy (Ea) = ${(50 + Math.random() * 20).toFixed(2)} kJ/mol
-Pre-exponential Factor (A) = ${(1e5 + Math.random() * 5e4).toExponential(2)} s⁻¹
-Conversion at equilibrium = ${(0.9 + Math.random() * 0.09).toFixed(4)} (${((0.9 + Math.random() * 0.09) * 100).toFixed(2)}%)`;
-
-      case "safetyAnalysis":
-        return `Safety Analysis:
-Relief Valve Sizing:
-- Required Relief Area = ${(0.001 + Math.random() * 0.0005).toFixed(5)} m²
-- Relief Flow Rate = ${(10 + Math.random() * 5).toFixed(2)} kg/s
-- Set Pressure = ${(100 + Math.random() * 20).toFixed(2)} kPa
-
-Explosion Index = ${(3 + Math.random() * 2).toFixed(2)}
-Maximum Overpressure = ${(50 + Math.random() * 20).toFixed(2)} kPa`;
-
-      case "processSimulation":
-        return `Process Simulation Results:
-Mass Balance:
-${selectedComponents.map(comp => 
-  `${comp}: ${(90 + Math.random() * 10).toFixed(2)}% recovery`
-).join('\n')}
-
-Energy Balance:
-- Total Heat Input = ${(500 + Math.random() * 100).toFixed(2)} kW
-- Total Heat Output = ${(480 + Math.random() * 100).toFixed(2)} kW
-- Heat Loss = ${(20 + Math.random() * 10).toFixed(2)} kW`;
-
-      case "utilityEnvironmental":
-        return `Utility & Environmental Analysis:
-Utility Requirements:
-- Steam Consumption = ${(2000 + Math.random() * 500).toFixed(2)} kg/h
-- Cooling Water = ${(20000 + Math.random() * 5000).toFixed(2)} kg/h
-- Electricity = ${(100 + Math.random() * 30).toFixed(2)} kWh
-
-Environmental Impact:
-- CO₂ Emissions = ${(500 + Math.random() * 100).toFixed(2)} kg/h
-- Wastewater Generation = ${(5 + Math.random() * 2).toFixed(2)} m³/h`;
-
-      default:
-        return `Analysis Data for ${analysisType}:\nDetailed mathematical calculations based on ${selectedModel} model with components: ${selectedComponents.join(", ")}`;
     }
   };
 
@@ -377,11 +241,7 @@ Environmental Impact:
     setSimulationSubject(subject);
     localStorage.setItem('chemflow-simulation-subject', subject);
     
-    generateAccurateAnalysisData();
-    
-    await generateDetailedSubjectAnalyses(subject);
-
-    startRealTimeAnalysis();
+    // Simulation process would run here, generating analysis data
     
     setTimeout(() => {
       setIsSimulationRunning(false);
@@ -395,499 +255,199 @@ Environmental Impact:
     }, 2000);
   };
 
-  const generateAccurateAnalysisData = () => {
-    const timePoints = Array.from({ length: 25 }, (_, i) => i);
-    
-    const data = timePoints.map(time => {
-      const baseObj: { 
-        time: number; 
-        temperature?: number; 
-        pressure?: number; 
-        conversion?: number;
-        [key: string]: number | undefined; 
-      } = { time };
-      
-      selectedComponents.forEach(comp => {
-        let concentrationProfile;
-        
-        if (comp === 'Ethanol') {
-          concentrationProfile = Math.min(95, 10 + 85 * (1 - Math.exp(-0.2 * time)));
-        } else if (comp === 'Water') {
-          concentrationProfile = Math.min(90, 15 + 75 * (1 - Math.exp(-0.15 * time)));
-        } else if (comp === 'Methanol') {
-          concentrationProfile = Math.min(85, 5 + 80 * (1 - Math.exp(-0.25 * time)));
-        } else if (comp === 'Butanol') {
-          concentrationProfile = Math.min(75, 8 + 67 * (1 - Math.exp(-0.18 * time)));
-        } else {
-          concentrationProfile = Math.min(80, 10 + 70 * (1 - Math.exp(-0.2 * time)));
-        }
-        
-        concentrationProfile *= (0.95 + Math.random() * 0.1);
-        
-        if (selectedModel === 'Peng-Robinson') {
-          concentrationProfile *= 1.02;
-        } else if (selectedModel === 'Soave-Redlich-Kwong') {
-          concentrationProfile *= 0.98;
-        } else if (selectedModel === 'NRTL') {
-          concentrationProfile *= (1 + Math.sin(time / 5) * 0.05);
-        }
-        
-        baseObj[comp] = concentrationProfile;
-      });
-      
-      if (selectedComponents.includes('Ethanol') && selectedComponents.includes('Water')) {
-        baseObj.temperature = 351 + 5 * Math.sin(time / 3);
-      } else if (selectedComponents.some(c => c.includes('ane'))) {
-        baseObj.temperature = 273 + 30 * Math.sin(time / 4);
-      } else {
-        baseObj.temperature = 300 + 50 * Math.sin(time / 5);
-      }
-      
-      if (selectedModel === 'Peng-Robinson' || selectedModel === 'Soave-Redlich-Kwong') {
-        baseObj.pressure = 150 - 50 * Math.cos(time / 3);
-      } else {
-        baseObj.pressure = 100 - 10 * Math.cos(time / 3);
-      }
-      
-      if (selectedComponents.length >= 2) {
-        baseObj.conversion = Math.min(0.95, 1 - Math.exp(-0.15 * time));
-      } else {
-        baseObj.conversion = Math.min(0.90, 1 - Math.exp(-0.10 * time));
-      }
-      
-      return baseObj;
-    });
-    
-    setAnalysisData(data);
-  };
-
-  const startRealTimeAnalysis = () => {
-    if (realTimeInterval) {
-      clearInterval(realTimeInterval);
-    }
-
-    const initialData = generateAccurateRealTimeDataPoint(0);
-    setRealTimeData([initialData]);
-    setIsRealTimeActive(true);
-    
-    const intervalId = window.setInterval(() => {
-      setRealTimeData(prevData => {
-        const timePoint = prevData.length;
-        if (timePoint >= 20) {
-          clearInterval(intervalId);
-          setRealTimeInterval(null);
-          setIsRealTimeActive(false);
-          return prevData;
-        }
-        
-        const newDataPoint = generateAccurateRealTimeDataPoint(timePoint);
-        return [...prevData, newDataPoint];
-      });
-    }, 2000);
-    
-    setRealTimeInterval(intervalId);
-  };
-
-  const generateAccurateRealTimeDataPoint = (timePoint: number) => {
-    const dataPoint: { 
-      time: number; 
-      temperature?: number; 
-      pressure?: number; 
-      conversion?: number;
-      [key: string]: number | undefined; 
-    } = { time: timePoint };
-    
-    selectedComponents.forEach(comp => {
-      let value;
-      
-      if (comp === 'Ethanol') {
-        value = Math.min(95, 10 + 85 * (1 - Math.exp(-0.2 * timePoint)));
-        
-        if (selectedModel === 'NRTL' || selectedModel === 'UNIQUAC') {
-          value *= 1.05;
-        }
-      } else if (comp === 'Water') {
-        value = Math.min(90, 15 + 75 * (1 - Math.exp(-0.15 * timePoint)));
-        
-        if (selectedModel === 'Peng-Robinson') {
-          value *= 0.95;
-        }
-      } else if (comp === 'Methanol') {
-        value = Math.min(85, 5 + 80 * (1 - Math.exp(-0.25 * timePoint)));
-        
-        if (selectedComponents.includes('Acetic Acid')) {
-          value *= 0.85;
-        }
-      } else if (comp === 'Butanol') {
-        value = Math.min(75, 8 + 67 * (1 - Math.exp(-0.18 * timePoint)));
-      } else if (comp.includes('Acid')) {
-        value = Math.max(5, 70 - 65 * (1 - Math.exp(-0.15 * timePoint)));
-      } else if (comp.includes('ane')) {
-        value = Math.min(60, 5 + 55 * (1 - Math.exp(-0.3 * timePoint)));
-      } else {
-        value = Math.min(80, 10 + 70 * (1 - Math.exp(-0.2 * timePoint)));
-      }
-      
-      dataPoint[comp] = value * (0.95 + Math.random() * 0.1);
-    });
-    
-    if (simulationSubject === 'Distillation') {
-      dataPoint.temperature = 350 + 30 * Math.sin(timePoint / 5 + Math.random() * 0.3);
-    } else if (simulationSubject === 'Esterification Reaction') {
-      dataPoint.temperature = 330 + 25 * Math.sin(timePoint / 4 + Math.random() * 0.2);
-    } else if (simulationSubject === 'Gas Processing') {
-      dataPoint.temperature = 250 + 40 * Math.sin(timePoint / 6 + Math.random() * 0.4);
-    } else {
-      dataPoint.temperature = 300 + 50 * Math.sin(timePoint / 3 + Math.random() * 0.5);
-    }
-    
-    if (simulationSubject === 'Gas Processing') {
-      dataPoint.pressure = 200 - 20 * Math.cos(timePoint / 2 + Math.random() * 0.3);
-    } else {
-      dataPoint.pressure = 100 - 10 * Math.cos(timePoint / 2 + Math.random() * 0.3);
-    }
-    
-    if (simulationSubject === 'Esterification Reaction') {
-      dataPoint.conversion = Math.min(0.98, 1 - Math.exp(-0.15 * (timePoint + 1)));
-    } else if (simulationSubject === 'Aromatics Separation') {
-      dataPoint.conversion = Math.min(0.95, 1 - Math.exp(-0.1 * (timePoint + 1)));
-    } else {
-      dataPoint.conversion = Math.min(0.90, 1 - Math.exp(-0.08 * (timePoint + 1)));
-    }
-    
-    return dataPoint;
-  };
-
-  const generateDetailedSubjectAnalyses = async (subject: string) => {
-    try {
-      const generateDetailedAnalysis = (subject: string, components: string[]): string => {
-        const analysisText = `# ${subject} Analysis Summary
-        
-This analysis examines the ${subject} process using ${components.join(", ")} as the main components with the ${selectedModel} thermodynamic model.
-        
-## Key Findings
-- The process shows stable behavior under normal operating conditions
-- Operating temperature range: ${(300 + Math.random() * 50).toFixed(1)}-${(350 + Math.random() * 50).toFixed(1)}K
-- Operating pressure range: ${(90 + Math.random() * 10).toFixed(1)}-${(110 + Math.random() * 20).toFixed(1)} kPa
-- The system achieves ${(93 + Math.random() * 6).toFixed(1)}% conversion efficiency
-
-## Mathematical Model
-${selectedModel} was used to calculate fugacity coefficients and activity coefficients.
-${components.length > 1 ? `The binary interaction parameters were fitted to experimental VLE data.` : ''}
-${subject.includes('Reaction') ? `The reaction kinetics follow an Arrhenius-type rate expression with activation energy of ${(50 + Math.random() * 30).toFixed(1)} kJ/mol.` : ''}
-
-## Recommendations
-- Consider ${Math.random() > 0.5 ? 'increasing residence time' : 'optimizing temperature profile'} for better conversion
-- Monitor temperature gradients in the system to prevent ${Math.random() > 0.5 ? 'hotspots' : 'cold spots'}
-- Optimize energy usage by heat integration with ${Math.random() > 0.5 ? 'feed preheating' : 'product cooling'}
-- Regular maintenance of critical equipment is recommended to prevent ${Math.random() > 0.5 ? 'fouling' : 'corrosion'}`;
-
-        return analysisText;
-      };
-      
-      const heatTransferAnalysis = generateDetailedAnalysis(`Heat Transfer for ${subject}`, selectedComponents);
-      const fluidFlowAnalysis = generateDetailedAnalysis(`Fluid Flow for ${subject}`, selectedComponents);
-      const thermodynamicsAnalysis = generateDetailedAnalysis(`Thermodynamics for ${subject}`, selectedComponents);
-      const massTransferAnalysis = generateDetailedAnalysis(`Mass Transfer for ${subject}`, selectedComponents);
-      const reactionAnalysis = generateDetailedAnalysis(`Reaction Engineering for ${subject}`, selectedComponents);
-      const safetyAnalysis = generateDetailedAnalysis(`Safety for ${subject}`, selectedComponents);
-      const processAnalysis = generateDetailedAnalysis(`Process Simulation for ${subject}`, selectedComponents);
-      const utilityAnalysis = generateDetailedAnalysis(`Utility Requirements for ${subject}`, selectedComponents);
-      
-      const analyses: SubjectAnalysis[] = [
-        {
-          id: "heatTransfer",
-          title: "Heat Transfer Analysis",
-          icon: <Thermometer className="h-5 w-5" />,
-          content: heatTransferAnalysis,
-          mathData: generateMathData("heatTransfer"),
-          charts: (
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={analysisData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="time" label={{ value: 'Time (min)', position: 'insideBottom', offset: -5 }} />
-                <YAxis label={{ value: 'Temperature (K)', angle: -90, position: 'insideLeft' }} />
-                <Tooltip />
-                <Legend />
-                <Line type="monotone" dataKey="temperature" stroke="#ff7300" name="Temperature" />
-              </LineChart>
-            </ResponsiveContainer>
-          )
-        },
-        {
-          id: "fluidFlow",
-          title: "Fluid Flow Analysis",
-          icon: <Waves className="h-5 w-5" />,
-          content: fluidFlowAnalysis,
-          charts: (
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={analysisData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="time" label={{ value: 'Time (min)', position: 'insideBottom', offset: -5 }} />
-                <YAxis label={{ value: 'Pressure (kPa)', angle: -90, position: 'insideLeft' }} />
-                <Tooltip />
-                <Legend />
-                <Line type="monotone" dataKey="pressure" stroke="#387908" name="Pressure" />
-              </LineChart>
-            </ResponsiveContainer>
-          )
-        },
-        {
-          id: "thermodynamics",
-          title: "Thermodynamic Analysis",
-          icon: <Zap className="h-5 w-5" />,
-          content: thermodynamicsAnalysis,
-          charts: (
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={analysisData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="time" label={{ value: 'Time (min)', position: 'insideBottom', offset: -5 }} />
-                <YAxis yAxisId="left" label={{ value: 'Temperature (K)', angle: -90, position: 'insideLeft' }} />
-                <YAxis yAxisId="right" orientation="right" label={{ value: 'Pressure (kPa)', angle: 90, position: 'insideRight' }} />
-                <Tooltip />
-                <Legend />
-                <Line yAxisId="left" type="monotone" dataKey="temperature" stroke="#ff7300" name="Temperature" />
-                <Line yAxisId="right" type="monotone" dataKey="pressure" stroke="#387908" name="Pressure" />
-              </LineChart>
-            </ResponsiveContainer>
-          )
-        },
-        {
-          id: "massTransfer",
-          title: "Mass Transfer Analysis",
-          icon: <Droplets className="h-5 w-5" />,
-          content: massTransferAnalysis,
-          charts: (
-            <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={analysisData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="time" label={{ value: 'Time (min)', position: 'insideBottom', offset: -5 }} />
-                <YAxis label={{ value: 'Concentration (%)', angle: -90, position: 'insideLeft' }} />
-                <Tooltip />
-                <Legend />
-                {selectedComponents.slice(0, 4).map((comp, index) => {
-                  const colors = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042'];
-                  return (
-                    <Area 
-                      key={comp} 
-                      type="monotone" 
-                      dataKey={comp} 
-                      stackId="1"
-                      stroke={colors[index % colors.length]} 
-                      fill={colors[index % colors.length]} 
-                    />
-                  );
-                })}
-              </AreaChart>
-            </ResponsiveContainer>
-          )
-        },
-        {
-          id: "reactionEngineering",
-          title: "Reaction Engineering Analysis",
-          icon: <FlaskConical className="h-5 w-5" />,
-          content: reactionAnalysis,
-          charts: (
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={analysisData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="time" label={{ value: 'Time (min)', position: 'insideBottom', offset: -5 }} />
-                <YAxis label={{ value: 'Conversion', angle: -90, position: 'insideLeft' }} />
-                <Tooltip />
-                <Legend />
-                <Line type="monotone" dataKey="conversion" stroke="#8884d8" activeDot={{ r: 8 }} name="Conversion" />
-              </LineChart>
-            </ResponsiveContainer>
-          )
-        },
-        {
-          id: "safetyAnalysis",
-          title: "Safety Analysis",
-          icon: <Shield className="h-5 w-5" />,
-          content: safetyAnalysis,
-          charts: (
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={analysisData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="time" label={{ value: 'Time (min)', position: 'insideBottom', offset: -5 }} />
-                <YAxis label={{ value: 'Pressure (kPa)', angle: -90, position: 'insideLeft' }} />
-                <Tooltip />
-                <Legend />
-                <Line type="monotone" dataKey="pressure" stroke="#ff0000" name="Pressure" />
-                <Line type="monotone" dataKey={(datum) => datum.pressure ? datum.pressure * 0.9 : 0} stroke="#00ff00" strokeDasharray="5 5" name="Relief Pressure" />
-              </LineChart>
-            </ResponsiveContainer>
-          )
-        },
-        {
-          id: "processSimulation",
-          title: "Process Simulation",
-          icon: <Cpu className="h-5 w-5" />,
-          content: processAnalysis,
-          charts: (
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={[analysisData[analysisData.length - 1]]}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="time" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                {selectedComponents.slice(0, 6).map((comp, index) => {
-                  const colors = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088fe', '#00C49F'];
-                  return (
-                    <Bar 
-                      key={comp} 
-                      dataKey={comp} 
-                      fill={colors[index % colors.length]} 
-                      name={comp} 
-                    />
-                  );
-                })}
-              </BarChart>
-            </ResponsiveContainer>
-          )
-        },
-        {
-          id: "utilityEnvironmental",
-          title: "Utility & Environmental Analysis",
-          icon: <Leaf className="h-5 w-5" />,
-          content: utilityAnalysis,
-          mathData: generateMathData("utilityEnvironmental"),
-          charts: (
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={[{
-                name: 'Utilities',
-                Electricity: 100 + Math.random() * 30,
-                Steam: 20 + Math.random() * 10,
-                'Cooling Water': 40 + Math.random() * 15,
-                'Waste Treatment': 15 + Math.random() * 8
-              }]}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis label={{ value: 'Consumption (relative units)', angle: -90, position: 'insideLeft' }} />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="Electricity" fill="#8884d8" />
-                <Bar dataKey="Steam" fill="#82ca9d" />
-                <Bar dataKey="Cooling Water" fill="#ffc658" />
-                <Bar dataKey="Waste Treatment" fill="#ff8042" />
-              </BarChart>
-            </ResponsiveContainer>
-          )
-        }
-      ];
-      
-      setSubjectAnalyses(analyses);
-      setActiveSubjectAnalysis(analyses[0].id);
-      
-      return analyses;
-    } catch (error) {
-      console.error("Error generating detailed analyses:", error);
-      toast({
-        title: "Analysis Error",
-        description: "There was an error generating the analysis data",
-        variant: "destructive"
-      });
-      return [];
+  const handleGoBack = () => {
+    if (currentStep === 'thermodynamics') {
+      setCurrentStep('components');
+    } else if (currentStep === 'builder') {
+      setCurrentStep('thermodynamics');
     }
   };
 
   return (
-    <div>
+    <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900">
       <Navbar />
-      <div className="flex flex-col">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold">Create Simulation</h1>
-          <div className="flex items-center">
-            <Button onClick={handleComponentSelectionDone} className="mr-2">
-              <Save className="h-5 w-5" />
-              Components
-            </Button>
-            <Button onClick={handleModelSelectionDone} className="mr-2">
-              <Layers className="h-5 w-5" />
-              Thermodynamics
-            </Button>
-            <Button onClick={handleRunSimulation} className="mr-2">
-              <Play className="h-5 w-5" />
-              Run Simulation
-            </Button>
-            <Button onClick={handleSaveSimulation}>
-              <Save className="h-5 w-5" />
-              Save Simulation
-            </Button>
-          </div>
-        </div>
-        <div className="mt-4">
-          <div className="flex flex-col">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-bold">Simulation Name</h2>
-              <input
-                type="text"
-                value={simulationName}
-                onChange={(e) => setSimulationName(e.target.value)}
-                className="border border-gray-300 rounded-md p-2"
-              />
-            </div>
-            <div className="mt-4">
-              <h2 className="text-lg font-bold">Selected Components</h2>
-              <div className="mt-2">
-                {selectedComponents.map((comp, index) => (
-                  <div key={index} className="flex items-center">
-                    <span className="mr-2">{comp}</span>
-                    <button onClick={() => setSelectedComponents(selectedComponents.filter(c => c !== comp))}>
-                      <ArrowLeft className="h-5 w-5" />
-                    </button>
-                  </div>
-                ))}
+      
+      <main className="flex-1 container mx-auto px-4 py-6">
+        {/* Workflow Header */}
+        <div className="mb-6">
+          <div className="flex justify-between items-center mb-2">
+            <div className="flex items-center">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Create Simulation</h1>
+              <div className="ml-4">
+                <input
+                  type="text"
+                  value={simulationName}
+                  onChange={(e) => setSimulationName(e.target.value)}
+                  className="border border-gray-300 dark:border-gray-700 rounded-md p-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                  placeholder="Simulation Name"
+                />
               </div>
             </div>
-            <div className="mt-4">
-              <h2 className="text-lg font-bold">Thermodynamic Model</h2>
-              <div className="mt-2">
-                <select
-                  value={selectedModel}
-                  onChange={(e) => setSelectedModel(e.target.value)}
-                  className="border border-gray-300 rounded-md p-2"
+            
+            <div className="flex items-center space-x-2">
+              {currentStep !== 'components' && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleGoBack}
+                  className="flex items-center"
                 >
-                  <option value="Peng-Robinson">Peng-Robinson</option>
-                  <option value="Soave-Redlich-Kwong">Soave-Redlich-Kwong</option>
-                  <option value="NRTL">NRTL</option>
-                  <option value="UNIQUAC">UNIQUAC</option>
-                </select>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="mt-4">
-          <div className="flex flex-col">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-bold">Analysis</h2>
-              <button onClick={() => setShowAnalysis(!showAnalysis)}>
-                {showAnalysis ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
-              </button>
-            </div>
-            <div className="mt-2">
-              {showAnalysis && (
-                <div ref={analysisRef}>
-                  {subjectAnalyses.map((analysis) => (
-                    <div key={analysis.id} className="mb-4">
-                      <div className="flex items-center justify-between">
-                        <h3 className="text-md font-bold">{analysis.title}</h3>
-                        <button onClick={() => setActiveSubjectAnalysis(analysis.id)}>
-                          <ChevronDown className="h-5 w-5" />
-                        </button>
-                      </div>
-                      <div className="mt-2">
-                        {analysis.charts}
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  Back
+                </Button>
+              )}
+              
+              <Button 
+                onClick={handleSaveSimulation}
+                variant="outline"
+                className="flex items-center"
+              >
+                <Save className="h-4 w-4 mr-1" />
+                Save
+              </Button>
+              
+              {currentStep === 'builder' && (
+                <Button 
+                  onClick={handleRunSimulation} 
+                  disabled={isSimulationRunning}
+                  className="bg-green-600 hover:bg-green-700 text-white flex items-center"
+                >
+                  {isSimulationRunning ? (
+                    <RefreshCw className="h-4 w-4 mr-1 animate-spin" />
+                  ) : (
+                    <Play className="h-4 w-4 mr-1" />
+                  )}
+                  {isSimulationRunning ? 'Simulating...' : 'Run Simulation'}
+                </Button>
               )}
             </div>
           </div>
+          
+          {/* Progress Indicator */}
+          <div className="mb-6">
+            <div className="flex justify-between text-sm mb-1">
+              <span className={`${currentStep === 'components' ? 'font-medium text-blue-600' : ''}`}>1. Select Components</span>
+              <span className={`${currentStep === 'thermodynamics' ? 'font-medium text-blue-600' : ''}`}>2. Thermodynamic Model</span>
+              <span className={`${currentStep === 'builder' ? 'font-medium text-blue-600' : ''}`}>3. Build Flowsheet</span>
+            </div>
+            <Progress value={simulationProgress} className="h-2" />
+          </div>
         </div>
-      </div>
+        
+        {/* Step Content */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 mb-6">
+          {currentStep === 'components' && (
+            <div className="animate-fade-in">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Select Chemical Components</h2>
+                <Button 
+                  onClick={handleComponentSelectionDone}
+                  disabled={!componentsValid}
+                  className="flex items-center"
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              </div>
+              
+              <ComponentSelector 
+                selectedComponents={selectedComponents} 
+                setSelectedComponents={setSelectedComponents} 
+              />
+            </div>
+          )}
+          
+          {currentStep === 'thermodynamics' && (
+            <div className="animate-fade-in">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Select Thermodynamic Model</h2>
+                <Button 
+                  onClick={handleModelSelectionDone}
+                  disabled={!selectedModel}
+                  className="flex items-center"
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              </div>
+              
+              <ThermodynamicsSelector 
+                selectedModel={selectedModel}
+                setSelectedModel={setSelectedModel}
+                selectedComponents={selectedComponents}
+              />
+            </div>
+          )}
+          
+          {currentStep === 'builder' && (
+            <div className="animate-fade-in">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Process Flowsheet Builder</h2>
+              
+              <SimulationBuilder 
+                selectedComponents={selectedComponents}
+                thermodynamicModel={selectedModel}
+                onRunSimulation={handleRunSimulation}
+              />
+              
+              {isSimulationComplete && showAnalysis && (
+                <div ref={analysisRef} className="mt-8 border-t pt-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold flex items-center">
+                      <BarChart3 className="h-5 w-5 mr-2 text-blue-500" />
+                      Simulation Results
+                    </h3>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => setShowAnalysis(!showAnalysis)}
+                    >
+                      {showAnalysis ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                    </Button>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                      <h4 className="font-medium mb-2">Simulation Summary</h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">
+                        {simulationSubject} simulation with {selectedComponents.join(", ")} using {selectedModel} model.
+                      </p>
+                      <div className="mt-4">
+                        <Button size="sm" onClick={handleExportToPDF} className="flex items-center">
+                          <FileText className="h-4 w-4 mr-1" />
+                          Export Report
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                      <h4 className="font-medium mb-2">Performance Metrics</h4>
+                      <div className="grid grid-cols-2 gap-2 text-sm">
+                        <div>
+                          <p className="text-gray-500 dark:text-gray-400">Efficiency:</p>
+                          <p className="font-medium">{Math.floor(Math.random() * 30) + 70}%</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-500 dark:text-gray-400">Conversion:</p>
+                          <p className="font-medium">{Math.floor(Math.random() * 20) + 80}%</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-500 dark:text-gray-400">Energy Usage:</p>
+                          <p className="font-medium">{Math.floor(Math.random() * 500) + 1000} kJ</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-500 dark:text-gray-400">Product Purity:</p>
+                          <p className="font-medium">{Math.floor(Math.random() * 10) + 90}%</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </main>
+      
       <Footer />
     </div>
   );
