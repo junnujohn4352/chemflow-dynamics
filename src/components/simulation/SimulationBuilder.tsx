@@ -8,34 +8,16 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import StreamDataPanel from "./StreamDataPanel";
-import { getEquipmentIcon } from "@/components/ui/equipment/EquipmentIcons";
 
 // Equipment types
-const heatExchangerEquipment = [
-  { id: "shell-tube", name: "Shell & Tube", type: "shell-tube-heat-exchanger", description: "Standard shell and tube heat exchanger" },
-  { id: "plate-heat", name: "Plate Heat Exchanger", type: "plate-heat-exchanger", description: "Compact plate-type heat exchanger" },
-  { id: "air-cooler", name: "Air Cooler", type: "air-cooler", description: "Forced/induced draft air cooler" },
-  { id: "double-pipe", name: "Double Pipe", type: "double-pipe", description: "Simple double pipe heat exchanger" },
-  { id: "spiral", name: "Spiral", type: "spiral-heat-exchanger", description: "Spiral-type heat exchanger" },
-  { id: "plate-fin", name: "Plate-Fin", type: "plate-fin-exchanger", description: "Compact plate-fin design" },
-];
-
-const separationEquipment = [
-  { id: "flash", name: "Flash Drum", type: "flash", description: "Vapor-liquid separation" },
-  { id: "3-phase", name: "Three Phase Separator", type: "three-phase-separator", description: "Gas-liquid-liquid separation" },
-  { id: "component-split", name: "Component Splitter", type: "component-splitter", description: "Pure component separation" },
-  { id: "hydrocyclone", name: "Hydrocyclone", type: "hydrocyclone", description: "Centrifugal separation" },
-  { id: "membrane", name: "Membrane", type: "membrane", description: "Membrane-based separation" },
-];
-
-const processEquipment = [
-  { id: "pump", name: "Pump", type: "pump", description: "Liquid pressure increase" },
-  { id: "compressor", name: "Compressor", type: "compressor", description: "Gas compression" },
-  { id: "expander", name: "Expander", type: "expander", description: "Gas expansion" },
-  { id: "valve", name: "Control Valve", type: "valve", description: "Flow control" },
-  { id: "mixer", name: "Mixer", type: "mixer", description: "Stream mixing" },
-  { id: "splitter", name: "Splitter", type: "splitter", description: "Stream splitting" },
-  { id: "pipe", name: "Pipe Segment", type: "pipe-segment", description: "Pipe flow calculations" },
+const processingEquipment = [
+  { id: "pump", name: "Pump", type: "pump", description: "Increases fluid pressure" },
+  { id: "compressor", name: "Compressor", type: "compressor", description: "Increases gas pressure" },
+  { id: "heat-exchanger", name: "Heat Exchanger", type: "heat-exchanger", description: "Transfers heat between fluids" },
+  { id: "mixer", name: "Mixer", type: "mixer", description: "Combines multiple streams" },
+  { id: "splitter", name: "Splitter", type: "splitter", description: "Divides a stream into multiple outputs" },
+  { id: "valve", name: "Valve", type: "valve", description: "Controls flow rate or pressure" },
+  { id: "flash-drum", name: "Flash Drum", type: "flash-drum", description: "Separates vapor and liquid phases" },
 ];
 
 const columnEquipment = [
@@ -51,6 +33,102 @@ const reactorEquipment = [
   { id: "batch", name: "Batch Reactor", type: "batch", description: "Batch reaction vessel" },
   { id: "gibbs", name: "Gibbs Reactor", type: "gibbs", description: "Equilibrium reactor" },
 ];
+
+// Equipment rendering functions
+const renderEquipmentIcon = (type: string) => {
+  switch (type) {
+    case 'pump':
+      return (
+        <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none">
+          <circle cx="12" cy="12" r="8" />
+          <line x1="12" y1="4" x2="12" y2="8" />
+          <line x1="12" y1="16" x2="12" y2="20" />
+          <line x1="6" y1="12" x2="18" y2="12" />
+        </svg>
+      );
+    case 'compressor':
+      return (
+        <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none">
+          <rect x="4" y="8" width="16" height="8" rx="2" />
+          <line x1="4" y1="12" x2="20" y2="12" />
+          <line x1="12" y1="8" x2="12" y2="16" />
+        </svg>
+      );
+    case 'heat-exchanger':
+      return (
+        <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none">
+          <path d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+        </svg>
+      );
+    case 'mixer':
+      return (
+        <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none">
+          <circle cx="12" cy="12" r="8" />
+          <line x1="4" y1="12" x2="8" y2="12" />
+          <line x1="16" y1="12" x2="20" y2="12" />
+          <line x1="12" y1="4" x2="12" y2="8" />
+          <line x1="12" y1="16" x2="12" y2="20" />
+        </svg>
+      );
+    case 'splitter':
+      return (
+        <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none">
+          <circle cx="12" cy="12" r="8" />
+          <line x1="4" y1="12" x2="8" y2="12" />
+          <line x1="16" y1="8" x2="20" y2="4" />
+          <line x1="16" y1="16" x2="20" y2="20" />
+        </svg>
+      );
+    case 'valve':
+      return (
+        <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none">
+          <path d="M4 12h16" />
+          <path d="M12 4l-4 8 8 8-4-8" />
+        </svg>
+      );
+    case 'flash-drum':
+      return (
+        <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none">
+          <rect x="4" y="8" width="16" height="12" rx="2" />
+          <line x1="12" y1="4" x2="12" y2="8" />
+          <line x1="12" y1="20" x2="12" y2="24" />
+        </svg>
+      );
+    case 'distillation':
+      return (
+        <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none">
+          <rect x="6" y="4" width="12" height="16" rx="2" />
+          <line x1="6" y1="8" x2="18" y2="8" />
+          <line x1="6" y1="12" x2="18" y2="12" />
+          <line x1="6" y1="16" x2="18" y2="16" />
+          <line x1="12" y1="20" x2="12" y2="24" />
+        </svg>
+      );
+    case 'cstr':
+    case 'batch':
+      return (
+        <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none">
+          <circle cx="12" cy="12" r="8" />
+          <path d="M12 4v4M12 16v4M4 12h4M16 12h4" />
+        </svg>
+      );
+    case 'pfr':
+      return (
+        <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none">
+          <rect x="4" y="8" width="16" height="8" rx="4" />
+          <line x1="4" y1="12" x2="20" y2="12" />
+        </svg>
+      );
+    default:
+      return (
+        <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none">
+          <rect x="4" y="4" width="16" height="16" rx="2" />
+          <line x1="4" y1="12" x2="20" y2="12" />
+          <line x1="12" y1="4" x2="12" y2="20" />
+        </svg>
+      );
+  }
+};
 
 // Types
 interface Equipment {
@@ -410,37 +488,15 @@ const SimulationBuilder: React.FC<{
           </div>
           
           <Tabs defaultValue="process" className="flex-1 flex flex-col">
-            <TabsList className="mx-2 mt-2 grid grid-cols-4">
+            <TabsList className="mx-2 mt-2 grid grid-cols-3">
               <TabsTrigger value="process">Process</TabsTrigger>
-              <TabsTrigger value="heat">Heat Exchange</TabsTrigger>
-              <TabsTrigger value="separation">Separation</TabsTrigger>
               <TabsTrigger value="columns">Columns</TabsTrigger>
               <TabsTrigger value="reactors">Reactors</TabsTrigger>
             </TabsList>
             
             <div className="p-2 flex-1 overflow-y-auto">
               <TabsContent value="process" className="mt-0 space-y-2">
-                {processEquipment.map(equipment => (
-                  <EquipmentItem 
-                    key={equipment.id}
-                    equipment={equipment}
-                    onDragStart={handleDragStart}
-                  />
-                ))}
-              </TabsContent>
-
-              <TabsContent value="heat" className="mt-0 space-y-2">
-                {heatExchangerEquipment.map(equipment => (
-                  <EquipmentItem 
-                    key={equipment.id}
-                    equipment={equipment}
-                    onDragStart={handleDragStart}
-                  />
-                ))}
-              </TabsContent>
-
-              <TabsContent value="separation" className="mt-0 space-y-2">
-                {separationEquipment.map(equipment => (
+                {processingEquipment.map(equipment => (
                   <EquipmentItem 
                     key={equipment.id}
                     equipment={equipment}
@@ -541,12 +597,13 @@ const SimulationBuilder: React.FC<{
                 }}
                 onDoubleClick={(e) => {
                   e.stopPropagation();
+                  setDraggingEquipment(equipment.id);
                 }}
               >
                 <div 
                   className="w-16 h-16 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-md flex items-center justify-center"
                 >
-                  {getEquipmentIcon(equipment.type)}
+                  {renderEquipmentIcon(equipment.type)}
                 </div>
                 <span className="text-xs mt-1 max-w-16 truncate">
                   {equipment.name}
@@ -645,7 +702,7 @@ const EquipmentItem: React.FC<EquipmentItemProps> = ({ equipment, onDragStart })
     >
       <div className="flex items-center">
         <div className="mr-2 text-gray-700 dark:text-gray-300">
-          {getEquipmentIcon(equipment.type)}
+          {renderEquipmentIcon(equipment.type)}
         </div>
         <div>
           <div className="text-sm font-medium">{equipment.name}</div>
@@ -656,13 +713,7 @@ const EquipmentItem: React.FC<EquipmentItemProps> = ({ equipment, onDragStart })
   );
 };
 
-import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Trash2 } from 'lucide-react';
-
+// Equipment Properties Component
 interface EquipmentPropertiesProps {
   equipment: Equipment;
   onUpdate: (id: string, updates: Partial<Equipment>) => void;
@@ -670,55 +721,297 @@ interface EquipmentPropertiesProps {
   components: string[];
 }
 
-export const EquipmentProperties: React.FC<EquipmentPropertiesProps> = ({
-  equipment,
-  onUpdate,
+const EquipmentProperties: React.FC<EquipmentPropertiesProps> = ({ 
+  equipment, 
+  onUpdate, 
   onDelete,
   components
 }) => {
-  const [activeTab, setActiveTab] = useState('basic');
-
+  const [name, setName] = useState(equipment.name);
+  
+  useEffect(() => {
+    setName(equipment.name);
+  }, [equipment.id, equipment.name]);
+  
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setName(e.target.value);
+  };
+  
+  const handleNameBlur = () => {
+    onUpdate(equipment.id, { name });
+  };
+  
+  // Render different property fields based on equipment type
+  const renderTypeSpecificProperties = () => {
+    switch (equipment.type) {
+      case 'heat-exchanger':
+        return (
+          <div className="space-y-3">
+            <div>
+              <label className="block text-xs font-medium mb-1">Heat Duty (kW)</label>
+              <input 
+                type="number" 
+                className="w-full p-1.5 text-sm rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
+                defaultValue={equipment.settings?.heatDuty || 100}
+                onChange={(e) => onUpdate(equipment.id, { 
+                  settings: { ...equipment.settings, heatDuty: parseFloat(e.target.value) } 
+                })}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium mb-1">Hot Side Inlet Temp (°C)</label>
+              <input 
+                type="number" 
+                className="w-full p-1.5 text-sm rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
+                defaultValue={equipment.settings?.hotInlet || 150}
+                onChange={(e) => onUpdate(equipment.id, { 
+                  settings: { ...equipment.settings, hotInlet: parseFloat(e.target.value) } 
+                })}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium mb-1">Cold Side Inlet Temp (°C)</label>
+              <input 
+                type="number" 
+                className="w-full p-1.5 text-sm rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
+                defaultValue={equipment.settings?.coldInlet || 25}
+                onChange={(e) => onUpdate(equipment.id, { 
+                  settings: { ...equipment.settings, coldInlet: parseFloat(e.target.value) } 
+                })}
+              />
+            </div>
+          </div>
+        );
+      
+      case 'pump':
+      case 'compressor':
+        return (
+          <div className="space-y-3">
+            <div>
+              <label className="block text-xs font-medium mb-1">Discharge Pressure (kPa)</label>
+              <input 
+                type="number" 
+                className="w-full p-1.5 text-sm rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
+                defaultValue={equipment.settings?.pressure || 200}
+                onChange={(e) => onUpdate(equipment.id, { 
+                  settings: { ...equipment.settings, pressure: parseFloat(e.target.value) } 
+                })}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium mb-1">Efficiency (%)</label>
+              <input 
+                type="number" 
+                className="w-full p-1.5 text-sm rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
+                defaultValue={equipment.settings?.efficiency || 75}
+                min={0}
+                max={100}
+                onChange={(e) => onUpdate(equipment.id, { 
+                  settings: { ...equipment.settings, efficiency: parseFloat(e.target.value) } 
+                })}
+              />
+            </div>
+          </div>
+        );
+      
+      case 'distillation':
+      case 'absorption':
+      case 'stripping':
+        return (
+          <div className="space-y-3">
+            <div>
+              <label className="block text-xs font-medium mb-1">Number of Stages</label>
+              <input 
+                type="number" 
+                className="w-full p-1.5 text-sm rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
+                defaultValue={equipment.settings?.stages || 10}
+                min={1}
+                onChange={(e) => onUpdate(equipment.id, { 
+                  settings: { ...equipment.settings, stages: parseInt(e.target.value) } 
+                })}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium mb-1">Feed Stage</label>
+              <input 
+                type="number" 
+                className="w-full p-1.5 text-sm rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
+                defaultValue={equipment.settings?.feedStage || 5}
+                min={1}
+                max={equipment.settings?.stages || 10}
+                onChange={(e) => onUpdate(equipment.id, { 
+                  settings: { ...equipment.settings, feedStage: parseInt(e.target.value) } 
+                })}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium mb-1">Reflux Ratio</label>
+              <input 
+                type="number" 
+                className="w-full p-1.5 text-sm rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
+                defaultValue={equipment.settings?.refluxRatio || 1.5}
+                min={0.1}
+                step={0.1}
+                onChange={(e) => onUpdate(equipment.id, { 
+                  settings: { ...equipment.settings, refluxRatio: parseFloat(e.target.value) } 
+                })}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium mb-1">Key Components</label>
+              <select 
+                className="w-full p-1.5 text-sm rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
+                defaultValue={equipment.settings?.lightKey || (components.length > 0 ? components[0] : '')}
+                onChange={(e) => onUpdate(equipment.id, { 
+                  settings: { ...equipment.settings, lightKey: e.target.value } 
+                })}
+              >
+                <option value="">Select Light Key</option>
+                {components.map(comp => (
+                  <option key={`light-${comp}`} value={comp}>{comp}</option>
+                ))}
+              </select>
+              <select 
+                className="w-full p-1.5 text-sm rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 mt-2"
+                defaultValue={equipment.settings?.heavyKey || (components.length > 1 ? components[1] : '')}
+                onChange={(e) => onUpdate(equipment.id, { 
+                  settings: { ...equipment.settings, heavyKey: e.target.value } 
+                })}
+              >
+                <option value="">Select Heavy Key</option>
+                {components.map(comp => (
+                  <option key={`heavy-${comp}`} value={comp}>{comp}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        );
+      
+      case 'cstr':
+      case 'pfr':
+      case 'batch':
+      case 'gibbs':
+        return (
+          <div className="space-y-3">
+            <div>
+              <label className="block text-xs font-medium mb-1">Temperature (°C)</label>
+              <input 
+                type="number" 
+                className="w-full p-1.5 text-sm rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
+                defaultValue={equipment.settings?.temperature || 25}
+                onChange={(e) => onUpdate(equipment.id, { 
+                  settings: { ...equipment.settings, temperature: parseFloat(e.target.value) } 
+                })}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium mb-1">Pressure (kPa)</label>
+              <input 
+                type="number" 
+                className="w-full p-1.5 text-sm rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
+                defaultValue={equipment.settings?.pressure || 101.325}
+                onChange={(e) => onUpdate(equipment.id, { 
+                  settings: { ...equipment.settings, pressure: parseFloat(e.target.value) } 
+                })}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium mb-1">Conversion (%)</label>
+              <input 
+                type="number" 
+                className="w-full p-1.5 text-sm rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
+                defaultValue={equipment.settings?.conversion || 90}
+                min={0}
+                max={100}
+                onChange={(e) => onUpdate(equipment.id, { 
+                  settings: { ...equipment.settings, conversion: parseFloat(e.target.value) } 
+                })}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium mb-1">Reactants</label>
+              <select 
+                className="w-full p-1.5 text-sm rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
+                multiple
+                defaultValue={equipment.settings?.reactants || []}
+                onChange={(e) => {
+                  const selectedOptions = Array.from(e.target.selectedOptions, option => option.value);
+                  onUpdate(equipment.id, { 
+                    settings: { ...equipment.settings, reactants: selectedOptions } 
+                  });
+                }}
+              >
+                {components.map(comp => (
+                  <option key={comp} value={comp}>{comp}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        );
+      
+      default:
+        return (
+          <div className="text-sm text-gray-500 dark:text-gray-400">
+            No specific properties for this equipment type.
+          </div>
+        );
+    }
+  };
+  
   return (
     <div className="space-y-4">
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="basic">Basic</TabsTrigger>
-          <TabsTrigger value="operating">Operating</TabsTrigger>
-          <TabsTrigger value="advanced">Advanced</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="basic" className="space-y-4">
-          <div>
-            <Label>Equipment Name</Label>
-            <Input
-              value={equipment.name}
-              onChange={(e) => onUpdate(equipment.id, { name: e.target.value })}
+      <div>
+        <label className="block text-xs font-medium mb-1">Equipment Name</label>
+        <input 
+          type="text" 
+          className="w-full p-1.5 text-sm rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
+          value={name}
+          onChange={handleNameChange}
+          onBlur={handleNameBlur}
+        />
+      </div>
+      
+      <div>
+        <label className="block text-xs font-medium mb-1">Equipment Type</label>
+        <div className="p-1.5 text-sm rounded border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700">
+          {equipment.type}
+        </div>
+      </div>
+      
+      <div>
+        <label className="block text-xs font-medium mb-1">Position</label>
+        <div className="flex space-x-2">
+          <div className="flex-1">
+            <label className="block text-xs text-gray-500 mb-1">X</label>
+            <input 
+              type="number" 
+              className="w-full p-1.5 text-sm rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
+              value={Math.round(equipment.position.x)}
+              onChange={(e) => onUpdate(equipment.id, { 
+                position: { ...equipment.position, x: parseInt(e.target.value) } 
+              })}
             />
           </div>
-          <div>
-            <Label>Equipment Type</Label>
-            <Input value={equipment.type} disabled />
-          </div>
-          <div>
-            <Label>Description</Label>
-            <textarea
-              className="w-full p-2 border rounded"
-              value={equipment.description || ''}
-              onChange={(e) => onUpdate(equipment.id, { description: e.target.value })}
+          <div className="flex-1">
+            <label className="block text-xs text-gray-500 mb-1">Y</label>
+            <input 
+              type="number" 
+              className="w-full p-1.5 text-sm rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
+              value={Math.round(equipment.position.y)}
+              onChange={(e) => onUpdate(equipment.id, { 
+                position: { ...equipment.position, y: parseInt(e.target.value) } 
+              })}
             />
           </div>
-        </TabsContent>
-
-        <TabsContent value="operating" className="space-y-4">
-          {renderOperatingParameters()}
-        </TabsContent>
-
-        <TabsContent value="advanced" className="space-y-4">
-          {renderAdvancedParameters()}
-        </TabsContent>
-      </Tabs>
-
-      <div className="pt-4 border-t">
+        </div>
+      </div>
+      
+      <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+        <h4 className="text-sm font-medium mb-3">Equipment Properties</h4>
+        {renderTypeSpecificProperties()}
+      </div>
+      
+      <div className="pt-4">
         <Button 
           variant="destructive" 
           size="sm" 
@@ -731,86 +1024,7 @@ export const EquipmentProperties: React.FC<EquipmentPropertiesProps> = ({
       </div>
     </div>
   );
-
-  function renderOperatingParameters() {
-    switch (equipment.type) {
-      case 'heat-exchanger':
-        return (
-          <>
-            <div>
-              <Label>Heat Duty (kW)</Label>
-              <Input
-                type="number"
-                value={equipment.settings?.heatDuty || 0}
-                onChange={(e) => updateSettings('heatDuty', parseFloat(e.target.value))}
-              />
-            </div>
-            <div>
-              <Label>Hot Side Inlet Temperature (°C)</Label>
-              <Input
-                type="number"
-                value={equipment.settings?.hotInletTemp || 0}
-                onChange={(e) => updateSettings('hotInletTemp', parseFloat(e.target.value))}
-              />
-            </div>
-            <div>
-              <Label>Cold Side Inlet Temperature (°C)</Label>
-              <Input
-                type="number"
-                value={equipment.settings?.coldInletTemp || 0}
-                onChange={(e) => updateSettings('coldInletTemp', parseFloat(e.target.value))}
-              />
-            </div>
-          </>
-        );
-      
-      // Add more cases for different equipment types
-      default:
-        return <p>No specific operating parameters for this equipment type.</p>;
-    }
-  }
-
-  function renderAdvancedParameters() {
-    switch (equipment.type) {
-      case 'heat-exchanger':
-        return (
-          <>
-            <div>
-              <Label>Overall Heat Transfer Coefficient (W/m²·K)</Label>
-              <Input
-                type="number"
-                value={equipment.settings?.heatTransferCoeff || 0}
-                onChange={(e) => updateSettings('heatTransferCoeff', parseFloat(e.target.value))}
-              />
-            </div>
-            <div>
-              <Label>Fouling Factor</Label>
-              <Input
-                type="number"
-                value={equipment.settings?.foulingFactor || 0}
-                onChange={(e) => updateSettings('foulingFactor', parseFloat(e.target.value))}
-              />
-            </div>
-          </>
-        );
-      
-      // Add more cases for different equipment types
-      default:
-        return <p>No advanced parameters for this equipment type.</p>;
-    }
-  }
-
-  function updateSettings(key: string, value: any) {
-    onUpdate(equipment.id, {
-      settings: {
-        ...equipment.settings,
-        [key]: value
-      }
-    });
-  }
 };
-
-export default EquipmentProperties;
 
 // Simulation Settings Component
 interface SimulationSettingsProps {
@@ -853,4 +1067,54 @@ const SimulationSettings: React.FC<SimulationSettingsProps> = ({
         <div className="space-y-3">
           <div>
             <label className="block text-xs font-medium mb-1">Convergence Tolerance</label>
-            <select className="w-
+            <select className="w-full p-1.5 text-sm rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800">
+              <option value="1e-3">1e-3 (Low)</option>
+              <option value="1e-5" selected>1e-5 (Medium)</option>
+              <option value="1e-7">1e-7 (High)</option>
+            </select>
+          </div>
+          
+          <div>
+            <label className="block text-xs font-medium mb-1">Maximum Iterations</label>
+            <input 
+              type="number" 
+              className="w-full p-1.5 text-sm rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
+              defaultValue={100}
+              min={10}
+            />
+          </div>
+          
+          <div className="flex items-center">
+            <input 
+              type="checkbox" 
+              id="enableHeatIntegration"
+              className="rounded border-gray-300"
+              defaultChecked
+            />
+            <label htmlFor="enableHeatIntegration" className="ml-2 text-xs">
+              Enable heat integration analysis
+            </label>
+          </div>
+          
+          <div className="flex items-center">
+            <input 
+              type="checkbox" 
+              id="enableSensitivity"
+              className="rounded border-gray-300"
+            />
+            <label htmlFor="enableSensitivity" className="ml-2 text-xs">
+              Run sensitivity analysis
+            </label>
+          </div>
+        </div>
+      </div>
+      
+      <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+        <h4 className="text-sm font-medium mb-2">Stream Data</h4>
+        <StreamDataPanel selectedComponents={components} />
+      </div>
+    </div>
+  );
+};
+
+export default SimulationBuilder;
