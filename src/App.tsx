@@ -1,3 +1,4 @@
+
 import React, { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -110,28 +111,28 @@ function App() {
     <div className="app">
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <Routes>
-              <Route path="/" element={<LandingPage />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/hysys-calculations" element={<HysysCalculations />} />
-              <Route path="/unit-converter" element={<UnitConverter />} />
-              <Route path="/code-converter" element={<CodeConverter />} />
-              <Route path="/create-simulation" element={<CreateSimulation />} />
-              <Route path="/intelligent-simulation" element={<IntelligentSimulation />} />
-              <Route path="/formulas" element={<Formulas />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/simulations" element={<Simulations />} />
-              <Route path="/components" element={<Components />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/sign-in" element={<SignIn />} />
-              <Route path="/sign-up" element={<SignUp />} />
-              <Route path="/process-flow" element={<ProcessFlow />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </TooltipProvider>
+          {/* The TooltipProvider is imported from Radix UI and should not be used as a separate wrapper.
+              Instead, we'll use it properly inside each component that needs tooltips. */}
+          <Toaster />
+          <Sonner />
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/hysys-calculations" element={<HysysCalculations />} />
+            <Route path="/unit-converter" element={<UnitConverter />} />
+            <Route path="/code-converter" element={<CodeConverter />} />
+            <Route path="/create-simulation" element={<CreateSimulation />} />
+            <Route path="/intelligent-simulation" element={<IntelligentSimulation />} />
+            <Route path="/formulas" element={<Formulas />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/simulations" element={<Simulations />} />
+            <Route path="/components" element={<Components />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/sign-in" element={<SignIn />} />
+            <Route path="/sign-up" element={<SignUp />} />
+            <Route path="/process-flow" element={<ProcessFlow />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
         </BrowserRouter>
       </QueryClientProvider>
     </div>
