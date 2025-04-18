@@ -1,8 +1,10 @@
+
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight, Beaker, FlaskConical, Atom } from "lucide-react";
 import { ChemFlowLogo } from "@/assets/icons/ChemFlowLogo";
 import { Button } from "@/components/ui/button";
+import GlassPanel from "@/components/ui/GlassPanel";
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -39,14 +41,14 @@ const LandingPage = () => {
   };
 
   const formulas = [
-    { name: "Reynolds Number", formula: "Re = ρvD/μ" },
-    { name: "Bernoulli's Equation", formula: "P₁ + ½ρv₁² + ρgh₁ = P₂ + ½ρv₂² + ρgh₂" },
-    { name: "Mass Balance", formula: "∑(ṁᵢₙ) = ∑(ṁₒᵤₜ)" },
-    { name: "Energy Balance", formula: "Q - W = ΔE" }
+    { name: "Reynolds Number", formula: "Re = ρvD/μ", color: "bg-flow-blue/10" },
+    { name: "Bernoulli's Equation", formula: "P₁ + ½ρv₁² + ρgh₁ = P₂ + ½ρv₂² + ρgh₂", color: "bg-flow-cyan/10" },
+    { name: "Mass Balance", formula: "∑(ṁᵢₙ) = ∑(ṁₒᵤₜ)", color: "bg-flow-teal/10" },
+    { name: "Energy Balance", formula: "Q - W = ΔE", color: "bg-indigo-500/10" }
   ];
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-white via-blue-50 to-cyan-50">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-white via-blue-50 to-cyan-50 overflow-hidden">
       {loading ? (
         <div className="text-center" style={{ opacity: opacity }}>
           <div className="flex justify-center mb-6 animate-pulse">
@@ -63,7 +65,9 @@ const LandingPage = () => {
           </div>
         </div>
       ) : (
-        <div className="text-center max-w-5xl mx-auto px-6" style={{ opacity: opacity }}>
+        <div className="text-center max-w-5xl mx-auto px-6 relative" style={{ opacity: opacity }}>
+          <div className="absolute inset-0 bg-white/30 rounded-full blur-3xl -z-10 animate-pulse"></div>
+          
           <div className="flex justify-center mb-10 hover:scale-105 transition-transform">
             <ChemFlowLogo className="h-32 w-auto drop-shadow-lg" />
           </div>
@@ -78,13 +82,18 @@ const LandingPage = () => {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10 max-w-4xl mx-auto">
             {formulas.map((item, index) => (
-              <div 
-                key={index}
-                className="p-4 rounded-xl bg-white/80 backdrop-blur-sm border border-blue-100 shadow-lg hover:shadow-xl transition-all hover:-translate-y-1"
+              <GlassPanel 
+                key={index} 
+                className={`p-4 ${item.color} group hover:scale-105 transition-all duration-300 hover:shadow-xl`}
+                intensity="light"
               >
-                <h3 className="text-sm font-medium text-gray-600 mb-2">{item.name}</h3>
-                <p className="text-lg font-mono text-flow-blue">{item.formula}</p>
-              </div>
+                <h3 className="text-sm font-medium text-gray-700 mb-2 group-hover:text-flow-blue transition-colors">
+                  {item.name}
+                </h3>
+                <p className="text-lg font-mono text-flow-blue group-hover:text-opacity-80 transition-all">
+                  {item.formula}
+                </p>
+              </GlassPanel>
             ))}
           </div>
           
