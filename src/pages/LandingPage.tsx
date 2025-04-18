@@ -1,7 +1,6 @@
-
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, Beaker, FlaskConical, Atom } from "lucide-react"; // Changed Flask to FlaskConical
+import { ArrowRight, Beaker, FlaskConical, Atom } from "lucide-react";
 import { ChemFlowLogo } from "@/assets/icons/ChemFlowLogo";
 import { Button } from "@/components/ui/button";
 
@@ -11,7 +10,6 @@ const LandingPage = () => {
   const [opacity, setOpacity] = useState(1);
 
   useEffect(() => {
-    // Initialize the fade animation after component mount
     const fadeTimer = setTimeout(() => {
       const fadeAnimation = setInterval(() => {
         setOpacity((prevOpacity) => {
@@ -26,7 +24,6 @@ const LandingPage = () => {
       return () => clearInterval(fadeAnimation);
     }, 1000);
 
-    // Simulate loading time
     const loadingTimer = setTimeout(() => {
       setLoading(false);
     }, 2000);
@@ -104,7 +101,7 @@ const LandingPage = () => {
 
           <div className="flex gap-6 justify-center mb-16">
             <Beaker className="h-8 w-8 text-flow-blue animate-bounce" />
-            <Flask className="h-8 w-8 text-flow-cyan animate-bounce delay-100" />
+            <FlaskConical className="h-8 w-8 text-flow-cyan animate-bounce delay-100" />
             <Atom className="h-8 w-8 text-flow-teal animate-bounce delay-200" />
           </div>
           
