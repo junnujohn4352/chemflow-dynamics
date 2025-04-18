@@ -1,4 +1,3 @@
-
 import React from "react";
 import { 
   CircleOff, 
@@ -67,7 +66,7 @@ export type EquipmentType =
   | "hydrocyclone" | "gravity-separator" | "drum" | "clarifier" | "membrane" | "granulator"
   | "homogenizer" | "conveyor" | "drainer" | "agitator" | "fluidized-bed" | "fixed-bed"
   | "catalytic" | "adsorption" | "packed-bed" | "tray-column" | "blender" | "dehumidifier" 
-  | "adsorber" | "quench" | "calciner" | "mixer-settler" 
+  | "adsorber" | "quench" | "calciner" | "mixer-settler" | "ejector" | "wetted-wall"
   | "shell-tube-heat-exchanger" | "short-cut-column" | "three-phase-separator" 
   | "component-splitter" | "conversion-reactor" | "equilibrium-reactor" | "gibbs-reactor" 
   | "yield-shift-reactor" | "pipe-segment" | "liquid-liquid-extraction" | "spread-sheet" 
@@ -276,7 +275,6 @@ export const getEquipmentIcon = (type: EquipmentType): React.ReactNode => {
     case "logical-operator":
       return <GitFork className="h-7 w-7" />;
     
-    // New equipment icons
     case "fixed-bed":
       return <LayersIcon className="h-7 w-7" />;
     case "membrane":
