@@ -18,6 +18,12 @@ const processingEquipment = [
   { id: "splitter", name: "Splitter", type: "splitter", description: "Divides a stream into multiple outputs" },
   { id: "valve", name: "Valve", type: "valve", description: "Controls flow rate or pressure" },
   { id: "flash-drum", name: "Flash Drum", type: "flash-drum", description: "Separates vapor and liquid phases" },
+  { id: "filter", name: "Filter", type: "filter", description: "Removes solid particles" },
+  { id: "decanter", name: "Decanter", type: "decanter", description: "Separates immiscible liquids" },
+  { id: "cyclone", name: "Cyclone", type: "cyclone", description: "Separates particles using centrifugal force" },
+  { id: "evaporator", name: "Evaporator", type: "evaporator", description: "Concentrates solutions by vaporization" },
+  { id: "crystallizer", name: "Crystallizer", type: "crystallizer", description: "Forms solid crystals from solution" },
+  { id: "dryer", name: "Dryer", type: "dryer", description: "Removes moisture from solids" },
 ];
 
 const columnEquipment = [
@@ -25,6 +31,10 @@ const columnEquipment = [
   { id: "absorption", name: "Absorption Column", type: "absorption", description: "Removes components using a solvent" },
   { id: "stripping", name: "Stripping Column", type: "stripping", description: "Removes dissolved gases from liquids" },
   { id: "extraction", name: "Extraction Column", type: "extraction", description: "Separates using liquid-liquid extraction" },
+  { id: "adsorption", name: "Adsorption Column", type: "adsorption", description: "Separates using solid adsorbent" },
+  { id: "packed-bed", name: "Packed Bed Column", type: "packed-bed", description: "Column filled with packing material" },
+  { id: "tray-column", name: "Tray Column", type: "tray-column", description: "Column with internal trays" },
+  { id: "scrubber", name: "Scrubber", type: "scrubber", description: "Removes gas contaminants" },
 ];
 
 const reactorEquipment = [
@@ -32,6 +42,10 @@ const reactorEquipment = [
   { id: "pfr", name: "PFR", type: "pfr", description: "Plug flow reactor" },
   { id: "batch", name: "Batch Reactor", type: "batch", description: "Batch reaction vessel" },
   { id: "gibbs", name: "Gibbs Reactor", type: "gibbs", description: "Equilibrium reactor" },
+  { id: "fluidized-bed", name: "Fluidized Bed", type: "fluidized-bed", description: "Reactor with fluidized solid catalyst" },
+  { id: "fixed-bed", name: "Fixed Bed", type: "fixed-bed", description: "Reactor with stationary catalyst" },
+  { id: "membrane", name: "Membrane Reactor", type: "membrane", description: "Reactor with selective membrane" },
+  { id: "catalytic", name: "Catalytic Reactor", type: "catalytic", description: "Reactor using catalyst" },
 ];
 
 // Equipment rendering functions

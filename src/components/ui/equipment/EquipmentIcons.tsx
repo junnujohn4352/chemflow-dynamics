@@ -44,7 +44,14 @@ import {
   ScrollIcon,
   PanelTop,
   Wind,
-  SplitSquareVertical
+  SplitSquareVertical,
+  Scan,
+  LayersIcon,
+  Orbit,
+  Landmark,
+  Box,
+  Pipette,
+  Atom
 } from "lucide-react";
 
 // Define icon aliases
@@ -61,15 +68,16 @@ export type EquipmentType =
   | "cstr" | "pfr" | "absorption-tower" | "cooler" | "distillation" | "crystallization"
   | "extruder" | "disintegrator" | "expander" | "reformer" | "boiler" | "tee" | "sieve"
   | "hydrocyclone" | "gravity-separator" | "drum" | "clarifier" | "membrane" | "granulator"
-  | "homogenizer" | "conveyor" | "drainer" | "agitator" | "fluidized-bed"
-  | "blender" | "dehumidifier" | "adsorber" | "quench" | "wetted-wall" | "ejector" | "calciner"
-  | "mixer-settler" | "shell-tube-heat-exchanger" 
-  | "short-cut-column" | "three-phase-separator" | "component-splitter" | "conversion-reactor"
-  | "equilibrium-reactor" | "gibbs-reactor" | "yield-shift-reactor" | "pipe-segment"
-  | "liquid-liquid-extraction" | "spread-sheet" | "makeup" | "recycle" | "ratio-control"
-  | "adjust" | "balance" | "controller" | "set" | "case-study" | "logical-operator"
-  | "mixer-column" | "divider" | "splitter" | "relief-valve" | "check-valve" | "plate-fin-exchanger"
-  | "generic-valve" | "spiral-heat-exchanger" | "double-pipe" | "plate-heat-exchanger";
+  | "homogenizer" | "conveyor" | "drainer" | "agitator" | "fluidized-bed" | "fixed-bed"
+  | "catalytic" | "adsorption" | "packed-bed" | "tray-column" | "blender" | "dehumidifier" 
+  | "adsorber" | "quench" | "wetted-wall" | "ejector" | "calciner" | "mixer-settler" 
+  | "shell-tube-heat-exchanger" | "short-cut-column" | "three-phase-separator" 
+  | "component-splitter" | "conversion-reactor" | "equilibrium-reactor" | "gibbs-reactor" 
+  | "yield-shift-reactor" | "pipe-segment" | "liquid-liquid-extraction" | "spread-sheet" 
+  | "makeup" | "recycle" | "ratio-control" | "adjust" | "balance" | "controller" | "set" 
+  | "case-study" | "logical-operator" | "mixer-column" | "divider" | "splitter" 
+  | "relief-valve" | "check-valve" | "plate-fin-exchanger" | "generic-valve" 
+  | "spiral-heat-exchanger" | "double-pipe" | "plate-heat-exchanger";
 
 export const getEquipmentIcon = (type: EquipmentType): React.ReactNode => {
   switch (type) {
@@ -270,6 +278,30 @@ export const getEquipmentIcon = (type: EquipmentType): React.ReactNode => {
       return <Microscope className="h-7 w-7" />;
     case "logical-operator":
       return <GitFork className="h-7 w-7" />;
+    
+    // New equipment icons
+    case "fixed-bed":
+      return <LayersIcon className="h-7 w-7" />;
+    case "membrane":
+      return <Filter className="h-7 w-7" />;
+    case "catalytic":
+      return <Atom className="h-7 w-7" />;
+    case "adsorption":
+      return <PanelTop className="h-7 w-7" />;
+    case "packed-bed":
+      return <Box className="h-7 w-7" />;
+    case "tray-column":
+      return <SquareStack className="h-7 w-7" />;
+    case "granulator":
+      return <Sparkles className="h-7 w-7" />;
+    case "homogenizer":
+      return <Move className="h-7 w-7" />;
+    case "dehumidifier":
+      return <Wind className="h-7 w-7" />;
+    case "wetted-wall":
+      return <ScrollIcon className="h-7 w-7" />;
+    case "calciner":
+      return <Flame className="h-7 w-7" />;
 
     default:
       return <FlaskConical className="h-7 w-7" />;
