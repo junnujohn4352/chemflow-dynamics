@@ -1,3 +1,4 @@
+
 import React from "react";
 import { 
   CircleOff, 
@@ -50,15 +51,11 @@ import {
   Orbit,
   Landmark,
   Box,
-  Pipette,
   Atom
 } from "lucide-react";
 
-// Define icon aliases
-export const Thermometer = ThermometerIcon;
-export const Pipette = PipetteIcon;
-export const TestTube = TestTubeIcon;
-
+// Define a consistent naming pattern without creating aliases that conflict with imports
+// We'll just use the imported names directly
 export type EquipmentType = 
   | "reactor" | "pump" | "valve" | "heater" | "condenser" | "column" | "tank" | "mixer" 
   | "heat-exchanger" | "filter" | "compressor" | "separator" | "cyclone" | "crystallizer" 
@@ -70,7 +67,7 @@ export type EquipmentType =
   | "hydrocyclone" | "gravity-separator" | "drum" | "clarifier" | "membrane" | "granulator"
   | "homogenizer" | "conveyor" | "drainer" | "agitator" | "fluidized-bed" | "fixed-bed"
   | "catalytic" | "adsorption" | "packed-bed" | "tray-column" | "blender" | "dehumidifier" 
-  | "adsorber" | "quench" | "wetted-wall" | "ejector" | "calciner" | "mixer-settler" 
+  | "adsorber" | "quench" | "calciner" | "mixer-settler" 
   | "shell-tube-heat-exchanger" | "short-cut-column" | "three-phase-separator" 
   | "component-splitter" | "conversion-reactor" | "equilibrium-reactor" | "gibbs-reactor" 
   | "yield-shift-reactor" | "pipe-segment" | "liquid-liquid-extraction" | "spread-sheet" 
@@ -98,7 +95,7 @@ export const getEquipmentIcon = (type: EquipmentType): React.ReactNode => {
     case "equilibrium-reactor":
       return <FlaskRound className="h-7 w-7" />;
     case "gibbs-reactor":
-      return <Thermometer className="h-7 w-7" />;
+      return <ThermometerIcon className="h-7 w-7" />;
     case "yield-shift-reactor":
       return <ArrowUpDown className="h-7 w-7" />;
       
@@ -132,7 +129,7 @@ export const getEquipmentIcon = (type: EquipmentType): React.ReactNode => {
     case "cooler":
       return <Snowflake className="h-7 w-7" />;
     case "condenser":
-      return <Thermometer className="h-7 w-7" />;
+      return <ThermometerIcon className="h-7 w-7" />;
     case "heat-exchanger":
       return <ArrowUpDown className="h-7 w-7" />;
     case "shell-tube-heat-exchanger":
@@ -177,9 +174,9 @@ export const getEquipmentIcon = (type: EquipmentType): React.ReactNode => {
     case "evaporator":
       return <Waves className="h-7 w-7" />;
     case "extractor":
-      return <Pipette className="h-7 w-7" />;
+      return <PipetteIcon className="h-7 w-7" />;
     case "dryer":
-      return <Thermometer className="h-7 w-7" />;
+      return <ThermometerIcon className="h-7 w-7" />;
     case "scrubber":
       return <Filter className="h-7 w-7" />;
     case "hydrocyclone":
