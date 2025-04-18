@@ -64,7 +64,7 @@ const Navbar = () => {
           <div className="flex items-center">
             <Link to="/" className="flex-shrink-0 flex items-center">
               <span className="text-xl font-display font-bold text-gray-900 dark:text-white">
-                <span className="text-purple-600">Lolby</span>
+                <span className="text-flow-blue">ChemFlow</span>
               </span>
             </Link>
           </div>

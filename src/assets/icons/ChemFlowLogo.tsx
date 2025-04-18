@@ -13,7 +13,7 @@ export const ChemFlowLogo: React.FC<ChemFlowLogoProps> = ({ className }) => {
         <FlaskConical className="h-6 w-6 text-flow-blue" />
         <Droplets className="h-4 w-4 text-flow-cyan absolute -bottom-1 -right-1" />
       </div>
-      <span className="font-bold text-lg text-gray-800">ChemFlow</span>
+      <span className="font-bold text-lg text-gray-800 dark:text-white">ChemFlow</span>
     </div>
   );
 };
