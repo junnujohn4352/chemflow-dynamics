@@ -49,10 +49,10 @@ const LandingPage = () => {
 
   const formulaCategories = {
     basic: [
-      { name: "Reynolds Number", formula: "Re = ρvD/μ", color: "bg-gradient-to-r from-purple-400/20 to-pink-500/20" },
-      { name: "Bernoulli's Equation", formula: "P₁ + ½ρv₁² + ρgh₁ = P₂ + ½ρv₂² + ρgh₂", color: "bg-gradient-to-r from-blue-400/20 to-cyan-500/20" },
-      { name: "Mass Balance", formula: "∑(ṁᵢₙ) = ∑(ṁₒᵤₜ)", color: "bg-gradient-to-r from-green-400/20 to-teal-500/20" },
-      { name: "Energy Balance", formula: "Q - W = ΔE", color: "bg-gradient-to-r from-orange-400/20 to-red-500/20" }
+      { name: "Reynolds Number", formula: "Re = ρvD/μ", color: "bg-gradient-to-r from-purple-500/40 to-pink-500/40", textColor: "text-purple-800", hoverColor: "hover:bg-purple-600/20" },
+      { name: "Bernoulli's Equation", formula: "P₁ + ½ρv₁² + ρgh₁ = P₂ + ½ρv₂² + ρgh₂", color: "bg-gradient-to-r from-blue-500/40 to-cyan-500/40", textColor: "text-blue-800", hoverColor: "hover:bg-blue-600/20" },
+      { name: "Mass Balance", formula: "∑(ṁᵢₙ) = ∑(ṁₒᵤₜ)", color: "bg-gradient-to-r from-green-500/40 to-teal-500/40", textColor: "text-green-800", hoverColor: "hover:bg-green-600/20" },
+      { name: "Energy Balance", formula: "Q - W = ΔE", color: "bg-gradient-to-r from-orange-500/40 to-red-500/40", textColor: "text-orange-800", hoverColor: "hover:bg-orange-600/20" }
     ],
     thermodynamics: [
       { name: "Gibbs Free Energy", formula: "ΔG = ΔH - TΔS", color: "bg-gradient-to-r from-purple-400/20 to-pink-500/20" },
@@ -84,7 +84,7 @@ const LandingPage = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center 
-      bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50 overflow-hidden">
+      bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50 overflow-hidden relative">
       {loading ? (
         <div className="text-center" style={{ opacity: opacity }}>
           <div className="flex justify-center mb-6 animate-pulse">
@@ -116,7 +116,9 @@ const LandingPage = () => {
             Welcome to ChemFlow
           </h1>
           
-          <p className="text-2xl text-gray-600 mb-10 max-w-2xl mx-auto">
+          <p className="text-2xl text-gray-600 mb-10 max-w-2xl mx-auto 
+            bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent 
+            font-semibold drop-shadow-sm">
             The advanced process simulation platform designed for modern engineers and scientists.
           </p>
 
@@ -126,7 +128,10 @@ const LandingPage = () => {
                 value={selectedCategory}
                 onValueChange={setSelectedCategory}
               >
-                <SelectTrigger className="w-[220px] rounded-full border-0 bg-transparent">
+                <SelectTrigger className="w-[220px] rounded-full border-0 
+                  bg-gradient-to-r from-blue-100 to-purple-100 
+                  text-blue-800 hover:from-blue-200 hover:to-purple-200 
+                  transition-all duration-300">
                   <SelectValue placeholder="Select Formula Category" />
                 </SelectTrigger>
                 <SelectContent>
@@ -144,13 +149,17 @@ const LandingPage = () => {
             {formulas.map((item, index) => (
               <GlassPanel 
                 key={index} 
-                className={`p-4 ${item.color} group hover:scale-105 transition-all duration-300 hover:shadow-xl`}
+                className={`p-4 ${item.color} ${item.hoverColor} group hover:scale-105 
+                  transition-all duration-300 hover:shadow-xl border-2 border-transparent 
+                  hover:border-white/30`}
                 intensity="light"
               >
-                <h3 className="text-sm font-medium text-gray-800 mb-2 group-hover:text-purple-600 transition-colors">
+                <h3 className={`text-sm font-medium ${item.textColor} mb-2 
+                  group-hover:text-opacity-80 transition-colors`}>
                   {item.name}
                 </h3>
-                <p className="text-lg font-mono text-blue-700 group-hover:text-pink-600 transition-all">
+                <p className={`text-lg font-mono ${item.textColor} 
+                  group-hover:text-opacity-70 transition-all`}>
                   {item.formula}
                 </p>
               </GlassPanel>
@@ -161,9 +170,11 @@ const LandingPage = () => {
             <Button
               onClick={handleEnterApp}
               className="inline-flex items-center justify-center px-8 py-3 rounded-xl 
-              bg-gradient-to-r from-purple-500 to-pink-500 text-white font-medium 
+              bg-gradient-to-r from-purple-600 to-pink-600 text-white font-medium 
               shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all 
-              animate-pulse hover:animate-none"
+              animate-pulse hover:animate-none 
+              hover:from-purple-700 hover:to-pink-700 
+              active:from-purple-800 active:to-pink-800"
               size="lg"
             >
               Enter Dashboard
@@ -180,7 +191,8 @@ const LandingPage = () => {
             <Gauge className="h-8 w-8 text-orange-500 animate-bounce delay-500" />
           </div>
           
-          <div className="text-gray-700 text-sm font-medium">
+          <div className="text-gray-700 text-sm font-medium 
+            bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
             © {new Date().getFullYear()} ChemFlow | Process Simulation Reimagined
           </div>
         </div>
