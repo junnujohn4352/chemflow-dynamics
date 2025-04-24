@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Search, X, Info, Check } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -86,7 +85,44 @@ const availableComponents = [
   { id: "Ethylbenzene", name: "Ethylbenzene", formula: "C₈H₁₀", mw: 106.17, cas: "100-41-4", phase: "liquid" },
   { id: "Urea", name: "Urea", formula: "CH₄N₂O", mw: 60.06, cas: "57-13-6", phase: "solid" },
   { id: "Methyl-Methacrylate", name: "Methyl Methacrylate", formula: "C₅H₈O₂", mw: 100.12, cas: "80-62-6", phase: "liquid" },
-  { id: "Acetylene", name: "Acetylene", formula: "C₂H₂", mw: 26.04, cas: "74-86-2", phase: "gas" }
+  { id: "Acetylene", name: "Acetylene", formula: "C₂H₂", mw: 26.04, cas: "74-86-2", phase: "gas" },
+  { id: "Acetaminophen", name: "Acetaminophen", formula: "C₈H₉NO₂", mw: 151.16, cas: "103-90-2", phase: "solid" },
+  { id: "Acetylsalicylic-Acid", name: "Acetylsalicylic Acid", formula: "C₉H₈O₄", mw: 180.16, cas: "50-78-2", phase: "solid" },
+  { id: "Adenosine", name: "Adenosine", formula: "C₁₀H₁₃N₅O₄", mw: 267.24, cas: "58-61-7", phase: "solid" },
+  { id: "Adrenaline", name: "Adrenaline", formula: "C₉H₁₃NO₃", mw: 183.20, cas: "51-43-4", phase: "solid" },
+  { id: "Caffeine", name: "Caffeine", formula: "C₈H₁₀N₄O₂", mw: 194.19, cas: "58-08-2", phase: "solid" },
+  { id: "Cholesterol", name: "Cholesterol", formula: "C₂₇H₄₆O", mw: 386.65, cas: "57-88-5", phase: "solid" },
+  { id: "Citric-Acid", name: "Citric Acid", formula: "C₆H₈O₇", mw: 192.12, cas: "77-92-9", phase: "solid" },
+  { id: "Diethyl-Ether", name: "Diethyl Ether", formula: "C₄H₁₀O", mw: 74.12, cas: "60-29-7", phase: "liquid" },
+  { id: "Dopamine", name: "Dopamine", formula: "C₈H₁₁NO₂", mw: 153.18, cas: "51-61-6", phase: "solid" },
+  { id: "Estrogen", name: "Estrogen", formula: "C₁₈H₂₄O₂", mw: 272.38, cas: "50-28-2", phase: "solid" },
+  { id: "Ethyl-Acetate", name: "Ethyl Acetate", formula: "C₄H₈O₂", mw: 88.11, cas: "141-78-6", phase: "liquid" },
+  { id: "Fructose", name: "Fructose", formula: "C₆H₁₂O₆", mw: 180.16, cas: "57-48-7", phase: "solid" },
+  { id: "Glucose", name: "Glucose", formula: "C₆H₁₂O₆", mw: 180.16, cas: "50-99-7", phase: "solid" },
+  { id: "Glycine", name: "Glycine", formula: "C₂H₅NO₂", mw: 75.07, cas: "56-40-6", phase: "solid" },
+  { id: "Hydrogen-Peroxide", name: "Hydrogen Peroxide", formula: "H₂O₂", mw: 34.01, cas: "7722-84-1", phase: "liquid" },
+  { id: "Insulin", name: "Insulin", formula: "C₂₅₇H₃₈₃N₆₅O₇₇S₆", mw: 5807.6, cas: "11061-68-0", phase: "solid" },
+  { id: "Lactic-Acid", name: "Lactic Acid", formula: "C₃H₆O₃", mw: 90.08, cas: "50-21-5", phase: "liquid" },
+  { id: "Nitric-Acid", name: "Nitric Acid", formula: "HNO₃", mw: 63.01, cas: "7697-37-2", phase: "liquid" },
+  { id: "Oleic-Acid", name: "Oleic Acid", formula: "C₁₈H₃₄O₂", mw: 282.46, cas: "112-80-1", phase: "liquid" },
+  { id: "Paracetamol", name: "Paracetamol", formula: "C₈H₉NO₂", mw: 151.16, cas: "103-90-2", phase: "solid" },
+  { id: "Penicillin", name: "Penicillin", formula: "C₁₆H₁₈N₂O₄S", mw: 334.39, cas: "61-33-6", phase: "solid" },
+  { id: "Phosphoric-Acid", name: "Phosphoric Acid", formula: "H₃PO₄", mw: 97.99, cas: "7664-38-2", phase: "liquid" },
+  { id: "Potassium-Chloride", name: "Potassium Chloride", formula: "KCl", mw: 74.55, cas: "7447-40-7", phase: "solid" },
+  { id: "Potassium-Hydroxide", name: "Potassium Hydroxide", formula: "KOH", mw: 56.11, cas: "1310-58-3", phase: "solid" },
+  { id: "Propylene-Glycol", name: "Propylene Glycol", formula: "C₃H₈O₂", mw: 76.09, cas: "57-55-6", phase: "liquid" },
+  { id: "Sodium-Bicarbonate", name: "Sodium Bicarbonate", formula: "NaHCO₃", mw: 84.01, cas: "144-55-8", phase: "solid" },
+  { id: "Sodium-Chloride", name: "Sodium Chloride", formula: "NaCl", mw: 58.44, cas: "7647-14-5", phase: "solid" },
+  { id: "Sodium-Hydroxide", name: "Sodium Hydroxide", formula: "NaOH", mw: 40.00, cas: "1310-73-2", phase: "solid" },
+  { id: "Sucrose", name: "Sucrose", formula: "C₁₂H₂₂O₁₁", mw: 342.30, cas: "57-50-1", phase: "solid" },
+  { id: "Sulfuric-Acid", name: "Sulfuric Acid", formula: "H₂SO₄", mw: 98.08, cas: "7664-93-9", phase: "liquid" },
+  { id: "Tetrafluoroethylene", name: "Tetrafluoroethylene", formula: "C₂F₄", mw: 100.02, cas: "116-14-3", phase: "gas" },
+  { id: "Titanium-Dioxide", name: "Titanium Dioxide", formula: "TiO₂", mw: 79.87, cas: "13463-67-7", phase: "solid" },
+  { id: "Trifluoroacetic-Acid", name: "Trifluoroacetic Acid", formula: "C₂HF₃O₂", mw: 114.02, cas: "76-05-1", phase: "liquid" },
+  { id: "Uranium-Hexafluoride", name: "Uranium Hexafluoride", formula: "UF₆", mw: 352.02, cas: "7783-81-5", phase: "solid/gas" },
+  { id: "Vitamin-A", name: "Vitamin A", formula: "C₂₀H₃₀O", mw: 286.45, cas: "68-26-8", phase: "solid" },
+  { id: "Vitamin-C", name: "Vitamin C", formula: "C₆H₈O₆", mw: 176.12, cas: "50-81-7", phase: "solid" },
+  { id: "Zinc-Oxide", name: "Zinc Oxide", formula: "ZnO", mw: 81.38, cas: "1314-13-2", phase: "solid" }
 ];
 
 const ComponentSelector: React.FC<ComponentSelectorProps> = ({ selectedComponents, setSelectedComponents }) => {
@@ -94,7 +130,6 @@ const ComponentSelector: React.FC<ComponentSelectorProps> = ({ selectedComponent
   const [showCustomInput, setShowCustomInput] = useState(false);
   const [customComponent, setCustomComponent] = useState({ name: "", formula: "" });
   
-  // Filter components based on search
   const filteredComponents = availableComponents.filter(
     comp => 
       comp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -103,7 +138,6 @@ const ComponentSelector: React.FC<ComponentSelectorProps> = ({ selectedComponent
   );
   
   const handleComponentClick = (componentId: string) => {
-    // Toggle selection
     if (selectedComponents.includes(componentId)) {
       setSelectedComponents(selectedComponents.filter(id => id !== componentId));
     } else {
@@ -114,19 +148,16 @@ const ComponentSelector: React.FC<ComponentSelectorProps> = ({ selectedComponent
   const handleAddCustomComponent = () => {
     if (customComponent.name.trim() === "") return;
     
-    // Create ID from name (remove spaces and special chars)
     const componentId = customComponent.name.replace(/[^a-zA-Z0-9]/g, "-");
     
     if (!selectedComponents.includes(componentId)) {
       setSelectedComponents([...selectedComponents, componentId]);
     }
     
-    // Reset custom input
     setCustomComponent({ name: "", formula: "" });
     setShowCustomInput(false);
   };
   
-  // Group components by type (common gases, hydrocarbons, etc.)
   const componentGroups = [
     { name: "Common Gases", components: ["Nitrogen", "Oxygen", "Carbon-Dioxide", "Hydrogen", "Argon", "Helium"] },
     { name: "Light Hydrocarbons", components: ["Methane", "Ethane", "Propane", "n-Butane", "i-Butane"] },
@@ -153,7 +184,6 @@ const ComponentSelector: React.FC<ComponentSelectorProps> = ({ selectedComponent
         />
       </div>
       
-      {/* Quick selections for common component groups */}
       <div className="mb-6">
         <h4 className="text-sm font-medium mb-2">Quick Add by Group</h4>
         <div className="flex flex-wrap gap-2">
@@ -165,7 +195,6 @@ const ComponentSelector: React.FC<ComponentSelectorProps> = ({ selectedComponent
                     variant="outline" 
                     size="sm"
                     onClick={() => {
-                      // Add all components from this group that aren't already selected
                       const newComponents = group.components.filter(
                         comp => !selectedComponents.includes(comp)
                       );
@@ -186,7 +215,6 @@ const ComponentSelector: React.FC<ComponentSelectorProps> = ({ selectedComponent
         </div>
       </div>
       
-      {/* Custom component input */}
       {showCustomInput ? (
         <div className="mb-6 p-4 border border-gray-200 rounded-lg">
           <h4 className="text-sm font-medium mb-3">Add Custom Component</h4>
@@ -240,7 +268,6 @@ const ComponentSelector: React.FC<ComponentSelectorProps> = ({ selectedComponent
         </div>
       )}
       
-      {/* Selected Components */}
       {selectedComponents.length > 0 && (
         <div className="mb-6">
           <h4 className="text-sm font-medium mb-2">Selected Components ({selectedComponents.length})</h4>
@@ -269,7 +296,6 @@ const ComponentSelector: React.FC<ComponentSelectorProps> = ({ selectedComponent
         </div>
       )}
       
-      {/* Available Components */}
       <div>
         <h4 className="text-sm font-medium mb-2">Available Components</h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-[300px] overflow-y-auto">
