@@ -17,11 +17,12 @@ import {
   Blocks,
   GitFork,
   Waves,
-  Container
+  Container,
+  Beaker,
+  FlaskRound
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
-// Component types with icons
 const categories = [
   { id: "reactors", name: "Reactors", icon: <FlaskConical className="h-5 w-5" /> },
   { id: "columns", name: "Columns", icon: <Columns className="h-5 w-5" /> },
@@ -33,6 +34,8 @@ const categories = [
   { id: "storage", name: "Storage Equipment", icon: <Container className="h-5 w-5" /> },
   { id: "thermal", name: "Thermal Processing", icon: <Thermometer className="h-5 w-5" /> },
   { id: "compression", name: "Compression Equipment", icon: <Blocks className="h-5 w-5" /> },
+  { id: "crystallization", name: "Crystallization", icon: <Beaker className="h-5 w-5" /> },
+  { id: "dryers", name: "Dryers", icon: <FlaskRound className="h-5 w-5" /> }
 ];
 
 interface ComponentItem {
@@ -53,7 +56,6 @@ const Components = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   
-  // Mock data - in a real app, this would come from a database
   const components: ComponentItem[] = [
     {
       id: "cstr-1",
@@ -253,9 +255,118 @@ const Components = () => {
         material: "Carbon Steel"
       }
     },
+    {
+      id: "cryst-1",
+      name: "Cooling Crystallizer",
+      category: "crystallization",
+      description: "Induces crystallization through controlled temperature reduction.",
+      specs: {
+        maxTemp: "80°C",
+        maxPressure: "3 bar",
+        material: "Stainless Steel 316L"
+      }
+    },
+    {
+      id: "cryst-2",
+      name: "Evaporative Crystallizer",
+      category: "crystallization",
+      description: "Concentrates solution through solvent evaporation to promote crystal formation.",
+      specs: {
+        maxTemp: "120°C",
+        maxPressure: "2 bar",
+        material: "Hastelloy C"
+      }
+    },
+    {
+      id: "dryer-1",
+      name: "Spray Dryer",
+      category: "dryers",
+      description: "Produces dry powder from liquid by rapidly drying with hot gas.",
+      specs: {
+        maxTemp: "200°C",
+        dimensions: "3m dia x 6m height",
+        material: "Stainless Steel 304"
+      }
+    },
+    {
+      id: "dryer-2",
+      name: "Fluid Bed Dryer",
+      category: "dryers",
+      description: "Dries solids by suspending them in a heated gas flow.",
+      specs: {
+        maxTemp: "150°C",
+        maxFlow: "2000 kg/h",
+        material: "Stainless Steel 316"
+      }
+    },
+    {
+      id: "reactor-3",
+      name: "Tubular Flow Reactor",
+      category: "reactors",
+      description: "Continuous flow reactor with minimal mixing in flow direction.",
+      specs: {
+        maxTemp: "450°C",
+        maxPressure: "40 bar",
+        material: "Inconel 600"
+      }
+    },
+    {
+      id: "heat-ex-4",
+      name: "Brazed Plate Heat Exchanger",
+      category: "heat",
+      description: "Compact exchanger with brazed plates for high efficiency.",
+      specs: {
+        maxTemp: "175°C",
+        maxPressure: "30 bar",
+        material: "AISI 316"
+      }
+    },
+    {
+      id: "separat-2",
+      name: "Membrane Separator",
+      category: "separation",
+      description: "Uses selective membranes for molecular separation.",
+      specs: {
+        maxTemp: "80°C",
+        maxPressure: "60 bar",
+        material: "PVDF/Ceramic"
+      }
+    },
+    {
+      id: "separat-3",
+      name: "Ion Exchange Column",
+      category: "separation",
+      description: "Removes ions from solution using ion exchange resins.",
+      specs: {
+        maxTemp: "65°C",
+        maxPressure: "6 bar",
+        material: "FRP"
+      }
+    },
+    {
+      id: "flow-1",
+      name: "Magnetic Drive Pump",
+      category: "flow",
+      description: "Sealless pump for handling corrosive fluids.",
+      specs: {
+        maxFlow: "100 m³/h",
+        maxPressure: "16 bar",
+        material: "Stainless Steel 316"
+      }
+    },
+    {
+      id: "flow-2",
+      name: "Progressive Cavity Pump",
+      category: "flow",
+      description: "Handles high viscosity fluids with minimal pulsation.",
+      specs: {
+        maxFlow: "80 m³/h",
+        maxPressure: "24 bar",
+        material: "Tool Steel/EPDM"
+      }
+    }
   ];
   
-  // Filter components based on search and category
   const filteredComponents = components.filter(comp => {
     const matchesSearch = comp.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                            comp.description.toLowerCase().includes(searchQuery.toLowerCase());
@@ -274,7 +385,6 @@ const Components = () => {
             <p className="text-gray-600">Browse and select components for your process simulation</p>
           </div>
           
-          {/* Search and Filter Bar */}
           <div className="flex flex-col md:flex-row gap-4 mb-8">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -315,7 +425,6 @@ const Components = () => {
             </div>
           </div>
           
-          {/* Components Grid */}
           {filteredComponents.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredComponents.map(component => (
