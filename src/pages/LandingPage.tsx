@@ -49,41 +49,42 @@ const LandingPage = () => {
 
   const formulaCategories = {
     basic: [
-      { name: "Reynolds Number", formula: "Re = ρvD/μ", color: "bg-flow-blue/10" },
-      { name: "Bernoulli's Equation", formula: "P₁ + ½ρv₁² + ρgh₁ = P₂ + ½ρv₂² + ρgh₂", color: "bg-flow-cyan/10" },
-      { name: "Mass Balance", formula: "∑(ṁᵢₙ) = ∑(ṁₒᵤₜ)", color: "bg-flow-teal/10" },
-      { name: "Energy Balance", formula: "Q - W = ΔE", color: "bg-indigo-500/10" }
+      { name: "Reynolds Number", formula: "Re = ρvD/μ", color: "bg-gradient-to-r from-purple-400/20 to-pink-500/20" },
+      { name: "Bernoulli's Equation", formula: "P₁ + ½ρv₁² + ρgh₁ = P₂ + ½ρv₂² + ρgh₂", color: "bg-gradient-to-r from-blue-400/20 to-cyan-500/20" },
+      { name: "Mass Balance", formula: "∑(ṁᵢₙ) = ∑(ṁₒᵤₜ)", color: "bg-gradient-to-r from-green-400/20 to-teal-500/20" },
+      { name: "Energy Balance", formula: "Q - W = ΔE", color: "bg-gradient-to-r from-orange-400/20 to-red-500/20" }
     ],
     thermodynamics: [
-      { name: "Gibbs Free Energy", formula: "ΔG = ΔH - TΔS", color: "bg-purple-500/10" },
-      { name: "Enthalpy", formula: "H = U + PV", color: "bg-pink-500/10" },
-      { name: "Entropy Change", formula: "ΔS = ∫(δQ/T)", color: "bg-red-500/10" },
-      { name: "Clausius-Clapeyron", formula: "ln(P₂/P₁) = ΔH/R(1/T₁ - 1/T₂)", color: "bg-orange-500/10" }
+      { name: "Gibbs Free Energy", formula: "ΔG = ΔH - TΔS", color: "bg-gradient-to-r from-purple-400/20 to-pink-500/20" },
+      { name: "Enthalpy", formula: "H = U + PV", color: "bg-gradient-to-r from-blue-400/20 to-cyan-500/20" },
+      { name: "Entropy Change", formula: "ΔS = ∫(δQ/T)", color: "bg-gradient-to-r from-green-400/20 to-teal-500/20" },
+      { name: "Clausius-Clapeyron", formula: "ln(P₂/P₁) = ΔH/R(1/T₁ - 1/T₂)", color: "bg-gradient-to-r from-orange-400/20 to-red-500/20" }
     ],
     kinetics: [
-      { name: "Arrhenius Equation", formula: "k = A·e^(-E_a/RT)", color: "bg-amber-500/10" },
-      { name: "First Order Rate", formula: "ln(C/C₀) = -kt", color: "bg-yellow-500/10" },
-      { name: "Second Order Rate", formula: "1/C - 1/C₀ = kt", color: "bg-lime-500/10" },
-      { name: "Half Life", formula: "t₁/₂ = ln(2)/k", color: "bg-green-500/10" }
+      { name: "Arrhenius Equation", formula: "k = A·e^(-E_a/RT)", color: "bg-gradient-to-r from-amber-400/20 to-yellow-500/20" },
+      { name: "First Order Rate", formula: "ln(C/C₀) = -kt", color: "bg-gradient-to-r from-yellow-400/20 to-lime-500/20" },
+      { name: "Second Order Rate", formula: "1/C - 1/C₀ = kt", color: "bg-gradient-to-r from-lime-400/20 to-green-500/20" },
+      { name: "Half Life", formula: "t₁/₂ = ln(2)/k", color: "bg-gradient-to-r from-green-400/20 to-blue-500/20" }
     ],
     transport: [
-      { name: "Fick's Law", formula: "J = -D(∂c/∂x)", color: "bg-emerald-500/10" },
-      { name: "Fourier's Law", formula: "q = -k(∂T/∂x)", color: "bg-teal-500/10" },
-      { name: "Darcy's Law", formula: "Q = -kA(∂P/∂L)/μ", color: "bg-cyan-500/10" },
-      { name: "Shell Balance", formula: "∑F_in - ∑F_out + ∑F_gen = ∑F_acc", color: "bg-sky-500/10" }
+      { name: "Fick's Law", formula: "J = -D(∂c/∂x)", color: "bg-gradient-to-r from-emerald-400/20 to-teal-500/20" },
+      { name: "Fourier's Law", formula: "q = -k(∂T/∂x)", color: "bg-gradient-to-r from-teal-400/20 to-cyan-500/20" },
+      { name: "Darcy's Law", formula: "Q = -kA(∂P/∂L)/μ", color: "bg-gradient-to-r from-cyan-400/20 to-sky-500/20" },
+      { name: "Shell Balance", formula: "∑F_in - ∑F_out + ∑F_gen = ∑F_acc", color: "bg-gradient-to-r from-sky-400/20 to-blue-500/20" }
     ],
     reactors: [
-      { name: "CSTR Design", formula: "V = F₀(C_A0 - C_A)/r_A", color: "bg-blue-500/10" },
-      { name: "PFR Design", formula: "V = F₀∫(dX/r_A)", color: "bg-indigo-500/10" },
-      { name: "PFR Conversion", formula: "dX/dz = -r_A/(u₀·C_A0)", color: "bg-violet-500/10" },
-      { name: "Batch Reactor", formula: "t = C_A0∫(dX/r_A)", color: "bg-purple-500/10" }
+      { name: "CSTR Design", formula: "V = F₀(C_A0 - C_A)/r_A", color: "bg-gradient-to-r from-blue-400/20 to-indigo-500/20" },
+      { name: "PFR Design", formula: "V = F₀∫(dX/r_A)", color: "bg-gradient-to-r from-indigo-400/20 to-violet-500/20" },
+      { name: "PFR Conversion", formula: "dX/dz = -r_A/(u₀·C_A0)", color: "bg-gradient-to-r from-violet-400/20 to-purple-500/20" },
+      { name: "Batch Reactor", formula: "t = C_A0∫(dX/r_A)", color: "bg-gradient-to-r from-purple-400/20 to-pink-500/20" }
     ]
   };
 
   const formulas = formulaCategories[selectedCategory] || formulaCategories.basic;
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-white via-blue-50 to-cyan-50 overflow-hidden">
+    <div className="min-h-screen flex flex-col items-center justify-center 
+      bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50 overflow-hidden">
       {loading ? (
         <div className="text-center" style={{ opacity: opacity }}>
           <div className="flex justify-center mb-6 animate-pulse">
@@ -102,14 +103,16 @@ const LandingPage = () => {
       ) : (
         <div className="text-center max-w-5xl mx-auto px-6 relative" style={{ opacity: opacity }}>
           <div className="absolute inset-0 bg-white/30 rounded-full blur-3xl -z-10 animate-pulse"></div>
-          <div className="absolute top-20 -left-20 w-72 h-72 bg-blue-400/20 rounded-full mix-blend-multiply filter blur-3xl opacity-60 animate-float"></div>
-          <div className="absolute -bottom-20 right-10 w-80 h-80 bg-teal-400/20 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-float animation-delay-1000"></div>
+          <div className="absolute top-20 -left-20 w-72 h-72 bg-purple-400/20 rounded-full mix-blend-multiply filter blur-3xl opacity-60 animate-float"></div>
+          <div className="absolute -bottom-20 right-10 w-80 h-80 bg-blue-400/20 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-float animation-delay-1000"></div>
           
           <div className="flex justify-center mb-10 hover:scale-105 transition-transform">
             <ChemFlowLogo className="h-32 w-auto drop-shadow-lg" />
           </div>
           
-          <h1 className="text-6xl md:text-7xl lg:text-8xl font-display font-bold leading-tight mb-8 text-transparent bg-clip-text bg-gradient-to-r from-flow-blue via-flow-cyan to-flow-teal drop-shadow-sm">
+          <h1 className="text-6xl md:text-7xl lg:text-8xl font-display font-bold leading-tight mb-8 
+            text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-blue-500 to-pink-500 
+            drop-shadow-sm animate-pulse">
             Welcome to ChemFlow
           </h1>
           
@@ -144,10 +147,10 @@ const LandingPage = () => {
                 className={`p-4 ${item.color} group hover:scale-105 transition-all duration-300 hover:shadow-xl`}
                 intensity="light"
               >
-                <h3 className="text-sm font-medium text-gray-700 mb-2 group-hover:text-flow-blue transition-colors">
+                <h3 className="text-sm font-medium text-gray-800 mb-2 group-hover:text-purple-600 transition-colors">
                   {item.name}
                 </h3>
-                <p className="text-lg font-mono text-flow-blue group-hover:text-opacity-80 transition-all">
+                <p className="text-lg font-mono text-blue-700 group-hover:text-pink-600 transition-all">
                   {item.formula}
                 </p>
               </GlassPanel>
@@ -157,7 +160,10 @@ const LandingPage = () => {
           <div className="flex flex-col sm:flex-row justify-center gap-4 mb-16">
             <Button
               onClick={handleEnterApp}
-              className="inline-flex items-center justify-center px-8 py-3 rounded-xl bg-gradient-to-r from-flow-blue to-flow-cyan text-white font-medium shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
+              className="inline-flex items-center justify-center px-8 py-3 rounded-xl 
+              bg-gradient-to-r from-purple-500 to-pink-500 text-white font-medium 
+              shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all 
+              animate-pulse hover:animate-none"
               size="lg"
             >
               Enter Dashboard
@@ -166,15 +172,15 @@ const LandingPage = () => {
           </div>
 
           <div className="flex gap-6 justify-center mb-16">
-            <Beaker className="h-8 w-8 text-flow-blue animate-bounce" />
-            <FlaskConical className="h-8 w-8 text-flow-cyan animate-bounce delay-100" />
-            <Atom className="h-8 w-8 text-flow-teal animate-bounce delay-200" />
-            <FlaskRound className="h-8 w-8 text-indigo-500 animate-bounce delay-300" />
-            <Calculator className="h-8 w-8 text-purple-500 animate-bounce delay-400" />
-            <Gauge className="h-8 w-8 text-pink-500 animate-bounce delay-500" />
+            <Beaker className="h-8 w-8 text-purple-500 animate-bounce" />
+            <FlaskConical className="h-8 w-8 text-blue-500 animate-bounce delay-100" />
+            <Atom className="h-8 w-8 text-green-500 animate-bounce delay-200" />
+            <FlaskRound className="h-8 w-8 text-teal-500 animate-bounce delay-300" />
+            <Calculator className="h-8 w-8 text-pink-500 animate-bounce delay-400" />
+            <Gauge className="h-8 w-8 text-orange-500 animate-bounce delay-500" />
           </div>
           
-          <div className="text-gray-500 text-sm">
+          <div className="text-gray-700 text-sm font-medium">
             © {new Date().getFullYear()} ChemFlow | Process Simulation Reimagined
           </div>
         </div>
