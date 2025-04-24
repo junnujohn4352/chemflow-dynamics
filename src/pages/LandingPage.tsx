@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, Beaker, FlaskConical, Atom, Calculator, Flask, Gauge } from "lucide-react";
+import { ArrowRight, Beaker, FlaskConical, Atom, Calculator, FlaskRound, Gauge } from "lucide-react";
 import { ChemFlowLogo } from "@/assets/icons/ChemFlowLogo";
 import { Button } from "@/components/ui/button";
 import GlassPanel from "@/components/ui/GlassPanel";

@@ -1,8 +1,7 @@
-
 import React, { useState } from "react";
 import { Layout } from "@/components/layout/Layout";
 import GlassPanel from "@/components/ui/GlassPanel";
-import { Search, Atom, Calculator, Waves, Thermometer, Gauge } from "lucide-react";
+import { Search, Atom, Calculator, Waves, Thermometer, Gauge, Plus, FlaskConical } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
