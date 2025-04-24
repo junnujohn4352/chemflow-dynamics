@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight, Beaker, FlaskConical, Atom, Calculator, FlaskRound, Gauge } from "lucide-react";
@@ -48,7 +47,6 @@ const LandingPage = () => {
     navigate('/dashboard');
   };
 
-  // Formula categories
   const formulaCategories = {
     basic: [
       { name: "Reynolds Number", formula: "Re = ρvD/μ", color: "bg-flow-blue/10" },
@@ -82,7 +80,6 @@ const LandingPage = () => {
     ]
   };
 
-  // Get the formulas based on selected category
   const formulas = formulaCategories[selectedCategory] || formulaCategories.basic;
 
   return (
@@ -172,7 +169,7 @@ const LandingPage = () => {
             <Beaker className="h-8 w-8 text-flow-blue animate-bounce" />
             <FlaskConical className="h-8 w-8 text-flow-cyan animate-bounce delay-100" />
             <Atom className="h-8 w-8 text-flow-teal animate-bounce delay-200" />
-            <Flask className="h-8 w-8 text-indigo-500 animate-bounce delay-300" />
+            <FlaskRound className="h-8 w-8 text-indigo-500 animate-bounce delay-300" />
             <Calculator className="h-8 w-8 text-purple-500 animate-bounce delay-400" />
             <Gauge className="h-8 w-8 text-pink-500 animate-bounce delay-500" />
           </div>
