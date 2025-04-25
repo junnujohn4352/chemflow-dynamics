@@ -16,36 +16,45 @@ const Dashboard = () => {
   const [isLearnMoreOpen, setIsLearnMoreOpen] = useState(false);
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50/30 via-cyan-50/30 to-teal-50/30">
+    <div className="min-h-screen flex flex-col bg-white">
       <Navbar />
       
-      <main className="flex-1 py-16 px-6 backdrop-blur-sm">
+      <main className="flex-1 py-16 px-6">
         <div className="max-w-screen-xl mx-auto">
-          <div className="mb-12 flex justify-between items-center backdrop-blur-md bg-white/20 rounded-xl p-6">
+          <div className="mb-12 flex justify-between items-center bg-blue-50 rounded-xl p-6">
             <div>
-              <h1 className="text-4xl font-display font-bold mb-4 text-gray-900 bg-clip-text text-transparent bg-gradient-to-r from-flow-blue via-flow-cyan to-flow-teal">
+              <h1 className="text-4xl font-display font-bold mb-4 text-blue-900">
                 ChemFlow Dashboard
               </h1>
-              <p className="text-xl text-gray-800">
+              <p className="text-xl text-blue-700">
                 Your Process Simulation Platform
               </p>
             </div>
             <Button 
               variant="outline" 
-              className="flex gap-2 items-center hover:bg-flow-blue/10 transition-colors backdrop-blur-sm bg-white/40"
+              className="flex gap-2 items-center border-blue-300 text-blue-800 hover:bg-blue-100"
               onClick={() => setIsLearnMoreOpen(true)}
             >
-              <Info className="h-5 w-5 text-flow-blue" />
+              <Info className="h-5 w-5 text-blue-600" />
               Learn More
             </Button>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {dashboardCards.map((card) => (
-              <DashboardCard 
+              <Link 
                 key={card.title}
-                {...card}
-              />
+                to={card.linkTo}
+                className="block rounded-xl border border-blue-100 p-6 hover:bg-blue-50 transition-all duration-300 group shadow-sm hover:shadow-md"
+              >
+                <div className="flex justify-between items-start mb-4">
+                  <div className={`p-3 rounded-xl ${card.color} bg-opacity-10 group-hover:scale-105 transition-transform`}>
+                    {card.icon}
+                  </div>
+                </div>
+                <h3 className="text-xl font-medium mb-2 text-blue-900">{card.title}</h3>
+                <p className="text-blue-700 text-sm">{card.description}</p>
+              </Link>
             ))}
           </div>
         </div>
