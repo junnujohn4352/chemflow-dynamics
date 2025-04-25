@@ -11,7 +11,7 @@ import GlassPanel from "@/components/ui/GlassPanel";
 import PythonCompiler from "@/components/tools/PythonCompiler";
 import { convertMatlabToPython, getSampleMatlabCode } from "@/utils/matlabToPythonConverter";
 
-const CodeConverter = () => {
+const CodeConverter: React.FC = () => {
   const [matlabCode, setMatlabCode] = useState("");
   const [pythonCode, setPythonCode] = useState("");
   const [isConverting, setIsConverting] = useState(false);
@@ -56,7 +56,7 @@ const CodeConverter = () => {
     }, 800);
   };
 
-  const copyToClipboard = (text) => {
+  const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     toast({
       title: "Copied to Clipboard",

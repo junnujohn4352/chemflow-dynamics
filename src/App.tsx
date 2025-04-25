@@ -27,7 +27,7 @@ import IntelligentSimulation from "./pages/IntelligentSimulation";
 // Components
 import { Toaster } from "./components/ui/toaster";
 
-function App() {
+const App: React.FC = () => {
   return (
     <BrowserRouter>
       <Routes>
@@ -54,6 +54,6 @@ function App() {
       <Toaster />
     </BrowserRouter>
   );
-}
+};
 
 export default App;
