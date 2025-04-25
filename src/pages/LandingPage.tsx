@@ -84,17 +84,17 @@ const LandingPage = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center 
-      bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50 overflow-hidden relative">
+      bg-gradient-to-br from-blue-50/10 via-cyan-50/10 to-teal-50/10 overflow-hidden relative">
       {loading ? (
-        <div className="text-center" style={{ opacity: opacity }}>
+        <div className="text-center backdrop-blur-sm bg-white/5 p-8 rounded-2xl" style={{ opacity: opacity }}>
           <div className="flex justify-center mb-6 animate-pulse">
             <ChemFlowLogo className="h-24 w-auto" />
           </div>
           <h1 className="text-4xl font-bold text-gray-900 mb-2">ChemFlow</h1>
           <div className="flex items-center justify-center">
-            <div className="h-1 w-64 bg-gray-200 rounded-full overflow-hidden">
+            <div className="h-1 w-64 bg-gray-200/30 rounded-full overflow-hidden backdrop-blur-sm">
               <div 
-                className="h-full bg-gradient-to-r from-flow-blue via-flow-cyan to-flow-teal animate-progress"
+                className="h-full bg-gradient-to-r from-flow-blue/60 via-flow-cyan/60 to-flow-teal/60 animate-progress"
                 style={{ width: '75%' }}
               ></div>
             </div>
@@ -102,39 +102,39 @@ const LandingPage = () => {
         </div>
       ) : (
         <div className="text-center max-w-5xl mx-auto px-6 relative" style={{ opacity: opacity }}>
-          <div className="absolute inset-0 bg-white/30 rounded-full blur-3xl -z-10 animate-pulse"></div>
-          <div className="absolute top-20 -left-20 w-72 h-72 bg-purple-400/20 rounded-full mix-blend-multiply filter blur-3xl opacity-60 animate-float"></div>
-          <div className="absolute -bottom-20 right-10 w-80 h-80 bg-blue-400/20 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-float animation-delay-1000"></div>
+          <div className="absolute inset-0 bg-white/5 rounded-full blur-3xl -z-10 animate-pulse"></div>
+          <div className="absolute top-20 -left-20 w-72 h-72 bg-purple-400/10 rounded-full mix-blend-multiply filter blur-3xl opacity-60 animate-float"></div>
+          <div className="absolute -bottom-20 right-10 w-80 h-80 bg-blue-400/10 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-float animation-delay-1000"></div>
           
           <div className="flex justify-center mb-10 hover:scale-105 transition-transform">
             <ChemFlowLogo className="h-32 w-auto drop-shadow-lg" />
           </div>
           
           <h1 className="text-6xl md:text-7xl lg:text-8xl font-display font-bold leading-tight mb-8 
-            text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-blue-500 to-pink-500 
+            text-transparent bg-clip-text bg-gradient-to-r from-purple-600/90 via-blue-500/90 to-pink-500/90 
             drop-shadow-sm animate-pulse">
             Welcome to ChemFlow
           </h1>
           
-          <p className="text-2xl text-gray-600 mb-10 max-w-2xl mx-auto 
-            bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent 
+          <p className="text-2xl text-gray-600/90 mb-10 max-w-2xl mx-auto 
+            bg-gradient-to-r from-blue-500/90 to-purple-500/90 bg-clip-text text-transparent 
             font-semibold drop-shadow-sm">
             The advanced process simulation platform designed for modern engineers and scientists.
           </p>
 
           <div className="flex justify-center mb-6">
-            <div className="bg-white/80 backdrop-blur-sm rounded-full p-1 shadow-sm">
+            <div className="bg-white/5 backdrop-blur-sm rounded-full p-1 shadow-sm">
               <Select
                 value={selectedCategory}
                 onValueChange={setSelectedCategory}
               >
                 <SelectTrigger className="w-[220px] rounded-full border-0 
-                  bg-gradient-to-r from-blue-100 to-purple-100 
-                  text-blue-800 hover:from-blue-200 hover:to-purple-200 
-                  transition-all duration-300">
+                  bg-gradient-to-r from-blue-100/20 to-purple-100/20 
+                  text-blue-800 hover:from-blue-200/30 hover:to-purple-200/30 
+                  transition-all duration-300 backdrop-blur-md">
                   <SelectValue placeholder="Select Formula Category" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white/10 backdrop-blur-md border-white/20">
                   <SelectItem value="basic">Basic Principles</SelectItem>
                   <SelectItem value="thermodynamics">Thermodynamics</SelectItem>
                   <SelectItem value="kinetics">Reaction Kinetics</SelectItem>
@@ -149,17 +149,17 @@ const LandingPage = () => {
             {formulas.map((item, index) => (
               <GlassPanel 
                 key={index} 
-                className={`p-4 ${item.color} ${item.hoverColor} group hover:scale-105 
-                  transition-all duration-300 hover:shadow-xl border-2 border-transparent 
-                  hover:border-white/30`}
+                className={`p-4 ${item.color.replace(/40/g, '20')} ${item.hoverColor} group hover:scale-105 
+                  transition-all duration-300 hover:shadow-xl border border-white/10 
+                  backdrop-blur-md bg-white/5`}
                 intensity="light"
               >
                 <h3 className={`text-sm font-medium ${item.textColor} mb-2 
-                  group-hover:text-opacity-80 transition-colors`}>
+                  group-hover:text-opacity-90 transition-colors`}>
                   {item.name}
                 </h3>
                 <p className={`text-lg font-mono ${item.textColor} 
-                  group-hover:text-opacity-70 transition-all`}>
+                  group-hover:text-opacity-80 transition-all`}>
                   {item.formula}
                 </p>
               </GlassPanel>
@@ -170,11 +170,11 @@ const LandingPage = () => {
             <Button
               onClick={handleEnterApp}
               className="inline-flex items-center justify-center px-8 py-3 rounded-xl 
-              bg-gradient-to-r from-purple-600 to-pink-600 text-white font-medium 
+              bg-gradient-to-r from-purple-600/40 to-pink-600/40 text-white font-medium 
               shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all 
-              animate-pulse hover:animate-none 
-              hover:from-purple-700 hover:to-pink-700 
-              active:from-purple-800 active:to-pink-800"
+              backdrop-blur-md border border-white/20
+              hover:from-purple-700/50 hover:to-pink-700/50 
+              active:from-purple-800/60 active:to-pink-800/60"
               size="lg"
             >
               Enter Dashboard
@@ -191,8 +191,9 @@ const LandingPage = () => {
             <Gauge className="h-8 w-8 text-orange-500 animate-bounce delay-500" />
           </div>
           
-          <div className="text-gray-700 text-sm font-medium 
-            bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
+          <div className="text-gray-700/80 text-sm font-medium 
+            bg-gradient-to-r from-blue-500/80 to-purple-500/80 bg-clip-text text-transparent
+            backdrop-blur-sm">
             © {new Date().getFullYear()} ChemFlow | Process Simulation Reimagined
           </div>
         </div>
