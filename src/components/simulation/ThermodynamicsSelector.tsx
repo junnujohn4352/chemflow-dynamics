@@ -1,284 +1,284 @@
 
 import React from "react";
+import { Card, CardContent, CardDescription } from "@/components/ui/card";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { 
-  Check, Info, AlertTriangle
-} from "lucide-react";
-import { 
-  Tooltip, 
-  TooltipContent, 
-  TooltipProvider, 
-  TooltipTrigger 
-} from "@/components/ui/tooltip";
-import { Card } from "@/components/ui/card";
+  TableContainer, 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableRow, 
+  TableHead 
+} from "@/components/ui/table";
+import { Info, Check } from "lucide-react";
 
-export interface ThermodynamicsSelectorProps {
+interface ThermodynamicsSelectorProps {
   selectedModel: string;
-  setSelectedModel: (model: string) => void;
-  selectedComponents: string[]; // Add this prop to the interface
+  setSelectedModel: React.Dispatch<React.SetStateAction<string>>;
+  selectedComponents: string[];
 }
 
-const models = [
-  {
-    id: "Peng-Robinson",
-    name: "Peng-Robinson",
-    description: "Widely used cubic equation of state for non-polar components",
-    bestFor: ["Hydrocarbons", "Light gases", "Refinery processes"],
-    limitations: ["Polar compounds", "Hydrogen bonding", "High pressures above 30 MPa"],
-  },
-  {
-    id: "SRK",
-    name: "Soave-Redlich-Kwong",
-    description: "Good for vapor-liquid equilibria of hydrocarbons",
-    bestFor: ["Hydrocarbons", "Oil & gas", "Medium pressures"],
-    limitations: ["Strongly polar mixtures", "Hydrogen bonding systems"],
-  },
-  {
-    id: "NRTL",
-    name: "NRTL",
-    description: "Non-Random Two-Liquid model for liquid activity coefficients",
-    bestFor: ["Polar compounds", "Liquid-liquid extraction", "Azeotropic systems"],
-    limitations: ["Gas phase", "Supercritical regions", "High pressures"],
-  },
-  {
-    id: "UNIQUAC",
-    name: "UNIQUAC",
-    description: "UNIversal QUAsiChemical model for strongly non-ideal liquid mixtures",
-    bestFor: ["Alcohols", "Organic acids", "Water-hydrocarbon systems"],
-    limitations: ["Polymers", "Electrolytes", "Gas solubility"],
-  },
-  {
-    id: "Wilson",
-    name: "Wilson",
-    description: "Good for polar and non-polar liquid mixtures",
-    bestFor: ["Alcohols", "Ketones", "Liquid-phase activity coefficients"],
-    limitations: ["Liquid-liquid immiscibility", "Gas phase", "High pressure systems"],
-  },
-  {
-    id: "Electrolyte-NRTL",
-    name: "Electrolyte-NRTL",
-    description: "Extended NRTL model for electrolyte solutions",
-    bestFor: ["Electrolyte solutions", "Acid gases", "Water treatment"],
-    limitations: ["Non-aqueous systems", "High concentrations", "High temperatures"],
-  },
-  {
-    id: "SAFT",
-    name: "SAFT",
-    description: "Statistical Associating Fluid Theory for associating fluids",
-    bestFor: ["Associating fluids", "Hydrogen bonding", "Polymer systems"],
-    limitations: ["Complex mixtures", "Implementation complexity", "Computational cost"],
-  },
-  {
-    id: "PC-SAFT",
-    name: "PC-SAFT",
-    description: "Perturbed-Chain SAFT - improved version of SAFT",
-    bestFor: ["Polymers", "Hydrogen bonding", "Asymmetric systems"],
-    limitations: ["Computational cost", "Ionic liquids", "Very high pressures"],
-  },
-  {
-    id: "CPA",
-    name: "CPA",
-    description: "Cubic-Plus-Association EoS for associating components",
-    bestFor: ["Water-hydrocarbon", "Glycols", "Alcohols"],
-    limitations: ["Multi-component systems", "Parameter estimation", "Polymer solutions"],
-  },
-  {
-    id: "GERG-2008",
-    name: "GERG-2008",
-    description: "High accuracy equation for natural gas mixtures",
-    bestFor: ["Natural gas", "LNG", "Gas processing"],
-    limitations: ["Components not in database", "Some properties", "Complex implementation"],
-  },
-  {
-    id: "PSRK",
-    name: "PSRK",
-    description: "Predictive SRK model with group contribution method",
-    bestFor: ["Gas solubility", "Supercritical CO2", "High pressure"],
-    limitations: ["Complex systems", "Some polar mixtures", "Parameter availability"],
-  },
-  {
-    id: "SRKM",
-    name: "SRKM",
-    description: "Modified SRK with Mathias-Copeman alpha function",
-    bestFor: ["Hydrocarbons", "High temperatures", "Refinery applications"],
-    limitations: ["Polar compounds", "Parameter estimation", "Association effects"],
-  },
-];
-
-// Helper function to recommend models based on components
-const recommendModels = (components: string[]): string[] => {
-  const hasHydrocarbons = components.some(c => 
-    ["Methane", "Ethane", "Propane", "n-Butane", "i-Butane", "n-Pentane", "n-Hexane"].includes(c)
-  );
-  
-  const hasAlcohols = components.some(c => 
-    ["Methanol", "Ethanol", "Isopropanol", "n-Butanol"].includes(c)
-  );
-  
-  const hasAcids = components.some(c => 
-    ["Acetic-Acid", "Formic-Acid"].includes(c)
-  );
-  
-  const hasElectrolytes = components.some(c => 
-    ["Hydrogen-Chloride", "Ammonia", "Hydrogen-Sulfide"].includes(c)
-  );
-  
-  const hasWater = components.includes("Water");
-  
-  const hasPolymers = components.some(c => 
-    ["Polyethylene", "Polypropylene", "PVC"].includes(c)
-  );
-  
-  const hasNaturalGas = components.some(c => 
-    ["Methane", "Ethane", "Propane", "Carbon-Dioxide", "Nitrogen"].every(comp => 
-      components.includes(comp)
-    )
-  );
-  
-  const recommendations = [];
-  
-  if (hasElectrolytes && hasWater) {
-    recommendations.push("Electrolyte-NRTL");
-  }
-  
-  if (hasAcids || (hasAlcohols && hasWater)) {
-    recommendations.push("NRTL", "UNIQUAC", "Wilson");
-  }
-  
-  if (hasAlcohols && !hasWater) {
-    recommendations.push("Wilson", "UNIQUAC", "Peng-Robinson");
-  }
-  
-  if (hasHydrocarbons && !hasWater) {
-    recommendations.push("Peng-Robinson", "SRK");
-  }
-  
-  if (hasHydrocarbons && hasWater) {
-    recommendations.push("SRK", "Peng-Robinson", "CPA");
-  }
-  
-  if (hasPolymers) {
-    recommendations.push("PC-SAFT", "SAFT");
-  }
-  
-  if (hasNaturalGas) {
-    recommendations.push("GERG-2008", "Peng-Robinson", "SRK");
-  }
-  
-  if (recommendations.length === 0) {
-    return ["Peng-Robinson"]; // Default recommendation
-  }
-  
-  return [...new Set(recommendations)]; // Remove duplicates
-};
-
-const ThermodynamicsSelector: React.FC<ThermodynamicsSelectorProps> = ({ 
-  selectedModel, 
+const ThermodynamicsSelector: React.FC<ThermodynamicsSelectorProps> = ({
+  selectedModel,
   setSelectedModel,
-  selectedComponents 
+  selectedComponents
 }) => {
-  // Generate model recommendations based on selected components
-  const recommendedModels = recommendModels(selectedComponents);
+  const hasHydrocarbons = selectedComponents.some(c => 
+    ["Methane", "Ethane", "Propane", "Butane", "Pentane", "Hexane"].includes(c)
+  );
   
+  const hasAlcohols = selectedComponents.some(c => 
+    ["Methanol", "Ethanol", "n-Propanol", "n-Butanol"].includes(c)
+  );
+  
+  const hasWater = selectedComponents.includes("Water");
+  
+  const getRecommendation = () => {
+    if (hasHydrocarbons && !hasAlcohols && !hasWater) {
+      return "Peng-Robinson";
+    } else if (hasHydrocarbons && (hasAlcohols || hasWater)) {
+      return "NRTL";
+    } else if (hasAlcohols && hasWater) {
+      return "Wilson";
+    } else {
+      return "Peng-Robinson";
+    }
+  };
+  
+  const recommendation = getRecommendation();
+
+  const thermodynamicModels = [
+    {
+      id: "Peng-Robinson",
+      name: "Peng-Robinson",
+      description: "Good for hydrocarbons, light gases, and non-polar components",
+      suitability: {
+        hydrocarbons: "Excellent",
+        alcohols: "Fair",
+        water: "Poor",
+        highPressure: "Excellent",
+        vaporLiquid: "Good"
+      },
+      isRecommended: recommendation === "Peng-Robinson"
+    },
+    {
+      id: "SRK",
+      name: "Soave-Redlich-Kwong",
+      description: "Similar to Peng-Robinson, good for gas processing",
+      suitability: {
+        hydrocarbons: "Excellent", 
+        alcohols: "Fair",
+        water: "Poor",
+        highPressure: "Good",
+        vaporLiquid: "Good"
+      },
+      isRecommended: recommendation === "SRK"
+    },
+    {
+      id: "NRTL",
+      name: "NRTL",
+      description: "Good for highly non-ideal liquid mixtures",
+      suitability: {
+        hydrocarbons: "Good",
+        alcohols: "Excellent",
+        water: "Excellent",
+        highPressure: "Poor",
+        vaporLiquid: "Excellent"
+      },
+      isRecommended: recommendation === "NRTL"
+    },
+    {
+      id: "UNIQUAC",
+      name: "UNIQUAC",
+      description: "For strongly non-ideal systems and polymer solutions",
+      suitability: {
+        hydrocarbons: "Good",
+        alcohols: "Excellent",
+        water: "Excellent",
+        highPressure: "Poor",
+        vaporLiquid: "Excellent"
+      },
+      isRecommended: recommendation === "UNIQUAC"
+    },
+    {
+      id: "Wilson",
+      name: "Wilson",
+      description: "Excellent for polar/non-polar mixtures",
+      suitability: {
+        hydrocarbons: "Good",
+        alcohols: "Excellent",
+        water: "Excellent",
+        highPressure: "Poor",
+        vaporLiquid: "Excellent"
+      },
+      isRecommended: recommendation === "Wilson"
+    }
+  ];
+
   return (
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-lg font-medium mb-4">Thermodynamic Models</h3>
-        <p className="text-gray-600 dark:text-gray-400 mb-6">
-          Select the appropriate thermodynamic model for your simulation based on your chemical components and operating conditions.
-        </p>
-        
-        {recommendedModels.length > 0 && (
-          <div className="mb-6 p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg border border-blue-100 dark:border-blue-800">
-            <h4 className="text-sm font-medium text-blue-800 dark:text-blue-300 flex items-center mb-2">
-              <Info className="h-4 w-4 mr-1" />
-              Recommended Models
-            </h4>
-            <p className="text-sm text-blue-700 dark:text-blue-400">
-              Based on your component selection, we recommend: {recommendedModels.join(", ")}
+    <div>
+      <div className="mb-6">
+        <div className="flex items-start gap-2 p-4 bg-blue-50 rounded-lg mb-4">
+          <Info className="h-5 w-5 text-blue-600 mt-0.5" />
+          <div className="flex-1">
+            <h3 className="text-sm font-medium text-blue-800 mb-1">Recommendation</h3>
+            <p className="text-sm text-blue-700">
+              Based on your selected components ({selectedComponents.join(", ")}), 
+              we recommend using the <strong>{recommendation}</strong> thermodynamic model.
             </p>
           </div>
-        )}
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {models.map((model) => (
-          <Card
-            key={model.id}
-            className={`p-4 cursor-pointer border-2 transition-colors ${
-              selectedModel === model.id
-                ? "border-purple-500 bg-purple-50 dark:bg-purple-900/20"
-                : "border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-700"
-            }`}
-            onClick={() => setSelectedModel(model.id)}
-          >
-            <div className="flex justify-between items-start mb-2">
-              <h4 className="font-medium">{model.name}</h4>
-              {selectedModel === model.id && (
-                <Check className="h-5 w-5 text-purple-500" />
-              )}
-            </div>
-            
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-              {model.description}
-            </p>
-            
-            <div className="text-xs space-y-2">
-              <div>
-                <span className="text-green-600 dark:text-green-400 font-medium">Best for:</span>
-                <div className="flex flex-wrap mt-1 gap-1">
-                  {model.bestFor.map((item) => (
-                    <span
-                      key={item}
-                      className="px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 rounded-full"
-                    >
-                      {item}
-                    </span>
-                  ))}
-                </div>
-              </div>
-              
-              <div>
-                <span className="text-amber-600 dark:text-amber-400 font-medium">Limitations:</span>
-                <div className="flex flex-wrap mt-1 gap-1">
-                  {model.limitations.map((item) => (
-                    <span
-                      key={item}
-                      className="px-2 py-0.5 bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 rounded-full"
-                    >
-                      {item}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-            
-            {recommendedModels.includes(model.id) && (
-              <div className="mt-3 text-xs flex items-center text-blue-600 dark:text-blue-400">
-                <Check className="h-3.5 w-3.5 mr-1" />
-                Recommended for your components
-              </div>
-            )}
-            
-            {!recommendedModels.includes(model.id) && selectedModel === model.id && (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div className="mt-3 text-xs flex items-center text-amber-600 dark:text-amber-400">
-                      <AlertTriangle className="h-3.5 w-3.5 mr-1" />
-                      Not ideal for your components
+        </div>
+
+        <Tabs defaultValue="equation-of-state">
+          <TabsList className="grid grid-cols-3 w-full mb-6">
+            <TabsTrigger value="equation-of-state">Equation of State</TabsTrigger>
+            <TabsTrigger value="activity-coefficient">Activity Coefficient</TabsTrigger>
+            <TabsTrigger value="comparison">Comparison</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="equation-of-state">
+            <RadioGroup value={selectedModel} onValueChange={setSelectedModel} className="space-y-4">
+              {thermodynamicModels.filter(model => ["Peng-Robinson", "SRK"].includes(model.id)).map((model) => (
+                <Card key={model.id} className={`relative overflow-hidden ${model.isRecommended ? 'border-blue-300 shadow-md' : ''}`}>
+                  {model.isRecommended && (
+                    <div className="absolute top-0 right-0 bg-blue-500 text-white px-2 py-1 text-xs font-bold">
+                      Recommended
                     </div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>
-                      This model may not give accurate results for your selected components.
-                      Consider using one of the recommended models instead.
-                    </p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            )}
-          </Card>
-        ))}
+                  )}
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-3">
+                      <RadioGroupItem value={model.id} id={model.id} className="mt-1" />
+                      <div className="flex-1">
+                        <Label htmlFor={model.id} className="text-base font-medium">
+                          {model.name}
+                        </Label>
+                        <CardDescription className="mt-1">
+                          {model.description}
+                        </CardDescription>
+                        
+                        <div className="mt-3 grid grid-cols-3 gap-2 text-xs">
+                          <div>
+                            <div className="font-medium">Hydrocarbons:</div>
+                            <div className={`${model.suitability.hydrocarbons === 'Excellent' ? 'text-green-600' : 'text-amber-600'}`}>
+                              {model.suitability.hydrocarbons}
+                            </div>
+                          </div>
+                          <div>
+                            <div className="font-medium">Alcohols:</div>
+                            <div className={`${model.suitability.alcohols === 'Excellent' ? 'text-green-600' : 'text-amber-600'}`}>
+                              {model.suitability.alcohols}
+                            </div>
+                          </div>
+                          <div>
+                            <div className="font-medium">High Pressure:</div>
+                            <div className={`${model.suitability.highPressure === 'Excellent' ? 'text-green-600' : 'text-amber-600'}`}>
+                              {model.suitability.highPressure}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </RadioGroup>
+          </TabsContent>
+          
+          <TabsContent value="activity-coefficient">
+            <RadioGroup value={selectedModel} onValueChange={setSelectedModel} className="space-y-4">
+              {thermodynamicModels.filter(model => ["NRTL", "UNIQUAC", "Wilson"].includes(model.id)).map((model) => (
+                <Card key={model.id} className={`relative overflow-hidden ${model.isRecommended ? 'border-blue-300 shadow-md' : ''}`}>
+                  {model.isRecommended && (
+                    <div className="absolute top-0 right-0 bg-blue-500 text-white px-2 py-1 text-xs font-bold">
+                      Recommended
+                    </div>
+                  )}
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-3">
+                      <RadioGroupItem value={model.id} id={model.id} className="mt-1" />
+                      <div className="flex-1">
+                        <Label htmlFor={model.id} className="text-base font-medium">
+                          {model.name}
+                        </Label>
+                        <CardDescription className="mt-1">
+                          {model.description}
+                        </CardDescription>
+                        
+                        <div className="mt-3 grid grid-cols-3 gap-2 text-xs">
+                          <div>
+                            <div className="font-medium">Water Systems:</div>
+                            <div className={`${model.suitability.water === 'Excellent' ? 'text-green-600' : 'text-amber-600'}`}>
+                              {model.suitability.water}
+                            </div>
+                          </div>
+                          <div>
+                            <div className="font-medium">Alcohols:</div>
+                            <div className={`${model.suitability.alcohols === 'Excellent' ? 'text-green-600' : 'text-amber-600'}`}>
+                              {model.suitability.alcohols}
+                            </div>
+                          </div>
+                          <div>
+                            <div className="font-medium">VLE Accuracy:</div>
+                            <div className={`${model.suitability.vaporLiquid === 'Excellent' ? 'text-green-600' : 'text-amber-600'}`}>
+                              {model.suitability.vaporLiquid}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </RadioGroup>
+          </TabsContent>
+          
+          <TabsContent value="comparison">
+            <Card>
+              <CardContent className="p-4 overflow-auto">
+                <TableContainer>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Model</TableCell>
+                        <TableCell>Hydrocarbons</TableCell>
+                        <TableCell>Alcohols</TableCell>
+                        <TableCell>Water</TableCell>
+                        <TableCell>High Pressure</TableCell>
+                        <TableCell>VLE Accuracy</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {thermodynamicModels.map(model => (
+                        <TableRow key={model.id} className={model.id === selectedModel ? "bg-blue-50" : ""}>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              {model.id === selectedModel && <Check className="h-4 w-4 text-blue-600" />}
+                              <span className={model.id === selectedModel ? "font-medium" : ""}>
+                                {model.name}
+                              </span>
+                              {model.isRecommended && (
+                                <span className="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded">
+                                  Recommended
+                                </span>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>{model.suitability.hydrocarbons}</TableCell>
+                          <TableCell>{model.suitability.alcohols}</TableCell>
+                          <TableCell>{model.suitability.water}</TableCell>
+                          <TableCell>{model.suitability.highPressure}</TableCell>
+                          <TableCell>{model.suitability.vaporLiquid}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
