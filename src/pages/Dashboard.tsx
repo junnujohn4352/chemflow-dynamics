@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
@@ -17,23 +16,23 @@ const Dashboard = () => {
   const [isLearnMoreOpen, setIsLearnMoreOpen] = useState(false);
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50/30 via-cyan-50/30 to-teal-50/30">
       <Navbar />
       
-      <main className="flex-1 py-16 px-6">
+      <main className="flex-1 py-16 px-6 backdrop-blur-sm">
         <div className="max-w-screen-xl mx-auto">
-          <div className="mb-12 flex justify-between items-center">
+          <div className="mb-12 flex justify-between items-center backdrop-blur-md bg-white/20 rounded-xl p-6">
             <div>
               <h1 className="text-4xl font-display font-bold mb-4 text-gray-900 bg-clip-text text-transparent bg-gradient-to-r from-flow-blue via-flow-cyan to-flow-teal">
                 ChemFlow Dashboard
               </h1>
-              <p className="text-xl text-gray-600">
+              <p className="text-xl text-gray-800">
                 Your Process Simulation Platform
               </p>
             </div>
             <Button 
               variant="outline" 
-              className="flex gap-2 items-center hover:bg-flow-blue/10 transition-colors"
+              className="flex gap-2 items-center hover:bg-flow-blue/10 transition-colors backdrop-blur-sm bg-white/40"
               onClick={() => setIsLearnMoreOpen(true)}
             >
               <Info className="h-5 w-5 text-flow-blue" />
@@ -125,23 +124,22 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
   return (
     <Link 
       to={linkTo}
-      className="block rounded-xl bg-white border border-gray-100 p-6 hover:shadow-lg transition-all duration-300 relative group"
+      className="block rounded-xl backdrop-blur-md bg-white/20 border border-white/40 p-6 hover:bg-white/30 transition-all duration-300 relative group shadow-lg hover:shadow-xl"
     >
       <div className="flex justify-between items-start mb-4">
-        <div className={`p-3 rounded-xl ${color} bg-opacity-90 group-hover:scale-105 transition-transform`}>
+        <div className={`p-3 rounded-xl ${color} bg-opacity-80 group-hover:scale-105 transition-transform backdrop-blur-sm`}>
           {icon}
         </div>
         {isNew && (
-          <span className="absolute top-4 right-4 bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+          <span className="absolute top-4 right-4 bg-green-400/30 backdrop-blur-sm text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full border border-green-400/50">
             New
           </span>
         )}
       </div>
       <h3 className="text-xl font-medium mb-2 text-gray-900">{title}</h3>
-      <p className="text-gray-600 text-sm">{description}</p>
+      <p className="text-gray-800 text-sm">{description}</p>
     </Link>
   );
 };
 
 export default Dashboard;
-
