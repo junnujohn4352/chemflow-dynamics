@@ -1,5 +1,5 @@
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus, Save, ArrowLeft, ArrowRight, Trash2, Play } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -7,7 +7,7 @@ import { EquipmentType } from "@/components/ui/equipment/EquipmentIcons";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import EquipmentCard from "@/components/ui/equipment/EquipmentCard";
+import { EquipmentCard } from "@/components/ui/equipment/EquipmentCard";
 import EquipmentSelector from "./EquipmentSelector";
 
 interface SimulationBuilderProps {
@@ -34,6 +34,14 @@ interface EquipmentItem {
   };
 }
 
+interface Connection {
+  id: string;
+  from: string;
+  to: string;
+  fromPosition: { x: number; y: number };
+  toPosition: { x: number; y: number };
+}
+
 const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
   selectedComponents,
   thermodynamicModel,
@@ -42,11 +50,16 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
   const { toast } = useToast();
   const [equipment, setEquipment] = useState<EquipmentItem[]>([]);
   const [isAddEquipmentOpen, setIsAddEquipmentOpen] = useState(false);
-  const [connections, setConnections] = useState<{from: string; to: string}[]>([]);
+  const [connections, setConnections] = useState<Connection[]>([]);
   const [activeTab, setActiveTab] = useState<"flowsheet" | "connections" | "properties">("flowsheet");
+  const [isDragging, setIsDragging] = useState(false);
+  const [draggedEquipmentId, setDraggedEquipmentId] = useState<string | null>(null);
+  const [connectingFrom, setConnectingFrom] = useState<string | null>(null);
   
+  const canvasRef = useRef<HTMLDivElement>(null);
   // Counter for generating unique IDs
   const equipmentCounter = useRef(1);
+  const connectionCounter = useRef(1);
   
   const handleAddEquipment = (type: EquipmentType) => {
     const newEquipment: EquipmentItem = {
@@ -135,6 +148,115 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     return metrics;
   };
 
+  const handleMouseDown = (e: React.MouseEvent, equipmentId: string) => {
+    if (e.button !== 0) return; // Only left mouse button
+    
+    if (connectingFrom) {
+      // We're creating a connection
+      if (connectingFrom !== equipmentId) {
+        const fromEquipment = equipment.find(eq => eq.id === connectingFrom);
+        const toEquipment = equipment.find(eq => eq.id === equipmentId);
+        
+        if (fromEquipment && toEquipment) {
+          const newConnection: Connection = {
+            id: `conn-${connectionCounter.current}`,
+            from: fromEquipment.id,
+            to: toEquipment.id,
+            fromPosition: { ...fromEquipment.position },
+            toPosition: { ...toEquipment.position }
+          };
+          
+          connectionCounter.current += 1;
+          setConnections([...connections, newConnection]);
+          
+          toast({
+            title: "Connection Created",
+            description: `Connected ${fromEquipment.name} to ${toEquipment.name}`
+          });
+        }
+      }
+      
+      setConnectingFrom(null);
+    } else {
+      // We're starting to drag
+      setIsDragging(true);
+      setDraggedEquipmentId(equipmentId);
+    }
+    
+    e.stopPropagation();
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (isDragging && draggedEquipmentId && canvasRef.current) {
+      const rect = canvasRef.current.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      
+      setEquipment(prevEquipment => 
+        prevEquipment.map(item => 
+          item.id === draggedEquipmentId 
+            ? { ...item, position: { x, y } } 
+            : item
+        )
+      );
+      
+      // Update connections
+      setConnections(prevConnections => 
+        prevConnections.map(conn => {
+          if (conn.from === draggedEquipmentId) {
+            return { ...conn, fromPosition: { x, y } };
+          } else if (conn.to === draggedEquipmentId) {
+            return { ...conn, toPosition: { x, y } };
+          }
+          return conn;
+        })
+      );
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+    setDraggedEquipmentId(null);
+  };
+
+  const handleCanvasClick = () => {
+    if (connectingFrom) {
+      setConnectingFrom(null);
+    }
+  };
+
+  const startConnection = (e: React.MouseEvent, equipmentId: string) => {
+    e.stopPropagation();
+    setConnectingFrom(equipmentId);
+    toast({
+      title: "Creating Connection",
+      description: "Click on another equipment to connect"
+    });
+  };
+
+  const handleMetricsChange = (equipmentId: string, updatedMetrics: any) => {
+    setEquipment(prevEquipment => 
+      prevEquipment.map(item => 
+        item.id === equipmentId 
+          ? { ...item, metrics: updatedMetrics } 
+          : item
+      )
+    );
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setConnectingFrom(null);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
   return (
     <div>
       <Tabs defaultValue="flowsheet" value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="mb-6">
@@ -166,9 +288,16 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
             </Dialog>
           </div>
           
-          <div className="bg-gray-50 border rounded-lg p-4 min-h-[400px] relative">
+          <div 
+            ref={canvasRef}
+            className="bg-gray-50 border rounded-lg p-4 min-h-[600px] h-[calc(100vh-300px)] relative overflow-hidden"
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
+            onClick={handleCanvasClick}
+          >
             {equipment.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-[400px] text-center text-gray-500">
+              <div className="flex flex-col items-center justify-center h-full text-center text-gray-500">
                 <div className="mb-4">
                   <svg className="h-12 w-12 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
@@ -182,26 +311,83 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
                 </Button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <>
+                {/* Draw connections */}
+                <svg className="absolute top-0 left-0 w-full h-full pointer-events-none">
+                  {connections.map((connection) => (
+                    <g key={connection.id}>
+                      <line
+                        x1={connection.fromPosition.x + 30} // Offset to center of card
+                        y1={connection.fromPosition.y + 30}
+                        x2={connection.toPosition.x + 30}
+                        y2={connection.toPosition.y + 30}
+                        stroke="#000"
+                        strokeWidth="2"
+                        strokeDasharray="5,5"
+                      />
+                      {/* Arrow head */}
+                      <polygon 
+                        points={`${connection.toPosition.x + 25},${connection.toPosition.y + 30} ${connection.toPosition.x + 35},${connection.toPosition.y + 25} ${connection.toPosition.x + 35},${connection.toPosition.y + 35}`} 
+                        fill="#000" 
+                        transform={`rotate(${Math.atan2(connection.toPosition.y - connection.fromPosition.y, connection.toPosition.x - connection.fromPosition.x) * 180 / Math.PI}, ${connection.toPosition.x + 30}, ${connection.toPosition.y + 30})`}
+                      />
+                    </g>
+                  ))}
+                  {connectingFrom && (
+                    <line
+                      x1={equipment.find(e => e.id === connectingFrom)?.position.x || 0 + 30}
+                      y1={equipment.find(e => e.id === connectingFrom)?.position.y || 0 + 30}
+                      x2={isDragging ? equipment.find(e => e.id === draggedEquipmentId)?.position.x || 0 + 30 : 0}
+                      y2={isDragging ? equipment.find(e => e.id === draggedEquipmentId)?.position.y || 0 + 30 : 0}
+                      stroke="red"
+                      strokeWidth="2"
+                      strokeDasharray="5,5"
+                    />
+                  )}
+                </svg>
+
+                {/* Equipment */}
                 {equipment.map((item) => (
-                  <Card key={item.id} className="relative group">
-                    <Button 
-                      variant="outline" 
-                      size="icon" 
-                      className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-7 w-7 bg-white"
-                      onClick={() => handleRemoveEquipment(item.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                  <div
+                    key={item.id}
+                    className="absolute"
+                    style={{
+                      left: `${item.position.x}px`,
+                      top: `${item.position.y}px`,
+                      width: '200px',
+                      zIndex: draggedEquipmentId === item.id ? 10 : 1,
+                      cursor: isDragging && draggedEquipmentId === item.id ? 'grabbing' : 'grab',
+                    }}
+                    onMouseDown={(e) => handleMouseDown(e, item.id)}
+                  >
+                    <div className="mb-1 flex justify-between items-center">
+                      <Button 
+                        variant="outline" 
+                        size="icon" 
+                        className="h-6 w-6 bg-white"
+                        onClick={() => handleRemoveEquipment(item.id)}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="icon" 
+                        className={`h-6 w-6 bg-white ${connectingFrom === item.id ? 'bg-blue-100' : ''}`}
+                        onClick={(e) => startConnection(e, item.id)}
+                      >
+                        <ArrowRight className="h-3 w-3" />
+                      </Button>
+                    </div>
                     <EquipmentCard
                       type={item.type}
                       name={item.name}
                       status={item.status}
                       metrics={item.metrics}
+                      onMetricsChange={(metrics) => handleMetricsChange(item.id, metrics)}
                     />
-                  </Card>
+                  </div>
                 ))}
-              </div>
+              </>
             )}
           </div>
           
@@ -221,49 +407,57 @@ const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
               </div>
             ) : (
               <div>
-                <h3 className="font-medium mb-4">Create Stream Connections</h3>
-                {/* Connection creation UI would go here, but simplified for now */}
-                <div className="grid grid-cols-1 gap-3">
-                  {connections.map((connection, idx) => {
-                    const fromEquip = equipment.find(e => e.id === connection.from);
-                    const toEquip = equipment.find(e => e.id === connection.to);
-                    return (
-                      <div key={idx} className="flex items-center gap-2 p-2 border rounded bg-white">
-                        <div>{fromEquip?.name || "Unknown"}</div>
-                        <ArrowRight className="h-4 w-4" />
-                        <div>{toEquip?.name || "Unknown"}</div>
-                        <Button variant="ghost" size="icon" className="ml-auto h-7 w-7" onClick={() => {
-                          setConnections(connections.filter((_, i) => i !== idx));
-                        }}>
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    );
-                  })}
-                  
-                  {/* Simplified connection creation */}
-                  {equipment.length >= 2 && (
-                    <div className="p-4 border rounded bg-white mt-6">
-                      <h4 className="text-sm font-medium mb-2">Quick Connect</h4>
-                      <div className="grid grid-cols-1 gap-2">
-                        <Button variant="outline" onClick={() => {
-                          if (equipment.length >= 2) {
-                            const newConnection = {
-                              from: equipment[0].id,
-                              to: equipment[1].id
-                            };
-                            setConnections([...connections, newConnection]);
-                            toast({
-                              title: "Connection Added",
-                              description: `Connected ${equipment[0].name} to ${equipment[1].name}`
-                            });
-                          }
-                        }}>
-                          Connect First Two Equipment
-                        </Button>
-                      </div>
-                    </div>
-                  )}
+                <h3 className="font-medium mb-4">Stream Connections</h3>
+                {connections.length === 0 ? (
+                  <p className="text-center text-gray-500 py-4">No connections created yet.</p>
+                ) : (
+                  <div className="grid grid-cols-1 gap-3">
+                    {connections.map((connection, idx) => {
+                      const fromEquip = equipment.find(e => e.id === connection.from);
+                      const toEquip = equipment.find(e => e.id === connection.to);
+                      return (
+                        <div key={idx} className="flex items-center gap-2 p-2 border rounded bg-white">
+                          <div>{fromEquip?.name || "Unknown"}</div>
+                          <ArrowRight className="h-4 w-4" />
+                          <div>{toEquip?.name || "Unknown"}</div>
+                          <Button variant="ghost" size="icon" className="ml-auto h-7 w-7" onClick={() => {
+                            setConnections(connections.filter((_, i) => i !== idx));
+                          }}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+                
+                <div className="p-4 border rounded bg-white mt-6">
+                  <h4 className="text-sm font-medium mb-2">Quick Connect</h4>
+                  <div className="grid grid-cols-1 gap-2">
+                    {equipment.length >= 2 && (
+                      <Button variant="outline" onClick={() => {
+                        if (equipment.length >= 2) {
+                          const fromEquip = equipment[0];
+                          const toEquip = equipment[1];
+                          const newConnection: Connection = {
+                            id: `conn-${connectionCounter.current}`,
+                            from: fromEquip.id,
+                            to: toEquip.id,
+                            fromPosition: { ...fromEquip.position },
+                            toPosition: { ...toEquip.position }
+                          };
+                          connectionCounter.current += 1;
+                          setConnections([...connections, newConnection]);
+                          toast({
+                            title: "Connection Added",
+                            description: `Connected ${fromEquip.name} to ${toEquip.name}`
+                          });
+                        }
+                      }}>
+                        Connect First Two Equipment
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </div>
             )}

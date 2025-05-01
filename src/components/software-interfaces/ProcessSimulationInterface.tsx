@@ -8,6 +8,7 @@ import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Play, Save, PlusCircle, Settings } from "lucide-react";
+import ComponentSelector from "@/components/simulation/ComponentSelector";
 
 interface ProcessSimulationInterfaceProps {
   software: {
@@ -20,6 +21,7 @@ interface ProcessSimulationInterfaceProps {
 const ProcessSimulationInterface: React.FC<ProcessSimulationInterfaceProps> = ({ software }) => {
   const [activeTab, setActiveTab] = useState("flowsheet");
   const [simulationStatus, setSimulationStatus] = useState<"idle" | "running" | "complete">("idle");
+  const [selectedComponents, setSelectedComponents] = useState<string[]>([]);
 
   const handleRunSimulation = () => {
     setSimulationStatus("running");
@@ -39,7 +41,7 @@ const ProcessSimulationInterface: React.FC<ProcessSimulationInterfaceProps> = ({
         </TabsList>
         
         <TabsContent value="flowsheet" className="p-4 border rounded-md mt-4">
-          <div className="bg-gray-100 dark:bg-gray-700 h-80 rounded-md p-4 flex items-center justify-center relative">
+          <div className="bg-gray-100 dark:bg-gray-700 h-[600px] rounded-md p-4 flex items-center justify-center relative">
             <div className="flex flex-col items-center">
               <p className="text-center text-gray-500 dark:text-gray-400 mb-2">Drag and drop equipment from the palette to create your process flowsheet</p>
               <div className="flex gap-2">
@@ -73,64 +75,10 @@ const ProcessSimulationInterface: React.FC<ProcessSimulationInterfaceProps> = ({
         </TabsContent>
         
         <TabsContent value="components" className="p-4 border rounded-md mt-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="component-search">Search Components</Label>
-              <Input id="component-search" placeholder="e.g. Methane, Water, etc." className="mb-4" />
-              
-              <div className="border rounded-md p-2 max-h-60 overflow-y-auto">
-                <div className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded cursor-pointer">
-                  <div className="flex justify-between items-center">
-                    <span>Water</span>
-                    <Badge>H₂O</Badge>
-                  </div>
-                </div>
-                <div className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded cursor-pointer">
-                  <div className="flex justify-between items-center">
-                    <span>Methane</span>
-                    <Badge>CH₄</Badge>
-                  </div>
-                </div>
-                <div className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded cursor-pointer">
-                  <div className="flex justify-between items-center">
-                    <span>Ethanol</span>
-                    <Badge>C₂H₅OH</Badge>
-                  </div>
-                </div>
-                <div className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded cursor-pointer">
-                  <div className="flex justify-between items-center">
-                    <span>Carbon Dioxide</span>
-                    <Badge>CO₂</Badge>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div>
-              <Label>Selected Components</Label>
-              <div className="border rounded-md p-2 h-48 overflow-y-auto">
-                <div className="p-2 bg-blue-50 dark:bg-blue-900/30 mb-2 rounded">
-                  <div className="flex justify-between items-center">
-                    <span>Water</span>
-                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0">×</Button>
-                  </div>
-                </div>
-                <div className="p-2 bg-blue-50 dark:bg-blue-900/30 rounded">
-                  <div className="flex justify-between items-center">
-                    <span>Methane</span>
-                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0">×</Button>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="mt-4">
-                <Button className="w-full">
-                  <PlusCircle className="h-4 w-4 mr-1" />
-                  Add Components
-                </Button>
-              </div>
-            </div>
-          </div>
+          <ComponentSelector 
+            selectedComponents={selectedComponents} 
+            setSelectedComponents={setSelectedComponents} 
+          />
         </TabsContent>
         
         <TabsContent value="thermodynamics" className="p-4 border rounded-md mt-4">
