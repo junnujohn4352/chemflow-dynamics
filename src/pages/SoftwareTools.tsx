@@ -22,7 +22,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { AlertCircle, ExternalLink, Github, Info, Play } from "lucide-react";
+import { AlertCircle, ExternalLink, Github, Info, Play, BookOpenText } from "lucide-react";
 
 import ProcessSimulationInterface from "@/components/software-interfaces/ProcessSimulationInterface";
 import ThermodynamicInterface from "@/components/software-interfaces/ThermodynamicInterface";
@@ -45,6 +45,7 @@ const SoftwareTools: React.FC = () => {
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [selectedSoftware, setSelectedSoftware] = useState<Software | null>(null);
+  const [showExplanation, setShowExplanation] = useState<boolean>(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -67,15 +68,14 @@ const SoftwareTools: React.FC = () => {
     setTypeFilter(value);
   };
 
-  const handleLaunchApp = (software: Software) => {
-    if (software.appRoute) {
-      toast({
-        title: `Launching ${software.name}`,
-        description: "Opening application interface...",
-        duration: 3000,
-      });
-      navigate(software.appRoute);
-    }
+  const handleShowExplanation = (software: Software) => {
+    setSelectedSoftware(software);
+    setShowExplanation(true);
+    toast({
+      title: `${software.name}`,
+      description: "Opening detailed explanation...",
+      duration: 3000,
+    });
   };
 
   const renderSoftwareInterface = (selectedSoftware: Software) => {
@@ -107,6 +107,114 @@ const SoftwareTools: React.FC = () => {
       default:
         return <div className="p-4">No specific interface available for {selectedSoftware.name}</div>;
     }
+  };
+
+  const renderSoftwareExplanation = (software: Software) => {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h3 className="text-xl font-semibold mb-2">What is {software.name}?</h3>
+          <p className="text-gray-700 dark:text-gray-300">{software.description}</p>
+        </div>
+        
+        {software.features && software.features.length > 0 && (
+          <div>
+            <h3 className="text-xl font-semibold mb-2">Key Capabilities</h3>
+            <ul className="list-disc list-inside space-y-1">
+              {software.features.map((feature, index) => (
+                <li key={index} className="text-gray-700 dark:text-gray-300">{feature}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {software.usedIn && software.usedIn.length > 0 && (
+          <div>
+            <h3 className="text-xl font-semibold mb-2">Industry Applications</h3>
+            <div className="flex flex-wrap gap-2">
+              {software.usedIn.map((industry, index) => (
+                <Badge key={index} variant="outline" className="text-sm">{industry}</Badge>
+              ))}
+            </div>
+            <p className="mt-2 text-gray-700 dark:text-gray-300">
+              {software.name} is widely used in the above industries for solving complex engineering problems, 
+              optimizing processes, and making data-driven decisions.
+            </p>
+          </div>
+        )}
+
+        <div>
+          <h3 className="text-xl font-semibold mb-2">Technical Specifications</h3>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="border rounded p-2">
+              <span className="text-gray-600 text-sm">License Type:</span>
+              <div className="font-medium">{software.price === "Free" ? "Free" : software.price === "Freemium" ? "Freemium (Basic features free, advanced paid)" : "Commercial"}</div>
+            </div>
+            <div className="border rounded p-2">
+              <span className="text-gray-600 text-sm">Open Source:</span>
+              <div className="font-medium">{software.openSource ? "Yes" : "No"}</div>
+            </div>
+            <div className="border rounded p-2">
+              <span className="text-gray-600 text-sm">Platform:</span>
+              <div className="font-medium">{software.localApp ? "Local Application & Web Interface" : "Web-based"}</div>
+            </div>
+            <div className="border rounded p-2">
+              <span className="text-gray-600 text-sm">User Rating:</span>
+              <div className="font-medium">{software.rating || "N/A"} ({software.votes || 0} reviews)</div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h3 className="text-xl font-semibold mb-2">How It Works</h3>
+          <p className="text-gray-700 dark:text-gray-300">
+            {software.name} operates by {software.category === "Process Simulation" ? 
+              "creating a digital twin of your chemical process, allowing you to test different scenarios and optimize without physical prototyping." : 
+              software.category === "Thermodynamic Properties" ? 
+              "utilizing advanced equations of state and property methods to accurately predict the behavior of chemicals under various conditions." :
+              software.category === "Reaction Engineering" ?
+              "modeling reaction kinetics, heat transfer, and mass transfer phenomena to simulate chemical reactors and reaction systems." :
+              software.category === "Data Analysis" ?
+              "leveraging statistical methods and machine learning algorithms to extract insights from large datasets collected during experiments or process operations." :
+              software.category === "Process Control" ?
+              "implementing control algorithms that continuously monitor process variables and make adjustments to maintain desired operating conditions." :
+              software.category === "Piping Design" ?
+              "applying fluid mechanics principles to design efficient piping systems that meet safety standards and operational requirements." :
+              software.category === "Equipment Design" ?
+              "using engineering fundamentals to size and design process equipment such as heat exchangers, columns, and vessels." :
+              software.category === "Environmental & Safety" ?
+              "assessing environmental impacts and safety risks of chemical processes through sophisticated modeling and analysis techniques." :
+              software.category === "CFD & Transport Phenomena" ?
+              "solving the complex equations governing fluid flow, heat transfer, and mass transfer using numerical methods and computational fluid dynamics." :
+              software.category === "Chemical Database" ?
+              "providing access to comprehensive databases of chemical properties, allowing engineers to quickly retrieve reliable data for their calculations." :
+              "integrating various chemical engineering tools and utilities to streamline workflows and solve specific problems."
+            }
+          </p>
+          
+          <p className="mt-3 text-gray-700 dark:text-gray-300">
+            The software utilizes {software.openSource ? "open-source algorithms that are continuously improved by the community" : "proprietary algorithms developed by expert chemical engineers"} 
+            to ensure accurate results and reliable performance.
+          </p>
+        </div>
+
+        <div>
+          <h3 className="text-xl font-semibold mb-2">Getting Started</h3>
+          <div className="border-l-4 border-blue-500 pl-4 py-2 bg-blue-50 dark:bg-blue-900/20">
+            <p className="text-gray-700 dark:text-gray-300">
+              To begin using {software.name}, you would typically follow these steps:
+            </p>
+            <ol className="list-decimal list-inside mt-2 space-y-1">
+              <li>Install the software or access the web platform</li>
+              <li>Set up your project parameters and input data</li>
+              <li>Configure the specific analysis or simulation settings</li>
+              <li>Run the calculation or simulation process</li>
+              <li>Analyze results and generate reports</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   // Get unique software types
@@ -208,103 +316,80 @@ const SoftwareTools: React.FC = () => {
                 <Info className="h-4 w-4" />
                 {software.rating || "N/A"} ({software.votes || 0} votes)
               </div>
-              {software.localApp ? (
-                <Button variant="default" size="sm" onClick={() => handleLaunchApp(software)}>
-                  <Play className="h-4 w-4 mr-1" />
-                  Launch App
-                </Button>
-              ) : (
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" size="sm" onClick={() => setSelectedSoftware(software)}>
-                      Learn More
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
-                    <DialogHeader>
-                      <DialogTitle className="text-2xl">{software.name}</DialogTitle>
-                      <DialogDescription>
-                        <div className="flex flex-wrap items-center gap-2 mt-1">
-                          <Badge variant="outline">{software.category}</Badge>
-                          <Badge variant="secondary">{software.type}</Badge>
-                          {software.localApp && (
-                            <Badge className="bg-green-600">ChemLab App</Badge>
-                          )}
-                          {software.price === "Free" ? (
-                            <Badge className="bg-blue-600">Free</Badge>
-                          ) : software.price === "Freemium" ? (
-                            <Badge className="bg-teal-600">Freemium</Badge>
-                          ) : (
-                            <Badge className="bg-purple-600">{software.price}</Badge>
-                          )}
-                          {software.openSource && (
-                            <Badge className="bg-orange-600">Open Source</Badge>
-                          )}
-                        </div>
-                      </DialogDescription>
-                    </DialogHeader>
-                    
-                    <ScrollArea className="flex-1 -mx-6 px-6">
-                      <div className="space-y-4 mb-4">
-                        <div>
-                          <h3 className="font-medium text-lg">Description</h3>
-                          <p className="text-gray-700 dark:text-gray-300 mt-1">{software.description}</p>
-                        </div>
-                        
-                        {software.usedIn && software.usedIn.length > 0 && (
-                          <div>
-                            <h3 className="font-medium text-lg">Used In</h3>
-                            <div className="flex flex-wrap gap-2 mt-1">
-                              {software.usedIn.map((industry, index) => (
-                                <Badge key={index} variant="secondary" className="text-xs">{industry}</Badge>
-                              ))}
-                            </div>
-                          </div>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button 
+                    variant="default" 
+                    size="sm" 
+                    onClick={() => handleShowExplanation(software)}
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    <BookOpenText className="h-4 w-4 mr-1" />
+                    Detailed Explanation
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+                  <DialogHeader>
+                    <DialogTitle className="text-2xl">{selectedSoftware?.name}</DialogTitle>
+                    <DialogDescription>
+                      <div className="flex flex-wrap items-center gap-2 mt-1">
+                        <Badge variant="outline">{selectedSoftware?.category}</Badge>
+                        <Badge variant="secondary">{selectedSoftware?.type}</Badge>
+                        {selectedSoftware?.localApp && (
+                          <Badge className="bg-green-600">ChemLab App</Badge>
                         )}
-
-                        {software.features && software.features.length > 0 && (
-                          <div>
-                            <h3 className="font-medium text-lg">Key Features</h3>
-                            <ul className="list-disc list-inside mt-1 space-y-1">
-                              {software.features.map((feature, index) => (
-                                <li key={index} className="text-gray-700 dark:text-gray-300">{feature}</li>
-                              ))}
-                            </ul>
-                          </div>
+                        {selectedSoftware?.price === "Free" ? (
+                          <Badge className="bg-blue-600">Free</Badge>
+                        ) : selectedSoftware?.price === "Freemium" ? (
+                          <Badge className="bg-teal-600">Freemium</Badge>
+                        ) : (
+                          <Badge className="bg-purple-600">{selectedSoftware?.price}</Badge>
                         )}
-                        
-                        {renderSoftwareInterface(software)}
+                        {selectedSoftware?.openSource && (
+                          <Badge className="bg-orange-600">Open Source</Badge>
+                        )}
                       </div>
-                    </ScrollArea>
-                    
-                    <DialogFooter className="border-t pt-4 mt-4">
-                      <div className="flex w-full justify-between items-center">
-                        <div className="flex items-center gap-2">
-                          {software.website && (
-                            <Button variant="outline" size="sm" asChild>
-                              <a href={software.website} target="_blank" rel="noopener noreferrer">
-                                <ExternalLink className="h-4 w-4 mr-1" />
-                                Visit Website
-                              </a>
-                            </Button>
-                          )}
-                          {software.openSource && software.repository && (
-                            <Button variant="outline" size="sm" asChild>
-                              <a href={software.repository} target="_blank" rel="noopener noreferrer">
-                                <Github className="h-4 w-4 mr-1" />
-                                Source Code
-                              </a>
-                            </Button>
-                          )}
-                        </div>
-                        <Button variant="outline" onClick={() => setSelectedSoftware(null)}>
-                          Close
-                        </Button>
+                    </DialogDescription>
+                  </DialogHeader>
+                  
+                  <ScrollArea className="flex-1 -mx-6 px-6">
+                    {selectedSoftware && showExplanation ? (
+                      renderSoftwareExplanation(selectedSoftware)
+                    ) : (
+                      selectedSoftware && renderSoftwareInterface(selectedSoftware)
+                    )}
+                  </ScrollArea>
+                  
+                  <DialogFooter className="border-t pt-4 mt-4">
+                    <div className="flex w-full justify-between items-center">
+                      <div className="flex items-center gap-2">
+                        {selectedSoftware?.website && (
+                          <Button variant="outline" size="sm" asChild>
+                            <a href={selectedSoftware.website} target="_blank" rel="noopener noreferrer">
+                              <ExternalLink className="h-4 w-4 mr-1" />
+                              Visit Website
+                            </a>
+                          </Button>
+                        )}
+                        {selectedSoftware?.openSource && selectedSoftware?.repository && (
+                          <Button variant="outline" size="sm" asChild>
+                            <a href={selectedSoftware.repository} target="_blank" rel="noopener noreferrer">
+                              <Github className="h-4 w-4 mr-1" />
+                              Source Code
+                            </a>
+                          </Button>
+                        )}
                       </div>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
-              )}
+                      <Button variant="outline" onClick={() => {
+                        setSelectedSoftware(null);
+                        setShowExplanation(false);
+                      }}>
+                        Close
+                      </Button>
+                    </div>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </CardFooter>
           </Card>
         ))}
