@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
@@ -7,7 +8,11 @@ import {
   Code,
   FlaskConical,
   Info,
-  Book
+  Book,
+  Database,
+  Thermometer,
+  Settings,
+  Activity
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import LearnMoreModal from "@/components/ui/LearnMoreModal";
@@ -40,22 +45,71 @@ const Dashboard = () => {
             </Button>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {dashboardCards.map((card) => (
-              <Link 
-                key={card.title}
-                to={card.linkTo}
-                className="block rounded-xl border border-blue-100 p-6 hover:bg-blue-50 transition-all duration-300 group shadow-sm hover:shadow-md"
-              >
-                <div className="flex justify-between items-start mb-4">
-                  <div className={`p-3 rounded-xl ${card.color} bg-opacity-10 group-hover:scale-105 transition-transform`}>
-                    {card.icon}
+          <div className="mb-10">
+            <h2 className="text-2xl font-bold mb-6 text-blue-900">Core Tools</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {coreDashboardCards.map((card) => (
+                <Link 
+                  key={card.title}
+                  to={card.linkTo}
+                  className="block rounded-xl border border-blue-100 p-6 hover:bg-blue-50 transition-all duration-300 group shadow-sm hover:shadow-md"
+                >
+                  <div className="flex justify-between items-start mb-4">
+                    <div className={`p-3 rounded-xl ${card.color} bg-opacity-10 group-hover:scale-105 transition-transform`}>
+                      {card.icon}
+                    </div>
+                    {card.isNew && (
+                      <span className="bg-green-500 text-white text-xs font-semibold px-2.5 py-0.5 rounded-full">
+                        New
+                      </span>
+                    )}
                   </div>
-                </div>
-                <h3 className="text-xl font-medium mb-2 text-blue-900">{card.title}</h3>
-                <p className="text-blue-700 text-sm">{card.description}</p>
-              </Link>
-            ))}
+                  <h3 className="text-xl font-medium mb-2 text-blue-900">{card.title}</h3>
+                  <p className="text-blue-700 text-sm">{card.description}</p>
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          <div className="mb-10">
+            <h2 className="text-2xl font-bold mb-6 text-blue-900">Chemical Engineering Software Library</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+              {softwareTypeCards.map((card) => (
+                <Link 
+                  key={card.title}
+                  to={`/software-tools?type=${encodeURIComponent(card.type)}`}
+                  className="block rounded-xl border border-blue-100 p-4 hover:bg-blue-50 transition-all duration-300 group shadow-sm hover:shadow-md"
+                >
+                  <div className="flex justify-center items-center mb-4">
+                    <div className={`p-3 rounded-xl ${card.color} text-white group-hover:scale-105 transition-transform`}>
+                      {card.icon}
+                    </div>
+                  </div>
+                  <h3 className="text-lg font-medium mb-2 text-blue-900 text-center">{card.title}</h3>
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <h2 className="text-2xl font-bold mb-6 text-blue-900">Utilities & Resources</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {utilityDashboardCards.map((card) => (
+                <Link 
+                  key={card.title}
+                  to={card.linkTo}
+                  className="block rounded-xl border border-blue-100 p-6 hover:bg-blue-50 transition-all duration-300 group shadow-sm hover:shadow-md"
+                >
+                  <div className="flex justify-between items-start mb-4">
+                    <div className={`p-3 rounded-xl ${card.color} bg-opacity-10 group-hover:scale-105 transition-transform`}>
+                      {card.icon}
+                    </div>
+                  </div>
+                  <h3 className="text-xl font-medium mb-2 text-blue-900">{card.title}</h3>
+                  <p className="text-blue-700 text-sm">{card.description}</p>
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
       </main>
@@ -75,9 +129,10 @@ interface DashboardCardProps {
   linkTo: string;
   color: string;
   isNew?: boolean;
+  type?: string;
 }
 
-const dashboardCards = [
+const coreDashboardCards = [
   {
     title: "Create Simulation",
     description: "Start building a new chemical process simulation",
@@ -98,7 +153,48 @@ const dashboardCards = [
     icon: <Book className="h-6 w-6" />,
     linkTo: "/formulas",
     color: "bg-flow-teal text-white",
+  }
+];
+
+const softwareTypeCards = [
+  {
+    title: "Process Simulation & Modeling",
+    icon: <FlaskConical className="h-6 w-6" />,
+    type: "Type 1: Process Simulation & Modeling",
+    linkTo: "/software-tools",
+    color: "bg-blue-600",
   },
+  {
+    title: "Thermodynamic & Property Estimation",
+    icon: <Thermometer className="h-6 w-6" />,
+    type: "Type 2: Thermodynamic & Property Estimation",
+    linkTo: "/software-tools",
+    color: "bg-red-600",
+  },
+  {
+    title: "Equipment Design & Sizing",
+    icon: <Settings className="h-6 w-6" />,
+    type: "Type 3: Equipment Design & Sizing",
+    linkTo: "/software-tools",
+    color: "bg-green-600",
+  },
+  {
+    title: "Process Control & Optimization",
+    icon: <Activity className="h-6 w-6" />,
+    type: "Type 4: Process Control & Optimization",
+    linkTo: "/software-tools",
+    color: "bg-purple-600",
+  },
+  {
+    title: "Laboratory & Data Analysis",
+    icon: <Database className="h-6 w-6" />,
+    type: "Type 5: Laboratory, Data Analysis & R&D",
+    linkTo: "/software-tools",
+    color: "bg-amber-600",
+  },
+];
+
+const utilityDashboardCards = [
   {
     title: "Unit Converter",
     description: "Convert between different engineering units",
@@ -114,41 +210,12 @@ const dashboardCards = [
     color: "bg-teal-500 text-white",
   },
   {
-    title: "About",
+    title: "About ChemFlow",
     description: "Learn more about ChemFlow and our vision",
     icon: <Info className="h-6 w-6" />,
     linkTo: "/about",
     color: "bg-gray-500 text-white",
   }
 ];
-
-const DashboardCard: React.FC<DashboardCardProps> = ({ 
-  title, 
-  description, 
-  icon, 
-  linkTo, 
-  color,
-  isNew
-}) => {
-  return (
-    <Link 
-      to={linkTo}
-      className="block rounded-xl backdrop-blur-md bg-white/20 border border-white/40 p-6 hover:bg-white/30 transition-all duration-300 relative group shadow-lg hover:shadow-xl"
-    >
-      <div className="flex justify-between items-start mb-4">
-        <div className={`p-3 rounded-xl ${color} bg-opacity-80 group-hover:scale-105 transition-transform backdrop-blur-sm`}>
-          {icon}
-        </div>
-        {isNew && (
-          <span className="absolute top-4 right-4 bg-green-400/30 backdrop-blur-sm text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full border border-green-400/50">
-            New
-          </span>
-        )}
-      </div>
-      <h3 className="text-xl font-medium mb-2 text-gray-900">{title}</h3>
-      <p className="text-gray-800 text-sm">{description}</p>
-    </Link>
-  );
-};
 
 export default Dashboard;
