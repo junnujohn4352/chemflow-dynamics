@@ -42,6 +42,8 @@ export interface Software {
   rating?: number;
   votes?: number;
   logo?: string;
+  localApp?: boolean;  // New field to indicate this is a local ChemLab app
+  appRoute?: string;   // New field for local application route
 }
 
 export interface EducationalResource {

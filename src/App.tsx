@@ -47,6 +47,25 @@ const App: React.FC = () => {
         <Route path="/hysys-calculations" element={<HysysCalculations />} />
         <Route path="/unit-converter" element={<UnitConverter />} />
         <Route path="/code-converter" element={<CodeConverter />} />
+        
+        {/* ChemLab Application Routes */}
+        <Route path="/chemlab/aspen-plus" element={<ChemicalFormulas />} /> {/* Placeholder */}
+        <Route path="/chemlab/hysys" element={<HysysCalculations />} /> {/* Placeholder */}
+        <Route path="/chemlab/chemcad" element={<UnitConverter />} /> {/* Placeholder */}
+        <Route path="/chemlab/dwsim" element={<CreateSimulation />} /> {/* Placeholder */}
+        <Route path="/chemlab/unisim" element={<Simulations />} /> {/* Placeholder */}
+        <Route path="/chemlab/refprop" element={<UnitConverter />} /> {/* Placeholder */}
+        <Route path="/chemlab/properties" element={<ChemicalFormulas />} /> {/* Placeholder */}
+        <Route path="/chemlab/coolprop" element={<CodeConverter />} /> {/* Placeholder */}
+        <Route path="/chemlab/exchanger" element={<HysysCalculations />} /> {/* Placeholder */}
+        <Route path="/chemlab/column-design" element={<CreateSimulation />} /> {/* Placeholder */}
+        <Route path="/chemlab/pipe-flow" element={<IntelligentSimulation />} /> {/* Placeholder */}
+        <Route path="/chemlab/process-control" element={<Simulations />} /> {/* Placeholder */}
+        <Route path="/chemlab/pid-tuner" element={<UnitConverter />} /> {/* Placeholder */}
+        <Route path="/chemlab/doe" element={<ChemicalFormulas />} /> {/* Placeholder */}
+        <Route path="/chemlab/data-analytics" element={<CodeConverter />} /> {/* Placeholder */}
+        <Route path="/chemlab/lims" element={<HysysCalculations />} /> {/* Placeholder */}
+        
         <Route path="*" element={<NotFound />} />
       </Routes>
       <Toaster />

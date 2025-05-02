@@ -1,4 +1,6 @@
+
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { 
   Dialog, 
   DialogContent, 
@@ -21,8 +23,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
-import { AlertCircle, Book, Download, ExternalLink, FileText, Github, Info } from "lucide-react";
+import { AlertCircle, Book, ExternalLink, FileText, Github, Info, Play } from "lucide-react";
 
 import ProcessSimulationInterface from "@/components/software-interfaces/ProcessSimulationInterface";
 import ThermodynamicInterface from "@/components/software-interfaces/ThermodynamicInterface";
@@ -101,11 +102,11 @@ const SoftwareTools: React.FC = () => {
 
   return (
     <div className="container mx-auto py-6 px-4">
-      <h1 className="text-3xl font-bold mb-6">Chemical Engineering Digital Resources</h1>
+      <h1 className="text-3xl font-bold mb-6">ChemLab Software Collection</h1>
       
       <Tabs defaultValue="software" className="mb-8" value={activeTab} onValueChange={(value) => setActiveTab(value as "software" | "educational")}>
         <TabsList className="grid w-full grid-cols-2 mb-4">
-          <TabsTrigger value="software">Software Tools</TabsTrigger>
+          <TabsTrigger value="software">ChemLab Applications</TabsTrigger>
           <TabsTrigger value="educational">Educational Resources</TabsTrigger>
         </TabsList>
         
@@ -182,12 +183,15 @@ const SoftwareTools: React.FC = () => {
                 <CardContent>
                   <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">{software.description.substring(0, 100)}...</p>
                   <div className="flex items-center gap-2 mt-2">
+                    {software.localApp && (
+                      <Badge className="bg-green-600">ChemLab App</Badge>
+                    )}
                     {software.price === "Free" ? (
-                      <Badge className="bg-green-600">Free</Badge>
+                      <Badge className="bg-blue-600">Free</Badge>
                     ) : software.price === "Freemium" ? (
                       <Badge className="bg-teal-600">Freemium</Badge>
                     ) : (
-                      <Badge className="bg-blue-600">{software.price}</Badge>
+                      <Badge className="bg-purple-600">{software.price}</Badge>
                     )}
                     {software.openSource && (
                       <Badge className="bg-orange-600">Open Source</Badge>
@@ -199,93 +203,105 @@ const SoftwareTools: React.FC = () => {
                     <Info className="h-4 w-4" />
                     {software.rating || "N/A"} ({software.votes || 0} votes)
                   </div>
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button variant="outline" size="sm" onClick={() => setSelectedSoftware(software)}>
-                        Learn More
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
-                      <DialogHeader>
-                        <DialogTitle className="text-2xl">{software.name}</DialogTitle>
-                        <DialogDescription>
-                          <div className="flex flex-wrap items-center gap-2 mt-1">
-                            <Badge variant="outline">{software.category}</Badge>
-                            <Badge variant="secondary">{software.type}</Badge>
-                            {software.price === "Free" ? (
-                              <Badge className="bg-green-600">Free</Badge>
-                            ) : software.price === "Freemium" ? (
-                              <Badge className="bg-teal-600">Freemium</Badge>
-                            ) : (
-                              <Badge className="bg-blue-600">{software.price}</Badge>
-                            )}
-                            {software.openSource && (
-                              <Badge className="bg-orange-600">Open Source</Badge>
-                            )}
-                          </div>
-                        </DialogDescription>
-                      </DialogHeader>
-                      
-                      <ScrollArea className="flex-1 -mx-6 px-6">
-                        <div className="space-y-4 mb-4">
-                          <div>
-                            <h3 className="font-medium text-lg">Description</h3>
-                            <p className="text-gray-700 dark:text-gray-300 mt-1">{software.description}</p>
-                          </div>
-                          
-                          {software.usedIn && software.usedIn.length > 0 && (
+                  {software.localApp ? (
+                    <Button variant="default" size="sm" asChild>
+                      <Link to={software.appRoute || "#"}>
+                        <Play className="h-4 w-4 mr-1" />
+                        Launch App
+                      </Link>
+                    </Button>
+                  ) : (
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" size="sm" onClick={() => setSelectedSoftware(software)}>
+                          Learn More
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+                        <DialogHeader>
+                          <DialogTitle className="text-2xl">{software.name}</DialogTitle>
+                          <DialogDescription>
+                            <div className="flex flex-wrap items-center gap-2 mt-1">
+                              <Badge variant="outline">{software.category}</Badge>
+                              <Badge variant="secondary">{software.type}</Badge>
+                              {software.localApp && (
+                                <Badge className="bg-green-600">ChemLab App</Badge>
+                              )}
+                              {software.price === "Free" ? (
+                                <Badge className="bg-blue-600">Free</Badge>
+                              ) : software.price === "Freemium" ? (
+                                <Badge className="bg-teal-600">Freemium</Badge>
+                              ) : (
+                                <Badge className="bg-purple-600">{software.price}</Badge>
+                              )}
+                              {software.openSource && (
+                                <Badge className="bg-orange-600">Open Source</Badge>
+                              )}
+                            </div>
+                          </DialogDescription>
+                        </DialogHeader>
+                        
+                        <ScrollArea className="flex-1 -mx-6 px-6">
+                          <div className="space-y-4 mb-4">
                             <div>
-                              <h3 className="font-medium text-lg">Used In</h3>
-                              <div className="flex flex-wrap gap-2 mt-1">
-                                {software.usedIn.map((industry, index) => (
-                                  <Badge key={index} variant="secondary" className="text-xs">{industry}</Badge>
-                                ))}
+                              <h3 className="font-medium text-lg">Description</h3>
+                              <p className="text-gray-700 dark:text-gray-300 mt-1">{software.description}</p>
+                            </div>
+                            
+                            {software.usedIn && software.usedIn.length > 0 && (
+                              <div>
+                                <h3 className="font-medium text-lg">Used In</h3>
+                                <div className="flex flex-wrap gap-2 mt-1">
+                                  {software.usedIn.map((industry, index) => (
+                                    <Badge key={index} variant="secondary" className="text-xs">{industry}</Badge>
+                                  ))}
+                                </div>
                               </div>
-                            </div>
-                          )}
+                            )}
 
-                          {software.features && software.features.length > 0 && (
-                            <div>
-                              <h3 className="font-medium text-lg">Key Features</h3>
-                              <ul className="list-disc list-inside mt-1 space-y-1">
-                                {software.features.map((feature, index) => (
-                                  <li key={index} className="text-gray-700 dark:text-gray-300">{feature}</li>
-                                ))}
-                              </ul>
-                            </div>
-                          )}
-                          
-                          {renderSoftwareInterface(software)}
-                        </div>
-                      </ScrollArea>
-                      
-                      <DialogFooter className="border-t pt-4 mt-4">
-                        <div className="flex w-full justify-between items-center">
-                          <div className="flex items-center gap-2">
-                            {software.website && (
-                              <Button variant="outline" size="sm" asChild>
-                                <a href={software.website} target="_blank" rel="noopener noreferrer">
-                                  <ExternalLink className="h-4 w-4 mr-1" />
-                                  Visit Website
-                                </a>
-                              </Button>
+                            {software.features && software.features.length > 0 && (
+                              <div>
+                                <h3 className="font-medium text-lg">Key Features</h3>
+                                <ul className="list-disc list-inside mt-1 space-y-1">
+                                  {software.features.map((feature, index) => (
+                                    <li key={index} className="text-gray-700 dark:text-gray-300">{feature}</li>
+                                  ))}
+                                </ul>
+                              </div>
                             )}
-                            {software.openSource && software.repository && (
-                              <Button variant="outline" size="sm" asChild>
-                                <a href={software.repository} target="_blank" rel="noopener noreferrer">
-                                  <Github className="h-4 w-4 mr-1" />
-                                  Source Code
-                                </a>
-                              </Button>
-                            )}
+                            
+                            {renderSoftwareInterface(software)}
                           </div>
-                          <Button variant="outline" onClick={() => setSelectedSoftware(null)}>
-                            Close
-                          </Button>
-                        </div>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
+                        </ScrollArea>
+                        
+                        <DialogFooter className="border-t pt-4 mt-4">
+                          <div className="flex w-full justify-between items-center">
+                            <div className="flex items-center gap-2">
+                              {software.website && (
+                                <Button variant="outline" size="sm" asChild>
+                                  <a href={software.website} target="_blank" rel="noopener noreferrer">
+                                    <ExternalLink className="h-4 w-4 mr-1" />
+                                    Visit Website
+                                  </a>
+                                </Button>
+                              )}
+                              {software.openSource && software.repository && (
+                                <Button variant="outline" size="sm" asChild>
+                                  <a href={software.repository} target="_blank" rel="noopener noreferrer">
+                                    <Github className="h-4 w-4 mr-1" />
+                                    Source Code
+                                  </a>
+                                </Button>
+                              )}
+                            </div>
+                            <Button variant="outline" onClick={() => setSelectedSoftware(null)}>
+                              Close
+                            </Button>
+                          </div>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+                  )}
                 </CardFooter>
               </Card>
             ))}

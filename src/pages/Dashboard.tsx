@@ -58,11 +58,6 @@ const Dashboard = () => {
                     <div className={`p-3 rounded-xl ${card.color} bg-opacity-10 group-hover:scale-105 transition-transform`}>
                       {card.icon}
                     </div>
-                    {card.isNew && (
-                      <span className="bg-green-500 text-white text-xs font-semibold px-2.5 py-0.5 rounded-full">
-                        New
-                      </span>
-                    )}
                   </div>
                   <h3 className="text-xl font-medium mb-2 text-blue-900">{card.title}</h3>
                   <p className="text-blue-700 text-sm">{card.description}</p>
@@ -72,7 +67,7 @@ const Dashboard = () => {
           </div>
 
           <div className="mb-10">
-            <h2 className="text-2xl font-bold mb-6 text-blue-900">Chemical Engineering Software Library</h2>
+            <h2 className="text-2xl font-bold mb-6 text-blue-900">ChemLab Software Library</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
               {softwareTypeCards.map((card) => (
                 <Link 
@@ -128,7 +123,6 @@ interface DashboardCardProps {
   icon: React.ReactNode;
   linkTo: string;
   color: string;
-  isNew?: boolean;
   type?: string;
 }
 
