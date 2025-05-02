@@ -22,7 +22,7 @@ const EnvironmentalSafetyInterface: React.FC<EnvironmentalSafetyInterfaceProps> 
   const [compressibility, setCompressibility] = useState<number>(0.95);
   const [dischargePressure, setDischargePressure] = useState<number>(1.013);
   const [isCalculating, setIsCalculating] = useState<boolean>(false);
-  const [results, setResults] = useState<any>(null);
+  const [results, setResults] = useState<Record<string, string | number> | null>(null);
   const { toast } = useToast();
 
   const handleCalculate = () => {
@@ -30,7 +30,7 @@ const EnvironmentalSafetyInterface: React.FC<EnvironmentalSafetyInterfaceProps> 
     setResults(null);
     
     setTimeout(() => {
-      let calculationResults;
+      let calculationResults: Record<string, string | number> = {};
       
       if (analysisType === "relief-valve") {
         // Relief valve sizing calculations
@@ -264,7 +264,7 @@ const EnvironmentalSafetyInterface: React.FC<EnvironmentalSafetyInterfaceProps> 
                     .replace(/^./, str => str.toUpperCase())
                     .replace(/([a-z])([A-Z])/g, '$1 $2')}:
               </span>
-              <div className="font-medium">{value}</div>
+              <div className="font-medium">{String(value)}</div>
             </div>
           ))}
         </div>
