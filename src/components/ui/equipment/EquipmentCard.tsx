@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Edit2, Activity, Thermometer, Gauge, ArrowRight } from "lucide-react";
-import { EquipmentIcons, EquipmentType } from "./EquipmentIcons";
+import { getEquipmentIcon, EquipmentType } from "./EquipmentIcons";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
@@ -39,7 +39,7 @@ export const EquipmentCard: React.FC<EquipmentProps> = ({
   const [isEditing, setIsEditing] = useState(false);
   const [localMetrics, setLocalMetrics] = useState({ ...metrics });
 
-  const Icon = EquipmentIcons[type] || EquipmentIcons["default"];
+  const Icon = getEquipmentIcon(type);
 
   const handleMetricChange = (key: string, value: string) => {
     const newValue = parseFloat(value);
@@ -65,7 +65,7 @@ export const EquipmentCard: React.FC<EquipmentProps> = ({
         <div className="flex items-start justify-between">
           <div className="flex items-center space-x-3">
             <div className="bg-blue-50 p-2 rounded-md text-blue-600">
-              <Icon className="w-6 h-6" />
+              {Icon}
             </div>
             <div>
               <h3 className="font-medium">{name}</h3>

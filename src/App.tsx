@@ -20,7 +20,6 @@ import SoftwareTools from "./pages/SoftwareTools";
 import SoftwareTopics from "./pages/SoftwareTopics";
 import HysysCalculations from "./pages/HysysCalculations";
 import UnitConverter from "./pages/UnitConverter";
-import Components from "./pages/Components";
 import CodeConverter from "./pages/CodeConverter";
 import IntelligentSimulation from "./pages/IntelligentSimulation";
 
@@ -47,7 +46,6 @@ const App: React.FC = () => {
         <Route path="/software-topics" element={<SoftwareTopics />} />
         <Route path="/hysys-calculations" element={<HysysCalculations />} />
         <Route path="/unit-converter" element={<UnitConverter />} />
-        <Route path="/components" element={<Components />} />
         <Route path="/code-converter" element={<CodeConverter />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
