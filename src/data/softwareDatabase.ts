@@ -1,3 +1,4 @@
+
 import { SoftwareDatabase } from "../types/software";
 
 export const softwareDatabase: SoftwareDatabase = {
@@ -871,3 +872,125 @@ export const softwareDatabase: SoftwareDatabase = {
       usedIn: ["Chemical manufacturing", "Batch processes", "Continuous processes"],
       rating: 4.3,
       votes: 61,
+    },
+    {
+      id: "simatic-pid-tuner",
+      name: "SIMATIC PID Tuner",
+      description: "PID loop tuning tool integrated into Siemens TIA Portal automation platform.",
+      category: "Process Control",
+      type: "Type 4: Process Control & Optimization",
+      price: "Paid",
+      openSource: false,
+      website: "https://support.industry.siemens.com/cs/document/100746401/",
+      features: [
+        "Auto-tuning",
+        "Adaptive control strategies",
+        "Integration with SIMATIC controllers",
+        "Trend visualization"
+      ],
+      usedIn: ["Chemical process skids", "Packaged units", "Manufacturing plants"],
+      rating: 4.1,
+      votes: 52,
+    },
+    
+    // Type 5: Laboratory, Data Analysis & R&D Software
+    {
+      id: "design-expert",
+      name: "Design-Expert",
+      description: "Statistical software for Design of Experiments (DoE) and optimization of processes and formulations.",
+      category: "Laboratory & Data Analysis",
+      type: "Type 5: Laboratory, Data Analysis & R&D",
+      price: "Paid",
+      openSource: false,
+      website: "https://www.statease.com/software/design-expert/",
+      features: [
+        "ANOVA",
+        "Factorial design",
+        "Response surface methodology (RSM)",
+        "Mixture designs"
+      ],
+      usedIn: ["R&D labs", "Formulation studies", "Process optimization"],
+      rating: 4.7,
+      votes: 95,
+    },
+    {
+      id: "minitab",
+      name: "Minitab",
+      description: "Statistical software for data analysis, quality control, and process improvement.",
+      category: "Data Analysis",
+      type: "Type 5: Laboratory, Data Analysis & R&D",
+      price: "Paid",
+      openSource: false,
+      website: "https://www.minitab.com/",
+      features: [
+        "Regression analysis",
+        "ANOVA",
+        "Control charts",
+        "Process capability analysis"
+      ],
+      usedIn: ["Lab experiments", "Food tech", "QA/QC labs"],
+      rating: 4.6,
+      votes: 128,
+    },
+    {
+      id: "matlab",
+      name: "MATLAB",
+      description: "Numerical computing environment and programming language for algorithm development, data visualization, and analysis.",
+      category: "Data Analysis",
+      type: "Type 5: Laboratory, Data Analysis & R&D",
+      price: "Paid",
+      openSource: false,
+      website: "https://www.mathworks.com/products/matlab.html",
+      features: [
+        "Numerical computation",
+        "Data visualization",
+        "Algorithm development",
+        "Toolboxes for various domains"
+      ],
+      usedIn: ["Process modeling", "Custom algorithm development", "Thermodynamic calculations"],
+      rating: 4.8,
+      votes: 210,
+    },
+    {
+      id: "originpro",
+      name: "OriginPro",
+      description: "Data analysis and graphing software designed specifically for scientists and engineers.",
+      category: "Laboratory & Data Analysis",
+      type: "Type 5: Laboratory, Data Analysis & R&D",
+      price: "Paid",
+      openSource: false,
+      website: "https://www.originlab.com/",
+      features: [
+        "Peak fitting",
+        "Signal processing",
+        "Nonlinear curve fitting",
+        "Publication-quality graphs"
+      ],
+      usedIn: ["Lab research", "Spectroscopy", "Chromatographic data interpretation"],
+      rating: 4.5,
+      votes: 83,
+    },
+    {
+      id: "labware-lims",
+      name: "LabWare LIMS",
+      description: "Laboratory Information Management System for sample tracking and lab workflow management.",
+      category: "Laboratory & Data Analysis",
+      type: "Type 5: Laboratory, Data Analysis & R&D",
+      price: "Paid",
+      openSource: false,
+      website: "https://www.labware.com/",
+      features: [
+        "Sample tracking",
+        "Regulatory compliance",
+        "Workflow automation",
+        "Instrument integration"
+      ],
+      usedIn: ["Food", "Pharma", "Oil & chemical labs"],
+      rating: 4.3,
+      votes: 67,
+    }
+  ],
+  educationalResources: [
+    // Add educational resources here if needed
+  ]
+};
