@@ -1,692 +1,313 @@
 
-import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Slider } from "@/components/ui/slider";
-import { Play, Wind, Download, BarChart, Save, FileText, AlertTriangle } from "lucide-react";
+import React, { useState } from 'react';
+import { Software } from '@/types/software';
+import BaseSoftwareInterface from './BaseSoftwareInterface';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Slider } from '@/components/ui/slider';
+import { useToast } from '@/hooks/use-toast';
 
 interface EnvironmentalSafetyInterfaceProps {
-  software: {
-    name: string;
-    description: string;
-    category: string;
-  };
+  software: Software;
 }
 
 const EnvironmentalSafetyInterface: React.FC<EnvironmentalSafetyInterfaceProps> = ({ software }) => {
-  const [modelComplete, setModelComplete] = useState(false);
-  
-  const handleRunModel = () => {
-    setModelComplete(true);
+  const [analysisType, setAnalysisType] = useState<string>("relief-valve");
+  const [pressure, setPressure] = useState<number>(10);
+  const [temperature, setTemperature] = useState<number>(200);
+  const [flowRate, setFlowRate] = useState<number>(500);
+  const [molecularWeight, setMolecularWeight] = useState<number>(18);
+  const [compressibility, setCompressibility] = useState<number>(0.95);
+  const [dischargePressure, setDischargePressure] = useState<number>(1.013);
+  const [isCalculating, setIsCalculating] = useState<boolean>(false);
+  const [results, setResults] = useState<any>(null);
+  const { toast } = useToast();
+
+  const handleCalculate = () => {
+    setIsCalculating(true);
+    setResults(null);
+    
+    setTimeout(() => {
+      let calculationResults;
+      
+      if (analysisType === "relief-valve") {
+        // Relief valve sizing calculations
+        const k = 1.4; // Specific heat ratio (approx. for air)
+        const Z = compressibility; // Compressibility factor
+        const criticalPressureRatio = Math.pow((2 / (k + 1)), (k / (k - 1)));
+        const isCriticalFlow = (dischargePressure / pressure) < criticalPressureRatio;
+        
+        // Convert pressure to absolute (bara)
+        const P1 = pressure;
+        const P2 = dischargePressure;
+        
+        let requiredArea, massFlowRate, estimatedSize;
+        
+        if (isCriticalFlow) {
+          // Critical (choked) flow
+          massFlowRate = flowRate;
+          const C = 520; // Discharge coefficient constant for gas
+          requiredArea = (massFlowRate) / (C * P1 * Math.sqrt((k * molecularWeight) / (Z * (temperature + 273.15))));
+        } else {
+          // Sub-critical flow
+          massFlowRate = flowRate;
+          const C = 520; // Discharge coefficient constant for gas
+          requiredArea = (massFlowRate) / (C * P1 * Math.sqrt((k * molecularWeight * (Math.pow(P2/P1, 2/k) - Math.pow(P2/P1, (k+1)/k))) / (Z * (temperature + 273.15) * (1 - P2/P1))));
+        }
+        
+        const standardSizes = [71, 126, 198, 285, 415, 645, 1045, 1520, 2265, 3320, 4750];
+        estimatedSize = standardSizes.find(size => size > (requiredArea * 1000)) || standardSizes[standardSizes.length - 1];
+        
+        calculationResults = {
+          requiredArea: (requiredArea * 1000).toFixed(2),
+          flowRegime: isCriticalFlow ? "Critical (Choked) Flow" : "Sub-critical Flow",
+          recommendedArea: estimatedSize,
+          massFlowrate: massFlowRate.toFixed(2),
+          criticalPressureRatio: criticalPressureRatio.toFixed(3),
+          actualPressureRatio: (P2 / P1).toFixed(3),
+          dischargeCoefficient: "0.975",
+          backPressureCorrection: isCriticalFlow ? "1.0" : (0.85 - 0.15 * (P2 / P1)).toFixed(3),
+        };
+      } else if (analysisType === "emission") {
+        // Simple emission calculation
+        const annualEmission = flowRate * 24 * 365 * 0.001; // t/year
+        const carbonEquivalent = annualEmission * 2.5; // Simplified CO2 equivalent
+        
+        calculationResults = {
+          annualEmission: annualEmission.toFixed(2),
+          carbonEquivalent: carbonEquivalent.toFixed(2),
+          regulatoryThreshold: "10,000.00",
+          complianceStatus: annualEmission > 10000 ? "Non-Compliant" : "Compliant",
+          mitigationRequired: annualEmission > 10000 ? "Yes" : "No",
+          emissionIntensity: (annualEmission / (flowRate * 0.1)).toFixed(3),
+          recommendedAction: annualEmission > 10000 ? "Implement emission reduction plan" : "Continue monitoring"
+        };
+      } else if (analysisType === "fire-explosion") {
+        // Fire and explosion analysis
+        const tnt = flowRate * 0.1 * 0.03; // TNT equivalent
+        const fireball = 6.14 * Math.pow(tnt, 0.325); // Fireball radius
+        const overpressure = 2068 * Math.pow((tnt / 100), 0.33) / 100;
+        
+        calculationResults = {
+          tntEquivalent: tnt.toFixed(2),
+          fireballRadius: fireball.toFixed(2),
+          overpressure: overpressure.toFixed(2),
+          hazardRadius: (fireball * 2.5).toFixed(2),
+          evacuationZone: (fireball * 4).toFixed(2),
+          damagePotential: tnt > 500 ? "High" : tnt > 100 ? "Medium" : "Low",
+          structuralDamage: overpressure > 6.9 ? "Severe" : overpressure > 3.4 ? "Moderate" : "Minor",
+          personalInjury: tnt > 200 ? "High Risk" : "Moderate Risk"
+        };
+      }
+      
+      setResults(calculationResults);
+      setIsCalculating(false);
+      
+      toast({
+        title: "Safety Analysis Complete",
+        description: `${analysisType.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')} analysis completed.`,
+      });
+    }, 1800);
+  };
+
+  const renderAnalysisInputs = () => {
+    switch (analysisType) {
+      case "relief-valve":
+        return (
+          <>
+            <div className="space-y-2">
+              <Label htmlFor="pressure">Design Pressure (bara)</Label>
+              <Input 
+                id="pressure" 
+                type="number" 
+                value={pressure} 
+                onChange={(e) => setPressure(Number(e.target.value))} 
+                step="0.1"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="temperature">Temperature (°C)</Label>
+              <Input 
+                id="temperature" 
+                type="number" 
+                value={temperature} 
+                onChange={(e) => setTemperature(Number(e.target.value))} 
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="flowRate">Required Flow (kg/h)</Label>
+              <Input 
+                id="flowRate" 
+                type="number" 
+                value={flowRate} 
+                onChange={(e) => setFlowRate(Number(e.target.value))} 
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="molecularWeight">Molecular Weight (g/mol)</Label>
+              <Input 
+                id="molecularWeight" 
+                type="number" 
+                value={molecularWeight} 
+                onChange={(e) => setMolecularWeight(Number(e.target.value))} 
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="compressibility">Compressibility Factor</Label>
+              <Input 
+                id="compressibility" 
+                type="number" 
+                value={compressibility} 
+                onChange={(e) => setCompressibility(Number(e.target.value))} 
+                step="0.01"
+                min="0.1"
+                max="1"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="dischargePressure">Back Pressure (bara)</Label>
+              <Input 
+                id="dischargePressure" 
+                type="number" 
+                value={dischargePressure} 
+                onChange={(e) => setDischargePressure(Number(e.target.value))} 
+                step="0.1"
+              />
+            </div>
+          </>
+        );
+        
+      case "emission":
+        return (
+          <>
+            <div className="space-y-2">
+              <Label htmlFor="flowRate">Emission Rate (kg/h)</Label>
+              <Input 
+                id="flowRate" 
+                type="number" 
+                value={flowRate} 
+                onChange={(e) => setFlowRate(Number(e.target.value))} 
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="molecularWeight">Molecular Weight (g/mol)</Label>
+              <Input 
+                id="molecularWeight" 
+                type="number" 
+                value={molecularWeight} 
+                onChange={(e) => setMolecularWeight(Number(e.target.value))} 
+              />
+            </div>
+          </>
+        );
+        
+      case "fire-explosion":
+        return (
+          <>
+            <div className="space-y-2">
+              <Label htmlFor="pressure">Operating Pressure (bara)</Label>
+              <Input 
+                id="pressure" 
+                type="number" 
+                value={pressure} 
+                onChange={(e) => setPressure(Number(e.target.value))} 
+                step="0.1"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="temperature">Temperature (°C)</Label>
+              <Input 
+                id="temperature" 
+                type="number" 
+                value={temperature} 
+                onChange={(e) => setTemperature(Number(e.target.value))} 
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="flowRate">Inventory (kg)</Label>
+              <Input 
+                id="flowRate" 
+                type="number" 
+                value={flowRate} 
+                onChange={(e) => setFlowRate(Number(e.target.value))} 
+              />
+            </div>
+          </>
+        );
+        
+      default:
+        return null;
+    }
+  };
+
+  const renderResults = () => {
+    if (!results) return null;
+    
+    return (
+      <div className="border rounded-md p-4 bg-gray-50">
+        <h5 className="font-medium mb-2">Analysis Results</h5>
+        <div className="grid grid-cols-2 gap-3">
+          {Object.entries(results).map(([key, value]) => (
+            <div key={key} className="border rounded p-2">
+              <span className="text-gray-600 text-sm">
+                {key.replace(/([A-Z])/g, ' $1')
+                    .replace(/^./, str => str.toUpperCase())
+                    .replace(/([a-z])([A-Z])/g, '$1 $2')}:
+              </span>
+              <div className="font-medium">{value}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
   };
 
   return (
-    <div className="space-y-6 mt-4">
-      <Tabs defaultValue="dispersion">
-        <TabsList className="grid grid-cols-4 w-full">
-          <TabsTrigger value="dispersion">Dispersion Modeling</TabsTrigger>
-          <TabsTrigger value="consequence">Consequence Analysis</TabsTrigger>
-          <TabsTrigger value="risk">Risk Assessment</TabsTrigger>
-          <TabsTrigger value="report">Report Generation</TabsTrigger>
-        </TabsList>
+    <BaseSoftwareInterface software={software}>
+      <div className="mt-4 border-t pt-4">
+        <h5 className="font-medium mb-2">Environmental & Safety Analysis Tools</h5>
         
-        <TabsContent value="dispersion" className="p-4 border rounded-md mt-4">
-          <div className="grid grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <h3 className="font-medium">Dispersion Model Parameters</h3>
-              
-              <div className="space-y-3">
-                <div>
-                  <Label htmlFor="substance">Substance</Label>
-                  <Select defaultValue="methane">
-                    <SelectTrigger id="substance">
-                      <SelectValue placeholder="Select substance" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="methane">Methane</SelectItem>
-                      <SelectItem value="ammonia">Ammonia</SelectItem>
-                      <SelectItem value="chlorine">Chlorine</SelectItem>
-                      <SelectItem value="hydrogen-sulfide">Hydrogen Sulfide</SelectItem>
-                      <SelectItem value="lpg">LPG (Propane/Butane)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div>
-                  <Label htmlFor="release-type">Release Type</Label>
-                  <Select defaultValue="continuous">
-                    <SelectTrigger id="release-type">
-                      <SelectValue placeholder="Select release type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="continuous">Continuous Release</SelectItem>
-                      <SelectItem value="instantaneous">Instantaneous Release</SelectItem>
-                      <SelectItem value="catastrophic">Catastrophic Failure</SelectItem>
-                      <SelectItem value="leak">Leak from Hole</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="space-y-1">
-                  <Label htmlFor="release-rate">Release Rate</Label>
-                  <div className="flex items-center gap-2">
-                    <Input id="release-rate" defaultValue="5.0" />
-                    <span className="text-sm whitespace-nowrap">kg/s</span>
-                  </div>
-                </div>
-                
-                <div className="space-y-1">
-                  <Label htmlFor="release-duration">Release Duration</Label>
-                  <div className="flex items-center gap-2">
-                    <Input id="release-duration" defaultValue="600" />
-                    <span className="text-sm whitespace-nowrap">seconds</span>
-                  </div>
-                </div>
-                
-                <div className="space-y-1">
-                  <Label htmlFor="release-height">Release Height</Label>
-                  <div className="flex items-center gap-2">
-                    <Input id="release-height" defaultValue="3.0" />
-                    <span className="text-sm whitespace-nowrap">m</span>
-                  </div>
-                </div>
-                
-                <div className="space-y-1">
-                  <Label htmlFor="wind-speed">Wind Speed</Label>
-                  <div className="flex items-center gap-2">
-                    <Slider defaultValue={[5]} min={1} max={20} step={0.5} className="flex-1" />
-                    <span className="text-sm whitespace-nowrap">5 m/s</span>
-                  </div>
-                </div>
-                
-                <div>
-                  <Label htmlFor="stability-class">Atmospheric Stability Class</Label>
-                  <Select defaultValue="d">
-                    <SelectTrigger id="stability-class">
-                      <SelectValue placeholder="Select stability class" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="a">A (Very Unstable)</SelectItem>
-                      <SelectItem value="b">B (Unstable)</SelectItem>
-                      <SelectItem value="c">C (Slightly Unstable)</SelectItem>
-                      <SelectItem value="d">D (Neutral)</SelectItem>
-                      <SelectItem value="e">E (Slightly Stable)</SelectItem>
-                      <SelectItem value="f">F (Stable)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div>
-                  <Label htmlFor="terrain-type">Terrain Type</Label>
-                  <Select defaultValue="urban">
-                    <SelectTrigger id="terrain-type">
-                      <SelectValue placeholder="Select terrain type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="urban">Urban/Industrial</SelectItem>
-                      <SelectItem value="suburban">Suburban</SelectItem>
-                      <SelectItem value="rural">Rural/Open Country</SelectItem>
-                      <SelectItem value="water">Over Water</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="pt-2">
-                  <Button className="w-full" onClick={handleRunModel}>
-                    <Play className="h-4 w-4 mr-1" />
-                    Run Dispersion Model
-                  </Button>
-                </div>
-              </div>
-            </div>
-            
-            <div className="space-y-4">
-              <h3 className="font-medium">Dispersion Results</h3>
-              
-              {modelComplete ? (
-                <div className="space-y-4">
-                  <div className="aspect-square bg-white dark:bg-gray-800 border rounded-md p-4 flex items-center justify-center">
-                    <div className="text-center">
-                      <Wind className="h-16 w-16 mx-auto mb-2 text-blue-500" />
-                      <p className="text-sm text-gray-500 dark:text-gray-400">[Dispersion contour map would appear here]</p>
-                    </div>
-                  </div>
-                  
-                  <div className="border rounded-md p-4 bg-white dark:bg-gray-800">
-                    <h4 className="text-sm font-medium mb-3">Concentration Profiles</h4>
-                    
-                    <div className="space-y-3 text-sm">
-                      <div className="grid grid-cols-2 gap-2">
-                        <div className="text-gray-500 dark:text-gray-400">Maximum Concentration:</div>
-                        <div className="font-medium">4,320 ppm</div>
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <div className="text-gray-500 dark:text-gray-400">Distance to IDLH (1,000 ppm):</div>
-                        <div className="font-medium">156 m</div>
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <div className="text-gray-500 dark:text-gray-400">Distance to LEL (50,000 ppm):</div>
-                        <div className="font-medium">42 m</div>
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <div className="text-gray-500 dark:text-gray-400">Distance to 0.5 LEL:</div>
-                        <div className="font-medium">63 m</div>
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <div className="text-gray-500 dark:text-gray-400">Cloud Width (max):</div>
-                        <div className="font-medium">85 m</div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex justify-end gap-2">
-                    <Button variant="outline" size="sm">
-                      <Save className="h-4 w-4 mr-1" />
-                      Save Results
-                    </Button>
-                    <Button variant="outline" size="sm">
-                      <Download className="h-4 w-4 mr-1" />
-                      Export Data
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center p-12 border rounded-md h-[445px]">
-                  <Wind className="h-16 w-16 text-gray-300 dark:text-gray-600 mb-4" />
-                  <p className="text-gray-500 dark:text-gray-400">No dispersion results yet</p>
-                  <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">Configure parameters and run the model</p>
-                </div>
-              )}
-            </div>
+        <div className="grid grid-cols-1 gap-4 mb-4">
+          <div className="space-y-2">
+            <Label htmlFor="analysisType">Analysis Type</Label>
+            <Select value={analysisType} onValueChange={setAnalysisType}>
+              <SelectTrigger id="analysisType">
+                <SelectValue placeholder="Select analysis" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="relief-valve">Relief Valve Sizing</SelectItem>
+                <SelectItem value="emission">Emission Modeling</SelectItem>
+                <SelectItem value="fire-explosion">Fire & Explosion Analysis</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-        </TabsContent>
-        
-        <TabsContent value="consequence" className="p-4 border rounded-md mt-4">
-          <div className="grid grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <h3 className="font-medium">Consequence Analysis</h3>
-              
-              <div className="space-y-3">
-                <div>
-                  <Label htmlFor="scenario-type">Scenario Type</Label>
-                  <Select defaultValue="fire">
-                    <SelectTrigger id="scenario-type">
-                      <SelectValue placeholder="Select scenario type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="fire">Fire (Pool/Jet)</SelectItem>
-                      <SelectItem value="explosion">Explosion (VCE)</SelectItem>
-                      <SelectItem value="bleve">BLEVE</SelectItem>
-                      <SelectItem value="toxic">Toxic Release</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div>
-                  <Label htmlFor="material">Material</Label>
-                  <Select defaultValue="natural-gas">
-                    <SelectTrigger id="material">
-                      <SelectValue placeholder="Select material" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="natural-gas">Natural Gas</SelectItem>
-                      <SelectItem value="lpg">LPG</SelectItem>
-                      <SelectItem value="gasoline">Gasoline</SelectItem>
-                      <SelectItem value="hydrogen">Hydrogen</SelectItem>
-                      <SelectItem value="ammonia">Ammonia</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="space-y-1">
-                  <Label htmlFor="inventory">Inventory</Label>
-                  <div className="flex items-center gap-2">
-                    <Input id="inventory" defaultValue="5000" />
-                    <span className="text-sm whitespace-nowrap">kg</span>
-                  </div>
-                </div>
-                
-                <div className="space-y-1">
-                  <Label htmlFor="pressure">Pressure</Label>
-                  <div className="flex items-center gap-2">
-                    <Input id="pressure" defaultValue="10" />
-                    <span className="text-sm whitespace-nowrap">bar</span>
-                  </div>
-                </div>
-                
-                <div className="space-y-1">
-                  <Label htmlFor="temperature">Temperature</Label>
-                  <div className="flex items-center gap-2">
-                    <Input id="temperature" defaultValue="25" />
-                    <span className="text-sm whitespace-nowrap">°C</span>
-                  </div>
-                </div>
-                
-                <div className="space-y-1">
-                  <Label htmlFor="hole-size">Hole Size</Label>
-                  <div className="flex items-center gap-2">
-                    <Input id="hole-size" defaultValue="50" />
-                    <span className="text-sm whitespace-nowrap">mm</span>
-                  </div>
-                </div>
-                
-                <div>
-                  <Label htmlFor="congestion-level">Congestion Level (for explosion)</Label>
-                  <Select defaultValue="medium">
-                    <SelectTrigger id="congestion-level">
-                      <SelectValue placeholder="Select congestion level" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="low">Low</SelectItem>
-                      <SelectItem value="medium">Medium</SelectItem>
-                      <SelectItem value="high">High</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="pt-2">
-                  <Button className="w-full" onClick={handleRunModel}>
-                    <Play className="h-4 w-4 mr-1" />
-                    Calculate Consequences
-                  </Button>
-                </div>
-              </div>
-            </div>
-            
-            <div className="space-y-4">
-              {modelComplete ? (
-                <div className="space-y-4">
-                  <div className="border rounded-md p-4 bg-orange-50 dark:bg-orange-950 text-orange-800 dark:text-orange-200">
-                    <div className="flex items-start gap-2">
-                      <AlertTriangle className="h-5 w-5 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <h4 className="font-medium">Hazardous Scenario Identified</h4>
-                        <p className="text-sm mt-1">
-                          This release scenario could result in significant consequences including thermal radiation effects
-                          and potential escalation to nearby equipment.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="border rounded-md p-4 bg-white dark:bg-gray-800">
-                    <h4 className="text-sm font-medium mb-3">Radiation Effect Distances</h4>
-                    
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="border-b">
-                          <th className="text-left pb-2">Radiation Level</th>
-                          <th className="text-right pb-2">Effect</th>
-                          <th className="text-right pb-2">Distance (m)</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <td className="py-1.5">37.5 kW/m²</td>
-                          <td className="text-right text-xs">Equipment Damage</td>
-                          <td className="text-right">18</td>
-                        </tr>
-                        <tr>
-                          <td className="py-1.5">12.5 kW/m²</td>
-                          <td className="text-right text-xs">1% Fatality</td>
-                          <td className="text-right">32</td>
-                        </tr>
-                        <tr>
-                          <td className="py-1.5">4.0 kW/m²</td>
-                          <td className="text-right text-xs">1st Degree Burns</td>
-                          <td className="text-right">56</td>
-                        </tr>
-                        <tr>
-                          <td className="py-1.5">1.6 kW/m²</td>
-                          <td className="text-right text-xs">No Harm Limit</td>
-                          <td className="text-right">98</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                  
-                  <div className="aspect-video bg-white dark:bg-gray-800 border rounded-md p-4 flex items-center justify-center">
-                    <div className="text-center">
-                      <BarChart className="h-12 w-12 mx-auto mb-2 text-orange-500" />
-                      <p className="text-sm text-gray-500 dark:text-gray-400">[Consequence visualization would appear here]</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex justify-end gap-2">
-                    <Button variant="outline" size="sm">
-                      <Save className="h-4 w-4 mr-1" />
-                      Save Results
-                    </Button>
-                    <Button variant="outline" size="sm">
-                      <Download className="h-4 w-4 mr-1" />
-                      Export Data
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center p-12 border rounded-md h-[445px]">
-                  <AlertTriangle className="h-16 w-16 text-gray-300 dark:text-gray-600 mb-4" />
-                  <p className="text-gray-500 dark:text-gray-400">No consequence results yet</p>
-                  <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">Configure scenario and calculate consequences</p>
-                </div>
-              )}
-            </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {renderAnalysisInputs()}
           </div>
-        </TabsContent>
+        </div>
         
-        <TabsContent value="risk" className="p-4 border rounded-md mt-4">
-          <div className="space-y-4">
-            <h3 className="font-medium">Risk Assessment</h3>
-            
-            <div className="grid grid-cols-2 gap-6">
-              <div className="space-y-4">
-                <div className="border rounded-md p-4 bg-white dark:bg-gray-800">
-                  <h4 className="text-sm font-medium mb-3">Event Frequency Analysis</h4>
-                  
-                  <div className="space-y-3">
-                    <div>
-                      <Label htmlFor="equipment-type">Equipment Type</Label>
-                      <Select defaultValue="pressure-vessel">
-                        <SelectTrigger id="equipment-type">
-                          <SelectValue placeholder="Select equipment type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="pressure-vessel">Pressure Vessel</SelectItem>
-                          <SelectItem value="storage-tank">Storage Tank</SelectItem>
-                          <SelectItem value="pipeline">Pipeline</SelectItem>
-                          <SelectItem value="pump">Pump</SelectItem>
-                          <SelectItem value="compressor">Compressor</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    <div className="space-y-1">
-                      <Label htmlFor="diameter">Diameter/Size</Label>
-                      <div className="flex items-center gap-2">
-                        <Input id="diameter" defaultValue="1.2" />
-                        <span className="text-sm whitespace-nowrap">m</span>
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-1">
-                      <Label htmlFor="length">Length</Label>
-                      <div className="flex items-center gap-2">
-                        <Input id="length" defaultValue="4.0" />
-                        <span className="text-sm whitespace-nowrap">m</span>
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <Label htmlFor="failure-mode">Failure Mode</Label>
-                      <Select defaultValue="leak">
-                        <SelectTrigger id="failure-mode">
-                          <SelectValue placeholder="Select failure mode" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="leak">Small Leak (10mm)</SelectItem>
-                          <SelectItem value="breach">Medium Breach (50mm)</SelectItem>
-                          <SelectItem value="rupture">Catastrophic Rupture</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    <div className="border rounded-md p-4 bg-gray-50 dark:bg-gray-700 space-y-2">
-                      <h5 className="text-sm font-medium">Calculated Frequency</h5>
-                      <p className="text-xl font-bold">5.0 × 10<sup>-6</sup> per year</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">Based on generic failure frequency data for pressure vessels</p>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="border rounded-md p-4 bg-white dark:bg-gray-800">
-                  <h4 className="text-sm font-medium mb-3">Vulnerability Assessment</h4>
-                  
-                  <div className="space-y-3">
-                    <div>
-                      <Label htmlFor="population-type">Population Type</Label>
-                      <Select defaultValue="industrial">
-                        <SelectTrigger id="population-type">
-                          <SelectValue placeholder="Select population type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="industrial">Industrial Workers</SelectItem>
-                          <SelectItem value="residential">Residential Area</SelectItem>
-                          <SelectItem value="commercial">Commercial Area</SelectItem>
-                          <SelectItem value="school">School/Hospital</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    <div className="space-y-1">
-                      <Label htmlFor="population-density">Population Density</Label>
-                      <div className="flex items-center gap-2">
-                        <Input id="population-density" defaultValue="5" />
-                        <span className="text-sm whitespace-nowrap">people/ha</span>
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-1">
-                      <Label htmlFor="distance">Distance from Release</Label>
-                      <div className="flex items-center gap-2">
-                        <Input id="distance" defaultValue="150" />
-                        <span className="text-sm whitespace-nowrap">m</span>
-                      </div>
-                    </div>
-                    
-                    <Button variant="outline" className="w-full" size="sm" onClick={handleRunModel}>
-                      Calculate Vulnerability
-                    </Button>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="space-y-4">
-                {modelComplete ? (
-                  <div className="space-y-4">
-                    <div className="border rounded-md p-4 bg-white dark:bg-gray-800">
-                      <h4 className="text-sm font-medium mb-3">Risk Analysis Results</h4>
-                      
-                      <div className="space-y-3 text-sm">
-                        <div className="grid grid-cols-2 gap-2">
-                          <div className="text-gray-500 dark:text-gray-400">Individual Risk:</div>
-                          <div className="font-medium">2.4 × 10<sup>-7</sup> per year</div>
-                        </div>
-                        <div className="grid grid-cols-2 gap-2">
-                          <div className="text-gray-500 dark:text-gray-400">Societal Risk:</div>
-                          <div className="font-medium">5.1 × 10<sup>-6</sup> per year</div>
-                        </div>
-                        <div className="grid grid-cols-2 gap-2">
-                          <div className="text-gray-500 dark:text-gray-400">Potential Loss of Life (PLL):</div>
-                          <div className="font-medium">3.2 × 10<sup>-5</sup> fatalities/year</div>
-                        </div>
-                        <div className="grid grid-cols-2 gap-2">
-                          <div className="text-gray-500 dark:text-gray-400">Risk Level Classification:</div>
-                          <div className="font-medium text-amber-600 dark:text-amber-400">ALARP Region</div>
-                        </div>
-                      </div>
-                      
-                      <div className="mt-4 pt-4 border-t">
-                        <h5 className="text-sm font-medium mb-2">Risk Acceptability</h5>
-                        <div className="flex items-center gap-2">
-                          <div className="w-2 h-12 bg-red-500 rounded-full"></div>
-                          <div className="w-2 h-12 bg-amber-500 rounded-full"></div>
-                          <div className="w-2 h-12 bg-green-500 rounded-full"></div>
-                          <div className="flex-1 h-12 bg-gray-100 dark:bg-gray-700 rounded-md relative">
-                            <div className="absolute inset-0 flex items-center">
-                              <div className="h-8 w-1 bg-black dark:bg-white absolute" style={{ left: "38%" }}></div>
-                            </div>
-                            <div className="flex justify-between text-xs px-2 pt-1">
-                              <span>Intolerable</span>
-                              <span>ALARP</span>
-                              <span>Acceptable</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="aspect-video bg-white dark:bg-gray-800 border rounded-md p-4 flex items-center justify-center">
-                      <div className="text-center">
-                        <BarChart className="h-12 w-12 mx-auto mb-2 text-blue-500" />
-                        <p className="text-sm text-gray-500 dark:text-gray-400">[F-N curve would appear here]</p>
-                      </div>
-                    </div>
-                    
-                    <div className="border rounded-md p-4 bg-white dark:bg-gray-800">
-                      <h4 className="text-sm font-medium mb-3">Risk Reduction Recommendations</h4>
-                      
-                      <ul className="space-y-2 text-sm pl-5 list-disc">
-                        <li>Install additional gas detection systems at potential release locations</li>
-                        <li>Increase inspection frequency for the pressure vessel connections</li>
-                        <li>Implement automatic emergency shutdown system linked to gas detection</li>
-                        <li>Review and update emergency response procedures</li>
-                        <li>Consider additional passive fire protection for nearby critical equipment</li>
-                      </ul>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center justify-center p-12 border rounded-md h-[445px]">
-                    <FileText className="h-16 w-16 text-gray-300 dark:text-gray-600 mb-4" />
-                    <p className="text-gray-500 dark:text-gray-400">No risk assessment results yet</p>
-                    <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">Configure parameters and run the analysis</p>
-                    <Button className="mt-4" onClick={handleRunModel}>
-                      <Play className="h-4 w-4 mr-1" />
-                      Run Risk Assessment
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </TabsContent>
+        <Button 
+          onClick={handleCalculate}
+          disabled={isCalculating}
+          className="w-full mb-4"
+        >
+          {isCalculating ? "Analyzing..." : "Run Analysis"}
+        </Button>
         
-        <TabsContent value="report" className="p-4 border rounded-md mt-4">
-          {modelComplete ? (
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <h3 className="font-medium">Safety Report Generation</h3>
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm">
-                    <Save className="h-4 w-4 mr-1" />
-                    Save Report
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    <Download className="h-4 w-4 mr-1" />
-                    Export PDF
-                  </Button>
-                </div>
-              </div>
-              
-              <div className="border rounded-md p-6 bg-white dark:bg-gray-800">
-                <div className="space-y-6">
-                  <div>
-                    <h1 className="text-2xl font-bold mb-2">Hazard and Risk Assessment Report</h1>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      Generated on April 13, 2025 | Project: Natural Gas Processing Facility
-                    </p>
-                  </div>
-                  
-                  <div>
-                    <h3 className="text-lg font-medium border-b pb-2 mb-3">Executive Summary</h3>
-                    <p className="text-sm">
-                      This report presents the findings of a comprehensive hazard and risk assessment 
-                      conducted for the natural gas processing facility. The assessment focused on the 
-                      potential hazards associated with methane releases from pressure vessels and 
-                      subsequent fire and explosion scenarios. The analysis indicates that the overall 
-                      risk levels fall within the ALARP (As Low As Reasonably Practicable) region, 
-                      suggesting that while the risks are tolerable, further risk reduction measures 
-                      should be considered where practicable.
-                    </p>
-                  </div>
-                  
-                  <div>
-                    <h3 className="text-lg font-medium border-b pb-2 mb-3">Scope and Methodology</h3>
-                    <p className="text-sm">
-                      The assessment covered the primary natural gas processing units, with 
-                      particular focus on high-pressure vessels containing methane. The methodology 
-                      included consequence modeling of gas releases, frequency analysis based on 
-                      historical failure data, and risk assessment using standard industry risk metrics.
-                    </p>
-                    <ul className="list-disc pl-6 mt-2 space-y-1 text-sm">
-                      <li>Gaussian dispersion modeling for gas release scenarios</li>
-                      <li>Jet fire and vapor cloud explosion consequence modeling</li>
-                      <li>Probit vulnerability assessment for exposed personnel</li>
-                      <li>Individual and societal risk calculations</li>
-                    </ul>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-6">
-                    <div>
-                      <h3 className="text-lg font-medium border-b pb-2 mb-3">Key Findings</h3>
-                      <ul className="list-disc pl-6 space-y-2 text-sm">
-                        <li>
-                          <strong>Hazardous Scenarios:</strong> The most significant hazard 
-                          identified is a medium breach (50mm) in a pressure vessel containing methane.
-                        </li>
-                        <li>
-                          <strong>Consequences:</strong> Thermal radiation effects could extend up 
-                          to 98m for the no-harm criterion (1.6 kW/m²).
-                        </li>
-                        <li>
-                          <strong>Frequency:</strong> The estimated frequency of this event is 
-                          5.0 × 10<sup>-6</sup> per year based on industry data.
-                        </li>
-                        <li>
-                          <strong>Risk Levels:</strong> Individual risk at nearby occupied buildings 
-                          is 2.4 × 10<sup>-7</sup> per year, which is within acceptable limits but 
-                          requires monitoring.
-                        </li>
-                      </ul>
-                    </div>
-                    
-                    <div>
-                      <h3 className="text-lg font-medium border-b pb-2 mb-3">Recommendations</h3>
-                      <ul className="list-disc pl-6 space-y-2 text-sm">
-                        <li>
-                          <strong>Detection Systems:</strong> Install additional gas detection systems 
-                          with automatic alarm and shutdown capabilities.
-                        </li>
-                        <li>
-                          <strong>Inspection Program:</strong> Enhance the inspection frequency for 
-                          pressure vessel connections and potential leak points.
-                        </li>
-                        <li>
-                          <strong>Emergency Response:</strong> Update emergency procedures to address 
-                          the specific scenarios identified in this assessment.
-                        </li>
-                        <li>
-                          <strong>Passive Protection:</strong> Consider additional passive fire 
-                          protection for nearby critical equipment.
-                        </li>
-                        <li>
-                          <strong>Training:</strong> Conduct specialized training for operators on 
-                          early leak detection and emergency response.
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center p-12 border rounded-md bg-gray-50 dark:bg-gray-800">
-              <FileText className="h-16 w-16 text-gray-300 dark:text-gray-600 mb-4" />
-              <h3 className="text-xl font-medium mb-2">No Report Available</h3>
-              <p className="text-gray-500 dark:text-gray-400 text-center max-w-md">
-                Complete at least one analysis in the other tabs to generate a safety report.
-              </p>
-              <Button className="mt-6" onClick={handleRunModel}>
-                <Play className="h-4 w-4 mr-1" />
-                Generate Sample Report
-              </Button>
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
-    </div>
+        {renderResults()}
+      </div>
+    </BaseSoftwareInterface>
   );
 };
 

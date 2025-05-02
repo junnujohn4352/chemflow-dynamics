@@ -1,273 +1,136 @@
 
-import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Slider } from "@/components/ui/slider";
-import { Play, BarChart, LineChart, Download } from "lucide-react";
+import React, { useState } from 'react';
+import { Software } from '@/types/software';
+import BaseSoftwareInterface from './BaseSoftwareInterface';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useToast } from '@/hooks/use-toast';
 
 interface ThermodynamicInterfaceProps {
-  software: {
-    name: string;
-    description: string;
-    category: string;
-  };
+  software: Software;
 }
 
 const ThermodynamicInterface: React.FC<ThermodynamicInterfaceProps> = ({ software }) => {
-  const [calculating, setCalculating] = useState(false);
-  const [resultsReady, setResultsReady] = useState(false);
+  const [compound, setCompound] = useState<string>("methane");
+  const [temperature, setTemperature] = useState<number>(25);
+  const [pressure, setPressure] = useState<number>(101.325);
+  const [isCalculating, setIsCalculating] = useState<boolean>(false);
+  const [propertyResults, setPropertyResults] = useState<any>(null);
+  const { toast } = useToast();
 
   const handleCalculate = () => {
-    setCalculating(true);
+    setIsCalculating(true);
+    setPropertyResults(null);
+    
     setTimeout(() => {
-      setCalculating(false);
-      setResultsReady(true);
+      // Generate simulated thermodynamic property results
+      const results = {
+        density: (0.6 + Math.random() * 0.2).toFixed(4),
+        heatCapacity: (2.1 + Math.random() * 0.5).toFixed(4),
+        thermalConductivity: (0.03 + Math.random() * 0.01).toFixed(4),
+        viscosity: (0.01 + Math.random() * 0.005).toFixed(5),
+        enthalpy: (-50 - Math.random() * 20).toFixed(2),
+        entropy: (180 + Math.random() * 40).toFixed(2)
+      };
+      
+      setPropertyResults(results);
+      setIsCalculating(false);
+      
+      toast({
+        title: "Properties Calculated",
+        description: `Thermodynamic properties for ${compound} calculated at specified conditions.`,
+      });
     }, 1500);
   };
 
   return (
-    <div className="space-y-6 mt-4">
-      <Tabs defaultValue="properties">
-        <TabsList className="grid grid-cols-3 w-full">
-          <TabsTrigger value="properties">Property Calculation</TabsTrigger>
-          <TabsTrigger value="phase">Phase Equilibrium</TabsTrigger>
-          <TabsTrigger value="charts">Property Charts</TabsTrigger>
-        </TabsList>
+    <BaseSoftwareInterface software={software}>
+      <div className="mt-4 border-t pt-4">
+        <h5 className="font-medium mb-2">Thermodynamic Properties Calculator</h5>
         
-        <TabsContent value="properties" className="p-4 border rounded-md mt-4">
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="compound">Compound</Label>
-                <Select defaultValue="water">
-                  <SelectTrigger id="compound">
-                    <SelectValue placeholder="Select compound" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="water">Water</SelectItem>
-                    <SelectItem value="methane">Methane</SelectItem>
-                    <SelectItem value="ethanol">Ethanol</SelectItem>
-                    <SelectItem value="co2">Carbon Dioxide</SelectItem>
-                    <SelectItem value="nitrogen">Nitrogen</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div>
-                <Label htmlFor="temperature">Temperature (K)</Label>
-                <Input id="temperature" type="number" defaultValue="298.15" />
-              </div>
-              
-              <div>
-                <Label htmlFor="pressure">Pressure (kPa)</Label>
-                <Input id="pressure" type="number" defaultValue="101.325" />
-              </div>
-              
-              <div>
-                <Label htmlFor="model">Equation of State</Label>
-                <Select defaultValue="peng-robinson">
-                  <SelectTrigger id="model">
-                    <SelectValue placeholder="Select model" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="peng-robinson">Peng-Robinson</SelectItem>
-                    <SelectItem value="srk">Soave-Redlich-Kwong</SelectItem>
-                    <SelectItem value="pr-peneloux">PR-Peneloux</SelectItem>
-                    <SelectItem value="ideal-gas">Ideal Gas</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <Button 
-                className="w-full" 
-                onClick={handleCalculate}
-                disabled={calculating}
-              >
-                {calculating ? "Calculating..." : "Calculate Properties"}
-              </Button>
-            </div>
-            
-            <div className="border rounded-md p-4">
-              <h3 className="font-medium mb-4">Calculated Properties</h3>
-              
-              {resultsReady ? (
-                <div className="space-y-3">
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="text-sm text-gray-500 dark:text-gray-400">Density:</div>
-                    <div className="text-sm font-medium">997.1 kg/m³</div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="text-sm text-gray-500 dark:text-gray-400">Viscosity:</div>
-                    <div className="text-sm font-medium">0.891 mPa·s</div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="text-sm text-gray-500 dark:text-gray-400">Heat Capacity:</div>
-                    <div className="text-sm font-medium">4.18 kJ/(kg·K)</div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="text-sm text-gray-500 dark:text-gray-400">Thermal Conductivity:</div>
-                    <div className="text-sm font-medium">0.606 W/(m·K)</div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="text-sm text-gray-500 dark:text-gray-400">Enthalpy:</div>
-                    <div className="text-sm font-medium">-285.8 kJ/mol</div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="text-sm text-gray-500 dark:text-gray-400">Entropy:</div>
-                    <div className="text-sm font-medium">69.95 J/(mol·K)</div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="text-sm text-gray-500 dark:text-gray-400">Gibbs Energy:</div>
-                    <div className="text-sm font-medium">-237.1 kJ/mol</div>
-                  </div>
-                  
-                  <div className="mt-4 pt-4 border-t">
-                    <Button variant="outline" size="sm" className="w-full">
-                      <Download className="h-4 w-4 mr-1" />
-                      Export Data
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center h-64 text-gray-400">
-                  <p>No data calculated yet</p>
-                  <p className="text-sm mt-1">Use the form to calculate properties</p>
-                </div>
-              )}
-            </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div className="space-y-2">
+            <Label htmlFor="compound">Compound</Label>
+            <Select value={compound} onValueChange={setCompound}>
+              <SelectTrigger id="compound">
+                <SelectValue placeholder="Select compound" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="methane">Methane</SelectItem>
+                <SelectItem value="ethane">Ethane</SelectItem>
+                <SelectItem value="propane">Propane</SelectItem>
+                <SelectItem value="water">Water</SelectItem>
+                <SelectItem value="nitrogen">Nitrogen</SelectItem>
+                <SelectItem value="oxygen">Oxygen</SelectItem>
+                <SelectItem value="carbon_dioxide">Carbon Dioxide</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-        </TabsContent>
-        
-        <TabsContent value="phase" className="p-4 border rounded-md mt-4">
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <div>
-                <Label>Components</Label>
-                <div className="mt-2 space-y-2">
-                  <div className="flex items-center gap-2">
-                    <Input defaultValue="0.7" className="w-20" />
-                    <span className="text-sm">Methane</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Input defaultValue="0.2" className="w-20" />
-                    <span className="text-sm">Ethane</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Input defaultValue="0.1" className="w-20" />
-                    <span className="text-sm">Propane</span>
-                  </div>
-                </div>
-                <Button variant="outline" size="sm" className="mt-2">
-                  Add Component
-                </Button>
-              </div>
-              
-              <div>
-                <Label>Temperature Range (K)</Label>
-                <div className="flex items-center gap-2 mt-2">
-                  <Input defaultValue="200" className="w-24" />
-                  <span>to</span>
-                  <Input defaultValue="350" className="w-24" />
-                </div>
-              </div>
-              
-              <div>
-                <Label>Pressure (kPa)</Label>
-                <Input defaultValue="5000" />
-              </div>
-              
-              <Button onClick={handleCalculate}>
-                <Play className="h-4 w-4 mr-1" />
-                Calculate Phase Diagram
-              </Button>
-            </div>
-            
-            <div className="border rounded-md p-4">
-              <h3 className="font-medium mb-4">Phase Diagram</h3>
-              
-              {resultsReady ? (
-                <div className="aspect-square bg-white dark:bg-gray-800 rounded border flex items-center justify-center">
-                  <div className="text-center">
-                    <LineChart className="h-12 w-12 mx-auto mb-2 text-blue-500" />
-                    <p className="text-sm text-gray-500 dark:text-gray-400">[Phase diagram visualization would appear here]</p>
-                  </div>
-                </div>
-              ) : (
-                <div className="aspect-square bg-white dark:bg-gray-800 rounded border flex items-center justify-center">
-                  <p className="text-gray-400">No phase data calculated yet</p>
-                </div>
-              )}
-            </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="temperature">Temperature (°C)</Label>
+            <Input 
+              id="temperature" 
+              type="number" 
+              value={temperature} 
+              onChange={(e) => setTemperature(Number(e.target.value))} 
+            />
           </div>
-        </TabsContent>
+          
+          <div className="space-y-2 md:col-span-2">
+            <Label htmlFor="pressure">Pressure (kPa)</Label>
+            <Input 
+              id="pressure" 
+              type="number" 
+              value={pressure} 
+              onChange={(e) => setPressure(Number(e.target.value))} 
+            />
+          </div>
+        </div>
         
-        <TabsContent value="charts" className="p-4 border rounded-md mt-4">
-          <div className="space-y-4">
-            <div className="grid grid-cols-3 gap-4">
-              <div>
-                <Label>Property</Label>
-                <Select defaultValue="density">
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select property" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="density">Density</SelectItem>
-                    <SelectItem value="viscosity">Viscosity</SelectItem>
-                    <SelectItem value="enthalpy">Enthalpy</SelectItem>
-                    <SelectItem value="entropy">Entropy</SelectItem>
-                  </SelectContent>
-                </Select>
+        <Button 
+          onClick={handleCalculate}
+          disabled={isCalculating}
+          className="w-full mb-4"
+        >
+          {isCalculating ? "Calculating..." : "Calculate Properties"}
+        </Button>
+        
+        {propertyResults && (
+          <div className="border rounded-md p-4 bg-gray-50">
+            <h5 className="font-medium mb-2">Property Results</h5>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="border rounded p-2">
+                <span className="text-gray-600 text-sm">Density (g/cm³):</span>
+                <div className="font-medium">{propertyResults.density}</div>
               </div>
-              
-              <div>
-                <Label>Variable</Label>
-                <Select defaultValue="temperature">
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select variable" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="temperature">Temperature</SelectItem>
-                    <SelectItem value="pressure">Pressure</SelectItem>
-                    <SelectItem value="composition">Composition</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="border rounded p-2">
+                <span className="text-gray-600 text-sm">Heat Capacity (kJ/kg·K):</span>
+                <div className="font-medium">{propertyResults.heatCapacity}</div>
               </div>
-              
-              <div>
-                <Label>Model</Label>
-                <Select defaultValue="peng-robinson">
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select model" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="peng-robinson">Peng-Robinson</SelectItem>
-                    <SelectItem value="srk">Soave-Redlich-Kwong</SelectItem>
-                    <SelectItem value="ideal">Ideal</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="border rounded p-2">
+                <span className="text-gray-600 text-sm">Thermal Conductivity (W/m·K):</span>
+                <div className="font-medium">{propertyResults.thermalConductivity}</div>
               </div>
-            </div>
-            
-            <div className="flex justify-end">
-              <Button variant="outline" size="sm">
-                <BarChart className="h-4 w-4 mr-1" />
-                Generate Chart
-              </Button>
-            </div>
-            
-            <div className="aspect-video bg-white dark:bg-gray-800 rounded border flex items-center justify-center">
-              <div className="text-center">
-                <BarChart className="h-12 w-12 mx-auto mb-2 text-blue-500" />
-                <p className="text-sm text-gray-500 dark:text-gray-400">[Property chart visualization would appear here]</p>
+              <div className="border rounded p-2">
+                <span className="text-gray-600 text-sm">Viscosity (Pa·s):</span>
+                <div className="font-medium">{propertyResults.viscosity}</div>
+              </div>
+              <div className="border rounded p-2">
+                <span className="text-gray-600 text-sm">Enthalpy (kJ/mol):</span>
+                <div className="font-medium">{propertyResults.enthalpy}</div>
+              </div>
+              <div className="border rounded p-2">
+                <span className="text-gray-600 text-sm">Entropy (J/mol·K):</span>
+                <div className="font-medium">{propertyResults.entropy}</div>
               </div>
             </div>
           </div>
-        </TabsContent>
-      </Tabs>
-    </div>
+        )}
+      </div>
+    </BaseSoftwareInterface>
   );
 };
 

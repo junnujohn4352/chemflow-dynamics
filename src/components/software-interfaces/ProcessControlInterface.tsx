@@ -1,628 +1,253 @@
 
-import React, { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Slider } from "@/components/ui/slider";
-import { Switch } from "@/components/ui/switch";
-import { Play, Pause, Save, RotateCw, Settings, LineChart } from "lucide-react";
-import { LineChart as RechartLineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import React, { useState, useEffect } from 'react';
+import { Software } from '@/types/software';
+import BaseSoftwareInterface from './BaseSoftwareInterface';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Slider } from '@/components/ui/slider';
+import { useToast } from '@/hooks/use-toast';
 
 interface ProcessControlInterfaceProps {
-  software: {
-    name: string;
-    description: string;
-    category: string;
-  };
+  software: Software;
 }
 
 const ProcessControlInterface: React.FC<ProcessControlInterfaceProps> = ({ software }) => {
-  const [isRunning, setIsRunning] = useState(false);
-  const [elapsedTime, setElapsedTime] = useState(0);
-  const [setpoint, setSetpoint] = useState(50);
-  const [processValue, setProcessValue] = useState(30);
-  const [chartData, setChartData] = useState<{time: number, setpoint: number, processValue: number}[]>([]);
-  const [kp, setKp] = useState(2.5);
-  const [ki, setKi] = useState(0.5);
-  const [kd, setKd] = useState(0.2);
-
+  const [controllerType, setControllerType] = useState<string>("pid");
+  const [setpoint, setSetpoint] = useState<number>(50);
+  const [kp, setKp] = useState<number>(1.0);
+  const [ki, setKi] = useState<number>(0.1);
+  const [kd, setKd] = useState<number>(0.05);
+  const [isRunning, setIsRunning] = useState<boolean>(false);
+  const [currentValue, setCurrentValue] = useState<number>(30);
+  const [timeElapsed, setTimeElapsed] = useState<number>(0);
+  const [dataPoints, setDataPoints] = useState<{time: number, value: number, setpoint: number}[]>([]);
+  const { toast } = useToast();
+  
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: NodeJS.Timeout | null = null;
     
     if (isRunning) {
       interval = setInterval(() => {
-        setElapsedTime(prev => prev + 1);
-        
-        // Simulate process dynamics
-        setProcessValue(prev => {
-          const diff = setpoint - prev;
-          const noise = Math.random() * 2 - 1; // Random noise between -1 and 1
-          const newValue = prev + (diff * 0.1) + noise;
-          return Number(newValue.toFixed(1));
-        });
-        
-        // Update chart data
-        setChartData(prevData => {
-          const newData = [...prevData];
-          if (newData.length > 30) {
-            newData.shift(); // Remove oldest data point if we have more than 30
-          }
-          newData.push({
-            time: elapsedTime,
-            setpoint: setpoint,
-            processValue: processValue
-          });
-          return newData;
+        setTimeElapsed(prev => {
+          const newTime = prev + 1;
+          
+          // Simple PID control simulation
+          const error = setpoint - currentValue;
+          const proportional = kp * error;
+          const derivative = kd * error; // simplified - should be rate of change
+          const integral = ki * error; // simplified - should be sum of error
+          
+          // Calculate new process value with some noise
+          const controlAction = proportional + integral + derivative;
+          const noise = (Math.random() - 0.5) * 3;
+          
+          const newValue = Math.min(100, Math.max(0, currentValue + controlAction * 0.1 + noise));
+          setCurrentValue(newValue);
+          
+          // Add data point
+          setDataPoints(prev => [...prev, {time: newTime, value: newValue, setpoint}]);
+          
+          return newTime;
         });
       }, 1000);
     }
     
-    return () => clearInterval(interval);
-  }, [isRunning, setpoint, processValue, elapsedTime]);
-
-  const handleToggleSimulation = () => {
-    setIsRunning(prev => !prev);
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isRunning, setpoint, currentValue, kp, ki, kd]);
+  
+  const handleStart = () => {
+    setIsRunning(true);
+    setDataPoints([{time: 0, value: currentValue, setpoint}]);
+    
+    toast({
+      title: "Control Loop Started",
+      description: `${controllerType.toUpperCase()} controller is now running.`,
+    });
   };
-
-  const handleResetSimulation = () => {
+  
+  const handleStop = () => {
     setIsRunning(false);
-    setElapsedTime(0);
-    setProcessValue(30);
-    setChartData([]);
-  };
-
-  const handleSetpointChange = (value: number[]) => {
-    setSetpoint(value[0]);
+    
+    toast({
+      title: "Control Loop Stopped",
+      description: "The controller has been stopped.",
+    });
   };
   
-  const handleKpChange = (value: number[]) => {
-    setKp(value[0]);
-  };
-  
-  const handleKiChange = (value: number[]) => {
-    setKi(value[0]);
-  };
-  
-  const handleKdChange = (value: number[]) => {
-    setKd(value[0]);
+  const handleReset = () => {
+    setIsRunning(false);
+    setTimeElapsed(0);
+    setCurrentValue(30);
+    setDataPoints([]);
+    
+    toast({
+      title: "Control Loop Reset",
+      description: "All values have been reset to default.",
+    });
   };
 
   return (
-    <div className="space-y-6 mt-4">
-      <Tabs defaultValue="pid">
-        <TabsList className="grid grid-cols-4 w-full">
-          <TabsTrigger value="pid">PID Control</TabsTrigger>
-          <TabsTrigger value="modeling">System Modeling</TabsTrigger>
-          <TabsTrigger value="tuning">Controller Tuning</TabsTrigger>
-          <TabsTrigger value="visualization">Response Analysis</TabsTrigger>
-        </TabsList>
+    <BaseSoftwareInterface software={software}>
+      <div className="mt-4 border-t pt-4">
+        <h5 className="font-medium mb-2">Process Control Simulator</h5>
         
-        <TabsContent value="pid" className="p-4 border rounded-md mt-4">
-          <div className="grid grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <h3 className="font-medium">Controller Parameters</h3>
-              
-              <div className="space-y-2">
-                <Label htmlFor="controller-type">Controller Type</Label>
-                <Select defaultValue="pid">
-                  <SelectTrigger id="controller-type">
-                    <SelectValue placeholder="Select controller type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="p">P (Proportional)</SelectItem>
-                    <SelectItem value="pi">PI (Proportional-Integral)</SelectItem>
-                    <SelectItem value="pid">PID (Proportional-Integral-Derivative)</SelectItem>
-                    <SelectItem value="fuzzy">Fuzzy Logic</SelectItem>
-                  </SelectContent>
-                </Select>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div className="space-y-2">
+            <Label htmlFor="controllerType">Controller Type</Label>
+            <Select value={controllerType} onValueChange={setControllerType}>
+              <SelectTrigger id="controllerType">
+                <SelectValue placeholder="Select controller" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="pid">PID Controller</SelectItem>
+                <SelectItem value="pi">PI Controller</SelectItem>
+                <SelectItem value="p">P Controller</SelectItem>
+                <SelectItem value="mpc">Model Predictive Control</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="setpoint">Setpoint Value</Label>
+            <Input 
+              id="setpoint" 
+              type="number" 
+              value={setpoint} 
+              onChange={(e) => setSetpoint(Number(e.target.value))} 
+              min="0"
+              max="100"
+              disabled={isRunning}
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="kp">Proportional Gain (Kp): {kp.toFixed(2)}</Label>
+            <Slider 
+              id="kp"
+              value={[kp]} 
+              min={0} 
+              max={5} 
+              step={0.1} 
+              onValueChange={(value) => setKp(value[0])}
+              disabled={isRunning}
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="ki">Integral Gain (Ki): {ki.toFixed(2)}</Label>
+            <Slider 
+              id="ki"
+              value={[ki]} 
+              min={0} 
+              max={1} 
+              step={0.01} 
+              onValueChange={(value) => setKi(value[0])}
+              disabled={isRunning}
+            />
+          </div>
+          
+          <div className="space-y-2 md:col-span-2">
+            <Label htmlFor="kd">Derivative Gain (Kd): {kd.toFixed(2)}</Label>
+            <Slider 
+              id="kd"
+              value={[kd]} 
+              min={0} 
+              max={1} 
+              step={0.01} 
+              onValueChange={(value) => setKd(value[0])}
+              disabled={isRunning}
+            />
+          </div>
+        </div>
+        
+        <div className="flex flex-wrap gap-2 mb-6">
+          <Button onClick={handleStart} disabled={isRunning}>Start Control</Button>
+          <Button onClick={handleStop} disabled={!isRunning} variant="outline">Stop Control</Button>
+          <Button onClick={handleReset} variant="outline">Reset</Button>
+        </div>
+        
+        {/* Control display */}
+        <div className="border rounded-md p-4 bg-gray-50 mb-4">
+          <div className="flex justify-between mb-2">
+            <div>
+              <span className="text-gray-600 text-sm mr-2">Time:</span>
+              <span className="font-medium">{timeElapsed}s</span>
+            </div>
+            <div>
+              <span className="text-gray-600 text-sm mr-2">Status:</span>
+              <span className={`font-medium ${isRunning ? 'text-green-600' : 'text-gray-600'}`}>
+                {isRunning ? 'Running' : 'Stopped'}
+              </span>
+            </div>
+          </div>
+          
+          <div className="space-y-4">
+            <div>
+              <div className="flex justify-between text-sm text-gray-600 mb-1">
+                <span>Process Value: {currentValue.toFixed(2)}</span>
+                <span>Setpoint: {setpoint}</span>
               </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="kp-value">Kp (Proportional Gain)</Label>
-                <div className="flex items-center gap-2">
-                  <Slider defaultValue={[kp]} min={0} max={10} step={0.1} onValueChange={handleKpChange} className="flex-1" />
-                  <Input type="number" value={kp} onChange={(e) => setKp(Number(e.target.value))} className="w-16" />
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="ki-value">Ki (Integral Gain)</Label>
-                <div className="flex items-center gap-2">
-                  <Slider defaultValue={[ki]} min={0} max={5} step={0.1} onValueChange={handleKiChange} className="flex-1" />
-                  <Input type="number" value={ki} onChange={(e) => setKi(Number(e.target.value))} className="w-16" />
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="kd-value">Kd (Derivative Gain)</Label>
-                <div className="flex items-center gap-2">
-                  <Slider defaultValue={[kd]} min={0} max={2} step={0.05} onValueChange={handleKdChange} className="flex-1" />
-                  <Input type="number" value={kd} onChange={(e) => setKd(Number(e.target.value))} className="w-16" />
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="setpoint">Setpoint</Label>
-                <div className="flex items-center gap-2">
-                  <Slider defaultValue={[setpoint]} min={0} max={100} step={1} onValueChange={handleSetpointChange} className="flex-1" />
-                  <Input type="number" value={setpoint} onChange={(e) => setSetpoint(Number(e.target.value))} className="w-16" />
-                </div>
-              </div>
-              
-              <div className="flex items-center justify-between pt-2">
-                <div className="flex items-center space-x-2">
-                  <Switch id="auto-tune" />
-                  <Label htmlFor="auto-tune">Auto-Tuning</Label>
-                </div>
-                
-                <Button variant="outline" size="sm">
-                  <Settings className="h-4 w-4 mr-1" />
-                  Advanced Settings
-                </Button>
+              <div className="relative w-full h-6 bg-gray-200 rounded-full overflow-hidden">
+                <div className="absolute top-0 left-0 h-full bg-blue-200 rounded-full" style={{width: `${setpoint}%`}}></div>
+                <div 
+                  className="absolute top-0 h-full w-2 bg-green-600 rounded-full transition-all" 
+                  style={{left: `${Math.min(100, Math.max(0, currentValue))}%`}}
+                ></div>
               </div>
             </div>
             
-            <div className="space-y-4">
-              <h3 className="font-medium">Simulation Control</h3>
-              
-              <div className="border rounded-md p-4 bg-gray-50 dark:bg-gray-800 flex flex-col h-72">
-                <div className="flex justify-between items-center mb-4">
-                  <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Process Value</p>
-                    <p className="text-2xl font-semibold">{processValue} °C</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Setpoint</p>
-                    <p className="text-2xl font-semibold">{setpoint} °C</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Time</p>
-                    <p className="text-2xl font-semibold">{elapsedTime} s</p>
-                  </div>
-                </div>
-                
-                <div className="flex-1 flex items-center justify-center border bg-white dark:bg-gray-900 rounded-md mb-4">
-                  <div className="w-full h-full p-4">
-                    {chartData.length > 0 ? (
-                      <ResponsiveContainer width="100%" height="100%">
-                        <RechartLineChart data={chartData}>
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="time" label={{ value: 'Time (s)', position: 'insideBottomRight', offset: -5 }} />
-                          <YAxis label={{ value: 'Temperature (°C)', angle: -90, position: 'insideLeft' }} />
-                          <Tooltip />
-                          <Legend />
-                          <Line type="monotone" dataKey="setpoint" stroke="#8884d8" name="Setpoint" />
-                          <Line type="monotone" dataKey="processValue" stroke="#82ca9d" name="Process Value" />
-                        </RechartLineChart>
-                      </ResponsiveContainer>
-                    ) : (
-                      <div className="h-full flex items-center justify-center">
-                        <div className="text-center">
-                          <LineChart className="h-12 w-12 mx-auto mb-2 text-blue-500" />
-                          <p className="text-sm text-gray-500 dark:text-gray-400">Start simulation to see real-time trend</p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                
-                <div className="flex gap-2">
-                  <Button 
-                    className={isRunning ? "bg-red-600 hover:bg-red-700" : "bg-green-600 hover:bg-green-700"}
-                    onClick={handleToggleSimulation}
-                  >
-                    {isRunning ? (
-                      <>
-                        <Pause className="h-4 w-4 mr-1" />
-                        Pause
-                      </>
-                    ) : (
-                      <>
-                        <Play className="h-4 w-4 mr-1" />
-                        Start
-                      </>
-                    )}
-                  </Button>
-                  <Button variant="outline" onClick={handleResetSimulation}>
-                    <RotateCw className="h-4 w-4 mr-1" />
-                    Reset
-                  </Button>
-                  <Button variant="outline">
-                    <Save className="h-4 w-4 mr-1" />
-                    Save
-                  </Button>
-                </div>
-              </div>
-              
-              <div className="border rounded-md p-4 bg-white dark:bg-gray-800">
-                <h4 className="text-sm font-medium mb-2">Performance Metrics</h4>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <p className="text-gray-500 dark:text-gray-400">Settling Time:</p>
-                    <p className="font-medium">{isRunning && elapsedTime > 15 ? "12.5 s" : "N/A"}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-500 dark:text-gray-400">Overshoot:</p>
-                    <p className="font-medium">{isRunning && elapsedTime > 10 ? "8.3%" : "N/A"}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-500 dark:text-gray-400">Rise Time:</p>
-                    <p className="font-medium">{isRunning && elapsedTime > 8 ? "4.2 s" : "N/A"}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-500 dark:text-gray-400">Steady-State Error:</p>
-                    <p className="font-medium">{isRunning && elapsedTime > 20 ? "0.5 °C" : "N/A"}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="modeling" className="p-4 border rounded-md mt-4">
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-6">
-              <div className="space-y-4">
-                <h3 className="font-medium">System Identification</h3>
-                
-                <div>
-                  <Label htmlFor="model-type">Model Type</Label>
-                  <Select defaultValue="first-order">
-                    <SelectTrigger id="model-type">
-                      <SelectValue placeholder="Select model type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="first-order">First Order</SelectItem>
-                      <SelectItem value="second-order">Second Order</SelectItem>
-                      <SelectItem value="first-order-delay">First Order + Dead Time</SelectItem>
-                      <SelectItem value="custom">Custom Transfer Function</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div>
-                  <Label htmlFor="time-constant">Time Constant (τ)</Label>
-                  <Input id="time-constant" type="number" defaultValue="5" />
-                  <p className="text-xs text-gray-500 mt-1">seconds</p>
-                </div>
-                
-                <div>
-                  <Label htmlFor="process-gain">Process Gain (K)</Label>
-                  <Input id="process-gain" type="number" defaultValue="1.2" />
-                </div>
-                
-                <div>
-                  <Label htmlFor="dead-time">Dead Time (θ)</Label>
-                  <Input id="dead-time" type="number" defaultValue="1" />
-                  <p className="text-xs text-gray-500 mt-1">seconds</p>
-                </div>
-                
-                <div>
-                  <Label htmlFor="transfer-function">Transfer Function</Label>
-                  <Input id="transfer-function" readOnly value="G(s) = 1.2 / (5s + 1) * e^(-1s)" className="font-mono" />
-                </div>
-              </div>
-              
-              <div className="space-y-4">
-                <h3 className="font-medium">Process Disturbances</h3>
-                
-                <div>
-                  <Label htmlFor="disturbance-type">Disturbance Type</Label>
-                  <Select defaultValue="step">
-                    <SelectTrigger id="disturbance-type">
-                      <SelectValue placeholder="Select disturbance type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="step">Step</SelectItem>
-                      <SelectItem value="ramp">Ramp</SelectItem>
-                      <SelectItem value="sine">Sinusoidal</SelectItem>
-                      <SelectItem value="random">Random</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div>
-                  <Label htmlFor="disturbance-amplitude">Amplitude</Label>
-                  <Input id="disturbance-amplitude" type="number" defaultValue="10" />
-                </div>
-                
-                <div>
-                  <Label htmlFor="disturbance-freq">Frequency (if sinusoidal)</Label>
-                  <Input id="disturbance-freq" type="number" defaultValue="0.1" />
-                  <p className="text-xs text-gray-500 mt-1">Hz</p>
-                </div>
-                
-                <div className="flex items-center space-x-2 pt-2">
-                  <Switch id="add-noise" />
-                  <Label htmlFor="add-noise">Add Measurement Noise</Label>
-                </div>
-                
-                <div className="pt-2">
-                  <Button className="w-full">
-                    <Play className="h-4 w-4 mr-1" />
-                    Apply to Simulation
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="tuning" className="p-4 border rounded-md mt-4">
-          <div className="space-y-4">
-            <div className="flex justify-between">
-              <h3 className="font-medium">Controller Tuning Methods</h3>
-              <Button variant="outline" size="sm">
-                <Play className="h-4 w-4 mr-1" />
-                Auto-Tune
-              </Button>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-6">
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="tuning-method">Tuning Method</Label>
-                  <Select defaultValue="ziegler-nichols">
-                    <SelectTrigger id="tuning-method">
-                      <SelectValue placeholder="Select tuning method" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="ziegler-nichols">Ziegler-Nichols</SelectItem>
-                      <SelectItem value="cohen-coon">Cohen-Coon</SelectItem>
-                      <SelectItem value="chien-hrones-reswick">Chien-Hrones-Reswick</SelectItem>
-                      <SelectItem value="imc">Internal Model Control (IMC)</SelectItem>
-                      <SelectItem value="lambda">Lambda Tuning</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="border rounded-md p-4 bg-white dark:bg-gray-800">
-                  <h4 className="text-sm font-medium mb-3">Tuning Parameters</h4>
+            {dataPoints.length > 0 && (
+              <div className="relative w-full h-32 border">
+                {/* Simple chart visualization */}
+                <div className="absolute top-0 left-0 w-full h-full">
+                  {/* Draw setpoint line */}
+                  <div 
+                    className="absolute border-t border-red-400" 
+                    style={{
+                      top: `${100 - setpoint}%`,
+                      left: '0',
+                      width: '100%'
+                    }}
+                  ></div>
                   
-                  <div className="space-y-3">
-                    <div className="grid grid-cols-3 gap-3 items-center">
-                      <Label htmlFor="tuned-kp" className="text-sm">Kp</Label>
-                      <Input id="tuned-kp" value="2.7" readOnly className="col-span-1" />
-                      <Button variant="outline" size="sm" className="h-8 text-xs">
-                        Apply
-                      </Button>
-                    </div>
+                  {/* Draw process value line */}
+                  {dataPoints.map((point, index) => {
+                    if (index === 0) return null;
                     
-                    <div className="grid grid-cols-3 gap-3 items-center">
-                      <Label htmlFor="tuned-ki" className="text-sm">Ki</Label>
-                      <Input id="tuned-ki" value="0.54" readOnly className="col-span-1" />
-                      <Button variant="outline" size="sm" className="h-8 text-xs">
-                        Apply
-                      </Button>
-                    </div>
+                    const prevPoint = dataPoints[index - 1];
+                    const x1 = (prevPoint.time / timeElapsed) * 100;
+                    const y1 = 100 - (prevPoint.value);
+                    const x2 = (point.time / timeElapsed) * 100;
+                    const y2 = 100 - (point.value);
                     
-                    <div className="grid grid-cols-3 gap-3 items-center">
-                      <Label htmlFor="tuned-kd" className="text-sm">Kd</Label>
-                      <Input id="tuned-kd" value="0.18" readOnly className="col-span-1" />
-                      <Button variant="outline" size="sm" className="h-8 text-xs">
-                        Apply
-                      </Button>
-                    </div>
-                  </div>
-                  
-                  <Button className="w-full mt-4" size="sm">
-                    Apply All Parameters
-                  </Button>
-                </div>
-                
-                <div>
-                  <Label htmlFor="tuning-objective">Tuning Objective</Label>
-                  <Select defaultValue="balanced">
-                    <SelectTrigger id="tuning-objective">
-                      <SelectValue placeholder="Select objective" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="setpoint">Setpoint Tracking</SelectItem>
-                      <SelectItem value="disturbance">Disturbance Rejection</SelectItem>
-                      <SelectItem value="balanced">Balanced Response</SelectItem>
-                      <SelectItem value="conservative">Conservative/Robust</SelectItem>
-                      <SelectItem value="aggressive">Aggressive Response</SelectItem>
-                    </SelectContent>
-                  </Select>
+                    return (
+                      <svg 
+                        key={index} 
+                        className="absolute top-0 left-0 w-full h-full"
+                        style={{overflow: 'visible'}}
+                      >
+                        <line 
+                          x1={`${x1}%`} 
+                          y1={`${y1}%`} 
+                          x2={`${x2}%`} 
+                          y2={`${y2}%`} 
+                          stroke="green" 
+                          strokeWidth="2"
+                        />
+                      </svg>
+                    );
+                  })}
                 </div>
               </div>
-              
-              <div className="border rounded-md p-4 bg-white dark:bg-gray-800">
-                <h4 className="text-sm font-medium mb-3">Response Comparison</h4>
-                
-                <div className="aspect-video bg-gray-50 dark:bg-gray-900 rounded-md flex items-center justify-center mb-4">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <RechartLineChart data={[
-                      { time: 0, current: 30, proposed: 30 },
-                      { time: 5, current: 40, proposed: 45 },
-                      { time: 10, current: 46, proposed: 49 },
-                      { time: 15, current: 48, proposed: 50 },
-                      { time: 20, current: 49, proposed: 50 },
-                      { time: 25, current: 49.5, proposed: 50 },
-                      { time: 30, current: 49.8, proposed: 50 }
-                    ]}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="time" label={{ value: 'Time (s)', position: 'insideBottomRight', offset: -5 }} />
-                      <YAxis label={{ value: 'Temperature (°C)', angle: -90, position: 'insideLeft' }} />
-                      <Tooltip />
-                      <Legend />
-                      <Line type="monotone" dataKey="current" stroke="#3b82f6" name="Current Tuning" />
-                      <Line type="monotone" dataKey="proposed" stroke="#22c55e" name="Proposed Tuning" />
-                    </RechartLineChart>
-                  </ResponsiveContainer>
-                </div>
-                
-                <div className="flex justify-between text-sm">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                      <span>Current Tuning</span>
-                    </div>
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                      <span>Proposed Tuning</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            )}
           </div>
-        </TabsContent>
-        
-        <TabsContent value="visualization" className="p-4 border rounded-md mt-4">
-          <div className="space-y-4">
-            <div className="grid grid-cols-3 gap-4">
-              <div>
-                <Label>Plot Type</Label>
-                <Select defaultValue="time-domain">
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select plot type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="time-domain">Time Domain Response</SelectItem>
-                    <SelectItem value="frequency">Frequency Response</SelectItem>
-                    <SelectItem value="step">Step Response</SelectItem>
-                    <SelectItem value="pv-sp">PV vs SP</SelectItem>
-                    <SelectItem value="phase">Phase Plane</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div>
-                <Label>Time Range</Label>
-                <Select defaultValue="60">
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select time range" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="30">Last 30 seconds</SelectItem>
-                    <SelectItem value="60">Last 60 seconds</SelectItem>
-                    <SelectItem value="300">Last 5 minutes</SelectItem>
-                    <SelectItem value="3600">Last hour</SelectItem>
-                    <SelectItem value="all">All data</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div>
-                <Label>Variables</Label>
-                <Select defaultValue="all">
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select variables" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Variables</SelectItem>
-                    <SelectItem value="pv">Process Value Only</SelectItem>
-                    <SelectItem value="sp">Setpoint Only</SelectItem>
-                    <SelectItem value="error">Error Signal</SelectItem>
-                    <SelectItem value="control">Control Output</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            
-            <div className="aspect-video bg-white dark:bg-gray-800 rounded-md border p-4">
-              <div className="h-full flex flex-col">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="font-medium">Temperature Control Response</h3>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm">
-                      Export Chart
-                    </Button>
-                    <Button variant="outline" size="sm">
-                      Export Data
-                    </Button>
-                  </div>
-                </div>
-                
-                <div className="flex-1">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <RechartLineChart
-                      data={[
-                        { time: 0, pv: 30, sp: 50, error: 20, output: 100 },
-                        { time: 10, pv: 35, sp: 50, error: 15, output: 90 },
-                        { time: 20, pv: 42, sp: 50, error: 8, output: 70 },
-                        { time: 30, pv: 46, sp: 50, error: 4, output: 60 },
-                        { time: 40, pv: 48, sp: 50, error: 2, output: 55 },
-                        { time: 50, pv: 49, sp: 50, error: 1, output: 52 },
-                        { time: 60, pv: 49.5, sp: 50, error: 0.5, output: 50 }
-                      ]}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="time" label={{ value: 'Time (s)', position: 'insideBottomRight', offset: -5 }} />
-                      <YAxis yAxisId="left" label={{ value: 'Temperature (°C)', angle: -90, position: 'insideLeft' }} />
-                      <YAxis yAxisId="right" orientation="right" label={{ value: 'Output (%)', angle: 90, position: 'insideRight' }} />
-                      <Tooltip />
-                      <Legend />
-                      <Line yAxisId="left" type="monotone" dataKey="pv" stroke="#3b82f6" name="Process Value" />
-                      <Line yAxisId="left" type="monotone" dataKey="sp" stroke="#8884d8" name="Setpoint" strokeDasharray="5 5" />
-                      <Line yAxisId="left" type="monotone" dataKey="error" stroke="#d97706" name="Error" />
-                      <Line yAxisId="right" type="monotone" dataKey="output" stroke="#ef4444" name="Control Output" />
-                    </RechartLineChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-6">
-              <div className="border rounded-md p-4 bg-white dark:bg-gray-800">
-                <h4 className="text-sm font-medium mb-3">Control Performance Statistics</h4>
-                
-                <table className="w-full text-sm">
-                  <tbody>
-                    <tr>
-                      <td className="py-1">Integral Absolute Error (IAE)</td>
-                      <td className="text-right">126.8</td>
-                    </tr>
-                    <tr>
-                      <td className="py-1">Integral Square Error (ISE)</td>
-                      <td className="text-right">520.4</td>
-                    </tr>
-                    <tr>
-                      <td className="py-1">Standard Deviation</td>
-                      <td className="text-right">4.3 °C</td>
-                    </tr>
-                    <tr>
-                      <td className="py-1">Settling Time</td>
-                      <td className="text-right">22.5 seconds</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-              
-              <div className="border rounded-md p-4 bg-white dark:bg-gray-800">
-                <h4 className="text-sm font-medium mb-3">Controller Output Analysis</h4>
-                
-                <table className="w-full text-sm">
-                  <tbody>
-                    <tr>
-                      <td className="py-1">Average Output</td>
-                      <td className="text-right">45.2%</td>
-                    </tr>
-                    <tr>
-                      <td className="py-1">Maximum Output</td>
-                      <td className="text-right">78.6%</td>
-                    </tr>
-                    <tr>
-                      <td className="py-1">Minimum Output</td>
-                      <td className="text-right">24.1%</td>
-                    </tr>
-                    <tr>
-                      <td className="py-1">Output Variance</td>
-                      <td className="text-right">156.3</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </TabsContent>
-      </Tabs>
-    </div>
+        </div>
+      </div>
+    </BaseSoftwareInterface>
   );
 };
 
