@@ -871,5 +871,3 @@ export const softwareDatabase: SoftwareDatabase = {
       usedIn: ["Chemical manufacturing", "Batch processes", "Continuous processes"],
       rating: 4.3,
       votes: 61,
-    },
-    {
