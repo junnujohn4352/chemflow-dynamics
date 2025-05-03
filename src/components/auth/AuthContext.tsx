@@ -24,6 +24,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     session, 
     isLoading, 
     login, 
+    loginWithGoogle,
     signup, 
     logout, 
     initAuth 
@@ -61,6 +62,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     isAuthenticated: !!user && !!session,
     isLoading,
     login,
+    loginWithGoogle,
     signup,
     logout,
     updateProfile

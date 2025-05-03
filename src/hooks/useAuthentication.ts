@@ -54,6 +54,40 @@ export const useAuthentication = ({ fetchUserProfile, setUser }: UseAuthenticati
     }
   };
 
+  const loginWithGoogle = async () => {
+    setIsLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin + '/dashboard'
+        }
+      });
+
+      if (error) {
+        toast({
+          title: "Google login failed",
+          description: error?.message || "An error occurred during Google login",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return { error };
+      }
+      
+      // No toast here as the page will redirect to Google
+      setIsLoading(false);
+      return { error: undefined };
+    } catch (error: any) {
+      toast({
+        title: "Google login failed",
+        description: error?.message || "An error occurred during Google login",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      return { error: error as AuthError };
+    }
+  };
+
   const signup = async (email: string, name: string, password: string) => {
     setIsLoading(true);
     try {
@@ -177,6 +211,7 @@ export const useAuthentication = ({ fetchUserProfile, setUser }: UseAuthenticati
     session,
     isLoading,
     login,
+    loginWithGoogle,
     signup,
     logout,
     initAuth,
