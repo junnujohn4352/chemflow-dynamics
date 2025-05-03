@@ -8,7 +8,6 @@ import {
   ChevronDown, 
   User, 
   Search, 
-  FlaskConical, 
   X,
   Calculator,
   BookOpen,
@@ -31,10 +30,9 @@ const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
   
-  // Navigation items with icons
+  // Navigation items with icons - removed Components item
   const navItems = [
     { label: "Dashboard", path: "/dashboard", icon: <Layout className="h-4 w-4 mr-2" /> },
-    { label: "Components", path: "/components", icon: <FlaskConical className="h-4 w-4 mr-2" /> },
     { label: "Chemical Formulas", path: "/chemical-formulas", icon: <BookOpen className="h-4 w-4 mr-2" /> },
     { label: "Simulations", path: "/simulations", icon: <FlaskRound className="h-4 w-4 mr-2" /> },
     { label: "Calculators", path: "/unit-converter", icon: <Calculator className="h-4 w-4 mr-2" /> },
