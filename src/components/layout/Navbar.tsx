@@ -5,8 +5,6 @@ import { ChemFlowLogo } from "@/assets/icons/ChemFlowLogo";
 import { Button } from "@/components/ui/button";
 import { 
   Menu, 
-  ChevronDown, 
-  User, 
   X,
   Calculator,
   BookOpen,
@@ -14,25 +12,14 @@ import {
   Settings,
   Layout,
   Code,
-  FlaskRound,
-  LogOut
+  FlaskRound
 } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { useAuth } from "@/components/auth/AuthContext";
 
 const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
-  const { user } = useAuth();
   
-  // Navigation items with icons - removed Components item
+  // Navigation items with icons
   const navItems = [
     { label: "Dashboard", path: "/dashboard", icon: <Layout className="h-4 w-4 mr-2" /> },
     { label: "Chemical Formulas", path: "/chemical-formulas", icon: <BookOpen className="h-4 w-4 mr-2" /> },
@@ -74,52 +61,13 @@ const Navbar = () => {
           </div>
           
           <div className="flex items-center">
-            {/* Desktop Actions */}
-            <div className="hidden md:flex items-center space-x-2">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="ml-2 flex items-center">
-                    <User className="h-4 w-4 mr-1" />
-                    <span className="hidden sm:inline">
-                      {user ? user.email?.split('@')[0] : "Account"}
-                    </span>
-                    <ChevronDown className="h-4 w-4 ml-1" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuLabel>
-                    {user ? (
-                      <div className="flex flex-col">
-                        <span className="font-medium">{user.email?.split('@')[0]}</span>
-                        <span className="text-xs text-gray-500 mt-1 truncate">{user?.email}</span>
-                      </div>
-                    ) : (
-                      "My Account"
-                    )}
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <Link to="/settings">
-                    <DropdownMenuItem className="cursor-pointer">
-                      <Settings className="h-4 w-4 mr-2" />
-                      Settings
-                    </DropdownMenuItem>
-                  </Link>
-                  <Link to="/simulations">
-                    <DropdownMenuItem className="cursor-pointer">
-                      <BarChart3 className="h-4 w-4 mr-2" />
-                      My Simulations
-                    </DropdownMenuItem>
-                  </Link>
-                  <DropdownMenuSeparator />
-                  <Link to="/sign-in">
-                    <DropdownMenuItem className="cursor-pointer text-red-600 dark:text-red-400">
-                      <LogOut className="h-4 w-4 mr-2" />
-                      Sign Out
-                    </DropdownMenuItem>
-                  </Link>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+            {/* Settings button */}
+            <Link to="/settings">
+              <Button variant="outline" size="sm" className="ml-2 hidden md:flex items-center">
+                <Settings className="h-4 w-4 mr-1" />
+                <span className="hidden sm:inline">Settings</span>
+              </Button>
+            </Link>
             
             {/* Mobile menu button */}
             <div className="md:hidden flex items-center">
@@ -160,13 +108,6 @@ const Navbar = () => {
                 {item.label}
               </Link>
             ))}
-            {user && (
-              <div className="px-3 py-2 border-t border-gray-200 dark:border-gray-700 mt-2">
-                <div className="mb-2">
-                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{user.email}</p>
-                </div>
-              </div>
-            )}
             <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
               <Link
                 to="/settings"
@@ -175,14 +116,6 @@ const Navbar = () => {
               >
                 <Settings className="h-4 w-4 mr-2" />
                 Settings
-              </Link>
-              <Link
-                to="/sign-in"
-                className="flex items-center px-3 py-2 text-base font-medium rounded-md text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                <LogOut className="h-4 w-4 mr-2" />
-                Sign Out
               </Link>
             </div>
           </div>
