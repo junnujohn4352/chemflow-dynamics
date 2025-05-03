@@ -8,16 +8,14 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import LearnMoreModal from "@/components/ui/LearnMoreModal";
-import { useAuth } from "@/components/auth/AuthContext";
 
 const Dashboard = () => {
   const [isLearnMoreOpen, setIsLearnMoreOpen] = useState(false);
   const [hysysCapabilityModal, setHysysCapabilityModal] = useState<string | null>(null);
-  const { isAuthenticated, user } = useAuth();
   
-  // Check if user has access to simulations
-  const hasSimulationAccess = user?.isSubscribed || localStorage.getItem('chemflow-payment-completed') === 'true';
-
+  // Remove authentication-related code
+  const hasSimulationAccess = true; // Set to true since we're removing auth checks
+  
   const renderHysysCapabilityModal = () => {
     if (!hysysCapabilityModal) return null;
     
@@ -81,18 +79,6 @@ const Dashboard = () => {
             </div>
             
             <div className="mt-6 flex justify-end space-x-3">
-              {!hasSimulationAccess && (
-                <Button 
-                  variant="outline" 
-                  asChild
-                  className="flex items-center"
-                >
-                  <Link to="/payment">
-                    <Lock className="h-4 w-4 mr-1" />
-                    Unlock Feature
-                  </Link>
-                </Button>
-              )}
               <Button 
                 onClick={() => setHysysCapabilityModal(null)}
               >
@@ -134,20 +120,10 @@ const Dashboard = () => {
               {coreDashboardCards.map(card => (
                 <Link 
                   key={card.title} 
-                  to={!hasSimulationAccess && card.requiresPayment ? "/payment" : card.linkTo}
+                  to={card.linkTo}
                   className={`block rounded-xl border transition-all duration-300 group shadow-sm hover:shadow-md py-6 px-6
-                    ${card.gradient} 
-                    ${!hasSimulationAccess && card.requiresPayment ? "relative" : ""}
-                  `}
+                    ${card.gradient}`}
                 >
-                  {!hasSimulationAccess && card.requiresPayment && (
-                    <div className="absolute inset-0 bg-black/30 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                      <div className="bg-white/90 dark:bg-gray-800/90 p-3 rounded-lg flex items-center space-x-2">
-                        <Lock className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                        <span className="text-sm font-medium">Requires Payment</span>
-                      </div>
-                    </div>
-                  )}
                   <div className="flex justify-between items-start mb-4">
                     <div className={`p-4 rounded-xl ${card.iconBg} text-white group-hover:scale-105 transition-transform`}>
                       {card.icon}
