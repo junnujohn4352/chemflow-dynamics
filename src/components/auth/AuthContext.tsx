@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useEffect } from "react";
+import React, { createContext, useContext, useEffect, useCallback } from "react";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useAuthentication } from "@/hooks/useAuthentication";
 import { AuthContextType } from "@/types/auth";
@@ -20,19 +20,37 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const { user, setUser, fetchUserProfile, updateProfile } = useUserProfile();
-  const { session, isLoading, login, signup, logout, initAuth } = useAuthentication({
+  const { 
+    session, 
+    isLoading, 
+    login, 
+    signup, 
+    logout, 
+    initAuth 
+  } = useAuthentication({
     fetchUserProfile,
     setUser,
   });
 
   // Initialize authentication on component mount
   useEffect(() => {
-    // Store subscription to clean up on unmount
-    const subscriptionPromise = initAuth();
+    let subscription: { unsubscribe: () => void } | undefined;
+    
+    const initialize = async () => {
+      try {
+        subscription = await initAuth();
+      } catch (error) {
+        console.error("Error initializing authentication:", error);
+      }
+    };
+    
+    initialize();
     
     // Cleanup function
     return () => {
-      subscriptionPromise.then(sub => sub.unsubscribe());
+      if (subscription) {
+        subscription.unsubscribe();
+      }
     };
   }, [initAuth]);
 

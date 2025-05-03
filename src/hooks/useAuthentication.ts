@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -68,7 +68,15 @@ export const useAuthentication = ({ fetchUserProfile, setUser }: UseAuthenticati
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        toast({
+          title: "Sign up failed",
+          description: error?.message || "An error occurred during sign up",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return { error };
+      }
 
       // Create profile in the user_profiles table
       if (data.user) {
@@ -134,20 +142,18 @@ export const useAuthentication = ({ fetchUserProfile, setUser }: UseAuthenticati
     }
   };
 
-  const initAuth = async () => {
+  const initAuth = useCallback(async () => {
     setIsLoading(true);
     
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, currentSession) => {
+      async (event, currentSession) => {
         setSession(currentSession);
         
         // If session exists, fetch user profile
         if (currentSession?.user) {
-          // Use setTimeout to prevent potential deadlock
-          setTimeout(() => {
-            fetchUserProfile(currentSession.user.id);
-          }, 0);
+          const userProfile = await fetchUserProfile(currentSession.user.id);
+          setUser(userProfile);
         } else {
           setUser(null);
         }
@@ -165,7 +171,7 @@ export const useAuthentication = ({ fetchUserProfile, setUser }: UseAuthenticati
     setIsLoading(false);
     
     return subscription;
-  };
+  }, [fetchUserProfile, setUser]);
 
   return {
     session,
