@@ -360,7 +360,7 @@ const hysysCapabilities: HYSYSCapability[] = [
   {
     id: "process-simulation",
     title: "Process Simulation & Design",
-    icon: <Flask className="h-5 w-5" />,
+    icon: <FlaskRound className="h-5 w-5" />,
     description: "Design and simulate entire process plants with comprehensive modeling tools for steady-state and dynamic operations.",
     iconBg: "bg-gradient-to-br from-blue-500 to-blue-700",
     gradient: "bg-gradient-to-br from-blue-500 to-blue-700 border-blue-400",
