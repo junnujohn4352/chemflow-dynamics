@@ -7,7 +7,6 @@ import {
   Menu, 
   ChevronDown, 
   User, 
-  Search, 
   X,
   Calculator,
   BookOpen,
@@ -15,7 +14,8 @@ import {
   Settings,
   Layout,
   Code,
-  FlaskRound
+  FlaskRound,
+  LogOut
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -25,10 +25,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useAuth } from "@/components/auth/AuthContext";
 
 const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const { user } = useAuth();
   
   // Navigation items with icons - removed Components item
   const navItems = [
@@ -74,20 +76,27 @@ const Navbar = () => {
           <div className="flex items-center">
             {/* Desktop Actions */}
             <div className="hidden md:flex items-center space-x-2">
-              <Button variant="ghost" size="icon" className="text-gray-600 dark:text-gray-300">
-                <Search className="h-5 w-5" />
-              </Button>
-              
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="sm" className="ml-2 flex items-center">
                     <User className="h-4 w-4 mr-1" />
-                    <span className="hidden lg:inline">Account</span>
+                    <span className="hidden sm:inline">
+                      {user ? user.email?.split('@')[0] : "Account"}
+                    </span>
                     <ChevronDown className="h-4 w-4 ml-1" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>
+                    {user ? (
+                      <div className="flex flex-col">
+                        <span className="font-medium">{user.email?.split('@')[0]}</span>
+                        <span className="text-xs text-gray-500 mt-1 truncate">{user?.email}</span>
+                      </div>
+                    ) : (
+                      "My Account"
+                    )}
+                  </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <Link to="/settings">
                     <DropdownMenuItem className="cursor-pointer">
@@ -104,6 +113,7 @@ const Navbar = () => {
                   <DropdownMenuSeparator />
                   <Link to="/sign-in">
                     <DropdownMenuItem className="cursor-pointer text-red-600 dark:text-red-400">
+                      <LogOut className="h-4 w-4 mr-2" />
                       Sign Out
                     </DropdownMenuItem>
                   </Link>
@@ -150,6 +160,13 @@ const Navbar = () => {
                 {item.label}
               </Link>
             ))}
+            {user && (
+              <div className="px-3 py-2 border-t border-gray-200 dark:border-gray-700 mt-2">
+                <div className="mb-2">
+                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{user.email}</p>
+                </div>
+              </div>
+            )}
             <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
               <Link
                 to="/settings"
@@ -164,6 +181,7 @@ const Navbar = () => {
                 className="flex items-center px-3 py-2 text-base font-medium rounded-md text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
                 onClick={() => setMobileMenuOpen(false)}
               >
+                <LogOut className="h-4 w-4 mr-2" />
                 Sign Out
               </Link>
             </div>

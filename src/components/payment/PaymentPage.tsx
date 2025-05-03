@@ -143,7 +143,7 @@ const PaymentPage: React.FC = () => {
                       <span className="ml-1 text-gray-600 dark:text-gray-400">one-time payment</span>
                     </div>
                     <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                      Get immediate access to all simulation features
+                      Pay just ₹500 for immediate access to all simulation features
                     </p>
                   </div>
 
@@ -154,7 +154,7 @@ const PaymentPage: React.FC = () => {
                           Scan & Pay Using PhonePe App
                         </h3>
                         <p className="text-sm text-gray-600 dark:text-gray-400">
-                          Scan the QR code below to complete your payment
+                          Scan the QR code below to pay ₹500 and complete your payment
                         </p>
                       </div>
                       <div className="p-4 flex justify-center bg-white dark:bg-gray-900">
@@ -206,7 +206,7 @@ const PaymentPage: React.FC = () => {
                       ) : (
                         <span className="flex items-center">
                           <CreditCard className="mr-2 h-4 w-4" />
-                          Confirm Payment
+                          Confirm ₹500 Payment
                         </span>
                       )}
                     </Button>
@@ -221,7 +221,7 @@ const PaymentPage: React.FC = () => {
                     Payment Complete!
                   </h2>
                   <p className="text-gray-600 dark:text-gray-400 mb-6">
-                    You now have full access to all simulation features in ChemFlow.
+                    Your payment of ₹500 was successful. You now have full access to all simulation features in ChemFlow.
                   </p>
                   <Button 
                     onClick={handleContinue} 

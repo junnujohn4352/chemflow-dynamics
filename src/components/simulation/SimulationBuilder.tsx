@@ -20,8 +20,6 @@ export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     { key: "Flow", value: "1200 kg/h" }
   ]);
   
-  // Additional code for the simulation builder would go here
-  
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       <div className="bg-gray-50 p-4 rounded-lg col-span-1">
@@ -32,12 +30,28 @@ export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
             title="CSTR Reactor"
             onEdit={() => {}}
             metrics={equipmentMetrics}
+            status="ready"
           />
           <EquipmentCard 
             type="column" 
             title="Distillation"
             onEdit={() => {}}
             metrics={equipmentMetrics}
+            status="ready"
+          />
+          <EquipmentCard 
+            type="heat-exchanger" 
+            title="Heat Exchanger"
+            onEdit={() => {}}
+            metrics={equipmentMetrics}
+            status="ready"
+          />
+          <EquipmentCard 
+            type="pump" 
+            title="Centrifugal Pump"
+            onEdit={() => {}}
+            metrics={equipmentMetrics}
+            status="ready"
           />
         </div>
       </div>
@@ -52,5 +66,4 @@ export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
   );
 };
 
-// Add default export
 export default SimulationBuilder;
