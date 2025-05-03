@@ -2,10 +2,17 @@
 import React from 'react';
 import GlassPanel from "@/components/ui/GlassPanel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Thermometer, Activity, Zap, Droplets, Layers } from "lucide-react";
+import { 
+  Thermometer, Activity, Zap, Droplets, Layers, GitGraph,
+  Atom, Database, Settings, AlertTriangle, BarChart3, LineChart,
+  FileText, ReceiptText, PlayCircle, Beaker
+} from "lucide-react";
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import ComponentDetailsPanel from './ComponentDetailsPanel';
 import StreamDataPanel from './StreamDataPanel';
 import ReactionDataPanel from './ReactionDataPanel';
+import AdvancedEquipmentAnalysis from './AdvancedEquipmentAnalysis';
 
 interface HysysIntegrationProps {
   selectedComponents: string[];
@@ -19,6 +26,8 @@ const HysysIntegration: React.FC<HysysIntegrationProps> = ({
   const [selectedComponent, setSelectedComponent] = React.useState<string | null>(
     selectedComponents.length > 0 ? selectedComponents[0] : null
   );
+  
+  const [activeEquipmentType, setActiveEquipmentType] = React.useState<string | null>("heat-exchanger");
 
   // Energy analysis data
   const energyAnalysis = {
@@ -82,20 +91,36 @@ const HysysIntegration: React.FC<HysysIntegrationProps> = ({
     ]
   };
 
+  // Equipment types for comprehensive analysis
+  const equipmentTypes = [
+    { id: "heat-exchanger", name: "Heat Exchanger", icon: <Thermometer className="h-4 w-4" /> },
+    { id: "distillation", name: "Distillation Column", icon: <Layers className="h-4 w-4" /> },
+    { id: "reactor", name: "Reactor", icon: <Beaker className="h-4 w-4" /> },
+    { id: "flash", name: "Flash Drum", icon: <Zap className="h-4 w-4" /> },
+    { id: "pump", name: "Pump", icon: <Activity className="h-4 w-4" /> },
+    { id: "compressor", name: "Compressor", icon: <Zap className="h-4 w-4" /> }
+  ];
+
   return (
     <GlassPanel className="p-6">
       <h3 className="text-xl font-semibold mb-4">HYSYS-Like Simulation Environment</h3>
       
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-3 rounded-lg mb-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <span className="text-sm font-medium text-gray-600">Active Thermodynamic Package:</span>
-            <span className="ml-2 text-blue-700 font-medium">{thermodynamicModel}</span>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center">
+            <Badge variant="outline" className="mr-2 bg-blue-50">
+              <Database className="h-3.5 w-3.5 mr-1 text-blue-700" />
+              <span className="text-blue-700 font-medium">{thermodynamicModel}</span>
+            </Badge>
+            <Badge variant="outline" className="bg-blue-50">
+              <Atom className="h-3.5 w-3.5 mr-1 text-blue-700" />
+              <span className="text-blue-700 font-medium">{selectedComponents.length} Components</span>
+            </Badge>
           </div>
-          <div>
-            <span className="text-sm font-medium text-gray-600">Components:</span>
-            <span className="ml-2 text-blue-700 font-medium">{selectedComponents.length}</span>
-          </div>
+          <Button size="sm" variant="outline" className="bg-white text-blue-700 border-blue-300 hover:bg-blue-50">
+            <PlayCircle className="h-3.5 w-3.5 mr-1" />
+            Run Simulation
+          </Button>
         </div>
       </div>
       
@@ -115,11 +140,15 @@ const HysysIntegration: React.FC<HysysIntegrationProps> = ({
           </TabsTrigger>
           <TabsTrigger value="equipment">
             <Thermometer className="h-4 w-4 mr-2" />
-            Equipment Specs
+            Equipment Analysis
           </TabsTrigger>
           <TabsTrigger value="energy">
             <Zap className="h-4 w-4 mr-2" />
             Energy Analysis
+          </TabsTrigger>
+          <TabsTrigger value="reports">
+            <FileText className="h-4 w-4 mr-2" />
+            Reports
           </TabsTrigger>
         </TabsList>
         
@@ -157,103 +186,32 @@ const HysysIntegration: React.FC<HysysIntegrationProps> = ({
         </TabsContent>
         
         <TabsContent value="equipment">
-          <div className="space-y-6">
-            <div>
-              <h4 className="text-lg font-medium mb-3">Distillation Columns</h4>
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trays</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Feed Tray</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pressure (kPa)</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reflux Ratio</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bottoms (kg/h)</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {equipmentSpecs.columns.map((column, idx) => (
-                      <tr key={idx} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{column.name}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{column.type}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{column.numberOfTrays}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{column.feedTray}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{column.pressure}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{column.refluxRatio}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{column.bottomsRate}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-            
-            <div>
-              <h4 className="text-lg font-medium mb-3">Reactors</h4>
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Volume (m³)</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Temp (°C)</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pressure (kPa)</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Residence (min)</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Conversion (%)</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {equipmentSpecs.reactors.map((reactor, idx) => (
-                      <tr key={idx} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{reactor.name}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{reactor.type}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{reactor.volume}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{reactor.temperature}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{reactor.pressure}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{reactor.residence}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{reactor.conversion}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-            
-            <div>
-              <h4 className="text-lg font-medium mb-3">Heat Exchangers</h4>
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Area (m²)</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hot In (°C)</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hot Out (°C)</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cold In (°C)</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cold Out (°C)</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {equipmentSpecs.heatExchangers.map((exchanger, idx) => (
-                      <tr key={idx} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{exchanger.name}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{exchanger.type}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{exchanger.area}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{exchanger.hotInlet}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{exchanger.hotOutlet}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{exchanger.coldInlet}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{exchanger.coldOutlet}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+          <div className="mb-4 border-b pb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Select Equipment Type</label>
+            <div className="flex flex-wrap gap-2">
+              {equipmentTypes.map(equipment => (
+                <button
+                  key={equipment.id}
+                  className={`px-3 py-2 text-sm rounded-md transition-colors flex items-center ${
+                    activeEquipmentType === equipment.id
+                      ? 'bg-blue-100 text-blue-700 border border-blue-300'
+                      : 'bg-gray-100 text-gray-700 border border-gray-200 hover:bg-blue-50 hover:text-blue-600'
+                  }`}
+                  onClick={() => setActiveEquipmentType(equipment.id)}
+                >
+                  {equipment.icon}
+                  <span className="ml-1.5">{equipment.name}</span>
+                </button>
+              ))}
             </div>
           </div>
+          
+          {activeEquipmentType && (
+            <AdvancedEquipmentAnalysis 
+              equipmentType={activeEquipmentType} 
+              componentList={selectedComponents} 
+            />
+          )}
         </TabsContent>
         
         <TabsContent value="energy">
@@ -377,8 +335,65 @@ const HysysIntegration: React.FC<HysysIntegrationProps> = ({
             </div>
           </div>
         </TabsContent>
+        
+        <TabsContent value="reports">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <ReportCard
+              title="Stream Summary"
+              icon={<GitGraph className="h-5 w-5 text-blue-600" />}
+              description="Comprehensive stream property data including composition, conditions and physical properties"
+            />
+            <ReportCard
+              title="Energy Analysis"
+              icon={<Zap className="h-5 w-5 text-orange-600" />}
+              description="Detailed energy balance, utility consumption and efficiency metrics"
+            />
+            <ReportCard
+              title="Equipment Performance"
+              icon={<BarChart3 className="h-5 w-5 text-green-600" />}
+              description="Performance metrics for all equipment units in the simulation"
+            />
+            <ReportCard
+              title="Economics Report"
+              icon={<ReceiptText className="h-5 w-5 text-purple-600" />}
+              description="Capital and operating cost estimates along with economic indicators"
+            />
+            <ReportCard
+              title="Safety Analysis"
+              icon={<AlertTriangle className="h-5 w-5 text-red-600" />}
+              description="Safety metrics, design margins and equipment ratings assessment"
+            />
+            <ReportCard
+              title="Environmental Impact"
+              icon={<Droplets className="h-5 w-5 text-teal-600" />}
+              description="Environmental indicators including emissions, waste and resource consumption"
+            />
+          </div>
+        </TabsContent>
       </Tabs>
     </GlassPanel>
+  );
+};
+
+interface ReportCardProps {
+  title: string;
+  icon: React.ReactNode;
+  description: string;
+}
+
+const ReportCard: React.FC<ReportCardProps> = ({ title, icon, description }) => {
+  return (
+    <div className="bg-white p-4 rounded-md shadow-sm hover:shadow transition-shadow border border-gray-100">
+      <div className="flex items-center mb-3">
+        {icon}
+        <h4 className="text-lg font-medium ml-2">{title}</h4>
+      </div>
+      <p className="text-sm text-gray-600 mb-3">{description}</p>
+      <Button variant="outline" size="sm" className="w-full mt-2">
+        <FileText className="h-3.5 w-3.5 mr-1.5" />
+        Generate Report
+      </Button>
+    </div>
   );
 };
 

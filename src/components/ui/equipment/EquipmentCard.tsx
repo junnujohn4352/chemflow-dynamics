@@ -1,281 +1,101 @@
 
-import React, { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import React from "react";
+import { getEquipmentIcon } from "./EquipmentIcons";
 import { Button } from "@/components/ui/button";
-import { Edit2, Activity, Thermometer, Gauge, ArrowRight } from "lucide-react";
-import { getEquipmentIcon, EquipmentType } from "./EquipmentIcons";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
+import { 
+  Settings, Info, Trash2
+} from "lucide-react";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { EquipmentType } from "./EquipmentIcons";
+import { 
+  isVessel, 
+  isHeatExchanger, 
+  isFlowController, 
+  isReactor, 
+  isColumn 
+} from "./EquipmentTypeCheckers";
 
-export interface EquipmentProps {
+interface EquipmentCardProps {
   type: EquipmentType;
-  name: string;
-  status?: "running" | "stopped";
+  title: string;
+  onEdit?: () => void;
+  onInfo?: () => void;
+  onDelete?: () => void;
+  selected?: boolean;
   metrics?: {
-    temperature?: number;
-    pressure?: number;
-    flow?: number;
-    level?: number;
-    conversion?: number;
-    power?: number;
-    efficiency?: number;
-    duty?: number;
-  };
-  onMetricsChange?: (metrics: any) => void;
-  draggable?: boolean;
+    key: string;
+    value: string | number;
+  }[];
 }
 
-export const EquipmentCard: React.FC<EquipmentProps> = ({
+export const EquipmentCard: React.FC<EquipmentCardProps> = ({
   type,
-  name,
-  status = "stopped",
-  metrics = {},
-  onMetricsChange,
-  draggable = true
+  title,
+  onEdit,
+  onInfo,
+  onDelete,
+  selected = false,
+  metrics = []
 }) => {
-  const [isEditing, setIsEditing] = useState(false);
-  const [localMetrics, setLocalMetrics] = useState({ ...metrics });
-
-  const Icon = getEquipmentIcon(type);
-
-  const handleMetricChange = (key: string, value: string) => {
-    const newValue = parseFloat(value);
-    if (!isNaN(newValue)) {
-      const updatedMetrics = {
-        ...localMetrics,
-        [key]: newValue
-      };
-      setLocalMetrics(updatedMetrics);
-      if (onMetricsChange) {
-        onMetricsChange(updatedMetrics);
-      }
-    }
-  };
-
-  const handleDialogClose = () => {
-    setIsEditing(false);
+  // Determine icon color based on equipment type
+  const getIconColor = () => {
+    if (isReactor(type)) return "text-green-600";
+    if (isColumn(type)) return "text-blue-600";
+    if (isHeatExchanger(type)) return "text-red-600";
+    if (isFlowController(type)) return "text-purple-600";
+    if (isVessel(type)) return "text-amber-600";
+    return "text-gray-600";
   };
 
   return (
-    <Card className={`overflow-hidden ${draggable ? 'cursor-grab active:cursor-grabbing' : ''}`}>
-      <CardContent className="p-4">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="bg-blue-50 p-2 rounded-md text-blue-600">
-              {Icon}
-            </div>
-            <div>
-              <h3 className="font-medium">{name}</h3>
-              <Badge 
-                variant={status === "running" ? "default" : "outline"}
-                className={status === "running" ? "bg-green-500 hover:bg-green-600" : ""}
-              >
-                {status === "running" ? "Running" : "Stopped"}
-              </Badge>
-            </div>
+    <Card 
+      className={`border overflow-hidden transition-all ${
+        selected 
+          ? "border-blue-400 ring-2 ring-blue-200" 
+          : "border-gray-200 hover:border-gray-300"
+      }`}
+    >
+      <CardHeader className="p-4 pb-2">
+        <CardTitle className="text-sm font-medium flex items-center gap-2">
+          <span className={getIconColor()}>
+            {getEquipmentIcon(type)}
+          </span>
+          <span className="truncate">{title}</span>
+        </CardTitle>
+      </CardHeader>
+      
+      <CardContent className="p-4 pt-2 pb-2">
+        {metrics && metrics.length > 0 && (
+          <div className="grid grid-cols-2 gap-1 text-xs">
+            {metrics.slice(0, 4).map((metric, idx) => (
+              <div key={idx} className="flex justify-between">
+                <span className="text-gray-500">{metric.key}:</span>
+                <span className="font-medium">{metric.value}</span>
+              </div>
+            ))}
           </div>
-          
-          <Dialog open={isEditing} onOpenChange={setIsEditing}>
-            <DialogTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <Edit2 className="h-4 w-4" />
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Edit Equipment Parameters</DialogTitle>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                {metrics.temperature !== undefined && (
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="temperature" className="text-right flex items-center">
-                      <Thermometer className="h-4 w-4 mr-2" />
-                      Temperature
-                    </Label>
-                    <Input
-                      id="temperature"
-                      type="number"
-                      className="col-span-3"
-                      value={localMetrics.temperature}
-                      onChange={(e) => handleMetricChange('temperature', e.target.value)}
-                    />
-                  </div>
-                )}
-                
-                {metrics.pressure !== undefined && (
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="pressure" className="text-right flex items-center">
-                      <Gauge className="h-4 w-4 mr-2" />
-                      Pressure
-                    </Label>
-                    <Input
-                      id="pressure"
-                      type="number"
-                      className="col-span-3"
-                      value={localMetrics.pressure}
-                      onChange={(e) => handleMetricChange('pressure', e.target.value)}
-                    />
-                  </div>
-                )}
-                
-                {metrics.flow !== undefined && (
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="flow" className="text-right flex items-center">
-                      <ArrowRight className="h-4 w-4 mr-2" />
-                      Flow Rate
-                    </Label>
-                    <Input
-                      id="flow"
-                      type="number"
-                      className="col-span-3"
-                      value={localMetrics.flow}
-                      onChange={(e) => handleMetricChange('flow', e.target.value)}
-                    />
-                  </div>
-                )}
-                
-                {metrics.level !== undefined && (
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="level" className="text-right">Level</Label>
-                    <Input
-                      id="level"
-                      type="number"
-                      className="col-span-3"
-                      value={localMetrics.level}
-                      onChange={(e) => handleMetricChange('level', e.target.value)}
-                    />
-                  </div>
-                )}
-                
-                {metrics.conversion !== undefined && (
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="conversion" className="text-right">Conversion</Label>
-                    <Input
-                      id="conversion"
-                      type="number"
-                      className="col-span-3"
-                      value={localMetrics.conversion}
-                      onChange={(e) => handleMetricChange('conversion', e.target.value)}
-                    />
-                  </div>
-                )}
-                
-                {metrics.power !== undefined && (
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="power" className="text-right">Power</Label>
-                    <Input
-                      id="power"
-                      type="number"
-                      className="col-span-3"
-                      value={localMetrics.power}
-                      onChange={(e) => handleMetricChange('power', e.target.value)}
-                    />
-                  </div>
-                )}
-                
-                {metrics.efficiency !== undefined && (
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="efficiency" className="text-right">Efficiency</Label>
-                    <Input
-                      id="efficiency"
-                      type="number"
-                      className="col-span-3"
-                      value={localMetrics.efficiency}
-                      onChange={(e) => handleMetricChange('efficiency', e.target.value)}
-                    />
-                  </div>
-                )}
-                
-                {metrics.duty !== undefined && (
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="duty" className="text-right">Duty</Label>
-                    <Input
-                      id="duty"
-                      type="number"
-                      className="col-span-3"
-                      value={localMetrics.duty}
-                      onChange={(e) => handleMetricChange('duty', e.target.value)}
-                    />
-                  </div>
-                )}
-              </div>
-              <DialogClose asChild>
-                <Button onClick={handleDialogClose}>Save Changes</Button>
-              </DialogClose>
-            </DialogContent>
-          </Dialog>
-        </div>
-        
-        <div className="mt-4 space-y-2">
-          {metrics.temperature !== undefined && (
-            <div className="flex items-center justify-between text-sm">
-              <div className="flex items-center text-gray-500">
-                <Thermometer className="h-4 w-4 mr-2" />
-                Temperature
-              </div>
-              <div>{localMetrics.temperature} °C</div>
-            </div>
-          )}
-          
-          {metrics.pressure !== undefined && (
-            <div className="flex items-center justify-between text-sm">
-              <div className="flex items-center text-gray-500">
-                <Gauge className="h-4 w-4 mr-2" />
-                Pressure
-              </div>
-              <div>{localMetrics.pressure} bar</div>
-            </div>
-          )}
-          
-          {metrics.flow !== undefined && (
-            <div className="flex items-center justify-between text-sm">
-              <div className="flex items-center text-gray-500">
-                <ArrowRight className="h-4 w-4 mr-2" />
-                Flow Rate
-              </div>
-              <div>{localMetrics.flow} m³/h</div>
-            </div>
-          )}
-          
-          {metrics.level !== undefined && (
-            <div className="flex items-center justify-between text-sm">
-              <div className="text-gray-500">Level</div>
-              <div>{localMetrics.level}%</div>
-            </div>
-          )}
-          
-          {metrics.conversion !== undefined && (
-            <div className="flex items-center justify-between text-sm">
-              <div className="text-gray-500">Conversion</div>
-              <div>{localMetrics.conversion}%</div>
-            </div>
-          )}
-          
-          {metrics.power !== undefined && (
-            <div className="flex items-center justify-between text-sm">
-              <div className="text-gray-500">Power</div>
-              <div>{localMetrics.power} kW</div>
-            </div>
-          )}
-          
-          {metrics.efficiency !== undefined && (
-            <div className="flex items-center justify-between text-sm">
-              <div className="text-gray-500">Efficiency</div>
-              <div>{localMetrics.efficiency}%</div>
-            </div>
-          )}
-          
-          {metrics.duty !== undefined && (
-            <div className="flex items-center justify-between text-sm">
-              <div className="text-gray-500">Duty</div>
-              <div>{localMetrics.duty} kW</div>
-            </div>
-          )}
-        </div>
+        )}
       </CardContent>
+      
+      <CardFooter className="p-3 pt-0 flex justify-between gap-2">
+        {onEdit && (
+          <Button variant="outline" size="sm" onClick={onEdit} className="p-0 h-7 w-7">
+            <Settings className="h-3.5 w-3.5" />
+          </Button>
+        )}
+        
+        {onInfo && (
+          <Button variant="outline" size="sm" onClick={onInfo} className="p-0 h-7 w-7">
+            <Info className="h-3.5 w-3.5" />
+          </Button>
+        )}
+        
+        {onDelete && (
+          <Button variant="outline" size="sm" onClick={onDelete} className="p-0 h-7 w-7 hover:bg-red-50 hover:text-red-600 hover:border-red-200">
+            <Trash2 className="h-3.5 w-3.5" />
+          </Button>
+        )}
+      </CardFooter>
     </Card>
   );
 };
