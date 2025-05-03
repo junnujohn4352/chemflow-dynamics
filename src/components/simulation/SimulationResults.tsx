@@ -2,15 +2,7 @@
 import React from "react";
 import { BarChart3, TrendingUp, LineChart, PieChart, Activity } from "lucide-react";
 import {
-  Chart,
-  ChartContainer,
-  ChartContent,
-  ChartTooltip,
-  ChartTooltipContent,
-  ChartLegend,
-  ChartLegendContent,
-} from "@/components/ui/chart";
-import {
+  ResponsiveContainer,
   BarChart,
   Bar,
   XAxis,
@@ -18,7 +10,6 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
-  ResponsiveContainer,
   LineChart as RechartsLineChart,
   Line,
   PieChart as RechartsPieChart,

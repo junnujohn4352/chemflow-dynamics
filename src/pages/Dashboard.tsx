@@ -1,11 +1,10 @@
-
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
 import { 
   FileText, Calculator, Code, FlaskConical, Info, Book, Database, 
   Thermometer, Settings, Activity, PieChart, BarChart3, LineChart, 
-  Beaker, Flask, Gauge, Lock, Microscope, Layers, GitBranch
+  Beaker, FlaskRound, Gauge, Lock, Microscope, Layers, GitBranch
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import LearnMoreModal from "@/components/ui/LearnMoreModal";
@@ -272,6 +271,7 @@ const coreDashboardCards: DashboardCardProps[] = [
 const softwareTypeCards: DashboardCardProps[] = [
   {
     title: "Process Simulation & Modeling",
+    description: "Design and simulate complete process plants with steady-state and dynamic modeling",
     icon: <FlaskConical className="h-6 w-6" />,
     type: "Type 1: Process Simulation & Modeling",
     linkTo: "/software-tools",
@@ -280,6 +280,7 @@ const softwareTypeCards: DashboardCardProps[] = [
   },
   {
     title: "Thermodynamic & Property Estimation",
+    description: "Access comprehensive thermodynamic models and physical property estimations",
     icon: <Thermometer className="h-6 w-6" />,
     type: "Type 2: Thermodynamic & Property Estimation",
     linkTo: "/software-tools",
@@ -288,6 +289,7 @@ const softwareTypeCards: DashboardCardProps[] = [
   },
   {
     title: "Equipment Design & Sizing",
+    description: "Design and rate process equipment including heat exchangers and columns",
     icon: <Settings className="h-6 w-6" />,
     type: "Type 3: Equipment Design & Sizing",
     linkTo: "/software-tools",
@@ -296,6 +298,7 @@ const softwareTypeCards: DashboardCardProps[] = [
   },
   {
     title: "Process Control & Optimization",
+    description: "Optimize processes for cost, yield, and energy efficiency",
     icon: <Activity className="h-6 w-6" />,
     type: "Type 4: Process Control & Optimization",
     linkTo: "/software-tools",
@@ -304,6 +307,7 @@ const softwareTypeCards: DashboardCardProps[] = [
   },
   {
     title: "Laboratory & Data Analysis",
+    description: "Tools for laboratory data management and analytical procedures",
     icon: <Database className="h-6 w-6" />,
     type: "Type 5: Laboratory, Data Analysis & R&D",
     linkTo: "/software-tools",
