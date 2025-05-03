@@ -1,6 +1,5 @@
 
-import React, { createContext, useContext, useState, useEffect } from "react";
-import { Session } from "@supabase/supabase-js";
+import React, { createContext, useContext, useEffect } from "react";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useAuthentication } from "@/hooks/useAuthentication";
 import { AuthContextType } from "@/types/auth";
@@ -26,28 +25,31 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setUser,
   });
 
+  // Initialize authentication on component mount
   useEffect(() => {
-    const subscription = initAuth();
+    // Store subscription to clean up on unmount
+    const subscriptionPromise = initAuth();
     
     // Cleanup function
     return () => {
-      subscription.then(sub => sub.unsubscribe());
+      subscriptionPromise.then(sub => sub.unsubscribe());
     };
-  }, []);
+  }, [initAuth]);
+
+  // Create the auth context value object
+  const authContextValue: AuthContextType = {
+    user,
+    session,
+    isAuthenticated: !!user && !!session,
+    isLoading,
+    login,
+    signup,
+    logout,
+    updateProfile
+  };
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        session,
-        isAuthenticated: !!user && !!session,
-        isLoading,
-        login,
-        signup,
-        logout,
-        updateProfile
-      }}
-    >
+    <AuthContext.Provider value={authContextValue}>
       {children}
     </AuthContext.Provider>
   );
