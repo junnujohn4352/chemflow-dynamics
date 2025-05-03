@@ -1,11 +1,10 @@
-
 import React from "react";
 import { useLoadingAnimation } from "@/hooks/useLoadingAnimation";
 import LoadingScreen from "@/components/landing/LoadingScreen";
 import { Button } from "@/components/ui/button";
 import { ChemFlowLogo } from "@/assets/icons/ChemFlowLogo";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, Beaker, FlaskConical, LineChart, Atom, Thermometer, Database, Waves, Gauge, Flask, BookOpen } from "lucide-react";
+import { ArrowRight, Beaker, FlaskConical, LineChart, Atom, Thermometer, Database, Waves, Gauge, FlaskRound, BookOpen } from "lucide-react";
 
 const LandingPage = () => {
   const { loading, opacity } = useLoadingAnimation();
