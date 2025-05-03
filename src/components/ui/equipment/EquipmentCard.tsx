@@ -15,13 +15,14 @@ import {
   isColumn 
 } from "./EquipmentTypeCheckers";
 
-interface EquipmentCardProps {
+export interface EquipmentCardProps {
   type: EquipmentType;
   title: string;
   onEdit?: () => void;
   onInfo?: () => void;
   onDelete?: () => void;
   selected?: boolean;
+  status?: string;
   metrics?: {
     key: string;
     value: string | number;
@@ -35,6 +36,7 @@ export const EquipmentCard: React.FC<EquipmentCardProps> = ({
   onInfo,
   onDelete,
   selected = false,
+  status,
   metrics = []
 }) => {
   // Determine icon color based on equipment type
@@ -61,6 +63,15 @@ export const EquipmentCard: React.FC<EquipmentCardProps> = ({
             {getEquipmentIcon(type)}
           </span>
           <span className="truncate">{title}</span>
+          {status && (
+            <span className={`ml-auto text-xs px-1.5 py-0.5 rounded-full ${
+              status === 'running' ? 'bg-green-100 text-green-700' : 
+              status === 'stopped' ? 'bg-red-100 text-red-700' : 
+              'bg-gray-100 text-gray-700'
+            }`}>
+              {status}
+            </span>
+          )}
         </CardTitle>
       </CardHeader>
       
