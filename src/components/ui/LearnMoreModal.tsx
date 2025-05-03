@@ -81,9 +81,6 @@ const LearnMoreModal: React.FC<LearnMoreModalProps> = ({ open, onClose }) => {
           <Button variant="outline" onClick={onClose}>
             Close
           </Button>
-          <Button className="gap-2">
-            Start Free Trial <ArrowRight className="h-4 w-4" />
-          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
