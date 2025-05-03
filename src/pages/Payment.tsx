@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { ChemFlowLogo } from "@/assets/icons/ChemFlowLogo";
@@ -14,6 +14,16 @@ const PaymentPage: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [transactionId, setTransactionId] = useState("");
   const [paymentStep, setPaymentStep] = useState<"qr" | "verification">("qr");
+  
+  // Check if payment is already completed when the page loads
+  useEffect(() => {
+    const paymentCompleted = localStorage.getItem('chemflow-payment-completed');
+    if (paymentCompleted === 'true') {
+      // Redirect to dashboard if payment is already completed
+      toast.info("You have already made a payment");
+      navigate("/dashboard");
+    }
+  }, [navigate]);
   
   const handleVerifyPayment = (e: React.FormEvent) => {
     e.preventDefault();
