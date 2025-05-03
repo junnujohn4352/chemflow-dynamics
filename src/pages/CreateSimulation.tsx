@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
@@ -12,6 +13,7 @@ import { SimulationBuilder } from "@/components/simulation/SimulationBuilder";
 import ComponentSelector from "@/components/simulation/ComponentSelector";
 import ThermodynamicsSelector from "@/components/simulation/ThermodynamicsSelector";
 import SimulationResults from "@/components/simulation/SimulationResults";
+import HysysIntegration from "@/components/simulation/HysysIntegration";
 import { Button } from "@/components/ui/button";
 import TooltipWrapper from "@/components/ui/TooltipWrapper";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -32,6 +34,7 @@ const CreateSimulation = () => {
   const [showAnalysis, setShowAnalysis] = useState(false);
   const [analysisData, setAnalysisData] = useState<any[]>([]);
   const [simulationSubject, setSimulationSubject] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'flowsheet' | 'hysys'>('flowsheet');
   const analysisRef = useRef<HTMLDivElement>(null);
   
   useEffect(() => {
@@ -377,14 +380,31 @@ const CreateSimulation = () => {
             <div className="animate-fade-in">
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Process Flowsheet Builder</h2>
               
-              <SimulationBuilder 
-                selectedComponents={selectedComponents}
-                thermodynamicModel={selectedModel}
-                onRunSimulation={handleRunSimulation}
-              />
+              <Tabs defaultValue="flowsheet" value={activeTab} onValueChange={(value) => setActiveTab(value as 'flowsheet' | 'hysys')}>
+                <TabsList className="w-full mb-6 grid grid-cols-2">
+                  <TabsTrigger value="flowsheet">Process Flowsheet</TabsTrigger>
+                  <TabsTrigger value="hysys">HYSYS Analysis</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="flowsheet">
+                  <SimulationBuilder 
+                    selectedComponents={selectedComponents}
+                    thermodynamicModel={selectedModel}
+                    onRunSimulation={handleRunSimulation}
+                  />
+                </TabsContent>
+                
+                <TabsContent value="hysys">
+                  <HysysIntegration 
+                    selectedComponents={selectedComponents}
+                    thermodynamicModel={selectedModel}
+                  />
+                </TabsContent>
+              </Tabs>
               
               {isSimulationComplete && showAnalysis && (
-                <div ref={analysisRef}>
+                <div ref={analysisRef} className="mt-6">
+                  <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-white">Simulation Results</h3>
                   <SimulationResults
                     simulationSubject={simulationSubject}
                     components={selectedComponents}
