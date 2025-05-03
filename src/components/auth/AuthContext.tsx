@@ -1,9 +1,8 @@
-
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { User, Session } from "@supabase/supabase-js";
+import { User, Session, AuthError } from "@supabase/supabase-js";
 
 interface UserProfile {
   id: string;
@@ -19,8 +18,8 @@ interface AuthContextType {
   session: Session | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  signup: (email: string, name: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<{ error?: AuthError }>;
+  signup: (email: string, name: string, password: string) => Promise<{ error?: AuthError }>;
   logout: () => void;
   updateProfile: (data: Partial<UserProfile>) => Promise<void>;
 }
@@ -132,7 +131,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         password
       });
 
-      if (error) throw error;
+      if (error) {
+        toast({
+          title: "Login failed",
+          description: error?.message || "An error occurred during login",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return { error };
+      }
 
       toast({
         title: "Login successful",
@@ -140,14 +147,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       });
       
       navigate("/dashboard");
+      setIsLoading(false);
+      return { error: undefined };
     } catch (error: any) {
       toast({
         title: "Login failed",
         description: error?.message || "An error occurred during login",
         variant: "destructive",
       });
-    } finally {
       setIsLoading(false);
+      return { error: error as AuthError };
     }
   };
 

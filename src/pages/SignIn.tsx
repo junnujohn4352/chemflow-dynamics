@@ -18,6 +18,8 @@ import {
 } from "@/components/ui/form";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useAuth } from "@/components/auth/AuthContext";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 const signInSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -30,6 +32,7 @@ type SignInFormValues = z.infer<typeof signInSchema>;
 const SignIn: React.FC = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
   const { login, isAuthenticated, isLoading } = useAuth();
 
   const form = useForm<SignInFormValues>({
@@ -49,7 +52,20 @@ const SignIn: React.FC = () => {
   }, [isAuthenticated, navigate]);
 
   const onSubmit = async (values: SignInFormValues) => {
-    await login(values.email, values.password);
+    setAuthError(null); // Reset any previous errors
+    try {
+      const result = await login(values.email, values.password);
+      if (result?.error) {
+        // Format the error message in a user-friendly way
+        if (result.error.message.includes("Email not confirmed")) {
+          setAuthError("Please confirm your email address before signing in. Check your inbox for a confirmation email.");
+        } else {
+          setAuthError(result.error.message || "An error occurred during sign in");
+        }
+      }
+    } catch (error: any) {
+      setAuthError(error?.message || "An unexpected error occurred");
+    }
   };
 
   return (
@@ -62,6 +78,13 @@ const SignIn: React.FC = () => {
         </div>
         
         <GlassPanel className="p-6">
+          {authError && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertCircle className="h-4 w-4 mr-2" />
+              <AlertDescription>{authError}</AlertDescription>
+            </Alert>
+          )}
+          
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
               <FormField
