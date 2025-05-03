@@ -1,11 +1,9 @@
-
 import React from "react";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import "./App.css";
 import { AuthProvider } from "./components/auth/AuthContext";
 
 // Pages
-import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import ChemicalFormulas from "./pages/ChemicalFormulas";
 import CreateSimulation from "./pages/CreateSimulation";
@@ -34,9 +32,21 @@ const App: React.FC = () => {
     <BrowserRouter>
       <AuthProvider>
         <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/index" element={<Index />} />
+          {/* Redirect root to dashboard */}
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          
+          {/* Landing page (kept for reference but not in main navigation) */}
+          <Route path="/landing" element={<LandingPage />} />
+          
+          {/* Dashboard is accessible to all (and is the main landing page) */}
           <Route path="/dashboard" element={<Dashboard />} />
+          
+          {/* Auth routes */}
+          <Route path="/sign-in" element={<SignIn />} />
+          <Route path="/sign-up" element={<SignUp />} />
+          <Route path="/payment" element={<PaymentPage />} />
+          
+          {/* Protected routes requiring authentication and subscription */}
           <Route path="/create-simulation" element={
             <ProtectedRoute>
               <CreateSimulation />
@@ -47,18 +57,17 @@ const App: React.FC = () => {
               <IntelligentSimulation />
             </ProtectedRoute>
           } />
-          <Route path="/formulas" element={<Formulas />} />
-          <Route path="/chemical-formulas" element={<ChemicalFormulas />} />
           <Route path="/simulations" element={
             <ProtectedRoute>
               <Simulations />
             </ProtectedRoute>
           } />
+          
+          {/* Other routes accessible to all */}
+          <Route path="/formulas" element={<Formulas />} />
+          <Route path="/chemical-formulas" element={<ChemicalFormulas />} />
           <Route path="/about" element={<About />} />
           <Route path="/settings" element={<Settings />} />
-          <Route path="/sign-in" element={<SignIn />} />
-          <Route path="/sign-up" element={<SignUp />} />
-          <Route path="/payment" element={<PaymentPage />} />
           <Route path="/software-tools" element={<SoftwareTools />} />
           <Route path="/software-topics" element={<SoftwareTopics />} />
           <Route path="/hysys-calculations" element={<HysysCalculations />} />

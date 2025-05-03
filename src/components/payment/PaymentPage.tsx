@@ -15,17 +15,26 @@ const PaymentPage: React.FC = () => {
   const [isPaid, setIsPaid] = useState(false);
   const [transactionId, setTransactionId] = useState("");
   const [transactionIdError, setTransactionIdError] = useState("");
-  const { user } = useAuth();
+  const { user, isAuthenticated, updateProfile } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
   // Check if payment was already completed
   useEffect(() => {
-    const paymentCompleted = localStorage.getItem('chemflow-payment-completed') === 'true';
-    if (paymentCompleted) {
+    if (user?.isSubscribed) {
       setIsPaid(true);
+      if (user.transactionId) {
+        setTransactionId(user.transactionId);
+      }
     }
-  }, []);
+  }, [user]);
+
+  // If not authenticated, redirect to sign-in
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate('/sign-in');
+    }
+  }, [isAuthenticated, navigate]);
 
   const validateTransactionId = () => {
     if (!transactionId.trim()) {
@@ -36,32 +45,33 @@ const PaymentPage: React.FC = () => {
     return true;
   };
 
-  const handlePaymentSuccess = () => {
+  const handlePaymentSuccess = async () => {
     if (!validateTransactionId()) return;
 
     setIsProcessing(true);
-    // Simulate payment processing
-    setTimeout(() => {
-      setIsProcessing(false);
-      setIsPaid(true);
-      localStorage.setItem('chemflow-payment-completed', 'true');
-      localStorage.setItem('chemflow-transaction-id', transactionId);
+    try {
+      // Update user profile in Supabase
+      await updateProfile({
+        isSubscribed: true,
+        transactionId: transactionId
+      });
       
-      // Update user subscription status in local storage
-      if (user) {
-        const updatedUser = { 
-          ...user, 
-          isSubscribed: true,
-          transactionId: transactionId
-        };
-        localStorage.setItem("chemflow-user", JSON.stringify(updatedUser));
-      }
+      setIsPaid(true);
       
       toast({
         title: "Payment successful!",
         description: "Your account has been successfully activated for simulations.",
       });
-    }, 2000);
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      toast({
+        title: "Payment verification failed",
+        description: "There was an error verifying your payment. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const handleContinue = () => {

@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import GlassPanel from "@/components/ui/GlassPanel";
 import { Input } from "@/components/ui/input";
@@ -17,7 +17,8 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Eye, EyeOff, Check, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { useAuth } from "@/components/auth/AuthContext";
 
 const signUpSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -44,9 +45,9 @@ type SignUpFormValues = z.infer<typeof signUpSchema>;
 const SignUp: React.FC = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const { signup, isAuthenticated, isLoading } = useAuth();
 
   const form = useForm<SignUpFormValues>({
     resolver: zodResolver(signUpSchema),
@@ -61,50 +62,15 @@ const SignUp: React.FC = () => {
     },
   });
 
-  const onSubmit = async (values: SignUpFormValues) => {
-    setIsLoading(true);
-    
-    try {
-      // Store the user data in localStorage for now
-      // This would be replaced with Supabase authentication once integrated
-      console.log("Sign up values:", values);
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Store transaction ID if available (from payment page)
-      const transactionId = localStorage.getItem('chemflow-transaction-id');
-      
-      // Create temp user object
-      const newUser = {
-        id: Math.random().toString(36).substr(2, 9),
-        name: values.name,
-        email: values.email,
-        organization: values.organization,
-        phone: values.phone,
-        isSubscribed: localStorage.getItem('chemflow-payment-completed') === 'true',
-        transactionId: transactionId || null,
-        createdAt: new Date().toISOString()
-      };
-      
-      // Store in localStorage (temporary, will be replaced with Supabase)
-      localStorage.setItem("chemflow-user-data", JSON.stringify(newUser));
-      
-      toast({
-        title: "Account created successfully",
-        description: "Welcome to ChemFlow! You can now sign in.",
-      });
-      
-      navigate("/sign-in");
-    } catch (error) {
-      toast({
-        title: "Sign up failed",
-        description: "There was an error creating your account. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
+  // If user is already authenticated, redirect to dashboard
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/dashboard");
     }
+  }, [isAuthenticated, navigate]);
+
+  const onSubmit = async (values: SignUpFormValues) => {
+    await signup(values.email, values.name, values.password);
   };
 
   return (

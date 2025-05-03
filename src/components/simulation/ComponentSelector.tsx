@@ -1,202 +1,243 @@
-import React, { useState } from "react";
-import { Check, Search, X, Plus } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+
+import React, { useState } from 'react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Check, X, Plus, Search } from 'lucide-react';
 
 interface ComponentSelectorProps {
   selectedComponents: string[];
   setSelectedComponents: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
-const ComponentSelector: React.FC<ComponentSelectorProps> = ({
-  selectedComponents,
-  setSelectedComponents,
-}) => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [activeCategory, setActiveCategory] = useState<string | null>("common");
-
-  // Extended list of chemical components by category
-  const componentsByCategory = {
-    common: [
-      "Water", "Methane", "Ethane", "Propane", "Butane", "Pentane", 
-      "Hexane", "Heptane", "Octane", "Nitrogen", "Oxygen", "Carbon Dioxide",
-      "Hydrogen", "Ethylene", "Propylene", "Benzene", "Toluene", "Methanol",
-      "Ethanol", "Acetone"
-    ],
-    hydrocarbons: [
-      "Methane", "Ethane", "Propane", "Butane", "Pentane", "Hexane", 
-      "Heptane", "Octane", "Nonane", "Decane", "Cyclopentane", "Cyclohexane",
-      "Ethylene", "Propylene", "1-Butene", "1-Pentene", "1-Hexene", 
-      "Acetylene", "Benzene", "Toluene", "Xylene", "Styrene", "Naphthalene"
-    ],
-    alcohols: [
-      "Methanol", "Ethanol", "1-Propanol", "2-Propanol", "1-Butanol", "2-Butanol", 
-      "tert-Butanol", "Glycerol", "Ethylene Glycol", "Phenol", "Cyclohexanol"
-    ],
-    acids: [
-      "Acetic Acid", "Formic Acid", "Propionic Acid", "Butyric Acid", "Sulfuric Acid", 
-      "Hydrochloric Acid", "Nitric Acid", "Phosphoric Acid", "Citric Acid"
-    ],
-    ketones: [
-      "Acetone", "Methyl Ethyl Ketone", "Methyl Isobutyl Ketone", "Cyclohexanone", 
-      "Acetophenone"
-    ],
-    ethers: [
-      "Dimethyl Ether", "Diethyl Ether", "Tetrahydrofuran", "1,4-Dioxane", 
-      "Methyl tert-Butyl Ether"
-    ],
-    esters: [
-      "Methyl Acetate", "Ethyl Acetate", "Butyl Acetate", "Methyl Benzoate", 
-      "Ethyl Benzoate"
-    ],
-    amines: [
-      "Methylamine", "Dimethylamine", "Trimethylamine", "Ethylamine", "Aniline", 
-      "Pyridine"
-    ],
-    gases: [
-      "Hydrogen", "Nitrogen", "Oxygen", "Carbon Dioxide", "Carbon Monoxide", 
-      "Helium", "Argon", "Neon", "Krypton", "Xenon", "Ammonia", "Chlorine",
-      "Sulfur Dioxide", "Hydrogen Sulfide", "Nitrous Oxide"
-    ],
-    halogenated: [
-      "Dichloromethane", "Chloroform", "Carbon Tetrachloride", "1,2-Dichloroethane", 
-      "Chlorobenzene", "Freon-12", "Freon-22", "HFC-134a"
-    ],
-    inorganic: [
-      "Water", "Ammonia", "Hydrogen Peroxide", "Sulfuric Acid", "Nitric Acid", 
-      "Sodium Hydroxide", "Potassium Hydroxide", "Hydrochloric Acid"
-    ]
-  };
-
-  const categories = [
-    { id: "common", name: "Common" },
-    { id: "hydrocarbons", name: "Hydrocarbons" },
-    { id: "alcohols", name: "Alcohols" },
-    { id: "acids", name: "Acids" },
-    { id: "ketones", name: "Ketones" },
-    { id: "ethers", name: "Ethers" },
-    { id: "esters", name: "Esters" },
-    { id: "amines", name: "Amines" },
-    { id: "gases", name: "Gases" },
-    { id: "halogenated", name: "Halogenated" },
-    { id: "inorganic", name: "Inorganic" },
+const ComponentSelector: React.FC<ComponentSelectorProps> = ({ selectedComponents, setSelectedComponents }) => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showAddCustom, setShowAddCustom] = useState(false);
+  const [customName, setCustomName] = useState('');
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  
+  const componentCategories = [
+    {
+      name: 'Hydrocarbons',
+      components: ['Methane', 'Ethane', 'Propane', 'Butane', 'Pentane', 'Hexane', 'Heptane', 'Octane']
+    },
+    {
+      name: 'Aromatics',
+      components: ['Benzene', 'Toluene', 'Xylene', 'Styrene', 'Cumene']
+    },
+    {
+      name: 'Alcohols',
+      components: ['Methanol', 'Ethanol', 'Propanol', 'Butanol', 'Glycol', 'Glycerol']
+    },
+    {
+      name: 'Ketones',
+      components: ['Acetone', 'MEK', 'MIBK']
+    },
+    {
+      name: 'Acids',
+      components: ['Acetic Acid', 'Formic Acid', 'Propionic Acid', 'Butyric Acid']
+    },
+    {
+      name: 'Gases',
+      components: ['Oxygen', 'Nitrogen', 'Carbon Dioxide', 'Carbon Monoxide', 'Hydrogen', 'Ammonia']
+    },
+    {
+      name: 'Water',
+      components: ['Water', 'Steam', 'Heavy Water']
+    },
+    {
+      name: 'Custom',
+      components: []
+    }
   ];
 
-  // Get components for the active category
-  const getActiveComponents = () => {
-    if (!activeCategory) return [];
-    return componentsByCategory[activeCategory as keyof typeof componentsByCategory] || [];
-  };
+  // Get all component names for searching
+  const allComponents = componentCategories.flatMap(category => category.components);
 
   // Filter components based on search term
-  const filteredComponents = searchTerm
-    ? Object.values(componentsByCategory)
-        .flat()
-        .filter((component) =>
-          component.toLowerCase().includes(searchTerm.toLowerCase())
-        )
-    : getActiveComponents();
+  const filteredComponents = allComponents.filter(component =>
+    component.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
-  // Add a component to the selection
-  const handleAddComponent = (component: string) => {
-    if (!selectedComponents.includes(component)) {
+  // Handle component selection/deselection
+  const toggleComponent = (component: string) => {
+    if (selectedComponents.includes(component)) {
+      setSelectedComponents(selectedComponents.filter(c => c !== component));
+    } else {
       setSelectedComponents([...selectedComponents, component]);
     }
   };
 
-  // Remove a component from the selection
-  const handleRemoveComponent = (component: string) => {
-    setSelectedComponents(selectedComponents.filter((c) => c !== component));
+  // Handle adding custom component
+  const handleAddCustom = () => {
+    if (customName.trim() && !allComponents.includes(customName.trim())) {
+      // Add to selected components
+      setSelectedComponents([...selectedComponents, customName.trim()]);
+      // Reset input
+      setCustomName('');
+      setShowAddCustom(false);
+    }
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="relative">
+        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <Search className="h-4 w-4 text-gray-400" />
+        </div>
         <Input
           type="text"
-          placeholder="Search components..."
+          placeholder="Search for components..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="pl-10"
         />
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
       </div>
 
-      {/* Categories */}
       <div className="flex flex-wrap gap-2">
-        {categories.map((category) => (
+        {componentCategories.map(category => (
           <Button
-            key={category.id}
-            variant={activeCategory === category.id ? "default" : "outline"}
+            key={category.name}
+            variant={activeCategory === category.name ? "default" : "outline"}
             size="sm"
-            onClick={() => {
-              setActiveCategory(category.id);
-              setSearchTerm("");
-            }}
-            className={activeCategory === category.id ? "bg-blue-600 hover:bg-blue-700" : ""}
+            onClick={() => setActiveCategory(activeCategory === category.name ? null : category.name)}
           >
             {category.name}
           </Button>
         ))}
       </div>
 
-      {/* Display filtered components */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-        {filteredComponents.map((component) => (
-          <div
-            key={component}
-            className={`p-3 rounded-lg border transition-colors ${
-              selectedComponents.includes(component)
-                ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
-                : "border-gray-200 hover:border-blue-300 dark:border-gray-700 dark:hover:border-blue-800"
-            }`}
-          >
-            <div className="flex justify-between items-center">
-              <span className="text-sm dark:text-gray-200">{component}</span>
-              {selectedComponents.includes(component) ? (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6 text-blue-600"
-                  onClick={() => handleRemoveComponent(component)}
-                >
-                  <Check className="h-4 w-4" />
-                </Button>
-              ) : (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6 text-gray-400 hover:text-blue-600"
-                  onClick={() => handleAddComponent(component)}
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Selected components */}
-      {selectedComponents.length > 0 && (
-        <div className="mt-6">
-          <h3 className="text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Selected Components</h3>
+      <div className="border rounded-lg p-2">
+        <div className="mb-2 font-medium">Selected Components ({selectedComponents.length})</div>
+        {selectedComponents.length === 0 ? (
+          <div className="text-gray-500 dark:text-gray-400 text-sm">No components selected</div>
+        ) : (
           <div className="flex flex-wrap gap-2">
-            {selectedComponents.map((component) => (
-              <div
+            {selectedComponents.map(component => (
+              <Badge
                 key={component}
-                className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 px-2 py-1 rounded-md flex items-center text-sm"
+                variant="secondary"
+                className="flex gap-1 items-center pl-3 pr-1.5 py-1.5"
               >
                 {component}
-                <button
-                  onClick={() => handleRemoveComponent(component)}
-                  className="ml-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200"
+                <button 
+                  onClick={() => toggleComponent(component)}
+                  className="ml-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 p-0.5"
                 >
                   <X className="h-3 w-3" />
                 </button>
-              </div>
+              </Badge>
             ))}
           </div>
+        )}
+      </div>
+
+      {searchTerm && (
+        <div className="border rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
+          <h3 className="font-medium mb-2">Search Results</h3>
+          {filteredComponents.length > 0 ? (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+              {filteredComponents.map(component => (
+                <Button
+                  key={component}
+                  variant="outline"
+                  size="sm"
+                  className={`justify-start ${
+                    selectedComponents.includes(component) ? "border-flow-blue text-flow-blue" : ""
+                  }`}
+                  onClick={() => toggleComponent(component)}
+                >
+                  {selectedComponents.includes(component) && <Check className="h-3 w-3 mr-2" />}
+                  {component}
+                </Button>
+              ))}
+            </div>
+          ) : (
+            <div className="text-gray-500 dark:text-gray-400">No components found</div>
+          )}
+        </div>
+      )}
+
+      {activeCategory && (
+        <div className="border rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
+          <h3 className="font-medium mb-2">{activeCategory} Components</h3>
+          {activeCategory === 'Custom' ? (
+            <div className="space-y-3">
+              {!showAddCustom ? (
+                <Button 
+                  onClick={() => setShowAddCustom(true)} 
+                  variant="outline"
+                  className="flex items-center gap-1"
+                >
+                  <Plus className="h-4 w-4" />
+                  Add Custom Component
+                </Button>
+              ) : (
+                <div className="flex gap-2">
+                  <Input
+                    value={customName}
+                    onChange={(e) => setCustomName(e.target.value)}
+                    placeholder="Enter component name"
+                    className="flex-1"
+                    autoFocus
+                  />
+                  <Button onClick={handleAddCustom} disabled={!customName.trim()}>
+                    Add
+                  </Button>
+                  <Button variant="outline" onClick={() => {
+                    setShowAddCustom(false);
+                    setCustomName('');
+                  }}>
+                    Cancel
+                  </Button>
+                </div>
+              )}
+              
+              {selectedComponents.filter(comp => !allComponents.includes(comp)).length > 0 && (
+                <div className="mt-3">
+                  <h4 className="text-sm font-medium mb-2">Your Custom Components:</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedComponents
+                      .filter(comp => !allComponents.includes(comp))
+                      .map(component => (
+                        <Badge
+                          key={component}
+                          variant="secondary"
+                          className="flex gap-1 items-center pl-3 pr-1.5 py-1.5"
+                        >
+                          {component}
+                          <button 
+                            onClick={() => toggleComponent(component)}
+                            className="ml-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 p-0.5"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </Badge>
+                      ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+              {componentCategories
+                .find(cat => cat.name === activeCategory)
+                ?.components.map(component => (
+                  <Button
+                    key={component}
+                    variant="outline"
+                    size="sm"
+                    className={`justify-start ${
+                      selectedComponents.includes(component) ? "border-flow-blue text-flow-blue" : ""
+                    }`}
+                    onClick={() => toggleComponent(component)}
+                  >
+                    {selectedComponents.includes(component) && <Check className="h-3 w-3 mr-2" />}
+                    {component}
+                  </Button>
+                ))}
+            </div>
+          )}
         </div>
       )}
     </div>

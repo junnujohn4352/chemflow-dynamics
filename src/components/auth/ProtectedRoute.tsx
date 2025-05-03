@@ -22,12 +22,13 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     );
   }
   
+  // If not authenticated, redirect to sign-in
   if (!isAuthenticated) {
     return <Navigate to="/sign-in" replace />;
   }
   
   // Check if user has access to simulation (has paid)
-  const hasSimulationAccess = user?.isSubscribed || localStorage.getItem('chemflow-payment-completed') === 'true';
+  const hasSimulationAccess = user?.isSubscribed;
   
   // If route requires subscription and user hasn't paid, redirect to payment
   if (requiresSubscription && !hasSimulationAccess) {
