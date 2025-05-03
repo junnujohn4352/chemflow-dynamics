@@ -1,204 +1,204 @@
-
 import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Check, Search, X, Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Search, Plus, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface ComponentSelectorProps {
   selectedComponents: string[];
   setSelectedComponents: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
-// Chemical component database
-const chemicalComponents = [
-  { id: "water", name: "Water", formula: "H₂O", category: "common" },
-  { id: "methane", name: "Methane", formula: "CH₄", category: "hydrocarbon" },
-  { id: "ethane", name: "Ethane", formula: "C₂H₆", category: "hydrocarbon" },
-  { id: "propane", name: "Propane", formula: "C₃H₈", category: "hydrocarbon" },
-  { id: "butane", name: "Butane", formula: "C₄H₁₀", category: "hydrocarbon" },
-  { id: "pentane", name: "Pentane", formula: "C₅H₁₂", category: "hydrocarbon" },
-  { id: "hexane", name: "Hexane", formula: "C₆H₁₄", category: "hydrocarbon" },
-  { id: "ethylene", name: "Ethylene", formula: "C₂H₄", category: "hydrocarbon" },
-  { id: "propylene", name: "Propylene", formula: "C₃H₆", category: "hydrocarbon" },
-  { id: "benzene", name: "Benzene", formula: "C₆H₆", category: "aromatic" },
-  { id: "toluene", name: "Toluene", formula: "C₇H₈", category: "aromatic" },
-  { id: "xylene", name: "Xylene", formula: "C₈H₁₀", category: "aromatic" },
-  { id: "methanol", name: "Methanol", formula: "CH₃OH", category: "alcohol" },
-  { id: "ethanol", name: "Ethanol", formula: "C₂H₅OH", category: "alcohol" },
-  { id: "propanol", name: "n-Propanol", formula: "C₃H₇OH", category: "alcohol" },
-  { id: "butanol", name: "n-Butanol", formula: "C₄H₉OH", category: "alcohol" },
-  { id: "acetic-acid", name: "Acetic Acid", formula: "CH₃COOH", category: "acid" },
-  { id: "formic-acid", name: "Formic Acid", formula: "HCOOH", category: "acid" },
-  { id: "sulfuric-acid", name: "Sulfuric Acid", formula: "H₂SO₄", category: "acid" },
-  { id: "nitrogen", name: "Nitrogen", formula: "N₂", category: "gas" },
-  { id: "oxygen", name: "Oxygen", formula: "O₂", category: "gas" },
-  { id: "hydrogen", name: "Hydrogen", formula: "H₂", category: "gas" },
-  { id: "carbon-dioxide", name: "Carbon Dioxide", formula: "CO₂", category: "gas" },
-  { id: "carbon-monoxide", name: "Carbon Monoxide", formula: "CO", category: "gas" },
-  { id: "ammonia", name: "Ammonia", formula: "NH₃", category: "gas" },
-  { id: "acetone", name: "Acetone", formula: "C₃H₆O", category: "ketone" },
-  { id: "acetaldehyde", name: "Acetaldehyde", formula: "C₂H₄O", category: "aldehyde" },
-  { id: "formaldehyde", name: "Formaldehyde", formula: "CH₂O", category: "aldehyde" },
-  { id: "chlorine", name: "Chlorine", formula: "Cl₂", category: "inorganic" },
-  { id: "hydrogen-chloride", name: "Hydrogen Chloride", formula: "HCl", category: "inorganic" },
-  { id: "sodium-hydroxide", name: "Sodium Hydroxide", formula: "NaOH", category: "inorganic" },
-  { id: "calcium-oxide", name: "Calcium Oxide", formula: "CaO", category: "inorganic" },
-  { id: "styrene", name: "Styrene", formula: "C₈H₈", category: "aromatic" },
-  { id: "glycerol", name: "Glycerol", formula: "C₃H₈O₃", category: "alcohol" },
-  { id: "mek", name: "Methyl Ethyl Ketone", formula: "C₄H₈O", category: "ketone" },
-  { id: "air", name: "Air", formula: "N₂/O₂", category: "mixture" }
-];
-
-const categories = [
-  { id: "all", name: "All" },
-  { id: "common", name: "Common" },
-  { id: "hydrocarbon", name: "Hydrocarbons" },
-  { id: "aromatic", name: "Aromatics" },
-  { id: "alcohol", name: "Alcohols" },
-  { id: "acid", name: "Acids" },
-  { id: "gas", name: "Gases" },
-  { id: "ketone", name: "Ketones" },
-  { id: "aldehyde", name: "Aldehydes" },
-  { id: "inorganic", name: "Inorganics" },
-  { id: "mixture", name: "Mixtures" }
-];
-
-const ComponentSelector: React.FC<ComponentSelectorProps> = ({ 
-  selectedComponents, 
-  setSelectedComponents 
+const ComponentSelector: React.FC<ComponentSelectorProps> = ({
+  selectedComponents,
+  setSelectedComponents,
 }) => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all");
-  
-  const handleAddComponent = (componentName: string) => {
-    if (!selectedComponents.includes(componentName)) {
-      setSelectedComponents([...selectedComponents, componentName]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [activeCategory, setActiveCategory] = useState<string | null>("common");
+
+  // Extended list of chemical components by category
+  const componentsByCategory = {
+    common: [
+      "Water", "Methane", "Ethane", "Propane", "Butane", "Pentane", 
+      "Hexane", "Heptane", "Octane", "Nitrogen", "Oxygen", "Carbon Dioxide",
+      "Hydrogen", "Ethylene", "Propylene", "Benzene", "Toluene", "Methanol",
+      "Ethanol", "Acetone"
+    ],
+    hydrocarbons: [
+      "Methane", "Ethane", "Propane", "Butane", "Pentane", "Hexane", 
+      "Heptane", "Octane", "Nonane", "Decane", "Cyclopentane", "Cyclohexane",
+      "Ethylene", "Propylene", "1-Butene", "1-Pentene", "1-Hexene", 
+      "Acetylene", "Benzene", "Toluene", "Xylene", "Styrene", "Naphthalene"
+    ],
+    alcohols: [
+      "Methanol", "Ethanol", "1-Propanol", "2-Propanol", "1-Butanol", "2-Butanol", 
+      "tert-Butanol", "Glycerol", "Ethylene Glycol", "Phenol", "Cyclohexanol"
+    ],
+    acids: [
+      "Acetic Acid", "Formic Acid", "Propionic Acid", "Butyric Acid", "Sulfuric Acid", 
+      "Hydrochloric Acid", "Nitric Acid", "Phosphoric Acid", "Citric Acid"
+    ],
+    ketones: [
+      "Acetone", "Methyl Ethyl Ketone", "Methyl Isobutyl Ketone", "Cyclohexanone", 
+      "Acetophenone"
+    ],
+    ethers: [
+      "Dimethyl Ether", "Diethyl Ether", "Tetrahydrofuran", "1,4-Dioxane", 
+      "Methyl tert-Butyl Ether"
+    ],
+    esters: [
+      "Methyl Acetate", "Ethyl Acetate", "Butyl Acetate", "Methyl Benzoate", 
+      "Ethyl Benzoate"
+    ],
+    amines: [
+      "Methylamine", "Dimethylamine", "Trimethylamine", "Ethylamine", "Aniline", 
+      "Pyridine"
+    ],
+    gases: [
+      "Hydrogen", "Nitrogen", "Oxygen", "Carbon Dioxide", "Carbon Monoxide", 
+      "Helium", "Argon", "Neon", "Krypton", "Xenon", "Ammonia", "Chlorine",
+      "Sulfur Dioxide", "Hydrogen Sulfide", "Nitrous Oxide"
+    ],
+    halogenated: [
+      "Dichloromethane", "Chloroform", "Carbon Tetrachloride", "1,2-Dichloroethane", 
+      "Chlorobenzene", "Freon-12", "Freon-22", "HFC-134a"
+    ],
+    inorganic: [
+      "Water", "Ammonia", "Hydrogen Peroxide", "Sulfuric Acid", "Nitric Acid", 
+      "Sodium Hydroxide", "Potassium Hydroxide", "Hydrochloric Acid"
+    ]
+  };
+
+  const categories = [
+    { id: "common", name: "Common" },
+    { id: "hydrocarbons", name: "Hydrocarbons" },
+    { id: "alcohols", name: "Alcohols" },
+    { id: "acids", name: "Acids" },
+    { id: "ketones", name: "Ketones" },
+    { id: "ethers", name: "Ethers" },
+    { id: "esters", name: "Esters" },
+    { id: "amines", name: "Amines" },
+    { id: "gases", name: "Gases" },
+    { id: "halogenated", name: "Halogenated" },
+    { id: "inorganic", name: "Inorganic" },
+  ];
+
+  // Get components for the active category
+  const getActiveComponents = () => {
+    if (!activeCategory) return [];
+    return componentsByCategory[activeCategory as keyof typeof componentsByCategory] || [];
+  };
+
+  // Filter components based on search term
+  const filteredComponents = searchTerm
+    ? Object.values(componentsByCategory)
+        .flat()
+        .filter((component) =>
+          component.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+    : getActiveComponents();
+
+  // Add a component to the selection
+  const handleAddComponent = (component: string) => {
+    if (!selectedComponents.includes(component)) {
+      setSelectedComponents([...selectedComponents, component]);
     }
   };
-  
-  const handleRemoveComponent = (componentName: string) => {
-    setSelectedComponents(selectedComponents.filter(c => c !== componentName));
+
+  // Remove a component from the selection
+  const handleRemoveComponent = (component: string) => {
+    setSelectedComponents(selectedComponents.filter((c) => c !== component));
   };
-  
-  const filteredComponents = chemicalComponents.filter(component => {
-    const matchesSearch = component.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          component.formula.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === "all" || component.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-      <div className="md:col-span-3 space-y-4">
-        <div className="flex items-center space-x-2">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input 
-              placeholder="Search components..." 
-              className="pl-9"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+    <div className="space-y-6">
+      <div className="relative">
+        <Input
+          type="text"
+          placeholder="Search components..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="pl-10"
+        />
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+      </div>
+
+      {/* Categories */}
+      <div className="flex flex-wrap gap-2">
+        {categories.map((category) => (
+          <Button
+            key={category.id}
+            variant={activeCategory === category.id ? "default" : "outline"}
+            size="sm"
+            onClick={() => {
+              setActiveCategory(category.id);
+              setSearchTerm("");
+            }}
+            className={activeCategory === category.id ? "bg-blue-600 hover:bg-blue-700" : ""}
+          >
+            {category.name}
+          </Button>
+        ))}
+      </div>
+
+      {/* Display filtered components */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+        {filteredComponents.map((component) => (
+          <div
+            key={component}
+            className={`p-3 rounded-lg border transition-colors ${
+              selectedComponents.includes(component)
+                ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                : "border-gray-200 hover:border-blue-300 dark:border-gray-700 dark:hover:border-blue-800"
+            }`}
+          >
+            <div className="flex justify-between items-center">
+              <span className="text-sm dark:text-gray-200">{component}</span>
+              {selectedComponents.includes(component) ? (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 text-blue-600"
+                  onClick={() => handleRemoveComponent(component)}
+                >
+                  <Check className="h-4 w-4" />
+                </Button>
+              ) : (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 text-gray-400 hover:text-blue-600"
+                  onClick={() => handleAddComponent(component)}
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
           </div>
-        </div>
-        
-        <div className="flex flex-wrap gap-2 mb-4">
-          {categories.map(category => (
-            <Button
-              key={category.id}
-              variant={selectedCategory === category.id ? "default" : "outline"}
-              size="sm"
-              onClick={() => setSelectedCategory(category.id)}
-            >
-              {category.name}
-            </Button>
-          ))}
-        </div>
-        
-        <ScrollArea className="h-[350px] border rounded-md p-2">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {filteredComponents.map(component => (
+        ))}
+      </div>
+
+      {/* Selected components */}
+      {selectedComponents.length > 0 && (
+        <div className="mt-6">
+          <h3 className="text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Selected Components</h3>
+          <div className="flex flex-wrap gap-2">
+            {selectedComponents.map((component) => (
               <div
-                key={component.id}
-                className={`p-3 rounded-md border hover:bg-gray-50 cursor-pointer ${
-                  selectedComponents.includes(component.name) ? "bg-blue-50 border-blue-200" : ""
-                }`}
-                onClick={() => handleAddComponent(component.name)}
+                key={component}
+                className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 px-2 py-1 rounded-md flex items-center text-sm"
               >
-                <div className="flex justify-between items-start">
-                  <div>
-                    <div className="font-medium">{component.name}</div>
-                    <div className="text-sm text-gray-500">{component.formula}</div>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6 text-gray-400 hover:text-blue-600"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (selectedComponents.includes(component.name)) {
-                        handleRemoveComponent(component.name);
-                      } else {
-                        handleAddComponent(component.name);
-                      }
-                    }}
-                  >
-                    {selectedComponents.includes(component.name) ? (
-                      <X className="h-4 w-4" />
-                    ) : (
-                      <Plus className="h-4 w-4" />
-                    )}
-                  </Button>
-                </div>
+                {component}
+                <button
+                  onClick={() => handleRemoveComponent(component)}
+                  className="ml-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200"
+                >
+                  <X className="h-3 w-3" />
+                </button>
               </div>
             ))}
           </div>
-        </ScrollArea>
-      </div>
-      
-      <div className="md:col-span-2 space-y-4">
-        <div className="flex justify-between items-center">
-          <h3 className="font-medium">Selected Components</h3>
-          <span className="text-sm text-gray-500">{selectedComponents.length} selected</span>
         </div>
-        
-        <div className="border rounded-md p-4 h-[350px] overflow-auto">
-          {selectedComponents.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-center text-gray-500">
-              <p>No components selected</p>
-              <p className="text-sm mt-1">Select components from the list</p>
-            </div>
-          ) : (
-            <ul className="space-y-2">
-              {selectedComponents.map(component => {
-                const componentData = chemicalComponents.find(c => c.name === component);
-                return (
-                  <li 
-                    key={component} 
-                    className="flex justify-between items-center p-2 bg-blue-50 rounded-md"
-                  >
-                    <div>
-                      <span className="font-medium">{component}</span>
-                      {componentData && (
-                        <span className="ml-2 text-sm text-gray-500">{componentData.formula}</span>
-                      )}
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6 text-gray-400 hover:text-red-600"
-                      onClick={() => handleRemoveComponent(component)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </div>
-      </div>
+      )}
     </div>
   );
 };

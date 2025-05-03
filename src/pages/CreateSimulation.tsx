@@ -260,7 +260,7 @@ const CreateSimulation = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="flex flex-col min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-900 dark:to-blue-900">
       <Navbar />
       
       <main className="flex-1 container mx-auto px-4 py-6">
@@ -383,57 +383,12 @@ const CreateSimulation = () => {
               />
               
               {isSimulationComplete && showAnalysis && (
-                <div ref={analysisRef} className="mt-8 border-t pt-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold flex items-center">
-                      <BarChart3 className="h-5 w-5 mr-2 text-blue-500" />
-                      Simulation Results
-                    </h3>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={() => setShowAnalysis(!showAnalysis)}
-                    >
-                      {showAnalysis ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                    </Button>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                      <h4 className="font-medium mb-2">Simulation Summary</h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">
-                        {simulationSubject} simulation with {selectedComponents.join(", ")} using {selectedModel} model.
-                      </p>
-                      <div className="mt-4">
-                        <Button size="sm" onClick={handleExportToPDF} className="flex items-center">
-                          <FileText className="h-4 w-4 mr-1" />
-                          Export Report
-                        </Button>
-                      </div>
-                    </div>
-                    
-                    <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                      <h4 className="font-medium mb-2">Performance Metrics</h4>
-                      <div className="grid grid-cols-2 gap-2 text-sm">
-                        <div>
-                          <p className="text-gray-500 dark:text-gray-400">Efficiency:</p>
-                          <p className="font-medium">{Math.floor(Math.random() * 30) + 70}%</p>
-                        </div>
-                        <div>
-                          <p className="text-gray-500 dark:text-gray-400">Conversion:</p>
-                          <p className="font-medium">{Math.floor(Math.random() * 20) + 80}%</p>
-                        </div>
-                        <div>
-                          <p className="text-gray-500 dark:text-gray-400">Energy Usage:</p>
-                          <p className="font-medium">{Math.floor(Math.random() * 500) + 1000} kJ</p>
-                        </div>
-                        <div>
-                          <p className="text-gray-500 dark:text-gray-400">Product Purity:</p>
-                          <p className="font-medium">{Math.floor(Math.random() * 10) + 90}%</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                <div ref={analysisRef}>
+                  <SimulationResults
+                    simulationSubject={simulationSubject}
+                    components={selectedComponents}
+                    thermodynamicModel={selectedModel}
+                  />
                 </div>
               )}
             </div>

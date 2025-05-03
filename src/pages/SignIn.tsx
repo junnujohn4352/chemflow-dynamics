@@ -1,14 +1,13 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import GlassPanel from "@/components/ui/GlassPanel";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import ChemFlowLogo from "@/assets/icons/ChemFlowLogo";
+import { ChemFlowLogo } from "@/assets/icons/ChemFlowLogo";
 import {
   Form,
   FormControl,
@@ -18,6 +17,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { useAuth } from "@/components/auth/AuthContext";
 
 const signInSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -28,10 +28,9 @@ const signInSchema = z.object({
 type SignInFormValues = z.infer<typeof signInSchema>;
 
 const SignIn: React.FC = () => {
-  const { toast } = useToast();
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const { login, isAuthenticated, isLoading } = useAuth();
 
   const form = useForm<SignInFormValues>({
     resolver: zodResolver(signInSchema),
@@ -42,44 +41,24 @@ const SignIn: React.FC = () => {
     },
   });
 
-  const onSubmit = async (values: SignInFormValues) => {
-    setIsLoading(true);
-    
-    try {
-      // This would be replaced with actual authentication logic
-      console.log("Sign in values:", values);
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Set authentication status in localStorage
-      localStorage.setItem("auth", "true");
-      
-      toast({
-        title: "Signed in successfully",
-        description: "Welcome back to ChemFlow!",
-      });
-      
-      // Redirect to dashboard instead of root
-      navigate("/simulations");
-    } catch (error) {
-      toast({
-        title: "Sign in failed",
-        description: "Invalid email or password. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
+  // If user is already authenticated, redirect to dashboard
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/dashboard");
     }
+  }, [isAuthenticated, navigate]);
+
+  const onSubmit = async (values: SignInFormValues) => {
+    await login(values.email, values.password);
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-900 dark:to-blue-900 flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
           <ChemFlowLogo className="mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-gray-900">Welcome back</h1>
-          <p className="text-gray-600 mt-1">Sign in to your account</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Welcome back</h1>
+          <p className="text-gray-600 dark:text-gray-300 mt-1">Sign in to your account</p>
         </div>
         
         <GlassPanel className="p-6">
@@ -155,7 +134,7 @@ const SignIn: React.FC = () => {
                       </div>
                     </FormControl>
                     <div className="text-sm">
-                      <FormLabel htmlFor="rememberMe" className="font-medium text-gray-700">
+                      <FormLabel htmlFor="rememberMe" className="font-medium text-gray-700 dark:text-gray-300">
                         Remember me for 30 days
                       </FormLabel>
                     </div>
@@ -165,7 +144,7 @@ const SignIn: React.FC = () => {
               
               <Button 
                 type="submit" 
-                className="w-full" 
+                className="w-full bg-flow-blue hover:bg-flow-blue/90" 
                 disabled={isLoading}
               >
                 {isLoading ? (
@@ -181,7 +160,7 @@ const SignIn: React.FC = () => {
           </Form>
           
           <div className="mt-6 text-center text-sm">
-            <p className="text-gray-600">
+            <p className="text-gray-600 dark:text-gray-400">
               Don't have an account?{" "}
               <Link to="/sign-up" className="text-flow-blue hover:text-flow-blue/90 font-medium">
                 Sign up
