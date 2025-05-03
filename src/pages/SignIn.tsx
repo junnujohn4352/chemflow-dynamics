@@ -49,7 +49,11 @@ const SignIn: React.FC = () => {
   }, [isAuthenticated, navigate]);
 
   const onSubmit = async (values: SignInFormValues) => {
-    await login(values.email, values.password);
+    // Get transaction ID from localStorage
+    const transactionId = localStorage.getItem('chemflow-transaction-id');
+    
+    // Call the login function, now we'll also pass the transactionId
+    await login(values.email, values.password, transactionId);
   };
 
   return (

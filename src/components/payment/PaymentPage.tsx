@@ -6,11 +6,15 @@ import { useAuth } from "@/components/auth/AuthContext";
 import { Button } from "@/components/ui/button";
 import GlassPanel from "@/components/ui/GlassPanel";
 import { useToast } from "@/hooks/use-toast";
-import { Check, Lock, CreditCard, ArrowRight } from "lucide-react";
+import { Check, Lock, CreditCard, ArrowRight, AlertCircle } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const PaymentPage: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isPaid, setIsPaid] = useState(false);
+  const [transactionId, setTransactionId] = useState("");
+  const [transactionIdError, setTransactionIdError] = useState("");
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -23,17 +27,33 @@ const PaymentPage: React.FC = () => {
     }
   }, []);
 
+  const validateTransactionId = () => {
+    if (!transactionId.trim()) {
+      setTransactionIdError("Transaction ID/UTR Number is required");
+      return false;
+    }
+    setTransactionIdError("");
+    return true;
+  };
+
   const handlePaymentSuccess = () => {
+    if (!validateTransactionId()) return;
+
     setIsProcessing(true);
     // Simulate payment processing
     setTimeout(() => {
       setIsProcessing(false);
       setIsPaid(true);
       localStorage.setItem('chemflow-payment-completed', 'true');
+      localStorage.setItem('chemflow-transaction-id', transactionId);
       
       // Update user subscription status in local storage
       if (user) {
-        const updatedUser = { ...user, isSubscribed: true };
+        const updatedUser = { 
+          ...user, 
+          isSubscribed: true,
+          transactionId: transactionId
+        };
         localStorage.setItem("chemflow-user", JSON.stringify(updatedUser));
       }
       
@@ -129,12 +149,34 @@ const PaymentPage: React.FC = () => {
                       </div>
                       <div className="p-4 flex justify-center bg-white dark:bg-gray-900">
                         <img 
-                          src="/lovable-uploads/d646d233-5c96-400f-8e3e-4545defd077a.png" 
+                          src="/lovable-uploads/05c023b7-7456-4916-b341-0146f9129cd3.png" 
                           alt="PhonePe QR Code" 
                           className="w-48 h-48 object-contain"
                         />
                       </div>
                     </div>
+                  </div>
+                  
+                  <div className="mb-6">
+                    <Label htmlFor="transactionId" className="mb-2 block">
+                      Transaction ID/UTR Number
+                    </Label>
+                    <Input
+                      id="transactionId"
+                      placeholder="Enter your payment Transaction ID or UTR Number"
+                      value={transactionId}
+                      onChange={(e) => setTransactionId(e.target.value)}
+                      className={transactionIdError ? "border-red-500" : ""}
+                    />
+                    {transactionIdError && (
+                      <div className="text-red-500 text-sm mt-1 flex items-center">
+                        <AlertCircle className="h-4 w-4 mr-1" />
+                        {transactionIdError}
+                      </div>
+                    )}
+                    <p className="text-sm text-gray-500 mt-1">
+                      This ID is provided by your bank or payment app after successful payment
+                    </p>
                   </div>
                   
                   <div className="mt-6">

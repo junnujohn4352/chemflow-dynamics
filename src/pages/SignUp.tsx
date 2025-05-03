@@ -8,7 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import ChemFlowLogo from "@/assets/icons/ChemFlowLogo";
+import { ChemFlowLogo } from "@/assets/icons/ChemFlowLogo";
 import {
   Form,
   FormControl,
@@ -29,6 +29,8 @@ const signUpSchema = z.object({
     .regex(/[a-z]/, "Password must contain at least one lowercase letter")
     .regex(/[0-9]/, "Password must contain at least one number"),
   confirmPassword: z.string(),
+  organization: z.string().optional(),
+  phone: z.string().optional(),
   termsAccepted: z.boolean().refine(val => val === true, {
     message: "You must accept the terms and conditions",
   }),
@@ -53,6 +55,8 @@ const SignUp: React.FC = () => {
       email: "",
       password: "",
       confirmPassword: "",
+      organization: "",
+      phone: "",
       termsAccepted: false,
     },
   });
@@ -61,11 +65,30 @@ const SignUp: React.FC = () => {
     setIsLoading(true);
     
     try {
-      // This would be replaced with actual authentication logic
+      // Store the user data in localStorage for now
+      // This would be replaced with Supabase authentication once integrated
       console.log("Sign up values:", values);
       
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Store transaction ID if available (from payment page)
+      const transactionId = localStorage.getItem('chemflow-transaction-id');
+      
+      // Create temp user object
+      const newUser = {
+        id: Math.random().toString(36).substr(2, 9),
+        name: values.name,
+        email: values.email,
+        organization: values.organization,
+        phone: values.phone,
+        isSubscribed: localStorage.getItem('chemflow-payment-completed') === 'true',
+        transactionId: transactionId || null,
+        createdAt: new Date().toISOString()
+      };
+      
+      // Store in localStorage (temporary, will be replaced with Supabase)
+      localStorage.setItem("chemflow-user-data", JSON.stringify(newUser));
       
       toast({
         title: "Account created successfully",
@@ -85,12 +108,12 @@ const SignUp: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-900 dark:to-blue-900 flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
           <ChemFlowLogo className="mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-gray-900">Create your account</h1>
-          <p className="text-gray-600 mt-1">Sign up to start building simulations</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Create your account</h1>
+          <p className="text-gray-600 dark:text-gray-300 mt-1">Sign up to start building simulations</p>
         </div>
         
         <GlassPanel className="p-6">
@@ -123,6 +146,36 @@ const SignUp: React.FC = () => {
                   </FormItem>
                 )}
               />
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <FormField
+                  control={form.control}
+                  name="organization"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Organization (Optional)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Company or University" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="phone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Phone Number (Optional)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="+91 98765 43210" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
               
               <FormField
                 control={form.control}
@@ -203,7 +256,7 @@ const SignUp: React.FC = () => {
                       </div>
                     </FormControl>
                     <div className="text-sm">
-                      <FormLabel htmlFor="termsAccepted" className="font-medium text-gray-700">
+                      <FormLabel htmlFor="termsAccepted" className="font-medium text-gray-700 dark:text-gray-300">
                         I agree to the{" "}
                         <a href="#" className="text-flow-blue hover:text-flow-blue/90">
                           Terms of Service
@@ -221,7 +274,7 @@ const SignUp: React.FC = () => {
               
               <Button 
                 type="submit" 
-                className="w-full" 
+                className="w-full bg-flow-blue hover:bg-flow-blue/90" 
                 disabled={isLoading}
               >
                 {isLoading ? (
@@ -237,7 +290,7 @@ const SignUp: React.FC = () => {
           </Form>
           
           <div className="mt-6 text-center text-sm">
-            <p className="text-gray-600">
+            <p className="text-gray-600 dark:text-gray-400">
               Already have an account?{" "}
               <Link to="/sign-in" className="text-flow-blue hover:text-flow-blue/90 font-medium">
                 Sign in

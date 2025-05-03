@@ -10,14 +10,15 @@ interface User {
   isSubscribed: boolean;
   subscriptionType?: string;
   lastLogin: Date;
+  transactionId?: string;
 }
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  signup: (email: string, name: string, password: string) => Promise<void>;
+  login: (email: string, password: string, transactionId?: string | null) => Promise<void>;
+  signup: (email: string, name: string, password: string, transactionId?: string | null) => Promise<void>;
   logout: () => void;
 }
 
@@ -60,7 +61,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     checkAuth();
   }, []);
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string, transactionId?: string | null) => {
     setIsLoading(true);
     try {
       // This would be replaced with actual API call
@@ -75,7 +76,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           email,
           name: email.split('@')[0],
           isSubscribed: localStorage.getItem('chemflow-payment-completed') === 'true',
-          lastLogin: new Date()
+          lastLogin: new Date(),
+          transactionId: transactionId || undefined
         };
 
         setUser(mockUser);
@@ -102,7 +104,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const signup = async (email: string, name: string, password: string) => {
+  const signup = async (email: string, name: string, password: string, transactionId?: string | null) => {
     setIsLoading(true);
     try {
       // This would be replaced with actual API call
@@ -116,8 +118,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           id: Math.random().toString(36).substr(2, 9),
           email,
           name,
-          isSubscribed: false,
-          lastLogin: new Date()
+          isSubscribed: localStorage.getItem('chemflow-payment-completed') === 'true',
+          lastLogin: new Date(),
+          transactionId: transactionId || undefined
         };
         
         toast({

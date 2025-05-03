@@ -7,6 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { PlusCircle } from 'lucide-react';
 
 interface ProcessSimulationInterfaceProps {
   software: Software;
@@ -20,6 +22,14 @@ const ProcessSimulationInterface: React.FC<ProcessSimulationInterfaceProps> = ({
   const [isSimulating, setIsSimulating] = useState<boolean>(false);
   const [results, setResults] = useState<any>(null);
   const { toast } = useToast();
+  
+  // Custom chemical state
+  const [customChemicalName, setCustomChemicalName] = useState<string>("");
+  const [customChemicalFormula, setCustomChemicalFormula] = useState<string>("");
+  const [customChemicalMw, setCustomChemicalMw] = useState<string>("");
+  const [customChemicalDensity, setCustomChemicalDensity] = useState<string>("");
+  const [customChemicalsList, setCustomChemicalsList] = useState<any[]>([]);
+  const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
 
   const handleRunSimulation = () => {
     // Simulate processing time
@@ -44,6 +54,39 @@ const ProcessSimulationInterface: React.FC<ProcessSimulationInterfaceProps> = ({
         description: "Process simulation results have been calculated.",
       });
     }, 2000);
+  };
+
+  const handleAddCustomChemical = () => {
+    if (!customChemicalName || !customChemicalFormula) {
+      toast({
+        title: "Missing Information",
+        description: "Please provide at least a name and formula for the custom chemical.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const newChemical = {
+      id: Date.now().toString(),
+      name: customChemicalName,
+      formula: customChemicalFormula,
+      mw: customChemicalMw ? parseFloat(customChemicalMw) : undefined,
+      density: customChemicalDensity ? parseFloat(customChemicalDensity) : undefined
+    };
+
+    setCustomChemicalsList([...customChemicalsList, newChemical]);
+    
+    // Reset form
+    setCustomChemicalName("");
+    setCustomChemicalFormula("");
+    setCustomChemicalMw("");
+    setCustomChemicalDensity("");
+    setIsDialogOpen(false);
+    
+    toast({
+      title: "Chemical Added",
+      description: `${customChemicalName} has been added to your component list.`,
+    });
   };
 
   return (
@@ -95,6 +138,110 @@ const ProcessSimulationInterface: React.FC<ProcessSimulationInterfaceProps> = ({
                 <SelectItem value="wilson">Wilson</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+        </div>
+        
+        <div className="mb-4">
+          <div className="flex justify-between items-center mb-2">
+            <h5 className="font-medium">Components</h5>
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button size="sm" variant="outline" className="flex items-center gap-1">
+                  <PlusCircle className="h-4 w-4" />
+                  Add Custom Chemical
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Add Custom Chemical</DialogTitle>
+                  <DialogDescription>
+                    Enter the properties of your custom chemical component.
+                  </DialogDescription>
+                </DialogHeader>
+                
+                <div className="grid gap-4 py-4">
+                  <div className="grid grid-cols-1 gap-2">
+                    <Label htmlFor="chemicalName" className="text-right">
+                      Name
+                    </Label>
+                    <Input
+                      id="chemicalName"
+                      value={customChemicalName}
+                      onChange={(e) => setCustomChemicalName(e.target.value)}
+                      placeholder="e.g., Methanol"
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-1 gap-2">
+                    <Label htmlFor="chemicalFormula" className="text-right">
+                      Chemical Formula
+                    </Label>
+                    <Input
+                      id="chemicalFormula"
+                      value={customChemicalFormula}
+                      onChange={(e) => setCustomChemicalFormula(e.target.value)}
+                      placeholder="e.g., CH3OH"
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="molecularWeight" className="text-right">
+                        Molecular Weight
+                      </Label>
+                      <Input
+                        id="molecularWeight"
+                        value={customChemicalMw}
+                        onChange={(e) => setCustomChemicalMw(e.target.value)}
+                        placeholder="g/mol"
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="density" className="text-right">
+                        Density
+                      </Label>
+                      <Input
+                        id="density"
+                        value={customChemicalDensity}
+                        onChange={(e) => setCustomChemicalDensity(e.target.value)}
+                        placeholder="kg/m³"
+                      />
+                    </div>
+                  </div>
+                </div>
+                
+                <DialogFooter>
+                  <Button onClick={handleAddCustomChemical}>Add Chemical</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-3 mb-2">
+            {/* Standard components */}
+            <div className="border rounded p-2 bg-blue-50 cursor-pointer hover:bg-blue-100">
+              Methane (CH₄)
+            </div>
+            <div className="border rounded p-2 bg-blue-50 cursor-pointer hover:bg-blue-100">
+              Ethane (C₂H₆)
+            </div>
+            <div className="border rounded p-2 bg-blue-50 cursor-pointer hover:bg-blue-100">
+              Propane (C₃H₈)
+            </div>
+            <div className="border rounded p-2 bg-blue-50 cursor-pointer hover:bg-blue-100">
+              Water (H₂O)
+            </div>
+            
+            {/* Custom chemicals */}
+            {customChemicalsList.map(chemical => (
+              <div 
+                key={chemical.id} 
+                className="border rounded p-2 bg-green-50 cursor-pointer hover:bg-green-100"
+              >
+                {chemical.name} ({chemical.formula})
+              </div>
+            ))}
           </div>
         </div>
         
