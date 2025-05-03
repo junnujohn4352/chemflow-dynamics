@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   Settings, Activity, Thermometer, Droplet, BarChart3, Waves,
-  GitCommit, GitGraph, Atom, AlertTriangle, ReceiptText, Box
+  GitCommit, GitGraph, Atom, AlertTriangle, ReceiptText, Box, Check
 } from "lucide-react";
 import { Badge } from '@/components/ui/badge';
 

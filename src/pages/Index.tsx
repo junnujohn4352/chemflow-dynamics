@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Link } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
@@ -128,25 +127,39 @@ const Index = () => {
               type="reactor" 
               name="Batch Reactor" 
               status="running" 
-              metrics={{ temperature: 85, pressure: 200 }}
+              metrics={[
+                { key: "Temperature", value: "85°C" },
+                { key: "Pressure", value: "150 kPa" },
+                { key: "Flow", value: "1200 kg/h" }
+              ]}
             />
             <EquipmentCard 
               type="column" 
               name="Distillation Column" 
               status="running" 
-              metrics={{ temperature: 95, pressure: 150 }}
+              metrics={[
+                { key: "Temperature", value: "95°C" },
+                { key: "Pressure", value: "150 kPa" },
+                { key: "Flow", value: "1200 kg/h" }
+              ]}
             />
             <EquipmentCard 
               type="heater" 
               name="Heat Exchanger" 
               status="running" 
-              metrics={{ temperature: 120, flow: 75 }}
+              metrics={[
+                { key: "Temperature", value: "120°C" },
+                { key: "Flow", value: "75 kg/h" }
+              ]}
             />
             <EquipmentCard 
               type="mixer" 
               name="Mixing Vessel" 
               status="running" 
-              metrics={{ level: 65, pressure: 110 }}
+              metrics={[
+                { key: "Level", value: "65%" },
+                { key: "Pressure", value: "110 kPa" }
+              ]}
             />
           </div>
           

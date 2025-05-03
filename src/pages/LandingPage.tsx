@@ -5,7 +5,7 @@ import LoadingScreen from "@/components/landing/LoadingScreen";
 import { Button } from "@/components/ui/button";
 import { ChemFlowLogo } from "@/assets/icons/ChemFlowLogo";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, Beaker, Flask, LineChart, Atom, Thermometer, Database } from "lucide-react";
+import { ArrowRight, Beaker, FlaskConical, LineChart, Atom, Thermometer, Database } from "lucide-react";
 
 const LandingPage = () => {
   const { loading, opacity } = useLoadingAnimation();
@@ -69,7 +69,7 @@ const LandingPage = () => {
                   {/* Orbiting icons */}
                   <div className="absolute inset-0" style={{ animation: 'spin 20s linear infinite' }}>
                     <Beaker className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-blue-600 w-10 h-10" />
-                    <Flask className="absolute top-1/2 right-0 transform translate-x-1/2 -translate-y-1/2 text-purple-600 w-10 h-10" />
+                    <FlaskConical className="absolute top-1/2 right-0 transform translate-x-1/2 -translate-y-1/2 text-purple-600 w-10 h-10" />
                     <LineChart className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 text-indigo-600 w-10 h-10" />
                     <Atom className="absolute top-1/2 left-0 transform -translate-x-1/2 -translate-y-1/2 text-blue-600 w-10 h-10" />
                     <Thermometer className="absolute top-1/4 right-1/4 text-purple-600 w-8 h-8" />

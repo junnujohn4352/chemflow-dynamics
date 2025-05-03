@@ -1,3 +1,4 @@
+
 import React from "react";
 import { 
   CircleOff, 
@@ -277,8 +278,6 @@ export const getEquipmentIcon = (type: EquipmentType): React.ReactNode => {
     
     case "fixed-bed":
       return <LayersIcon className="h-7 w-7" />;
-    case "membrane":
-      return <Filter className="h-7 w-7" />;
     case "catalytic":
       return <Atom className="h-7 w-7" />;
     case "adsorption":
@@ -287,16 +286,10 @@ export const getEquipmentIcon = (type: EquipmentType): React.ReactNode => {
       return <Box className="h-7 w-7" />;
     case "tray-column":
       return <SquareStack className="h-7 w-7" />;
-    case "granulator":
-      return <Sparkles className="h-7 w-7" />;
-    case "homogenizer":
-      return <Move className="h-7 w-7" />;
-    case "dehumidifier":
-      return <Wind className="h-7 w-7" />;
-    case "wetted-wall":
-      return <ScrollIcon className="h-7 w-7" />;
-    case "calciner":
-      return <Flame className="h-7 w-7" />;
+    case "double-pipe":
+      return <Cylinder className="h-7 w-7" />;
+    case "plate-heat-exchanger":
+      return <Package className="h-7 w-7" />;
 
     default:
       return <FlaskConical className="h-7 w-7" />;
