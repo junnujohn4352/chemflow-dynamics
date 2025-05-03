@@ -8,6 +8,7 @@ import Dashboard from "./pages/Dashboard";
 import ChemicalFormulas from "./pages/ChemicalFormulas";
 import CreateSimulation from "./pages/CreateSimulation";
 import LandingPage from "./pages/LandingPage";
+import Payment from "./pages/Payment";
 import NotFound from "./pages/NotFound";
 import Settings from "./pages/Settings";
 import Formulas from "./pages/Formulas";
@@ -29,6 +30,9 @@ const App: React.FC = () => {
       <Routes>
         {/* Set landing page as root */}
         <Route path="/" element={<LandingPage />} />
+        
+        {/* Add payment route */}
+        <Route path="/payment" element={<Payment />} />
         
         {/* Direct access to all pages (no auth protection) */}
         <Route path="/dashboard" element={<Dashboard />} />

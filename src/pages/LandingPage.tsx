@@ -39,19 +39,11 @@ const LandingPage = () => {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
                 <Button 
-                  onClick={() => navigate("/sign-up")}
+                  onClick={() => navigate("/payment")}
                   className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-lg py-6 px-8"
                   size="lg"
                 >
                   Get Started <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
-                <Button 
-                  onClick={() => navigate("/sign-in")} 
-                  variant="outline"
-                  className="border-2 border-blue-600 text-blue-700 hover:bg-blue-50 text-lg py-6 px-8"
-                  size="lg"
-                >
-                  Log In
                 </Button>
               </div>
             </div>
@@ -204,7 +196,7 @@ const LandingPage = () => {
                 </ul>
                 
                 <Button 
-                  onClick={() => navigate("/sign-up")}
+                  onClick={() => navigate("/payment")}
                   className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 w-full py-6"
                   size="lg"
                 >
@@ -222,7 +214,7 @@ const LandingPage = () => {
                 Join chemical engineers worldwide who use ChemFlow to design, analyze, and optimize their processes
               </p>
               <Button 
-                onClick={() => navigate("/sign-up")}
+                onClick={() => navigate("/payment")}
                 className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-lg py-6 px-10"
                 size="lg"
               >
