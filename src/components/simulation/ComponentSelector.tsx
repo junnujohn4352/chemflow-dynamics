@@ -18,32 +18,205 @@ const ComponentSelector: React.FC<ComponentSelectorProps> = ({ selectedComponent
   
   const componentCategories = [
     {
-      name: 'Hydrocarbons',
-      components: ['Methane', 'Ethane', 'Propane', 'Butane', 'Pentane', 'Hexane', 'Heptane', 'Octane']
+      name: 'Hydrocarbons - Alkanes',
+      components: [
+        'Methane', 'Ethane', 'Propane', 'Butane', 'Pentane', 'Hexane', 'Heptane', 'Octane', 'Nonane', 'Decane',
+        'Undecane', 'Dodecane', 'Tridecane', 'Tetradecane', 'Pentadecane', 'Hexadecane', 'Heptadecane', 'Octadecane', 'Nonadecane', 'Eicosane',
+        'Isopentane', 'Neopentane', 'Isohexane', '2-Methylpentane', '3-Methylpentane', '2,2-Dimethylbutane', '2,3-Dimethylbutane',
+        'Cyclopropane', 'Cyclobutane', 'Cyclopentane', 'Cyclohexane', 'Cycloheptane', 'Cyclooctane'
+      ]
+    },
+    {
+      name: 'Hydrocarbons - Alkenes',
+      components: [
+        'Ethylene', 'Propylene', 'Butene', '1-Pentene', '1-Hexene', '1-Heptene', '1-Octene', 'Isobutene',
+        'cis-2-Butene', 'trans-2-Butene', 'cis-2-Pentene', 'trans-2-Pentene', 'Cyclopentene', 'Cyclohexene',
+        'Propadiene', '1,3-Butadiene', 'Isoprene', '1,3-Pentadiene'
+      ]
+    },
+    {
+      name: 'Hydrocarbons - Alkynes',
+      components: [
+        'Acetylene', 'Propyne', '1-Butyne', '2-Butyne', '1-Pentyne', '1-Hexyne', '1-Heptyne', '1-Octyne'
+      ]
     },
     {
       name: 'Aromatics',
-      components: ['Benzene', 'Toluene', 'Xylene', 'Styrene', 'Cumene']
+      components: [
+        'Benzene', 'Toluene', 'Ethylbenzene', 'o-Xylene', 'm-Xylene', 'p-Xylene', 'Styrene', 'Cumene',
+        'Naphthalene', 'Anthracene', 'Phenanthrene', 'Biphenyl', 'Mesitylene', 'n-Propylbenzene',
+        'Isopropylbenzene', 'n-Butylbenzene', 'sec-Butylbenzene', 'tert-Butylbenzene',
+        'Indene', 'Indane', 'Tetralin', 'Benzyl alcohol'
+      ]
     },
     {
       name: 'Alcohols',
-      components: ['Methanol', 'Ethanol', 'Propanol', 'Butanol', 'Glycol', 'Glycerol']
+      components: [
+        'Methanol', 'Ethanol', '1-Propanol', '2-Propanol', '1-Butanol', '2-Butanol', 'tert-Butanol', 'Isobutanol',
+        '1-Pentanol', '2-Pentanol', '3-Pentanol', 'Neopentyl alcohol', 'Isopentanol', '1-Hexanol', 'Cyclohexanol',
+        '1-Heptanol', '1-Octanol', '1-Nonanol', '1-Decanol', 'Benzyl alcohol', '2-Phenylethanol',
+        'Ethylene glycol', 'Propylene glycol', '1,3-Propanediol', '1,4-Butanediol', '1,5-Pentanediol', 'Glycerol',
+        'Erythritol', 'Xylitol', 'Sorbitol', 'Mannitol'
+      ]
+    },
+    {
+      name: 'Ethers',
+      components: [
+        'Dimethyl ether', 'Diethyl ether', 'Methyl tert-butyl ether (MTBE)', 'Ethyl tert-butyl ether (ETBE)',
+        'Tetrahydrofuran (THF)', '1,4-Dioxane', 'Diisopropyl ether', 'Anisole', 'Phenetole', 
+        'Diphenyl ether', 'Dibenzyl ether', '2-Methoxyethanol', 'Diethylene glycol', 'Triethylene glycol',
+        'Polyethylene glycol'
+      ]
+    },
+    {
+      name: 'Aldehydes',
+      components: [
+        'Formaldehyde', 'Acetaldehyde', 'Propionaldehyde', 'Butyraldehyde', 'Isobutyraldehyde', 'Valeraldehyde',
+        'Benzaldehyde', 'Cinnamaldehyde', 'Acrolein', 'Crotonaldehyde', 'Glutaraldehyde', 'Glyoxal',
+        'Phenylacetaldehyde', '2-Ethylhexanal', 'Furfural'
+      ]
     },
     {
       name: 'Ketones',
-      components: ['Acetone', 'MEK', 'MIBK']
+      components: [
+        'Acetone', 'Methyl ethyl ketone (MEK)', 'Methyl isobutyl ketone (MIBK)', '2-Pentanone', '3-Pentanone',
+        'Cyclohexanone', 'Acetophenone', 'Benzophenone', 'Isophorone', 'Camphor', 'Menthone',
+        'Diacetyl', 'Acetylacetone', '2,3-Butanedione', '2,4-Pentanedione'
+      ]
     },
     {
       name: 'Acids',
-      components: ['Acetic Acid', 'Formic Acid', 'Propionic Acid', 'Butyric Acid']
+      components: [
+        'Formic acid', 'Acetic acid', 'Propionic acid', 'Butyric acid', 'Valeric acid', 'Caproic acid',
+        'Enanthic acid', 'Caprylic acid', 'Pelargonic acid', 'Capric acid', 'Lauric acid', 'Myristic acid',
+        'Palmitic acid', 'Stearic acid', 'Oleic acid', 'Linoleic acid', 'Linolenic acid',
+        'Benzoic acid', 'Phthalic acid', 'Terephthalic acid', 'Adipic acid', 'Oxalic acid', 'Malonic acid',
+        'Succinic acid', 'Glutaric acid', 'Maleic acid', 'Fumaric acid', 'Lactic acid', 'Citric acid',
+        'Tartaric acid', 'Malic acid', 'Glycolic acid'
+      ]
     },
     {
-      name: 'Gases',
-      components: ['Oxygen', 'Nitrogen', 'Carbon Dioxide', 'Carbon Monoxide', 'Hydrogen', 'Ammonia']
+      name: 'Esters',
+      components: [
+        'Methyl formate', 'Ethyl formate', 'Methyl acetate', 'Ethyl acetate', 'Propyl acetate', 'Isopropyl acetate',
+        'Butyl acetate', 'Isobutyl acetate', 'Amyl acetate', 'Isoamyl acetate', 'Methyl propionate', 'Ethyl propionate',
+        'Methyl butyrate', 'Ethyl butyrate', 'Methyl benzoate', 'Ethyl benzoate', 
+        'Dimethyl phthalate', 'Diethyl phthalate', 'Dioctyl phthalate', 'Methyl salicylate',
+        'Triacetin', 'Tributyrin', 'Ethylene carbonate', 'Propylene carbonate'
+      ]
     },
     {
-      name: 'Water',
-      components: ['Water', 'Steam', 'Heavy Water']
+      name: 'Amines',
+      components: [
+        'Methylamine', 'Ethylamine', 'Propylamine', 'Butylamine', 'Pentylamine', 'Hexylamine', 'Octylamine',
+        'Dimethylamine', 'Diethylamine', 'Dipropylamine', 'Dibutylamine', 
+        'Trimethylamine', 'Triethylamine', 'Tripropylamine', 'Tributylamine', 'Aniline', 'N-Methylaniline', 
+        'N,N-Dimethylaniline', 'Benzylamine', '2-Phenethylamine', 'Cyclohexylamine',
+        'Ethylenediamine', 'Propylenediamine', 'Hexamethylenediamine', 'Ethanolamines', 'Diethanolamine', 'Triethanolamine'
+      ]
+    },
+    {
+      name: 'Amides',
+      components: [
+        'Formamide', 'Acetamide', 'Propionamide', 'Butyramide', 'Benzamide', 'N-Methylformamide',
+        'N,N-Dimethylformamide (DMF)', 'N,N-Dimethylacetamide (DMAc)', 'N-Methylpyrrolidone (NMP)', 
+        'Acrylamide', 'Urea', 'Thiourea', 'Biuret'
+      ]
+    },
+    {
+      name: 'Nitrogen Compounds',
+      components: [
+        'Nitrile', 'Acetonitrile', 'Propionitrile', 'Butyronitrile', 'Acrylonitrile', 'Benzonitrile',
+        'Nitromethane', 'Nitroethane', '1-Nitropropane', '2-Nitropropane', 'Nitrobenzene', 'Pyridine',
+        'Picoline', 'Lutidine', 'Quinoline', 'Isoquinoline', 'Pyrrole', 'Pyrrolidine',
+        'Piperidine', 'Morpholine', 'Piperazine', 'Imidazole', 'Pyrazole', 'Indole', 'Purine'
+      ]
+    },
+    {
+      name: 'Sulphur Compounds',
+      components: [
+        'Hydrogen sulfide', 'Methanethiol', 'Ethanethiol', '1-Propanethiol', '2-Propanethiol', 'Butanethiol',
+        'Dimethyl sulfide', 'Diethyl sulfide', 'Dimethyl disulfide', 'Thiophene', 'Tetrahydrothiophene',
+        'Dimethyl sulfoxide (DMSO)', 'Sulfolane', 'Carbon disulfide', 'Carbonyl sulfide',
+        'Thiourea', 'Cysteine', 'Methionine', 'Glutathione'
+      ]
+    },
+    {
+      name: 'Halogenated Compounds',
+      components: [
+        'Methyl chloride', 'Methylene chloride', 'Chloroform', 'Carbon tetrachloride', 'Methyl bromide',
+        'Dibromomethane', 'Bromoform', 'Methyl iodide', 'Ethyl chloride', '1,2-Dichloroethane',
+        'Trichloroethylene', 'Perchloroethylene', 'Vinyl chloride', 'Vinylidene chloride',
+        '1,1,1-Trichloroethane', '1,1,2-Trichloroethane', 'Chlorobenzene', 'Bromobenzene',
+        'o-Dichlorobenzene', 'p-Dichlorobenzene', 'Freon-11', 'Freon-12', 'Freon-22', 'Freon-113',
+        'Tetrafluoroethane', 'Difluoromethane'
+      ]
+    },
+    {
+      name: 'Silicon Compounds',
+      components: [
+        'Silane', 'Disilane', 'Silicone oil', 'Tetramethylsilane', 'Tetraethylsilane', 'Phenyltrimethylsilane',
+        'Dimethyldichlorosilane', 'Trimethylchlorosilane', 'Tetramethoxysilane', 'Tetraethoxysilane',
+        'Hexamethyldisiloxane', 'Octamethylcyclotetrasiloxane', 'Decamethylcyclopentasiloxane'
+      ]
+    },
+    {
+      name: 'Phosphorus Compounds',
+      components: [
+        'Phosphine', 'Triphenylphosphine', 'Tributylphosphine', 'Trimethylphosphate', 'Triethylphosphate',
+        'Tributylphosphate', 'Tricresyl phosphate', 'Triphenyl phosphate', 'Phosphoric acid', 'Phosphorous acid'
+      ]
+    },
+    {
+      name: 'Inorganic Gases',
+      components: [
+        'Hydrogen', 'Nitrogen', 'Oxygen', 'Carbon dioxide', 'Carbon monoxide', 'Ammonia', 'Water', 'Steam',
+        'Helium', 'Neon', 'Argon', 'Krypton', 'Xenon', 'Radon', 'Sulfur dioxide', 'Sulfur trioxide',
+        'Nitrogen oxide', 'Nitrogen dioxide', 'Dinitrogen tetroxide', 'Nitrous oxide', 'Ozone',
+        'Chlorine', 'Bromine', 'Fluorine', 'Hydrogen chloride', 'Hydrogen bromide', 'Hydrogen fluoride'
+      ]
+    },
+    {
+      name: 'Inorganic Compounds',
+      components: [
+        'Sodium hydroxide', 'Potassium hydroxide', 'Calcium hydroxide', 'Sodium carbonate', 'Potassium carbonate',
+        'Sodium bicarbonate', 'Potassium bicarbonate', 'Sodium chloride', 'Potassium chloride', 'Calcium chloride',
+        'Magnesium chloride', 'Ammonium chloride', 'Sodium sulfate', 'Potassium sulfate', 'Aluminum sulfate',
+        'Ferric chloride', 'Ferrous sulfate', 'Copper sulfate', 'Zinc sulfate', 'Sodium phosphate',
+        'Potassium phosphate', 'Calcium phosphate', 'Boric acid', 'Hydrochloric acid', 'Sulfuric acid',
+        'Nitric acid', 'Phosphoric acid', 'Hydrogen peroxide'
+      ]
+    },
+    {
+      name: 'Polymers',
+      components: [
+        'Polyethylene', 'Polypropylene', 'Polystyrene', 'Polyvinyl chloride', 'Polytetrafluoroethylene',
+        'Polymethyl methacrylate', 'Polyethylene terephthalate', 'Polybutylene terephthalate',
+        'Polycarbonate', 'Polyamide 6', 'Polyamide 66', 'Polyurethane', 'Polyoxymethylene',
+        'Polyether ether ketone', 'Polyetherimide', 'Polysulfone', 'Polyphenylene sulfide',
+        'Ethylene-vinyl acetate', 'Acrylonitrile butadiene styrene', 'Styrene-butadiene rubber',
+        'Natural rubber', 'Butadiene rubber', 'Nitrile rubber', 'Silicone rubber'
+      ]
+    },
+    {
+      name: 'Biological Compounds',
+      components: [
+        'Glucose', 'Fructose', 'Sucrose', 'Lactose', 'Maltose', 'Starch', 'Cellulose', 'Glycogen',
+        'Alanine', 'Arginine', 'Asparagine', 'Aspartic acid', 'Cysteine', 'Glutamine', 'Glutamic acid',
+        'Glycine', 'Histidine', 'Isoleucine', 'Leucine', 'Lysine', 'Methionine', 'Phenylalanine',
+        'Proline', 'Serine', 'Threonine', 'Tryptophan', 'Tyrosine', 'Valine',
+        'Adenine', 'Guanine', 'Cytosine', 'Thymine', 'Uracil',
+        'Cholesterol', 'Testosterone', 'Estradiol', 'Progesterone', 'Cortisol'
+      ]
+    },
+    {
+      name: 'Pharmaceutical Intermediates',
+      components: [
+        'Acetylsalicylic acid', 'Paracetamol', 'Ibuprofen', 'Naproxen', 'Diclofenac', 'Ketoprofen',
+        'Metformin', 'Atorvastatin', 'Simvastatin', 'Omeprazole', 'Lansoprazole', 'Amoxicillin',
+        'Cephalexin', 'Ciprofloxacin', 'Azithromycin', 'Fluoxetine', 'Sertraline', 'Alprazolam',
+        'Diazepam', 'Lorazepam', 'Morphine', 'Codeine', 'Tramadol', 'Fentanyl', 'Methadone'
+      ]
     },
     {
       name: 'Custom',
@@ -219,7 +392,7 @@ const ComponentSelector: React.FC<ComponentSelectorProps> = ({ selectedComponent
               )}
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 max-h-96 overflow-y-auto">
               {componentCategories
                 .find(cat => cat.name === activeCategory)
                 ?.components.map(component => (
