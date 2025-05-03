@@ -4,7 +4,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import ProcessFlow from "@/components/ui/ProcessFlow";
 import GlassPanel from "@/components/ui/GlassPanel";
-import EquipmentCard from "@/components/ui/EquipmentCard";
+import EquipmentCard from "@/components/ui/equipment/EquipmentCard";
 import { ArrowRight, ChevronRight, Download, Play, BookOpen, Server, Gauge, FlaskConical, PieChart, Atom } from "lucide-react";
 
 const Index = () => {
@@ -125,7 +125,7 @@ const Index = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <EquipmentCard 
               type="reactor" 
-              name="Batch Reactor" 
+              title="Batch Reactor" 
               status="running" 
               metrics={[
                 { key: "Temperature", value: "85°C" },
@@ -135,7 +135,7 @@ const Index = () => {
             />
             <EquipmentCard 
               type="column" 
-              name="Distillation Column" 
+              title="Distillation Column" 
               status="running" 
               metrics={[
                 { key: "Temperature", value: "95°C" },
@@ -145,7 +145,7 @@ const Index = () => {
             />
             <EquipmentCard 
               type="heater" 
-              name="Heat Exchanger" 
+              title="Heat Exchanger" 
               status="running" 
               metrics={[
                 { key: "Temperature", value: "120°C" },
@@ -154,7 +154,7 @@ const Index = () => {
             />
             <EquipmentCard 
               type="mixer" 
-              name="Mixing Vessel" 
+              title="Mixing Vessel" 
               status="running" 
               metrics={[
                 { key: "Level", value: "65%" },

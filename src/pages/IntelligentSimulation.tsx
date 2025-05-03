@@ -1,449 +1,56 @@
-import React, { useState, useEffect, useRef } from "react";
+
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import { 
-  Save, ArrowLeft, Play, Check, RefreshCw, Download, 
-  FileText, ChevronRight, ChevronLeft, ChevronDown,
-  BarChart3
-} from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import SimulationBuilder from "@/components/simulation/SimulationBuilder";
-import ComponentSelector from "@/components/simulation/ComponentSelector";
-import ThermodynamicsSelector from "@/components/simulation/ThermodynamicsSelector";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import TooltipWrapper from "@/components/ui/TooltipWrapper";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Progress } from "@/components/ui/progress";
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
+import { Sparkles, ArrowRight, Check, AlertCircle } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { SimulationBuilder } from "@/components/simulation/SimulationBuilder";
 
-const CreateSimulation = () => {
+const IntelligentSimulation = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [currentStep, setCurrentStep] = useState<'components' | 'thermodynamics' | 'builder'>('components');
-  const [simulationProgress, setSimulationProgress] = useState(0);
-  const [simulationName, setSimulationName] = useState('Untitled Simulation');
-  const [selectedComponents, setSelectedComponents] = useState<string[]>([]);
-  const [selectedModel, setSelectedModel] = useState('Peng-Robinson');
-  const [isSimulationComplete, setIsSimulationComplete] = useState(false);
-  const [isSimulationRunning, setIsSimulationRunning] = useState(false);
-  const [showAnalysis, setShowAnalysis] = useState(false);
-  const [analysisData, setAnalysisData] = useState<any[]>([]);
-  const [simulationSubject, setSimulationSubject] = useState<string | null>(null);
-  const analysisRef = useRef<HTMLDivElement>(null);
   
-  useEffect(() => {
-    const savedSimData = localStorage.getItem('chemflow-simulation-data');
-    if (savedSimData) {
-      try {
-        const simData = JSON.parse(savedSimData);
-        if (simData.components && simData.components.length > 0) {
-          setSelectedComponents(simData.components);
-        }
-        if (simData.thermodynamicModel) {
-          setSelectedModel(simData.thermodynamicModel);
-        }
-        if (simData.name) {
-          setSimulationName(simData.name);
-        }
-        if (simData.subject) {
-          setSimulationSubject(simData.subject);
-        }
-      } catch (e) {
-        console.error("Error loading saved simulation data:", e);
-      }
-    }
-  }, []);
+  const handleStartAISimulation = () => {
+    toast({
+      title: "AI Simulation Started",
+      description: "Your intelligent simulation is now being processed"
+    });
+  };
   
-  useEffect(() => {
-    // Update progress based on completed steps
-    let progress = 0;
-    if (selectedComponents.length > 0) progress += 33;
-    if (selectedModel !== '') progress += 33;
-    if (isSimulationComplete) progress += 34;
-    setSimulationProgress(progress);
-  }, [selectedComponents, selectedModel, isSimulationComplete]);
-
-  const componentsValid = selectedComponents.length > 0;
-  const allStepsValid = componentsValid && selectedModel !== '';
-
-  const handleComponentSelectionDone = () => {
-    if (componentsValid) {
-      setCurrentStep('thermodynamics');
-    } else {
-      toast({
-        title: "Components required",
-        description: "Please select at least one component before continuing",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleModelSelectionDone = () => {
-    if (selectedModel) {
-      setCurrentStep('builder');
-    } else {
-      toast({
-        title: "Thermodynamic model required",
-        description: "Please select a thermodynamic model before continuing",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleSaveSimulation = () => {
-    if (simulationName.trim() === '') {
-      toast({
-        title: "Name required",
-        description: "Please enter a name for your simulation",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    if (selectedComponents.length === 0) {
-      toast({
-        title: "Components required",
-        description: "Please select at least one component for your simulation",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    const simulationData = {
-      name: simulationName,
-      components: selectedComponents,
-      thermodynamicModel: selectedModel,
-      subject: simulationSubject,
-      lastUpdated: new Date().toISOString(),
-      id: `sim-${Date.now()}`
-    };
-    
-    localStorage.setItem('chemflow-simulation-data', JSON.stringify(simulationData));
-    localStorage.setItem('chemflow-active-simulation', 'true');
-    
-    if (isSimulationComplete && analysisData.length > 0) {
-      localStorage.setItem('chemflow-analysis-data', JSON.stringify(analysisData));
-      
-      handleExportToPDF();
-      
-      toast({
-        title: "Simulation saved",
-        description: "Your simulation and analysis data have been saved successfully!"
-      });
-    } else {
-      toast({
-        title: "Simulation saved",
-        description: "Your simulation has been created successfully!"
-      });
-    }
-  };
-
-  const handleExportToPDF = async () => {
-    if (!analysisRef.current || !isSimulationComplete) {
-      toast({
-        title: "Cannot export analysis",
-        description: "Please complete the simulation first",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    try {
-      toast({
-        title: "Generating PDF",
-        description: "Please wait while we generate your analysis report...",
-      });
-      
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const analysisElement = analysisRef.current;
-      
-      pdf.setFontSize(18);
-      pdf.text(`${simulationName} - Analysis Report`, 20, 20);
-      
-      pdf.setFontSize(12);
-      pdf.text(`Thermodynamic Model: ${selectedModel}`, 20, 30);
-      pdf.text(`Components: ${selectedComponents.join(", ")}`, 20, 40);
-      pdf.text(`Subject: ${simulationSubject || "Chemical Process"}`, 20, 50);
-      pdf.text(`Date: ${new Date().toLocaleDateString()}`, 20, 60);
-      
-      const scale = 2;
-      const canvas = await html2canvas(analysisElement, { scale });
-      const imgData = canvas.toDataURL('image/png');
-      
-      const imgWidth = 170;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      
-      pdf.addPage();
-      pdf.addImage(imgData, 'PNG', 20, 20, imgWidth, imgHeight);
-      
-      pdf.save(`${simulationName.replace(/\s+/g, '_')}_Analysis.pdf`);
-      
-      toast({
-        title: "PDF Generated",
-        description: "Analysis report has been saved as PDF",
-      });
-    } catch (error) {
-      console.error("PDF generation error:", error);
-      toast({
-        title: "PDF Generation Failed",
-        description: "There was an error generating the PDF report",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const detectSimulationSubject = () => {
-    const hasAromatic = selectedComponents.some(c => 
-      ['Benzene', 'Toluene', 'Xylene', 'Styrene'].includes(c));
-    
-    const hasAlcohol = selectedComponents.some(c => 
-      ['Methanol', 'Ethanol', 'Propanol', 'Butanol'].includes(c));
-      
-    const hasAcid = selectedComponents.some(c => 
-      ['Acetic Acid', 'Formic Acid', 'Sulfuric Acid'].includes(c));
-    
-    const hasGas = selectedComponents.some(c => 
-      ['Methane', 'Ethane', 'Propane', 'Nitrogen', 'Oxygen', 'Carbon Dioxide'].includes(c));
-    
-    if (hasAromatic && hasAlcohol) {
-      return "Liquid-Liquid Extraction";
-    } else if (hasAlcohol && hasAcid) {
-      return "Esterification Reaction";
-    } else if (hasAlcohol) {
-      return "Distillation";
-    } else if (hasGas) {
-      return "Gas Processing";
-    } else if (hasAromatic) {
-      return "Aromatics Separation";
-    } else if (hasAcid) {
-      return "Acid Gas Treatment";
-    } else {
-      return "Chemical Process";
-    }
-  };
-
-  const handleRunSimulation = async () => {
-    if (!allStepsValid) {
-      toast({
-        title: "Incomplete setup",
-        description: "Please complete all simulation setup steps first",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsSimulationRunning(true);
-    
-    const subject = detectSimulationSubject();
-    setSimulationSubject(subject);
-    localStorage.setItem('chemflow-simulation-subject', subject);
-    
-    // Simulation process would run here, generating analysis data
-    
-    setTimeout(() => {
-      setIsSimulationRunning(false);
-      setIsSimulationComplete(true);
-      setShowAnalysis(true);
-      
-      toast({
-        title: "Simulation complete",
-        description: `${subject} simulation finished successfully!`,
-      });
-    }, 2000);
-  };
-
-  const handleGoBack = () => {
-    if (currentStep === 'thermodynamics') {
-      setCurrentStep('components');
-    } else if (currentStep === 'builder') {
-      setCurrentStep('thermodynamics');
-    }
-  };
-
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen flex flex-col">
       <Navbar />
       
-      <main className="flex-1 container mx-auto px-4 py-6">
-        {/* Workflow Header */}
-        <div className="mb-6">
-          <div className="flex justify-between items-center mb-2">
-            <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Create Simulation</h1>
-              <div className="ml-4">
-                <input
-                  type="text"
-                  value={simulationName}
-                  onChange={(e) => setSimulationName(e.target.value)}
-                  className="border border-gray-300 dark:border-gray-700 rounded-md p-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-                  placeholder="Simulation Name"
-                />
-              </div>
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              {currentStep !== 'components' && (
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={handleGoBack}
-                  className="flex items-center"
-                >
-                  <ChevronLeft className="h-4 w-4 mr-1" />
-                  Back
-                </Button>
-              )}
-              
-              <Button 
-                onClick={handleSaveSimulation}
-                variant="outline"
-                className="flex items-center"
-              >
-                <Save className="h-4 w-4 mr-1" />
-                Save
-              </Button>
-              
-              {currentStep === 'builder' && (
-                <Button 
-                  onClick={handleRunSimulation} 
-                  disabled={isSimulationRunning}
-                  className="bg-green-600 hover:bg-green-700 text-white flex items-center"
-                >
-                  {isSimulationRunning ? (
-                    <RefreshCw className="h-4 w-4 mr-1 animate-spin" />
-                  ) : (
-                    <Play className="h-4 w-4 mr-1" />
-                  )}
-                  {isSimulationRunning ? 'Simulating...' : 'Run Simulation'}
-                </Button>
-              )}
-            </div>
-          </div>
-          
-          {/* Progress Indicator */}
-          <div className="mb-6">
-            <div className="flex justify-between text-sm mb-1">
-              <span className={`${currentStep === 'components' ? 'font-medium text-blue-600' : ''}`}>1. Select Components</span>
-              <span className={`${currentStep === 'thermodynamics' ? 'font-medium text-blue-600' : ''}`}>2. Thermodynamic Model</span>
-              <span className={`${currentStep === 'builder' ? 'font-medium text-blue-600' : ''}`}>3. Build Flowsheet</span>
-            </div>
-            <Progress value={simulationProgress} className="h-2" />
-          </div>
-        </div>
+      <main className="flex-1 container mx-auto px-4 py-8">
+        <h1 className="text-3xl font-bold mb-8">Intelligent Simulation</h1>
         
-        {/* Step Content */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 mb-6">
-          {currentStep === 'components' && (
-            <div className="animate-fade-in">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Select Chemical Components</h2>
-                <Button 
-                  onClick={handleComponentSelectionDone}
-                  disabled={!componentsValid}
-                  className="flex items-center"
-                >
-                  Next
-                  <ChevronRight className="h-4 w-4 ml-1" />
-                </Button>
-              </div>
-              
-              <ComponentSelector 
-                selectedComponents={selectedComponents} 
-                setSelectedComponents={setSelectedComponents} 
-              />
-            </div>
-          )}
-          
-          {currentStep === 'thermodynamics' && (
-            <div className="animate-fade-in">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Select Thermodynamic Model</h2>
-                <Button 
-                  onClick={handleModelSelectionDone}
-                  disabled={!selectedModel}
-                  className="flex items-center"
-                >
-                  Next
-                  <ChevronRight className="h-4 w-4 ml-1" />
-                </Button>
-              </div>
-              
-              <ThermodynamicsSelector 
-                selectedModel={selectedModel}
-                setSelectedModel={setSelectedModel}
-                selectedComponents={selectedComponents}
-              />
-            </div>
-          )}
-          
-          {currentStep === 'builder' && (
-            <div className="animate-fade-in">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Process Flowsheet Builder</h2>
-              
-              <SimulationBuilder 
-                selectedComponents={selectedComponents}
-                thermodynamicModel={selectedModel}
-                onRunSimulation={handleRunSimulation}
-              />
-              
-              {isSimulationComplete && showAnalysis && (
-                <div ref={analysisRef} className="mt-8 border-t pt-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold flex items-center">
-                      <BarChart3 className="h-5 w-5 mr-2 text-blue-500" />
-                      Simulation Results
-                    </h3>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={() => setShowAnalysis(!showAnalysis)}
-                    >
-                      {showAnalysis ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                    </Button>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                      <h4 className="font-medium mb-2">Simulation Summary</h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">
-                        {simulationSubject} simulation with {selectedComponents.join(", ")} using {selectedModel} model.
-                      </p>
-                      <div className="mt-4">
-                        <Button size="sm" onClick={handleExportToPDF} className="flex items-center">
-                          <FileText className="h-4 w-4 mr-1" />
-                          Export Report
-                        </Button>
-                      </div>
-                    </div>
-                    
-                    <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                      <h4 className="font-medium mb-2">Performance Metrics</h4>
-                      <div className="grid grid-cols-2 gap-2 text-sm">
-                        <div>
-                          <p className="text-gray-500 dark:text-gray-400">Efficiency:</p>
-                          <p className="font-medium">{Math.floor(Math.random() * 30) + 70}%</p>
-                        </div>
-                        <div>
-                          <p className="text-gray-500 dark:text-gray-400">Conversion:</p>
-                          <p className="font-medium">{Math.floor(Math.random() * 20) + 80}%</p>
-                        </div>
-                        <div>
-                          <p className="text-gray-500 dark:text-gray-400">Energy Usage:</p>
-                          <p className="font-medium">{Math.floor(Math.random() * 500) + 1000} kJ</p>
-                        </div>
-                        <div>
-                          <p className="text-gray-500 dark:text-gray-400">Product Purity:</p>
-                          <p className="font-medium">{Math.floor(Math.random() * 10) + 90}%</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-purple-500" />
+              AI-Powered Process Design
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="mb-4">
+              Use our advanced AI to automatically generate optimal process flowsheets based on your objectives and constraints.
+            </p>
+            <Button onClick={handleStartAISimulation} className="bg-purple-600 hover:bg-purple-700">
+              Start AI Simulation
+              <ArrowRight className="h-4 w-4 ml-2" />
+            </Button>
+          </CardContent>
+        </Card>
+        
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold mb-4">Manual Configuration</h2>
+          <SimulationBuilder 
+            selectedComponents={["Methanol", "Ethanol", "Water"]}
+            thermodynamicModel="Peng-Robinson"
+          />
         </div>
       </main>
       
@@ -452,4 +59,4 @@ const CreateSimulation = () => {
   );
 };
 
-export default CreateSimulation;
+export default IntelligentSimulation;

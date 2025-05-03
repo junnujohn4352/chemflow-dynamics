@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
@@ -9,7 +8,7 @@ import {
   BarChart3
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import SimulationBuilder from "@/components/simulation/SimulationBuilder";
+import { SimulationBuilder } from "@/components/simulation/SimulationBuilder";
 import ComponentSelector from "@/components/simulation/ComponentSelector";
 import ThermodynamicsSelector from "@/components/simulation/ThermodynamicsSelector";
 import SimulationResults from "@/components/simulation/SimulationResults";
