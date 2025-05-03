@@ -4,7 +4,7 @@ import LoadingScreen from "@/components/landing/LoadingScreen";
 import { Button } from "@/components/ui/button";
 import { ChemFlowLogo } from "@/assets/icons/ChemFlowLogo";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, Beaker, FlaskConical, LineChart, Atom, Thermometer, Database, Waves, Gauge, FlaskRound, BookOpen } from "lucide-react";
+import { ArrowRight, Beaker, FlaskConical, LineChart, Atom, Thermometer, Database, Waves, Gauge, FlaskRound, BookOpen, Users } from "lucide-react";
 
 const LandingPage = () => {
   const { loading, opacity } = useLoadingAnimation();
@@ -113,6 +113,39 @@ const LandingPage = () => {
                 title="Fluid Dynamics"
                 description="Model and analyze fluid behaviors in your process equipment"
               />
+            </div>
+          </section>
+          
+          {/* Founders Section */}
+          <section className="py-16 bg-white/60 backdrop-blur-sm rounded-3xl shadow-sm my-8">
+            <div className="max-w-6xl mx-auto px-4">
+              <h2 className="text-3xl font-bold text-center mb-12 text-gray-800 flex items-center justify-center">
+                <Users className="mr-3 h-8 w-8 text-blue-600" />
+                Our Founders
+              </h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-xl shadow-sm border border-blue-100">
+                  <h3 className="text-xl font-bold text-gray-800 mb-2">P. Janardhan Reddy</h3>
+                  <p className="text-blue-600 font-medium mb-4">Founder & CEO</p>
+                  <p className="text-gray-600">
+                    With over 15 years of experience in chemical engineering and process design, 
+                    P. Janardhan Reddy founded ChemFlow with a vision to create cutting-edge 
+                    simulation tools that make complex processes more accessible and efficient for engineers worldwide.
+                  </p>
+                </div>
+                
+                <div className="bg-gradient-to-br from-purple-50 to-indigo-50 p-6 rounded-xl shadow-sm border border-purple-100">
+                  <h3 className="text-xl font-bold text-gray-800 mb-2">D. Harishwar</h3>
+                  <p className="text-purple-600 font-medium mb-4">Co-Founder & CTO</p>
+                  <p className="text-gray-600">
+                    With a strong background in software development and chemical engineering, 
+                    D. Harishwar leads the technical innovation at ChemFlow. His expertise in 
+                    computational methods and user experience design has been instrumental in 
+                    creating our powerful yet intuitive simulation platform.
+                  </p>
+                </div>
+              </div>
             </div>
           </section>
           
