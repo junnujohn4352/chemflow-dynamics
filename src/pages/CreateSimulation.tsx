@@ -101,7 +101,7 @@ const CreateSimulation = () => {
           { key: 'temperature', value: '95', editable: true, description: 'Hot side outlet temperature in °C' },
           { key: 'efficiency', value: '75', editable: true, description: 'Heat exchanger efficiency' }
         ];
-      case 'distillation-column':
+      case 'distillation':
         return [
           { key: 'pressure', value: '101.3', editable: true, description: 'Column operating pressure in kPa' },
           { key: 'reflux-ratio', value: '3.5', editable: true, description: 'Reflux ratio for the column' },
@@ -119,7 +119,7 @@ const CreateSimulation = () => {
           { key: 'power', value: '75', editable: true, description: 'Power consumption in kW' },
           { key: 'efficiency', value: '70', editable: true, description: 'Adiabatic efficiency percentage' }
         ];
-      case 'flash-separator':
+      case 'flash':
         return [
           { key: 'temperature', value: '65', editable: true, description: 'Flash temperature in °C' },
           { key: 'pressure', value: '150', editable: true, description: 'Vessel pressure in kPa' },
