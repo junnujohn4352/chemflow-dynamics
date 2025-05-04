@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -174,43 +173,54 @@ const CreateSimulation = () => {
     }, 0);
   };
 
-  const handleDragOver = (e: React.DragEvent) => {
+  const dragOverHandler = (e: React.DragEvent) => {
     e.preventDefault();
-    if (canvasRef.current) {
-      e.currentTarget.style.backgroundColor = 'rgba(59, 130, 246, 0.05)';
+    
+    // Highlight drop target
+    const dropTarget = e.target as HTMLElement;
+    if (dropTarget && dropTarget.style) {
+      dropTarget.style.backgroundColor = "rgba(0,0,255,0.1)";
+      dropTarget.style.border = "2px dashed #4299E1";
     }
   };
 
-  const handleDragLeave = (e: React.DragEvent) => {
-    if (canvasRef.current) {
-      e.currentTarget.style.backgroundColor = '';
+  const dragLeaveHandler = (e: React.DragEvent) => {
+    // Remove highlight from drop target
+    const dropTarget = e.target as HTMLElement;
+    if (dropTarget && dropTarget.style) {
+      dropTarget.style.backgroundColor = "";
+      dropTarget.style.border = "";
     }
   };
 
-  const handleDrop = (e: React.DragEvent) => {
+  const dropHandler = (e: React.DragEvent) => {
     e.preventDefault();
-    if (canvasRef.current) {
-      e.currentTarget.style.backgroundColor = '';
+    
+    // Get the drop target
+    const dropTarget = e.target as HTMLElement;
+    if (dropTarget && dropTarget.style) {
+      dropTarget.style.backgroundColor = "";
+      dropTarget.style.border = "";
+    }
+    
+    try {
+      const data = JSON.parse(e.dataTransfer.getData('application/json'));
+      const { id, offset } = data;
       
-      try {
-        const data = JSON.parse(e.dataTransfer.getData('application/json'));
-        const { id, offset } = data;
-        
-        // Calculate the new position based on the drop coordinates and the initial click offset
-        const rect = canvasRef.current.getBoundingClientRect();
-        const x = e.clientX - rect.left - offset.x;
-        const y = e.clientY - rect.top - offset.y;
-        
-        // Update the position of the equipment
-        setPlacedEquipment(prev => prev.map(eq => {
-          if (eq.id === id) {
-            return { ...eq, position: { x, y } };
-          }
-          return eq;
-        }));
-      } catch (err) {
-        console.error('Error during drop:', err);
-      }
+      // Calculate the new position based on the drop coordinates and the initial click offset
+      const rect = canvasRef.current.getBoundingClientRect();
+      const x = e.clientX - rect.left - offset.x;
+      const y = e.clientY - rect.top - offset.y;
+      
+      // Update the position of the equipment
+      setPlacedEquipment(prev => prev.map(eq => {
+        if (eq.id === id) {
+          return { ...eq, position: { x, y } };
+        }
+        return eq;
+      }));
+    } catch (err) {
+      console.error('Error during drop:', err);
     }
   };
   
@@ -674,9 +684,9 @@ const CreateSimulation = () => {
                     <div 
                       ref={canvasRef}
                       className="w-full h-full min-h-[60vh] relative"
-                      onDragOver={handleDragOver}
-                      onDragLeave={handleDragLeave}
-                      onDrop={handleDrop}
+                      onDragOver={dragOverHandler}
+                      onDragLeave={dragLeaveHandler}
+                      onDrop={dropHandler}
                     >
                       <div ref={flowsheetRef} className="w-full h-full relative">
                         {/* Equipment Items */}
