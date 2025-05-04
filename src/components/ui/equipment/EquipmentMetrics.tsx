@@ -65,159 +65,52 @@ const EquipmentMetrics: React.FC<EquipmentMetricsProps> = ({ metrics, onMetricCh
     }
   };
 
+  // Get the appropriate icon for a key
+  const getIconForKey = (key: string) => {
+    switch (key.toLowerCase()) {
+      case 'temperature': return <Thermometer className="h-3.5 w-3.5 text-gray-500" />;
+      case 'pressure': return <Gauge className="h-3.5 w-3.5 text-gray-500" />;
+      case 'flow': return <Droplets className="h-3.5 w-3.5 text-gray-500" />;
+      case 'level': return <Container className="h-3.5 w-3.5 text-gray-500" />;
+      case 'conversion': return <FlaskConical className="h-3.5 w-3.5 text-gray-500" />;
+      case 'power': return <Blocks className="h-3.5 w-3.5 text-gray-500" />;
+      case 'efficiency': return <Activity className="h-3.5 w-3.5 text-gray-500" />;
+      case 'duty': return <Flame className="h-3.5 w-3.5 text-gray-500" />;
+      default: return <Activity className="h-3.5 w-3.5 text-gray-500" />;
+    }
+  };
+
+  // Get the unit for a key
+  const getUnitForKey = (key: string) => {
+    switch (key.toLowerCase()) {
+      case 'temperature': return '°C';
+      case 'pressure': return 'kPa';
+      case 'flow': return 'm³/h';
+      case 'level': return '%';
+      case 'conversion': return '%';
+      case 'power': return 'kW';
+      case 'efficiency': return '%';
+      case 'duty': return 'kW';
+      default: return '';
+    }
+  };
+
+  // Format key for display
+  const formatKeyForDisplay = (key: string) => {
+    return key.charAt(0).toUpperCase() + key.slice(1).replace(/-/g, ' ');
+  };
+
   return (
-    <div className="grid grid-cols-2 gap-2 mt-4">
-      {metricsObject.temperature !== undefined && (
-        <div className="p-2 rounded-lg bg-gray-50">
-          <div className="flex items-center gap-2">
-            <Thermometer className="h-3.5 w-3.5 text-gray-500" />
-            <span className="text-xs text-gray-500">Temp</span>
-          </div>
-          {getOriginalMetric('temperature')?.editable && onMetricChange ? (
-            <Input 
-              className="h-6 mt-1 p-1 text-xs font-medium"
-              value={String(metricsObject.temperature)}
-              onChange={(e) => handleChange('temperature', e.target.value)}
-            />
-          ) : (
-            <p className="font-medium mt-1">{metricsObject.temperature}°C</p>
-          )}
-        </div>
-      )}
-      {metricsObject.pressure !== undefined && (
-        <div className="p-2 rounded-lg bg-gray-50">
-          <div className="flex items-center gap-2">
-            <Gauge className="h-3.5 w-3.5 text-gray-500" />
-            <span className="text-xs text-gray-500">Press</span>
-          </div>
-          {getOriginalMetric('pressure')?.editable && onMetricChange ? (
-            <Input 
-              className="h-6 mt-1 p-1 text-xs font-medium"
-              value={String(metricsObject.pressure)}
-              onChange={(e) => handleChange('pressure', e.target.value)}
-            />
-          ) : (
-            <p className="font-medium mt-1">{metricsObject.pressure} kPa</p>
-          )}
-        </div>
-      )}
-      {metricsObject.flow !== undefined && (
-        <div className="p-2 rounded-lg bg-gray-50">
-          <div className="flex items-center gap-2">
-            <Droplets className="h-3.5 w-3.5 text-gray-500" />
-            <span className="text-xs text-gray-500">Flow</span>
-          </div>
-          {getOriginalMetric('flow')?.editable && onMetricChange ? (
-            <Input 
-              className="h-6 mt-1 p-1 text-xs font-medium"
-              value={String(metricsObject.flow)}
-              onChange={(e) => handleChange('flow', e.target.value)}
-            />
-          ) : (
-            <p className="font-medium mt-1">{metricsObject.flow} m³/h</p>
-          )}
-        </div>
-      )}
-      {metricsObject.level !== undefined && (
-        <div className="p-2 rounded-lg bg-gray-50">
-          <div className="flex items-center gap-2">
-            <Container className="h-3.5 w-3.5 text-gray-500" />
-            <span className="text-xs text-gray-500">Level</span>
-          </div>
-          {getOriginalMetric('level')?.editable && onMetricChange ? (
-            <Input 
-              className="h-6 mt-1 p-1 text-xs font-medium"
-              value={String(metricsObject.level)}
-              onChange={(e) => handleChange('level', e.target.value)}
-            />
-          ) : (
-            <p className="font-medium mt-1">{metricsObject.level}%</p>
-          )}
-        </div>
-      )}
-      {metricsObject.conversion !== undefined && (
-        <div className="p-2 rounded-lg bg-gray-50">
-          <div className="flex items-center gap-2">
-            <FlaskConical className="h-3.5 w-3.5 text-gray-500" />
-            <span className="text-xs text-gray-500">Conv</span>
-          </div>
-          {getOriginalMetric('conversion')?.editable && onMetricChange ? (
-            <Input 
-              className="h-6 mt-1 p-1 text-xs font-medium"
-              value={String(metricsObject.conversion)}
-              onChange={(e) => handleChange('conversion', e.target.value)}
-            />
-          ) : (
-            <p className="font-medium mt-1">{metricsObject.conversion}%</p>
-          )}
-        </div>
-      )}
-      {metricsObject.power !== undefined && (
-        <div className="p-2 rounded-lg bg-gray-50">
-          <div className="flex items-center gap-2">
-            <Blocks className="h-3.5 w-3.5 text-gray-500" />
-            <span className="text-xs text-gray-500">Power</span>
-          </div>
-          {getOriginalMetric('power')?.editable && onMetricChange ? (
-            <Input 
-              className="h-6 mt-1 p-1 text-xs font-medium"
-              value={String(metricsObject.power)}
-              onChange={(e) => handleChange('power', e.target.value)}
-            />
-          ) : (
-            <p className="font-medium mt-1">{metricsObject.power} kW</p>
-          )}
-        </div>
-      )}
-      {metricsObject.efficiency !== undefined && (
-        <div className="p-2 rounded-lg bg-gray-50">
-          <div className="flex items-center gap-2">
-            <Activity className="h-3.5 w-3.5 text-gray-500" />
-            <span className="text-xs text-gray-500">Eff</span>
-          </div>
-          {getOriginalMetric('efficiency')?.editable && onMetricChange ? (
-            <Input 
-              className="h-6 mt-1 p-1 text-xs font-medium"
-              value={String(metricsObject.efficiency)}
-              onChange={(e) => handleChange('efficiency', e.target.value)}
-            />
-          ) : (
-            <p className="font-medium mt-1">{metricsObject.efficiency}%</p>
-          )}
-        </div>
-      )}
-      {metricsObject.duty !== undefined && (
-        <div className="p-2 rounded-lg bg-gray-50">
-          <div className="flex items-center gap-2">
-            <Flame className="h-3.5 w-3.5 text-gray-500" />
-            <span className="text-xs text-gray-500">Duty</span>
-          </div>
-          {getOriginalMetric('duty')?.editable && onMetricChange ? (
-            <Input 
-              className="h-6 mt-1 p-1 text-xs font-medium"
-              value={String(metricsObject.duty)}
-              onChange={(e) => handleChange('duty', e.target.value)}
-            />
-          ) : (
-            <p className="font-medium mt-1">{metricsObject.duty} kW</p>
-          )}
-        </div>
-      )}
-      
-      {/* Support for custom metrics that aren't part of the predefined set */}
+    <div className="grid grid-cols-1 gap-1 mt-2 max-h-[60px] overflow-y-auto">
       {Object.entries(metricsObject).map(([key, value]) => {
-        // Skip the predefined metrics that are already handled above
-        if (['temperature', 'pressure', 'flow', 'level', 'conversion', 'power', 'efficiency', 'duty'].includes(key)) {
-          return null;
-        }
-        
         const originalMetric = getOriginalMetric(key);
+        const unit = getUnitForKey(key);
         
         return (
-          <div key={key} className="p-2 rounded-lg bg-gray-50">
-            <div className="flex items-center gap-2">
-              <Activity className="h-3.5 w-3.5 text-gray-500" />
-              <span className="text-xs text-gray-500">{key}</span>
+          <div key={key} className="p-1 rounded-md bg-gray-50 border border-gray-100">
+            <div className="flex items-center gap-1.5">
+              {getIconForKey(key)}
+              <span className="text-[10px] text-gray-500">{formatKeyForDisplay(key)}</span>
             </div>
             {originalMetric?.editable && onMetricChange ? (
               originalMetric.options ? (
@@ -225,29 +118,34 @@ const EquipmentMetrics: React.FC<EquipmentMetricsProps> = ({ metrics, onMetricCh
                   value={String(value)}
                   onValueChange={(newValue) => handleSelectChange(key, newValue)}
                 >
-                  <SelectTrigger className="h-6 mt-1 text-xs">
+                  <SelectTrigger className="h-6 mt-0.5 text-[10px] py-0 px-2 min-h-0">
                     <SelectValue placeholder="Select option" />
                   </SelectTrigger>
                   <SelectContent>
                     {originalMetric.options.map((option) => (
-                      <SelectItem key={option} value={option}>
+                      <SelectItem key={option} value={option} className="text-xs">
                         {option}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               ) : (
-                <Input 
-                  className="h-6 mt-1 p-1 text-xs font-medium"
-                  value={String(value)}
-                  onChange={(e) => handleChange(key, e.target.value)}
-                />
+                <div className="flex items-center mt-0.5">
+                  <Input 
+                    className="h-5 px-1 py-0 text-[10px] font-medium min-h-0"
+                    value={String(value)}
+                    onChange={(e) => handleChange(key, e.target.value)}
+                  />
+                  {unit && <span className="text-[10px] ml-1 text-gray-500">{unit}</span>}
+                </div>
               )
             ) : (
-              <p className="font-medium mt-1">{String(value)}</p>
+              <p className="text-[10px] font-medium mt-0.5">{String(value)}{unit}</p>
             )}
             {originalMetric?.description && (
-              <p className="text-xs text-gray-500 mt-1">{originalMetric.description}</p>
+              <p className="text-[8px] text-gray-500 mt-0.5 truncate" title={originalMetric.description}>
+                {originalMetric.description}
+              </p>
             )}
           </div>
         );

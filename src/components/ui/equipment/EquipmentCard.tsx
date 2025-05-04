@@ -92,6 +92,7 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
       onDragStart={handleDragStart}
       onClick={onClick}
       data-testid="equipment-card"
+      data-equipment-type={type}
     >
       {showConnections && (
         <EquipmentConnections 
@@ -120,6 +121,11 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
         <div className="absolute top-0 left-0 translate-y-[-100%] bg-white p-2 rounded shadow-lg text-xs max-w-[200px] z-20">
           <strong>Problem Context:</strong> {problem}
         </div>
+      )}
+
+      {/* Visual indicator that the card is selected */}
+      {selected && (
+        <div className="absolute -top-2 -right-2 bg-blue-500 w-4 h-4 rounded-full border-2 border-white"></div>
       )}
     </div>
   );

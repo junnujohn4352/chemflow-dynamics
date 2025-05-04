@@ -32,6 +32,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 
 // Connection interface for tracking equipment connections
 interface Connection {
@@ -596,7 +597,12 @@ const CreateSimulation = () => {
     return (
       <div className="absolute top-0 right-0 w-72 h-full bg-white dark:bg-gray-800 border-l border-blue-200 dark:border-blue-800 p-4 shadow-lg overflow-y-auto z-20">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="font-medium text-blue-900 dark:text-blue-100">{equipment.title} Properties</h3>
+          <div className="flex items-center gap-2">
+            <div className="bg-blue-100 dark:bg-blue-900 p-1.5 rounded-md">
+              {getEquipmentIcon(equipment.type)}
+            </div>
+            <h3 className="font-medium text-blue-900 dark:text-blue-100">{equipment.title} Properties</h3>
+          </div>
           <Button variant="ghost" size="sm" onClick={() => setActiveEquipment(null)} className="h-7 w-7 p-0">
             <X className="h-4 w-4" />
           </Button>
@@ -616,13 +622,31 @@ const CreateSimulation = () => {
                     </span>
                   )}
                 </div>
-                <Input
-                  id={`metric-${metric.key}`}
-                  value={String(metric.value)}
-                  onChange={(e) => handleMetricEdit(equipment.id, metric.key, e.target.value)}
-                  className="h-8"
-                  readOnly={!metric.editable}
-                />
+                {metric.options ? (
+                  <Select 
+                    value={String(metric.value)}
+                    onValueChange={(value) => handleMetricEdit(equipment.id, metric.key, value)}
+                  >
+                    <SelectTrigger className="h-8">
+                      <SelectValue placeholder="Select option" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {metric.options.map((option) => (
+                        <SelectItem key={option} value={option}>
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Input
+                    id={`metric-${metric.key}`}
+                    value={String(metric.value)}
+                    onChange={(e) => handleMetricEdit(equipment.id, metric.key, e.target.value)}
+                    className="h-8"
+                    readOnly={!metric.editable}
+                  />
+                )}
                 {metric.description && (
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{metric.description}</p>
                 )}
@@ -631,6 +655,14 @@ const CreateSimulation = () => {
           </div>
         ) : (
           <p className="text-sm text-gray-500">No editable parameters available.</p>
+        )}
+        
+        {/* Add parameter context section */}
+        {problemDescription && (
+          <div className="mt-6 pt-4 border-t border-blue-100 dark:border-blue-800">
+            <h4 className="text-sm font-medium mb-2 text-blue-900 dark:text-blue-100">Problem Context</h4>
+            <p className="text-xs text-gray-600 dark:text-gray-400">{problemDescription}</p>
+          </div>
         )}
       </div>
     );
