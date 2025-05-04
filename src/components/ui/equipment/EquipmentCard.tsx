@@ -98,19 +98,7 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
       </div>
 
       {metrics.length > 0 && size !== "sm" && (
-        <EquipmentMetrics 
-          metrics={{
-            // Convert array metrics to the object format expected by EquipmentMetrics
-            ...metrics.reduce((acc, metric) => {
-              if (metric.key && metric.value) {
-                // Convert string values to numbers where appropriate
-                const numericValue = !isNaN(Number(metric.value)) ? Number(metric.value) : metric.value;
-                return { ...acc, [metric.key]: numericValue };
-              }
-              return acc;
-            }, {})
-          }}
-        />
+        <EquipmentMetrics metrics={metrics} />
       )}
     </div>
   );
