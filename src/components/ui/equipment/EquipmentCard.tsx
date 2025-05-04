@@ -90,9 +90,11 @@ export const EquipmentCard: React.FC<EquipmentCardProps> = ({
 
   const handleCardClick = (e: React.MouseEvent) => {
     // Don't trigger card click if we're clicking on a connection point or the edit button
+    const target = e.target as HTMLElement;
     if (
-      (e.target as HTMLElement).dataset.connection || 
-      (e.target as HTMLElement).closest('button')
+      target.dataset.connection || 
+      target.closest('[data-connection]') ||
+      target.closest('button')
     ) {
       e.stopPropagation();
       return;
@@ -103,7 +105,8 @@ export const EquipmentCard: React.FC<EquipmentCardProps> = ({
     }
   };
 
-  const handleConnectionPointClick = (point: string) => {
+  const handleConnectionPointClick = (point: string, e: React.MouseEvent) => {
+    e.stopPropagation();
     if (onConnectionPointClick) {
       onConnectionPointClick(point);
     }

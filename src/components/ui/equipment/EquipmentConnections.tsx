@@ -23,7 +23,7 @@ import {
 
 interface EquipmentConnectionsProps {
   type: EquipmentType;
-  onClick?: (point: string) => void;
+  onClick?: (point: string, e: React.MouseEvent) => void;
   activePoints?: string[];
 }
 
@@ -53,9 +53,10 @@ const EquipmentConnections: React.FC<EquipmentConnectionsProps> = ({
   const connectionColor = getConnectionColor();
   
   const handleClick = (e: React.MouseEvent, point: string) => {
+    e.preventDefault();
     e.stopPropagation();
     if (onClick) {
-      onClick(point);
+      onClick(point, e);
     }
   };
   
