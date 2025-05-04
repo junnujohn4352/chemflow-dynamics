@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChemFlowLogo } from "@/assets/icons/ChemFlowLogo";
@@ -118,7 +117,7 @@ const CodeVerification: React.FC = () => {
                     </Label>
                     
                     <div className="flex justify-center mb-6">
-                      <InputOTP maxLength={19} value={activationCode} onChange={setActivationCode}>
+                      <InputOTP maxLength={8} value={activationCode} onChange={setActivationCode}>
                         <InputOTPGroup>
                           <InputOTPSlot index={0} />
                           <InputOTPSlot index={1} />
@@ -131,20 +130,6 @@ const CodeVerification: React.FC = () => {
                           <InputOTPSlot index={5} />
                           <InputOTPSlot index={6} />
                           <InputOTPSlot index={7} />
-                        </InputOTPGroup>
-                        <InputOTPSeparator />
-                        <InputOTPGroup>
-                          <InputOTPSlot index={8} />
-                          <InputOTPSlot index={9} />
-                          <InputOTPSlot index={10} />
-                          <InputOTPSlot index={11} />
-                        </InputOTPGroup>
-                        <InputOTPSeparator />
-                        <InputOTPGroup>
-                          <InputOTPSlot index={12} />
-                          <InputOTPSlot index={13} />
-                          <InputOTPSlot index={14} />
-                          <InputOTPSlot index={15} />
                         </InputOTPGroup>
                       </InputOTP>
                     </div>

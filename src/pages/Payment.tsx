@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -45,7 +44,7 @@ const PaymentPage: React.FC = () => {
     
     // Simulate payment verification
     setTimeout(() => {
-      // Generate a unique activation code (in production, this should be more secure)
+      // Generate an 8-digit numeric activation code
       const generatedCode = generateUniqueCode();
       setActivationCode(generatedCode);
       
@@ -63,13 +62,12 @@ const PaymentPage: React.FC = () => {
     }, 2000);
   };
   
-  // Generate a unique alphanumeric code
+  // Generate an 8-digit numeric code
   const generateUniqueCode = (): string => {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    // Generate a random 8-digit number
     let result = '';
-    for (let i = 0; i < 16; i++) {
-      if (i > 0 && i % 4 === 0) result += '-';
-      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    for (let i = 0; i < 8; i++) {
+      result += Math.floor(Math.random() * 10).toString();
     }
     return result;
   };
