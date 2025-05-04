@@ -1,4 +1,3 @@
-
 import React from "react";
 import { 
   CircleOff, 
@@ -74,7 +73,8 @@ export type EquipmentType =
   | "makeup" | "recycle" | "ratio-control" | "adjust" | "balance" | "controller" | "set" 
   | "case-study" | "logical-operator" | "mixer-column" | "divider" | "splitter" 
   | "relief-valve" | "check-valve" | "plate-fin-exchanger" | "generic-valve" 
-  | "spiral-heat-exchanger" | "double-pipe" | "plate-heat-exchanger";
+  | "spiral-heat-exchanger" | "double-pipe" | "plate-heat-exchanger"
+  | "feed"; // Added "feed" as a valid equipment type
 
 export const getEquipmentIcon = (type: EquipmentType): React.ReactNode => {
   switch (type) {
@@ -291,6 +291,9 @@ export const getEquipmentIcon = (type: EquipmentType): React.ReactNode => {
     case "plate-heat-exchanger":
       return <Package className="h-7 w-7" />;
 
+    case "feed":
+      return <Droplets className="h-7 w-7" />;
+    
     default:
       return <FlaskConical className="h-7 w-7" />;
   }
