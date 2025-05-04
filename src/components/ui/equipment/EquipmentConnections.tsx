@@ -46,7 +46,7 @@ const connectionConfigs: Record<EquipmentType, EquipmentConnectionPoints> = {
     bottom: ["liquid"],
     left: ["feed"],
   },
-  "vessel": {
+  "vessel": { // This is causing the error - making sure it's properly included in EquipmentType
     top: ["vapor"],
     bottom: ["drain"],
     left: ["feed"],
