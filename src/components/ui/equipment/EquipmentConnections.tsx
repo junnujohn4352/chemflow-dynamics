@@ -61,7 +61,7 @@ const EquipmentConnections: React.FC<EquipmentConnectionsProps> = ({
   };
   
   const getActiveClass = (point: string) => {
-    return activePoints.includes(point) ? "ring-2 ring-offset-1 ring-blue-500 scale-125" : "";
+    return activePoints.includes(point) ? "ring-2 ring-offset-1 ring-blue-500 scale-125 animate-pulse" : "";
   };
   
   // Function to create standard left and right connections

@@ -92,12 +92,12 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-900 dark:to-blue-900">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-100 to-purple-100 dark:from-gray-900 dark:to-blue-900">
       <Navbar />
       
       <main className="flex-1 py-16 px-6">
         <div className="max-w-screen-xl mx-auto">
-          <div className="mb-12 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl p-6 shadow-lg text-white">
+          <div className="mb-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-8 shadow-xl text-white border border-blue-400 dark:border-purple-800">
             <div className="flex justify-between items-center">
               <div>
                 <h1 className="text-4xl font-display font-bold mb-4 text-white">
@@ -116,23 +116,34 @@ const Dashboard = () => {
           
           <div className="mb-10">
             <h2 className="text-2xl font-bold mb-6 text-blue-900 dark:text-white">Core Tools</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {coreDashboardCards.map(card => (
-                <Link 
-                  key={card.title} 
-                  to={card.linkTo}
-                  className={`block rounded-xl border transition-all duration-300 group shadow-sm hover:shadow-md py-6 px-6
-                    ${card.gradient}`}
-                >
-                  <div className="flex justify-between items-start mb-4">
-                    <div className={`p-4 rounded-xl ${card.iconBg} text-white group-hover:scale-105 transition-transform`}>
-                      {card.icon}
-                    </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+              <Link 
+                to="/create-simulation"
+                className="block rounded-xl border transition-all duration-300 group shadow-lg hover:shadow-xl py-8 px-8
+                  bg-gradient-to-br from-blue-500 to-purple-600 text-white border-blue-400 transform hover:scale-105"
+              >
+                <div className="flex justify-between items-start mb-4">
+                  <div className="p-4 rounded-xl bg-gradient-to-br from-blue-600 to-blue-800 text-white group-hover:scale-110 transition-transform shadow-lg">
+                    <FlaskConical className="h-8 w-8" />
                   </div>
-                  <h3 className="text-xl font-medium mb-2 text-white">{card.title}</h3>
-                  <p className="text-white/80 text-sm">{card.description}</p>
-                </Link>
-              ))}
+                </div>
+                <h3 className="text-2xl font-medium mb-2 text-white">Create Simulation</h3>
+                <p className="text-white/90 text-md">Build chemical process simulations with interactive flowsheeting and connect equipment using drag-and-drop</p>
+              </Link>
+
+              <Link 
+                to="/engineering-formulas"
+                className="block rounded-xl border transition-all duration-300 group shadow-lg hover:shadow-xl py-8 px-8
+                  bg-gradient-to-br from-teal-500 to-green-600 text-white border-teal-400 transform hover:scale-105"
+              >
+                <div className="flex justify-between items-start mb-4">
+                  <div className="p-4 rounded-xl bg-gradient-to-br from-teal-600 to-teal-800 text-white group-hover:scale-110 transition-transform shadow-lg">
+                    <Book className="h-8 w-8" />
+                  </div>
+                </div>
+                <h3 className="text-2xl font-medium mb-2 text-white">Engineering Formulas</h3>
+                <p className="text-white/90 text-md">Comprehensive collection of chemical engineering formulas and equations</p>
+              </Link>
             </div>
           </div>
 
@@ -143,10 +154,10 @@ const Dashboard = () => {
                 <Link 
                   key={card.title} 
                   to={`/software-tools?type=${encodeURIComponent(card.type)}`} 
-                  className={`block rounded-xl border transition-all duration-300 group shadow-sm hover:shadow-md p-4 ${card.gradient}`}
+                  className={`block rounded-xl border transition-all duration-300 group shadow-md hover:shadow-lg p-6 ${card.gradient} transform hover:scale-105`}
                 >
                   <div className="flex justify-center items-center mb-4">
-                    <div className={`p-3 rounded-xl ${card.iconBg} text-white group-hover:scale-105 transition-transform`}>
+                    <div className={`p-3 rounded-xl ${card.iconBg} text-white group-hover:scale-110 transition-transform shadow-md`}>
                       {card.icon}
                     </div>
                   </div>
@@ -163,10 +174,10 @@ const Dashboard = () => {
                 <div
                   key={capability.id}
                   onClick={() => setHysysCapabilityModal(capability.id)}
-                  className={`rounded-xl p-4 cursor-pointer transition-all hover:shadow-lg ${capability.gradient}`}
+                  className={`rounded-xl p-6 cursor-pointer transition-all hover:shadow-lg transform hover:scale-105 ${capability.gradient}`}
                 >
                   <div className="flex justify-center items-center mb-3">
-                    <div className={`p-3 rounded-xl ${capability.iconBg} text-white`}>
+                    <div className={`p-4 rounded-xl ${capability.iconBg} text-white shadow-md`}>
                       {capability.icon}
                     </div>
                   </div>
@@ -183,15 +194,15 @@ const Dashboard = () => {
                 <Link 
                   key={card.title} 
                   to={card.linkTo} 
-                  className={`block rounded-xl border transition-all duration-300 group shadow-sm hover:shadow-md py-6 px-6 ${card.gradient}`}
+                  className={`block rounded-xl border transition-all duration-300 group shadow-md hover:shadow-lg py-6 px-8 ${card.gradient} transform hover:scale-105`}
                 >
                   <div className="flex justify-between items-start mb-4">
-                    <div className={`p-4 rounded-xl ${card.iconBg} text-white group-hover:scale-105 transition-transform`}>
+                    <div className={`p-4 rounded-xl ${card.iconBg} text-white group-hover:scale-110 transition-transform shadow-md`}>
                       {card.icon}
                     </div>
                   </div>
                   <h3 className="text-xl font-medium mb-2 text-white">{card.title}</h3>
-                  <p className="text-white/80 text-sm">{card.description}</p>
+                  <p className="text-white/90 text-sm">{card.description}</p>
                 </Link>
               ))}
             </div>

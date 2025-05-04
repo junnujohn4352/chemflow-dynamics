@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card } from '@/components/ui/card';
 import { EquipmentType, getEquipmentIcon } from './EquipmentIcons';
@@ -111,21 +112,34 @@ export const EquipmentCard: React.FC<EquipmentCardProps> = ({
       onConnectionPointClick(point);
     }
   };
+  
+  // Get equipment-specific gradient color
+  const getEquipmentGradient = () => {
+    if (type.includes('reactor')) return 'from-green-50 to-green-100 dark:from-green-900/40 dark:to-green-800/40';
+    if (type.includes('column')) return 'from-blue-50 to-blue-100 dark:from-blue-900/40 dark:to-blue-800/40';
+    if (type.includes('heat-exchanger')) return 'from-red-50 to-red-100 dark:from-red-900/40 dark:to-red-800/40';
+    if (type.includes('vessel')) return 'from-gray-50 to-gray-100 dark:from-gray-900/40 dark:to-gray-800/40';
+    if (type.includes('pump')) return 'from-purple-50 to-purple-100 dark:from-purple-900/40 dark:to-purple-800/40';
+    if (type.includes('compressor')) return 'from-cyan-50 to-cyan-100 dark:from-cyan-900/40 dark:to-cyan-800/40';
+    if (type.includes('valve')) return 'from-amber-50 to-amber-100 dark:from-amber-900/40 dark:to-amber-800/40';
+    if (type.includes('utility')) return 'from-teal-50 to-teal-100 dark:from-teal-900/40 dark:to-teal-800/40';
+    return 'from-gray-50 to-gray-100 dark:from-gray-800/40 dark:to-gray-900/40';
+  };
 
   return (
     <Card
-      className={`relative flex flex-col ${sizeClasses[size]} ${
+      className={`relative flex flex-col ${sizeClasses[size]} bg-gradient-to-br ${getEquipmentGradient()} ${
         selected ? 'ring-2 ring-blue-500 shadow-md' : ''
       } ${
         draggable ? 'cursor-move' : ''
-      } transition-all hover:shadow-md ${className}`}
+      } transition-all hover:shadow-md ${className} border border-gray-200 dark:border-gray-700`}
       draggable={draggable}
       onDragStart={handleDragStart}
       onClick={handleCardClick}
     >
       <div className="flex justify-between items-start mb-2">
         <div className="text-gray-600 dark:text-gray-300 flex items-center">
-          <div className="mr-1.5">
+          <div className="mr-1.5 text-blue-600 dark:text-blue-400">
             {getEquipmentIcon(type)}
           </div>
           <div className="text-xs font-medium">{title}</div>

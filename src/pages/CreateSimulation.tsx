@@ -1,152 +1,365 @@
 
-import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useRef, useEffect } from "react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import { 
-  Save, ArrowLeft, Play, Check, RefreshCw, Download, 
-  FileText, ChevronRight, ChevronLeft, ChevronDown,
-  BarChart3
-} from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { SimulationBuilder } from "@/components/simulation/SimulationBuilder";
 import ComponentSelector from "@/components/simulation/ComponentSelector";
 import ThermodynamicsSelector from "@/components/simulation/ThermodynamicsSelector";
-import SimulationResults from "@/components/simulation/SimulationResults";
-import HysysIntegration from "@/components/simulation/HysysIntegration";
+import EquipmentSelector from "@/components/simulation/EquipmentSelector";
+import { 
+  Play, 
+  ArrowLeft, 
+  ArrowRight, 
+  Check,
+  RefreshCw,
+  FileText,
+  ChevronRight,
+  Trash2,
+  X,
+  Save,
+  MousePointer,
+  Plus,
+  Link2
+} from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import TooltipWrapper from "@/components/ui/TooltipWrapper";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
+import { EquipmentType } from "@/components/ui/equipment/EquipmentIcons";
+import { Separator } from "@/components/ui/separator";
+import HysysIntegration from "@/components/simulation/HysysIntegration";
+import EquipmentCard from "@/components/ui/EquipmentCard";
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+// Connection interface for tracking equipment connections
+interface Connection {
+  fromEquipmentId: string;
+  fromPoint: string;
+  toEquipmentId: string;
+  toPoint: string;
+}
+
+// Equipment interface for tracking equipment on the canvas
+interface EquipmentItem {
+  id: string;
+  type: EquipmentType;
+  title: string;
+  position: { x: number; y: number };
+  connections?: string[];
+}
 
 const CreateSimulation = () => {
-  const navigate = useNavigate();
   const { toast } = useToast();
-  const [currentStep, setCurrentStep] = useState<'components' | 'thermodynamics' | 'builder'>('components');
+  const [currentStep, setCurrentStep] = useState<'chemicals' | 'thermodynamics' | 'equipment' | 'results'>('chemicals');
+  const [selectedComponents, setSelectedComponents] = useState<string[]>([]);
+  const [selectedModel, setSelectedModel] = useState<string>('Peng-Robinson');
+  const [selectedEquipment, setSelectedEquipment] = useState<EquipmentType[]>([]);
+  const [simulationRunning, setSimulationRunning] = useState(false);
+  const [simulationComplete, setSimulationComplete] = useState(false);
   const [simulationProgress, setSimulationProgress] = useState(0);
   const [simulationName, setSimulationName] = useState('Untitled Simulation');
-  const [selectedComponents, setSelectedComponents] = useState<string[]>([]);
-  const [selectedModel, setSelectedModel] = useState('Peng-Robinson');
-  const [isSimulationComplete, setIsSimulationComplete] = useState(false);
-  const [isSimulationRunning, setIsSimulationRunning] = useState(false);
-  const [showAnalysis, setShowAnalysis] = useState(false);
-  const [analysisData, setAnalysisData] = useState<any[]>([]);
-  const [simulationSubject, setSimulationSubject] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'flowsheet' | 'hysys'>('flowsheet');
-  const analysisRef = useRef<HTMLDivElement>(null);
+  const resultsRef = useRef<HTMLDivElement>(null);
   
-  useEffect(() => {
-    const savedSimData = localStorage.getItem('chemflow-simulation-data');
-    if (savedSimData) {
-      try {
-        const simData = JSON.parse(savedSimData);
-        if (simData.components && simData.components.length > 0) {
-          setSelectedComponents(simData.components);
-        }
-        if (simData.thermodynamicModel) {
-          setSelectedModel(simData.thermodynamicModel);
-        }
-        if (simData.name) {
-          setSimulationName(simData.name);
-        }
-        if (simData.subject) {
-          setSimulationSubject(simData.subject);
-        }
-      } catch (e) {
-        console.error("Error loading saved simulation data:", e);
-      }
-    }
-  }, []);
+  // New state variables for the enhanced canvas functionality
+  const [placedEquipment, setPlacedEquipment] = useState<EquipmentItem[]>([]);
+  const [activeEquipment, setActiveEquipment] = useState<string | null>(null);
+  const [connectionMode, setConnectionMode] = useState(false);
+  const [connectionStart, setConnectionStart] = useState<{equipmentId: string, point: string} | null>(null);
+  const [connections, setConnections] = useState<Connection[]>([]);
   
-  useEffect(() => {
-    let progress = 0;
-    if (selectedComponents.length > 0) progress += 33;
-    if (selectedModel !== '') progress += 33;
-    if (isSimulationComplete) progress += 34;
-    setSimulationProgress(progress);
-  }, [selectedComponents, selectedModel, isSimulationComplete]);
+  const canvasRef = useRef<HTMLDivElement>(null);
+  const flowsheetRef = useRef<HTMLDivElement>(null);
 
-  const componentsValid = selectedComponents.length > 0;
-  const allStepsValid = componentsValid && selectedModel !== '';
-
-  const handleComponentSelectionDone = () => {
-    if (componentsValid) {
-      setCurrentStep('thermodynamics');
-    } else {
-      toast({
-        title: "Components required",
-        description: "Please select at least one component before continuing",
-        variant: "destructive",
-      });
+  // Calculate progress based on current step
+  const calculateProgress = () => {
+    switch(currentStep) {
+      case 'chemicals': return 25;
+      case 'thermodynamics': return 50;
+      case 'equipment': return 75;
+      case 'results': return 100;
+      default: return 0;
     }
   };
 
-  const handleModelSelectionDone = () => {
-    if (selectedModel) {
-      setCurrentStep('builder');
-    } else {
+  const handleComponentSelectionDone = () => {
+    if (selectedComponents.length === 0) {
+      toast({
+        title: "Components required",
+        description: "Please select at least one chemical component before continuing",
+        variant: "destructive",
+      });
+      return;
+    }
+    setCurrentStep('thermodynamics');
+    setSimulationProgress(calculateProgress());
+  };
+
+  const handleThermodynamicsSelectionDone = () => {
+    if (!selectedModel) {
       toast({
         title: "Thermodynamic model required",
         description: "Please select a thermodynamic model before continuing",
         variant: "destructive",
       });
+      return;
+    }
+    setCurrentStep('equipment');
+    setSimulationProgress(calculateProgress());
+  };
+
+  const handleEquipmentSelectionDone = () => {
+    if (placedEquipment.length === 0) {
+      toast({
+        title: "Equipment required",
+        description: "Please add at least one piece of equipment to your flowsheet",
+        variant: "destructive",
+      });
+      return;
+    }
+    setCurrentStep('results');
+    setSimulationProgress(calculateProgress());
+    runSimulation();
+  };
+
+  const handleSelectEquipment = (equipmentType: EquipmentType) => {
+    if (canvasRef.current) {
+      // Create a unique ID for the equipment
+      const id = `equipment-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+      
+      // Add the equipment to the canvas at a default position
+      const centerX = canvasRef.current.clientWidth / 2 - 70;
+      const centerY = canvasRef.current.clientHeight / 2 - 60;
+      
+      const newEquipment: EquipmentItem = {
+        id,
+        type: equipmentType,
+        title: equipmentType.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+        position: { x: centerX, y: centerY },
+      };
+      
+      setPlacedEquipment([...placedEquipment, newEquipment]);
+      setSelectedEquipment([...selectedEquipment, equipmentType]);
+      
+      toast({
+        title: "Equipment added",
+        description: `${newEquipment.title} has been added to your flowsheet`,
+      });
     }
   };
 
-  const handleSaveSimulation = () => {
-    if (simulationName.trim() === '') {
-      toast({
-        title: "Name required",
-        description: "Please enter a name for your simulation",
-        variant: "destructive",
-      });
+  const handleDragStart = (e: React.DragEvent, equipment: EquipmentItem) => {
+    // Set the data to be transferred
+    e.dataTransfer.setData('application/json', JSON.stringify({
+      id: equipment.id,
+      type: equipment.type,
+      offset: {
+        x: e.nativeEvent.offsetX,
+        y: e.nativeEvent.offsetY
+      }
+    }));
+    
+    // Set the drag image
+    const ghostEl = document.createElement('div');
+    ghostEl.style.width = '100px';
+    ghostEl.style.height = '60px';
+    ghostEl.style.backgroundColor = 'rgba(0,0,0,0.1)';
+    ghostEl.style.borderRadius = '8px';
+    document.body.appendChild(ghostEl);
+    
+    e.dataTransfer.setDragImage(ghostEl, 50, 30);
+    
+    setTimeout(() => {
+      document.body.removeChild(ghostEl);
+    }, 0);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    if (canvasRef.current) {
+      e.currentTarget.style.backgroundColor = 'rgba(59, 130, 246, 0.05)';
+    }
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    if (canvasRef.current) {
+      e.currentTarget.style.backgroundColor = '';
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    if (canvasRef.current) {
+      e.currentTarget.style.backgroundColor = '';
+      
+      try {
+        const data = JSON.parse(e.dataTransfer.getData('application/json'));
+        const { id, offset } = data;
+        
+        // Calculate the new position based on the drop coordinates and the initial click offset
+        const rect = canvasRef.current.getBoundingClientRect();
+        const x = e.clientX - rect.left - offset.x;
+        const y = e.clientY - rect.top - offset.y;
+        
+        // Update the position of the equipment
+        setPlacedEquipment(prev => prev.map(eq => {
+          if (eq.id === id) {
+            return { ...eq, position: { x, y } };
+          }
+          return eq;
+        }));
+      } catch (err) {
+        console.error('Error during drop:', err);
+      }
+    }
+  };
+  
+  const handleEquipmentClick = (id: string) => {
+    if (connectionMode) {
+      // In connection mode, clicking on equipment does nothing
       return;
     }
     
-    if (selectedComponents.length === 0) {
+    setActiveEquipment(activeEquipment === id ? null : id);
+  };
+  
+  const handleRemoveEquipment = (id: string) => {
+    // Remove the equipment
+    const equipmentToRemove = placedEquipment.find(eq => eq.id === id);
+    if (equipmentToRemove) {
+      setPlacedEquipment(placedEquipment.filter(eq => eq.id !== id));
+      
+      // Remove any connections to/from this equipment
+      setConnections(connections.filter(conn => 
+        conn.fromEquipmentId !== id && conn.toEquipmentId !== id
+      ));
+      
+      // If this was the active equipment, clear the selection
+      if (activeEquipment === id) {
+        setActiveEquipment(null);
+      }
+      
       toast({
-        title: "Components required",
-        description: "Please select at least one component for your simulation",
-        variant: "destructive",
+        title: "Equipment removed",
+        description: `${equipmentToRemove.title} has been removed from your flowsheet`,
       });
-      return;
     }
+  };
+  
+  const handleConnectionPointClick = (equipmentId: string, point: string) => {
+    if (!connectionMode) return;
     
-    const simulationData = {
-      name: simulationName,
-      components: selectedComponents,
-      thermodynamicModel: selectedModel,
-      subject: simulationSubject,
-      lastUpdated: new Date().toISOString(),
-      id: `sim-${Date.now()}`
-    };
-    
-    localStorage.setItem('chemflow-simulation-data', JSON.stringify(simulationData));
-    localStorage.setItem('chemflow-active-simulation', 'true');
-    
-    if (isSimulationComplete && analysisData.length > 0) {
-      localStorage.setItem('chemflow-analysis-data', JSON.stringify(analysisData));
-      
-      handleExportToPDF();
-      
+    if (!connectionStart) {
+      // This is the first click in the connection process
+      setConnectionStart({equipmentId, point});
       toast({
-        title: "Simulation saved",
-        description: "Your simulation and analysis data have been saved successfully!"
+        title: "Connection started",
+        description: "Now click on another connection point to complete the connection",
       });
     } else {
+      // This is the second click, complete the connection
+      if (connectionStart.equipmentId === equipmentId) {
+        // Can't connect to the same equipment
+        toast({
+          title: "Invalid connection",
+          description: "Cannot connect an equipment to itself",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Check if this connection already exists
+      const connectionExists = connections.some(
+        conn => 
+          (conn.fromEquipmentId === connectionStart.equipmentId && conn.fromPoint === connectionStart.point &&
+           conn.toEquipmentId === equipmentId && conn.toPoint === point) ||
+          (conn.fromEquipmentId === equipmentId && conn.fromPoint === point &&
+           conn.toEquipmentId === connectionStart.equipmentId && conn.toPoint === connectionStart.point)
+      );
+      
+      if (connectionExists) {
+        toast({
+          title: "Connection exists",
+          description: "This connection already exists",
+          variant: "destructive",
+        });
+        setConnectionStart(null);
+        return;
+      }
+      
+      // Add the new connection
+      const newConnection: Connection = {
+        fromEquipmentId: connectionStart.equipmentId,
+        fromPoint: connectionStart.point,
+        toEquipmentId: equipmentId,
+        toPoint: point
+      };
+      
+      setConnections([...connections, newConnection]);
+      setConnectionStart(null);
+      
       toast({
-        title: "Simulation saved",
-        description: "Your simulation has been created successfully!"
+        title: "Connection created",
+        description: "Connection between equipment has been established",
       });
     }
+  };
+  
+  const handleCancelConnection = () => {
+    setConnectionStart(null);
+    setConnectionMode(false);
+  };
+  
+  const toggleConnectionMode = () => {
+    setConnectionMode(!connectionMode);
+    setConnectionStart(null);
+    if (!connectionMode) {
+      toast({
+        title: "Connection mode activated",
+        description: "Click on connection points to create connections between equipment",
+      });
+    }
+  };
+  
+  const handleRemoveConnection = (connectionIndex: number) => {
+    setConnections(connections.filter((_, index) => index !== connectionIndex));
+  };
+
+  const handleGoBack = () => {
+    switch(currentStep) {
+      case 'thermodynamics':
+        setCurrentStep('chemicals');
+        break;
+      case 'equipment':
+        setCurrentStep('thermodynamics');
+        break;
+      case 'results':
+        setCurrentStep('equipment');
+        break;
+      default:
+        break;
+    }
+    setSimulationProgress(calculateProgress());
+  };
+
+  const runSimulation = () => {
+    setSimulationRunning(true);
+    
+    // Simulate a delay for the simulation to run
+    setTimeout(() => {
+      setSimulationRunning(false);
+      setSimulationComplete(true);
+      toast({
+        title: "Simulation Complete",
+        description: "Process simulation results are now available",
+      });
+    }, 2000);
   };
 
   const handleExportToPDF = async () => {
-    if (!analysisRef.current || !isSimulationComplete) {
+    if (!resultsRef.current || !simulationComplete) {
       toast({
-        title: "Cannot export analysis",
+        title: "Cannot export results",
         description: "Please complete the simulation first",
         variant: "destructive",
       });
@@ -156,36 +369,38 @@ const CreateSimulation = () => {
     try {
       toast({
         title: "Generating PDF",
-        description: "Please wait while we generate your analysis report...",
+        description: "Please wait while we generate your report...",
       });
       
       const pdf = new jsPDF('p', 'mm', 'a4');
-      const analysisElement = analysisRef.current;
+      const resultsElement = resultsRef.current;
       
       pdf.setFontSize(18);
-      pdf.text(`${simulationName} - Analysis Report`, 20, 20);
+      pdf.text(`${simulationName} - Simulation Results`, 20, 20);
       
       pdf.setFontSize(12);
       pdf.text(`Thermodynamic Model: ${selectedModel}`, 20, 30);
       pdf.text(`Components: ${selectedComponents.join(", ")}`, 20, 40);
-      pdf.text(`Subject: ${simulationSubject || "Chemical Process"}`, 20, 50);
-      pdf.text(`Date: ${new Date().toLocaleDateString()}`, 20, 60);
+      pdf.text(`Date: ${new Date().toLocaleDateString()}`, 20, 50);
       
-      const scale = 2;
-      const canvas = await html2canvas(analysisElement, { scale });
-      const imgData = canvas.toDataURL('image/png');
+      // If we have a flowsheet ref, include it in the PDF
+      if (flowsheetRef.current) {
+        try {
+          const canvas = await html2canvas(flowsheetRef.current);
+          const imgData = canvas.toDataURL('image/png');
+          pdf.addPage();
+          pdf.text("Process Flowsheet", 20, 20);
+          pdf.addImage(imgData, 'PNG', 20, 30, 170, 100);
+        } catch (error) {
+          console.error("Error generating flowsheet image:", error);
+        }
+      }
       
-      const imgWidth = 170;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      
-      pdf.addPage();
-      pdf.addImage(imgData, 'PNG', 20, 20, imgWidth, imgHeight);
-      
-      pdf.save(`${simulationName.replace(/\s+/g, '_')}_Analysis.pdf`);
+      pdf.save(`${simulationName.replace(/\s+/g, '_')}_Results.pdf`);
       
       toast({
         title: "PDF Generated",
-        description: "Analysis report has been saved as PDF",
+        description: "Results have been saved as PDF",
       });
     } catch (error) {
       console.error("PDF generation error:", error);
@@ -196,151 +411,154 @@ const CreateSimulation = () => {
       });
     }
   };
-
-  const detectSimulationSubject = () => {
-    const hasAromatic = selectedComponents.some(c => 
-      ['Benzene', 'Toluene', 'Xylene', 'Styrene'].includes(c));
+  
+  // Draw connections between equipment
+  const renderConnections = () => {
+    // Safety check for SSR
+    if (typeof window === 'undefined') return null;
     
-    const hasAlcohol = selectedComponents.some(c => 
-      ['Methanol', 'Ethanol', 'Propanol', 'Butanol'].includes(c));
+    return connections.map((connection, index) => {
+      // Find the source and target equipment
+      const fromEquipment = placedEquipment.find(eq => eq.id === connection.fromEquipmentId);
+      const toEquipment = placedEquipment.find(eq => eq.id === connection.toEquipmentId);
       
-    const hasAcid = selectedComponents.some(c => 
-      ['Acetic Acid', 'Formic Acid', 'Sulfuric Acid'].includes(c));
-    
-    const hasGas = selectedComponents.some(c => 
-      ['Methane', 'Ethane', 'Propane', 'Nitrogen', 'Oxygen', 'Carbon Dioxide'].includes(c));
-    
-    if (hasAromatic && hasAlcohol) {
-      return "Liquid-Liquid Extraction";
-    } else if (hasAlcohol && hasAcid) {
-      return "Esterification Reaction";
-    } else if (hasAlcohol) {
-      return "Distillation";
-    } else if (hasGas) {
-      return "Gas Processing";
-    } else if (hasAromatic) {
-      return "Aromatics Separation";
-    } else if (hasAcid) {
-      return "Acid Gas Treatment";
-    } else {
-      return "Chemical Process";
-    }
-  };
-
-  const handleRunSimulation = async () => {
-    if (!allStepsValid) {
-      toast({
-        title: "Incomplete setup",
-        description: "Please complete all simulation setup steps first",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsSimulationRunning(true);
-    
-    const subject = detectSimulationSubject();
-    setSimulationSubject(subject);
-    localStorage.setItem('chemflow-simulation-subject', subject);
-    
-    setTimeout(() => {
-      setIsSimulationRunning(false);
-      setIsSimulationComplete(true);
-      setShowAnalysis(true);
+      if (!fromEquipment || !toEquipment || !canvasRef.current) return null;
       
-      toast({
-        title: "Simulation complete",
-        description: `${subject} simulation finished successfully!`,
-      });
-    }, 2000);
-  };
-
-  const handleGoBack = () => {
-    if (currentStep === 'thermodynamics') {
-      setCurrentStep('components');
-    } else if (currentStep === 'builder') {
-      setCurrentStep('thermodynamics');
-    }
+      // Get the connection points from DOM
+      const fromEl = document.querySelector(`[data-equipment-id="${connection.fromEquipmentId}"] [data-connection="${connection.fromPoint}"]`) as HTMLElement;
+      const toEl = document.querySelector(`[data-equipment-id="${connection.toEquipmentId}"] [data-connection="${connection.toPoint}"]`) as HTMLElement;
+      
+      if (!fromEl || !toEl) return null;
+      
+      // Calculate the positions
+      const canvasRect = canvasRef.current.getBoundingClientRect();
+      const fromRect = fromEl.getBoundingClientRect();
+      const toRect = toEl.getBoundingClientRect();
+      
+      // Calculate coordinates relative to the canvas
+      const fromX = fromRect.left - canvasRect.left + fromRect.width / 2;
+      const fromY = fromRect.top - canvasRect.top + fromRect.height / 2;
+      const toX = toRect.left - canvasRect.left + toRect.width / 2;
+      const toY = toRect.top - canvasRect.top + toRect.height / 2;
+      
+      // Calculate the path
+      const dx = toX - fromX;
+      const dy = toY - fromY;
+      const length = Math.sqrt(dx * dx + dy * dy);
+      
+      // Add a midpoint for a slight curve
+      const midX = (fromX + toX) / 2;
+      const midY = (fromY + toY) / 2;
+      
+      // Calculate control point for a slight curve (perpendicular to the line)
+      const offsetX = -dy * 0.2;
+      const offsetY = dx * 0.2;
+      const ctrlX = midX + offsetX;
+      const ctrlY = midY + offsetY;
+      
+      return (
+        <div key={`connection-${index}`} className="absolute top-0 left-0 pointer-events-none">
+          {/* SVG for the curved line */}
+          <svg 
+            style={{ 
+              position: 'absolute',
+              width: '100%',
+              height: '100%',
+              overflow: 'visible'
+            }}
+          >
+            <path
+              d={`M ${fromX} ${fromY} Q ${ctrlX} ${ctrlY}, ${toX} ${toY}`}
+              stroke="#3b82f6"
+              strokeWidth="2"
+              fill="none"
+              strokeDasharray="5,5"
+              markerEnd="url(#arrowhead)"
+            />
+            <defs>
+              <marker
+                id="arrowhead"
+                markerWidth="10"
+                markerHeight="7"
+                refX="10"
+                refY="3.5"
+                orient="auto"
+              >
+                <polygon points="0 0, 10 3.5, 0 7" fill="#3b82f6" />
+              </marker>
+            </defs>
+            
+            {/* Click area for removing the connection */}
+            <path
+              d={`M ${fromX} ${fromY} Q ${ctrlX} ${ctrlY}, ${toX} ${toY}`}
+              stroke="transparent"
+              strokeWidth="10"
+              fill="none"
+              style={{ cursor: 'pointer', pointerEvents: 'auto' }}
+              onClick={() => handleRemoveConnection(index)}
+            />
+          </svg>
+        </div>
+      );
+    });
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-900 dark:to-blue-900">
+    <div className="flex flex-col min-h-screen bg-gradient-to-br from-blue-100 to-purple-100 dark:from-gray-900 dark:to-purple-900">
       <Navbar />
       
       <main className="flex-1 container mx-auto px-4 py-6">
         <div className="mb-6">
           <div className="flex justify-between items-center mb-2">
-            <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Create Simulation</h1>
-              <div className="ml-4">
-                <input
-                  type="text"
-                  value={simulationName}
-                  onChange={(e) => setSimulationName(e.target.value)}
-                  className="border border-gray-300 dark:border-gray-700 rounded-md p-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-                  placeholder="Simulation Name"
-                />
-              </div>
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              {currentStep !== 'components' && (
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={handleGoBack}
-                  className="flex items-center"
-                >
-                  <ChevronLeft className="h-4 w-4 mr-1" />
-                  Back
-                </Button>
-              )}
-              
-              <Button 
-                onClick={handleSaveSimulation}
-                variant="outline"
-                className="flex items-center"
-              >
-                <Save className="h-4 w-4 mr-1" />
-                Save
-              </Button>
-              
-              {currentStep === 'builder' && (
-                <Button 
-                  onClick={handleRunSimulation} 
-                  disabled={isSimulationRunning}
-                  className="bg-green-600 hover:bg-green-700 text-white flex items-center"
-                >
-                  {isSimulationRunning ? (
-                    <RefreshCw className="h-4 w-4 mr-1 animate-spin" />
-                  ) : (
-                    <Play className="h-4 w-4 mr-1" />
-                  )}
-                  {isSimulationRunning ? 'Simulating...' : 'Run Simulation'}
-                </Button>
-              )}
-            </div>
+            <h1 className="text-2xl font-bold text-blue-900 dark:text-white mb-2 flex items-center gap-2">
+              <input 
+                type="text"
+                value={simulationName}
+                onChange={(e) => setSimulationName(e.target.value)}
+                className="bg-transparent border-b border-blue-300 dark:border-blue-700 focus:outline-none focus:border-blue-500 px-1 py-0.5 text-blue-900 dark:text-white"
+                placeholder="Simulation Name"
+              />
+              <Badge className="bg-gradient-to-r from-blue-500 to-purple-500 text-white">
+                {currentStep === 'chemicals' ? 'Step 1' : 
+                 currentStep === 'thermodynamics' ? 'Step 2' :
+                 currentStep === 'equipment' ? 'Step 3' : 'Step 4'}
+              </Badge>
+            </h1>
           </div>
           
           <div className="mb-6">
             <div className="flex justify-between text-sm mb-1">
-              <span className={`${currentStep === 'components' ? 'font-medium text-blue-600' : ''}`}>1. Select Components</span>
-              <span className={`${currentStep === 'thermodynamics' ? 'font-medium text-blue-600' : ''}`}>2. Thermodynamic Model</span>
-              <span className={`${currentStep === 'builder' ? 'font-medium text-blue-600' : ''}`}>3. Build Flowsheet</span>
+              <span className={`flex items-center gap-1 ${currentStep === 'chemicals' ? 'font-medium text-blue-600' : 'text-gray-600 dark:text-gray-400'}`}>
+                <div className={`w-5 h-5 rounded-full flex items-center justify-center text-xs ${currentStep === 'chemicals' ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400'}`}>1</div>
+                Select Chemicals
+              </span>
+              <span className={`flex items-center gap-1 ${currentStep === 'thermodynamics' ? 'font-medium text-blue-600' : 'text-gray-600 dark:text-gray-400'}`}>
+                <div className={`w-5 h-5 rounded-full flex items-center justify-center text-xs ${currentStep === 'thermodynamics' ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400'}`}>2</div>
+                Thermodynamic Model
+              </span>
+              <span className={`flex items-center gap-1 ${currentStep === 'equipment' ? 'font-medium text-blue-600' : 'text-gray-600 dark:text-gray-400'}`}>
+                <div className={`w-5 h-5 rounded-full flex items-center justify-center text-xs ${currentStep === 'equipment' ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400'}`}>3</div>
+                Equipment Flow
+              </span>
+              <span className={`flex items-center gap-1 ${currentStep === 'results' ? 'font-medium text-blue-600' : 'text-gray-600 dark:text-gray-400'}`}>
+                <div className={`w-5 h-5 rounded-full flex items-center justify-center text-xs ${currentStep === 'results' ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400'}`}>4</div>
+                Results
+              </span>
             </div>
-            <Progress value={simulationProgress} className="h-2" />
+            <Progress value={simulationProgress} className="h-2 bg-blue-100 dark:bg-blue-900">
+              <div className="h-full bg-gradient-to-r from-blue-500 to-purple-600 rounded-full" />
+            </Progress>
           </div>
         </div>
         
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 mb-6">
-          {currentStep === 'components' && (
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-6 border border-blue-100 dark:border-blue-900">
+          {currentStep === 'chemicals' && (
             <div className="animate-fade-in">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Select Chemical Components</h2>
+                <h2 className="text-xl font-semibold text-blue-900 dark:text-white">Select Chemical Components</h2>
                 <Button 
                   onClick={handleComponentSelectionDone}
-                  disabled={!componentsValid}
-                  className="flex items-center"
+                  className="flex items-center bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white"
                 >
                   Next
                   <ChevronRight className="h-4 w-4 ml-1" />
@@ -357,11 +575,21 @@ const CreateSimulation = () => {
           {currentStep === 'thermodynamics' && (
             <div className="animate-fade-in">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Select Thermodynamic Model</h2>
+                <div className="flex items-center">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={handleGoBack}
+                    className="mr-4 border-blue-200 dark:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-900"
+                  >
+                    <ArrowLeft className="h-4 w-4 mr-1" />
+                    Back
+                  </Button>
+                  <h2 className="text-xl font-semibold text-blue-900 dark:text-white">Select Thermodynamic Model</h2>
+                </div>
                 <Button 
-                  onClick={handleModelSelectionDone}
-                  disabled={!selectedModel}
-                  className="flex items-center"
+                  onClick={handleThermodynamicsSelectionDone}
+                  className="flex items-center bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white"
                 >
                   Next
                   <ChevronRight className="h-4 w-4 ml-1" />
@@ -376,40 +604,327 @@ const CreateSimulation = () => {
             </div>
           )}
           
-          {currentStep === 'builder' && (
+          {currentStep === 'equipment' && (
             <div className="animate-fade-in">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Process Flowsheet Builder</h2>
+              <div className="flex justify-between items-center mb-4">
+                <div className="flex items-center">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={handleGoBack}
+                    className="mr-4 border-blue-200 dark:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-900"
+                  >
+                    <ArrowLeft className="h-4 w-4 mr-1" />
+                    Back
+                  </Button>
+                  <h2 className="text-xl font-semibold text-blue-900 dark:text-white">Equipment Flow Selection</h2>
+                </div>
+                <Button 
+                  onClick={handleEquipmentSelectionDone}
+                  className="flex items-center bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white"
+                >
+                  Run Simulation
+                  <Play className="h-4 w-4 ml-1" />
+                </Button>
+              </div>
               
-              <Tabs defaultValue="flowsheet" value={activeTab} onValueChange={(value) => setActiveTab(value as 'flowsheet' | 'hysys')}>
-                <TabsList className="w-full mb-6 grid grid-cols-2">
-                  <TabsTrigger value="flowsheet">Process Flowsheet</TabsTrigger>
-                  <TabsTrigger value="hysys">HYSYS Analysis</TabsTrigger>
-                </TabsList>
+              <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                {/* Equipment Selector Panel */}
+                <div className="col-span-1 bg-blue-50 dark:bg-blue-900 p-4 rounded-lg">
+                  <h3 className="text-md font-medium mb-4 text-blue-900 dark:text-blue-100">Equipment Library</h3>
+                  <div className="overflow-y-auto max-h-[65vh] pr-2">
+                    <EquipmentSelector onSelectEquipment={handleSelectEquipment} />
+                  </div>
+                </div>
                 
-                <TabsContent value="flowsheet">
-                  <SimulationBuilder 
-                    selectedComponents={selectedComponents}
-                    thermodynamicModel={selectedModel}
-                    onRunSimulation={handleRunSimulation}
-                  />
-                </TabsContent>
-                
-                <TabsContent value="hysys">
-                  <HysysIntegration 
-                    selectedComponents={selectedComponents}
-                    thermodynamicModel={selectedModel}
-                  />
-                </TabsContent>
-              </Tabs>
+                {/* Canvas Area */}
+                <div className="col-span-3">
+                  <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-800 dark:to-blue-900 rounded-lg border-2 border-dashed border-blue-200 dark:border-blue-800 p-4 relative overflow-hidden" style={{ minHeight: '70vh' }}>
+                    <div className="flex justify-between mb-3">
+                      <div className="flex items-center space-x-2">
+                        <Button 
+                          variant={connectionMode ? "default" : "outline"} 
+                          size="sm" 
+                          onClick={toggleConnectionMode}
+                          className={`flex items-center ${connectionMode ? 'bg-blue-600 text-white' : 'border-blue-300'}`}
+                        >
+                          <Link2 className="h-3.5 w-3.5 mr-1" />
+                          {connectionMode ? "Cancel Connection" : "Connect Equipment"}
+                        </Button>
+                        
+                        {connectionMode && connectionStart && (
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={handleCancelConnection}
+                            className="border-red-300 hover:border-red-400 hover:bg-red-50 text-red-600"
+                          >
+                            <X className="h-3.5 w-3.5 mr-1" />
+                            Cancel
+                          </Button>
+                        )}
+                      </div>
+                      
+                      <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100">
+                        {activeEquipment ? 'Equipment Selected' : connectionMode ? 'Connection Mode' : 'Edit Mode'}
+                      </Badge>
+                    </div>
+                    
+                    {/* Canvas */}
+                    <div 
+                      ref={canvasRef}
+                      className="w-full h-full min-h-[60vh] relative"
+                      onDragOver={handleDragOver}
+                      onDragLeave={handleDragLeave}
+                      onDrop={handleDrop}
+                    >
+                      <div ref={flowsheetRef} className="w-full h-full relative">
+                        {/* Equipment Items */}
+                        {placedEquipment.map((equipment) => (
+                          <div
+                            key={equipment.id}
+                            className={`absolute transition-all duration-300 ${activeEquipment === equipment.id ? 'ring-2 ring-blue-500 ring-offset-2' : ''}`}
+                            style={{
+                              left: `${equipment.position.x}px`,
+                              top: `${equipment.position.y}px`,
+                              zIndex: activeEquipment === equipment.id ? 10 : 1
+                            }}
+                            data-equipment-id={equipment.id}
+                          >
+                            <EquipmentCard
+                              type={equipment.type}
+                              title={equipment.title}
+                              draggable={true}
+                              onDragStart={(e) => handleDragStart(e, equipment)}
+                              size="md"
+                              selected={activeEquipment === equipment.id}
+                              onClick={() => handleEquipmentClick(equipment.id)}
+                              showConnections={true}
+                              onConnectionPointClick={(point) => handleConnectionPointClick(equipment.id, point)}
+                              activeConnectionPoints={(connections || [])
+                                .filter(conn => 
+                                  conn.fromEquipmentId === equipment.id || 
+                                  conn.toEquipmentId === equipment.id
+                                )
+                                .map(conn => 
+                                  conn.fromEquipmentId === equipment.id ? 
+                                  conn.fromPoint : conn.toPoint
+                                )}
+                            />
+                            
+                            {/* Equipment Controls */}
+                            {activeEquipment === equipment.id && (
+                              <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-white dark:bg-gray-800 shadow-lg rounded-md border border-gray-200 dark:border-gray-700 p-1 flex space-x-1 z-20">
+                                <Button 
+                                  variant="destructive" 
+                                  size="icon" 
+                                  className="h-7 w-7" 
+                                  onClick={() => handleRemoveEquipment(equipment.id)}
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </Button>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                        
+                        {/* Connection Lines */}
+                        {renderConnections()}
+                      </div>
+                    </div>
+                    
+                    {/* Empty State */}
+                    {placedEquipment.length === 0 && (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 text-blue-800 dark:text-blue-200 pointer-events-none">
+                        <Plus className="h-12 w-12 mb-3 opacity-50" />
+                        <h3 className="text-lg font-medium mb-2">Add Equipment to Your Flowsheet</h3>
+                        <p className="text-sm opacity-70 max-w-md">
+                          Select equipment from the library on the left and arrange them on this canvas. Connect them to create your process flow.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {currentStep === 'results' && (
+            <div className="animate-fade-in" ref={resultsRef}>
+              <div className="flex justify-between items-center mb-4">
+                <div className="flex items-center">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={handleGoBack}
+                    className="mr-4 border-blue-200 dark:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-900"
+                  >
+                    <ArrowLeft className="h-4 w-4 mr-1" />
+                    Back
+                  </Button>
+                  <h2 className="text-xl font-semibold text-blue-900 dark:text-white">Simulation Results</h2>
+                </div>
+                <Button 
+                  onClick={handleExportToPDF}
+                  variant="outline"
+                  className="flex items-center bg-white dark:bg-gray-800 border-blue-200 dark:border-blue-700 text-blue-800 dark:text-blue-200 hover:bg-blue-50 dark:hover:bg-blue-900"
+                >
+                  <FileText className="h-4 w-4 mr-1" />
+                  Export PDF
+                </Button>
+              </div>
               
-              {isSimulationComplete && showAnalysis && (
-                <div ref={analysisRef} className="mt-6">
-                  <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-white">Simulation Results</h3>
-                  <SimulationResults
-                    simulationSubject={simulationSubject}
-                    components={selectedComponents}
-                    thermodynamicModel={selectedModel}
-                  />
+              {simulationRunning ? (
+                <div className="flex flex-col items-center justify-center py-12">
+                  <RefreshCw className="h-10 w-10 text-blue-600 dark:text-blue-400 animate-spin mb-4" />
+                  <h3 className="text-lg font-medium">Running Process Simulation</h3>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    Please wait while we process your simulation...
+                  </p>
+                </div>
+              ) : simulationComplete ? (
+                <div>
+                  <Tabs defaultValue="results">
+                    <TabsList className="w-full mb-4 bg-blue-50 dark:bg-blue-900">
+                      <TabsTrigger value="results">Analysis Results</TabsTrigger>
+                      <TabsTrigger value="flowsheet">Process Flowsheet</TabsTrigger>
+                      <TabsTrigger value="hysys">HYSYS Integration</TabsTrigger>
+                    </TabsList>
+                    
+                    <TabsContent value="results" className="border border-blue-100 dark:border-blue-900 rounded-lg p-4">
+                      <div className="space-y-6">
+                        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 p-4 rounded-lg border border-blue-100 dark:border-blue-800">
+                          <h3 className="text-lg font-medium mb-3 text-blue-900 dark:text-blue-100">Simulation Summary</h3>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Components</p>
+                              <p className="font-medium text-blue-900 dark:text-blue-100">{selectedComponents.join(", ")}</p>
+                            </div>
+                            <div>
+                              <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Thermodynamic Model</p>
+                              <p className="font-medium text-blue-900 dark:text-blue-100">{selectedModel}</p>
+                            </div>
+                            <div>
+                              <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Equipment Count</p>
+                              <p className="font-medium text-blue-900 dark:text-blue-100">{placedEquipment.length} items</p>
+                            </div>
+                            <div>
+                              <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Connections</p>
+                              <p className="font-medium text-blue-900 dark:text-blue-100">{connections.length} connections</p>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                          <div className="bg-gradient-to-br from-teal-50 to-green-50 dark:from-teal-900/30 dark:to-green-900/30 p-4 rounded-lg border border-teal-100 dark:border-teal-800">
+                            <h4 className="text-md font-medium mb-3 text-teal-900 dark:text-teal-100">Energy Analysis</h4>
+                            <div className="space-y-2">
+                              <div className="flex justify-between">
+                                <span className="text-gray-600 dark:text-gray-400">Total Energy Input:</span>
+                                <span className="font-medium text-teal-700 dark:text-teal-300">620 kW</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-gray-600 dark:text-gray-400">Total Energy Output:</span>
+                                <span className="font-medium text-teal-700 dark:text-teal-300">580 kW</span>
+                              </div>
+                              <div className="flex justify-between border-t border-teal-200 dark:border-teal-700 pt-2 mt-2">
+                                <span className="text-gray-600 dark:text-gray-400">Energy Efficiency:</span>
+                                <span className="font-medium text-teal-700 dark:text-teal-300">93.5%</span>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/30 dark:to-indigo-900/30 p-4 rounded-lg border border-purple-100 dark:border-purple-800">
+                            <h4 className="text-md font-medium mb-3 text-purple-900 dark:text-purple-100">Mass Balance</h4>
+                            <div className="space-y-2">
+                              <div className="flex justify-between">
+                                <span className="text-gray-600 dark:text-gray-400">Feed Rate:</span>
+                                <span className="font-medium text-purple-700 dark:text-purple-300">100 kg/h</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-gray-600 dark:text-gray-400">Product Rate:</span>
+                                <span className="font-medium text-purple-700 dark:text-purple-300">97.5 kg/h</span>
+                              </div>
+                              <div className="flex justify-between border-t border-purple-200 dark:border-purple-700 pt-2 mt-2">
+                                <span className="text-gray-600 dark:text-gray-400">Yield:</span>
+                                <span className="font-medium text-purple-700 dark:text-purple-300">97.5%</span>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/30 dark:to-orange-900/30 p-4 rounded-lg border border-amber-100 dark:border-amber-800">
+                            <h4 className="text-md font-medium mb-3 text-amber-900 dark:text-amber-100">Environmental Impact</h4>
+                            <div className="space-y-2">
+                              <div className="flex justify-between">
+                                <span className="text-gray-600 dark:text-gray-400">CO₂ Emissions:</span>
+                                <span className="font-medium text-amber-700 dark:text-amber-300">45 kg/h</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-gray-600 dark:text-gray-400">Water Usage:</span>
+                                <span className="font-medium text-amber-700 dark:text-amber-300">1,200 kg/h</span>
+                              </div>
+                              <div className="flex justify-between border-t border-amber-200 dark:border-amber-700 pt-2 mt-2">
+                                <span className="text-gray-600 dark:text-gray-400">Carbon Intensity:</span>
+                                <span className="font-medium text-amber-700 dark:text-amber-300">Medium</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </TabsContent>
+                    
+                    <TabsContent value="flowsheet" className="border border-blue-100 dark:border-blue-900 rounded-lg p-4 min-h-[400px]">
+                      <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-800 dark:to-blue-900 rounded-lg border-2 border-dashed border-blue-200 dark:border-blue-800 p-4 relative overflow-hidden" style={{ minHeight: '60vh' }}>
+                        <div ref={flowsheetRef} className="w-full h-full relative">
+                          {/* Equipment Items */}
+                          {placedEquipment.map((equipment) => (
+                            <div
+                              key={equipment.id}
+                              className="absolute"
+                              style={{
+                                left: `${equipment.position.x}px`,
+                                top: `${equipment.position.y}px`,
+                              }}
+                              data-equipment-id={equipment.id}
+                            >
+                              <EquipmentCard
+                                type={equipment.type}
+                                title={equipment.title}
+                                draggable={false}
+                                size="md"
+                                showConnections={true}
+                                activeConnectionPoints={(connections || [])
+                                  .filter(conn => 
+                                    conn.fromEquipmentId === equipment.id || 
+                                    conn.toEquipmentId === equipment.id
+                                  )
+                                  .map(conn => 
+                                    conn.fromEquipmentId === equipment.id ? 
+                                    conn.fromPoint : conn.toPoint
+                                  )}
+                              />
+                            </div>
+                          ))}
+                          {/* Connection Lines */}
+                          {renderConnections()}
+                        </div>
+                      </div>
+                    </TabsContent>
+                    
+                    <TabsContent value="hysys" className="border border-blue-100 dark:border-blue-900 rounded-lg">
+                      <HysysIntegration 
+                        selectedComponents={selectedComponents}
+                        thermodynamicModel={selectedModel}
+                      />
+                    </TabsContent>
+                  </Tabs>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-12">
+                  <h3 className="text-lg font-medium">Ready to Run Simulation</h3>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    Click "Run Simulation" to start process calculations
+                  </p>
                 </div>
               )}
             </div>
