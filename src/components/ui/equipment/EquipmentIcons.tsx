@@ -7,7 +7,6 @@ import {
   Compass,
   Zap,
   Box,
-  Pipe,
   SlidersHorizontal,
   MoreHorizontal,
   Split,
@@ -54,7 +53,7 @@ export const getEquipmentIcon = (type: EquipmentType) => {
     case "vessel":
       return <Box />;
     case "pipe":
-      return <Pipe />;
+      return <SlidersHorizontal />; // Changed from Pipe to SlidersHorizontal as a fallback
     case "valve":
       return <SlidersHorizontal />;
     case "mixer":

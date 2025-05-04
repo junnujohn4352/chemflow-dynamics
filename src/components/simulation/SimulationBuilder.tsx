@@ -416,7 +416,7 @@ export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     
     const newEquipment: CanvasEquipment = {
       id: `equipment-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-      type,
+      type: equipmentType, // Properly reference the equipmentType parameter
       title,
       position: { x: 200, y: 200 }, // Default position in the middle
       metrics: [...equipmentMetrics],
