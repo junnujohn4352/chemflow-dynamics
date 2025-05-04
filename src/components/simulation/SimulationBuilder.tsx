@@ -1,8 +1,9 @@
+
 import React, { useState, useRef } from 'react';
 import { Card } from '@/components/ui/card';
 import EquipmentCard from '@/components/ui/equipment/EquipmentCard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Thermometer, Beaker, Droplets, Activity, Trash2 } from "lucide-react";
+import { Thermometer, Beaker, Droplets, Activity, Trash2, Settings, Edit2, Save, X, FileText } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { EquipmentType } from '@/components/ui/equipment/EquipmentIcons';
 import ProcessFlow from '@/components/ui/ProcessFlow';
 import EquipmentSelector from './EquipmentSelector';
+import SimulationResults from './SimulationResults';
 
 interface SimulationBuilderProps {
   selectedComponents: string[];
@@ -29,13 +31,26 @@ interface ConnectionPoint {
   point: string;
 }
 
+interface EquipmentMetric {
+  key: string;
+  value: string;
+  editable?: boolean;
+  options?: string[];
+}
+
 interface CanvasEquipment {
   id: string;
   type: EquipmentType;
   title: string;
   position: EquipmentPosition;
-  metrics: { key: string; value: string }[];
+  metrics: EquipmentMetric[];
   activeConnectionPoints: string[];
+  feedComponent?: string;
+  inputTemp?: string;
+  inputPressure?: string;
+  flowRate?: string;
+  efficiency?: string;
+  customParameters?: Record<string, string>;
 }
 
 interface Connection {
@@ -46,6 +61,8 @@ interface Connection {
   targetPoint: string;
   sourcePosition?: EquipmentPosition;
   targetPosition?: EquipmentPosition;
+  flowRate?: string;
+  component?: string;
 }
 
 export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
@@ -54,10 +71,10 @@ export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
   onRunSimulation
 }) => {
   const { toast } = useToast();
-  const [equipmentMetrics, setEquipmentMetrics] = useState([
-    { key: "Temperature", value: "85°C" },
-    { key: "Pressure", value: "150 kPa" },
-    { key: "Flow", value: "1200 kg/h" }
+  const [equipmentMetrics, setEquipmentMetrics] = useState<EquipmentMetric[]>([
+    { key: "Temperature", value: "85°C", editable: true },
+    { key: "Pressure", value: "150 kPa", editable: true },
+    { key: "Flow", value: "1200 kg/h", editable: true }
   ]);
   
   const [processType, setProcessType] = useState("distillation");
@@ -72,6 +89,10 @@ export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
   const [draggedEquipment, setDraggedEquipment] = useState<string | null>(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const canvasRef = useRef<HTMLDivElement>(null);
+  const [showPropertyEditor, setShowPropertyEditor] = useState(false);
+  const [simulationResults, setSimulationResults] = useState<boolean>(false);
+  const [simulationSubject, setSimulationSubject] = useState<string | null>(null);
+  
   const [processSteps, setProcessSteps] = useState<string[]>([
     "Define simulation objectives",
     "Develop process flowsheet", 
@@ -96,6 +117,14 @@ export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     { type: "filter" as EquipmentType, title: "Filter" }
   ];
 
+  // Add feed stream options based on selected components
+  const feedStreams = selectedComponents.map(component => ({
+    type: "feed" as EquipmentType,
+    title: `${component} Feed`
+  }));
+
+  const allEquipmentOptions = [...libraryEquipment, ...feedStreams];
+
   const handleDragStart = (e: React.DragEvent, type: EquipmentType, title: string) => {
     e.dataTransfer.setData("equipmentType", type);
     e.dataTransfer.setData("equipmentTitle", title);
@@ -119,14 +148,50 @@ export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
     
+    // Check if it's a feed stream
+    const isFeed = type === "feed";
+    const component = isFeed ? title.replace(" Feed", "") : undefined;
+    
     const newEquipment: CanvasEquipment = {
       id: `equipment-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
       type,
       title,
       position: { x, y },
       metrics: [...equipmentMetrics],
-      activeConnectionPoints: []
+      activeConnectionPoints: [],
+      feedComponent: component
     };
+    
+    if (isFeed) {
+      // Add specific metrics for feed streams
+      newEquipment.metrics = [
+        { key: "Component", value: component || "", editable: false },
+        { key: "Temperature", value: "25°C", editable: true },
+        { key: "Pressure", value: "101 kPa", editable: true },
+        { key: "Flow Rate", value: "100 kg/h", editable: true }
+      ];
+    } else if (type === "reactor") {
+      newEquipment.metrics = [
+        { key: "Temperature", value: "85°C", editable: true },
+        { key: "Pressure", value: "150 kPa", editable: true },
+        { key: "Conversion", value: "95%", editable: true },
+        { key: "Residence Time", value: "60 min", editable: true }
+      ];
+    } else if (type === "column") {
+      newEquipment.metrics = [
+        { key: "Stages", value: "10", editable: true },
+        { key: "Reflux Ratio", value: "1.5", editable: true },
+        { key: "Feed Stage", value: "5", editable: true },
+        { key: "Pressure", value: "150 kPa", editable: true }
+      ];
+    } else if (type === "heat-exchanger") {
+      newEquipment.metrics = [
+        { key: "Duty", value: "500 kW", editable: true },
+        { key: "ΔT Hot Side", value: "30°C", editable: true },
+        { key: "ΔT Cold Side", value: "40°C", editable: true },
+        { key: "Area", value: "25 m²", editable: true }
+      ];
+    }
     
     setCanvasEquipment(prev => [...prev, newEquipment]);
     
@@ -186,6 +251,7 @@ export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
 
   const handleEquipmentClick = (id: string) => {
     setSelectedEquipment(prevSelected => prevSelected === id ? null : id);
+    setShowPropertyEditor(true);
   };
 
   const handleRemoveEquipment = (id: string) => {
@@ -195,6 +261,7 @@ export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     // Remove the equipment itself
     setCanvasEquipment(prev => prev.filter(item => item.id !== id));
     setSelectedEquipment(null);
+    setShowPropertyEditor(false);
     
     toast({
       title: "Equipment Removed",
@@ -208,6 +275,7 @@ export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     setCanvasEquipment([]);
     setConnections([]);
     setSelectedEquipment(null);
+    setShowPropertyEditor(false);
     
     toast({
       title: "Canvas Cleared",
@@ -270,6 +338,9 @@ export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     
     if (!sourceEquipment || !targetEquipment) return;
     
+    // Try to determine what's flowing - if source is a feed stream use its component
+    const flowingComponent = sourceEquipment.type === "feed" ? sourceEquipment.feedComponent : undefined;
+    
     const newConnection: Connection = {
       id: `connection-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
       source: connectionStart.equipmentId,
@@ -277,7 +348,9 @@ export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
       target: equipmentId,
       targetPoint: point,
       sourcePosition: sourceEquipment.position,
-      targetPosition: targetEquipment.position
+      targetPosition: targetEquipment.position,
+      component: flowingComponent,
+      flowRate: "100 kg/h"
     };
     
     setConnections(prev => [...prev, newConnection]);
@@ -329,7 +402,17 @@ export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
   
   const handleSelectEquipment = (type: EquipmentType) => {
     // Create a new equipment with the selected type
-    const title = type.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+    let title = type.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+    
+    // Special handling for feed streams
+    const isFeed = type === "feed";
+    let component = undefined;
+    
+    if (isFeed && selectedComponents.length > 0) {
+      // User selected a feed type, so we'll prompt for which component
+      component = selectedComponents[0]; // Default to first component
+      title = `${component} Feed`;
+    }
     
     const newEquipment: CanvasEquipment = {
       id: `equipment-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
@@ -337,8 +420,19 @@ export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
       title,
       position: { x: 200, y: 200 }, // Default position in the middle
       metrics: [...equipmentMetrics],
-      activeConnectionPoints: []
+      activeConnectionPoints: [],
+      feedComponent: component
     };
+    
+    if (isFeed && component) {
+      // Add specific metrics for feed streams
+      newEquipment.metrics = [
+        { key: "Component", value: component, editable: false },
+        { key: "Temperature", value: "25°C", editable: true },
+        { key: "Pressure", value: "101 kPa", editable: true },
+        { key: "Flow Rate", value: "100 kg/h", editable: true }
+      ];
+    }
     
     setCanvasEquipment(prev => [...prev, newEquipment]);
     
@@ -397,15 +491,110 @@ export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
       targetY: targetPos.y
     };
   };
+
+  // Update equipment property
+  const handleUpdateProperty = (equipmentId: string, propertyKey: string, value: string) => {
+    setCanvasEquipment(prev => 
+      prev.map(eq => {
+        if (eq.id === equipmentId) {
+          return {
+            ...eq,
+            metrics: eq.metrics.map(metric => 
+              metric.key === propertyKey ? { ...metric, value } : metric
+            )
+          };
+        }
+        return eq;
+      })
+    );
+    
+    toast({
+      title: "Property Updated",
+      description: `${propertyKey} updated to ${value}`,
+    });
+  };
+
+  const handleRunSimulation = () => {
+    if (canvasEquipment.length === 0) {
+      toast({
+        title: "Cannot Run Simulation",
+        description: "Please add equipment to the canvas first.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (connections.length === 0) {
+      toast({
+        title: "Cannot Run Simulation",
+        description: "Please connect your equipment before running the simulation.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Process name determination
+    let processName = "Chemical Process";
+    
+    // Check if we have a distillation process
+    if (canvasEquipment.some(eq => eq.type === "column")) {
+      processName = "Distillation Process";
+    } 
+    // Check if we have a reaction process
+    else if (canvasEquipment.some(eq => eq.type === "reactor")) {
+      processName = "Chemical Reaction Process";
+    }
+    // Check if we have a heat exchange process
+    else if (canvasEquipment.some(eq => eq.type === "heat-exchanger" || eq.type === "cooler" || eq.type === "heater")) {
+      processName = "Heat Exchange Process";
+    }
+
+    setSimulationSubject(processName);
+    setSimulationResults(true);
+    
+    toast({
+      title: "Simulation Running",
+      description: "Processing your simulation...",
+    });
+    
+    // Simulate a delay to show "processing"
+    setTimeout(() => {
+      toast({
+        title: "Simulation Complete",
+        description: "Results are now available for review.",
+      });
+    }, 1500);
+  };
   
   return (
     <div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-gray-50 p-4 rounded-lg col-span-1">
-          <h3 className="text-lg font-medium mb-3">Equipment Library</h3>
-          <p className="text-sm text-gray-600 mb-2">Drag equipment to the canvas to build your process</p>
+        <div className="bg-gradient-to-br from-blue-50 to-purple-50 p-4 rounded-lg col-span-1 shadow-md border border-blue-200">
+          <h3 className="text-lg font-medium mb-3 text-blue-800">Equipment Library</h3>
+          <p className="text-sm text-blue-600 mb-2">Drag equipment to the canvas to build your process</p>
           
           <EquipmentSelector onSelectEquipment={handleSelectEquipment} />
+          
+          {selectedComponents.length > 0 && (
+            <div className="mt-4 border-t border-blue-200 pt-4">
+              <h4 className="text-md font-medium mb-2 text-blue-700">Feed Streams</h4>
+              <div className="grid grid-cols-1 gap-2">
+                {selectedComponents.map((component, idx) => (
+                  <div 
+                    key={idx} 
+                    className="bg-gradient-to-r from-green-100 to-emerald-100 p-2 rounded-lg border border-green-200 cursor-grab flex items-center"
+                    draggable={true}
+                    onDragStart={(e) => handleDragStart(e, "feed", `${component} Feed`)}
+                  >
+                    <div className="bg-green-200 p-1 rounded-md mr-2">
+                      <Droplets className="h-4 w-4 text-green-700" />
+                    </div>
+                    <span className="text-sm font-medium text-green-800">{component} Feed</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           
           <div className="mt-4 grid grid-cols-2 gap-2 max-h-[300px] overflow-y-auto pr-2">
             {libraryEquipment.map((equipment, index) => (
@@ -413,7 +602,7 @@ export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
                 key={index}
                 type={equipment.type} 
                 title={equipment.title}
-                onDragStart={handleDragStart}
+                onDragStart={(e) => handleDragStart(e, equipment.type, equipment.title)}
                 metrics={equipmentMetrics}
                 status="ready"
                 size="sm"
@@ -425,7 +614,7 @@ export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
         
         <div 
           ref={canvasRef}
-          className="bg-white border border-dashed border-gray-300 p-4 rounded-lg col-span-2 relative min-h-[500px]"
+          className="bg-gradient-to-br from-slate-50 to-blue-50 border border-blue-200 p-4 rounded-lg col-span-2 relative min-h-[500px] shadow-md"
           onDragOver={handleCanvasDragOver}
           onDrop={handleCanvasDrop}
           onMouseMove={handleMouseMove}
@@ -433,18 +622,28 @@ export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
           onMouseLeave={handleMouseUp}
         >
           <div className="flex justify-between items-center mb-3">
-            <h3 className="text-lg font-medium">Process Canvas</h3>
-            {canvasEquipment.length > 0 && (
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="text-red-500 border-red-200 hover:bg-red-50"
-                onClick={handleClearCanvas}
-              >
-                <Trash2 className="h-3.5 w-3.5 mr-1" />
-                Clear Canvas
-              </Button>
-            )}
+            <h3 className="text-lg font-medium text-blue-800">Process Canvas</h3>
+            <div className="flex gap-2">
+              {canvasEquipment.length > 0 && (
+                <>
+                  <Button 
+                    onClick={handleRunSimulation}
+                    className="bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white shadow-md"
+                  >
+                    Run Simulation
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="text-red-500 border-red-200 hover:bg-red-50"
+                    onClick={handleClearCanvas}
+                  >
+                    <Trash2 className="h-3.5 w-3.5 mr-1" />
+                    Clear Canvas
+                  </Button>
+                </>
+              )}
+            </div>
           </div>
           
           {canvasEquipment.length > 0 ? (
@@ -544,16 +743,88 @@ export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
         </div>
       </div>
       
-      <div className="bg-gray-50 p-4 rounded-lg mb-6">
-        <h3 className="text-lg font-medium mb-3">Process Flow Steps</h3>
+      {selectedEquipment && showPropertyEditor && (
+        <div className="bg-gradient-to-br from-indigo-50 to-purple-50 p-4 rounded-lg mb-6 shadow-md border border-indigo-200">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-medium text-indigo-800 flex items-center gap-2">
+              <Settings className="h-5 w-5 text-indigo-700" />
+              Equipment Properties
+            </h3>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => setShowPropertyEditor(false)}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+
+          {canvasEquipment.find(eq => eq.id === selectedEquipment) && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <div className="space-y-4">
+                  <div>
+                    <Label className="text-indigo-700">Equipment Name</Label>
+                    <Input 
+                      value={canvasEquipment.find(eq => eq.id === selectedEquipment)?.title}
+                      onChange={(e) => {
+                        setCanvasEquipment(prev => 
+                          prev.map(eq => 
+                            eq.id === selectedEquipment ? { ...eq, title: e.target.value } : eq
+                          )
+                        );
+                      }}
+                      className="bg-white/80"
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label className="text-indigo-700">Type</Label>
+                    <Input 
+                      value={canvasEquipment.find(eq => eq.id === selectedEquipment)?.type}
+                      disabled
+                      className="bg-white/50 text-gray-600"
+                    />
+                  </div>
+                </div>
+              </div>
+              
+              <div>
+                <Label className="text-indigo-700 block mb-2">Properties</Label>
+                <div className="bg-white/80 rounded-lg p-3 space-y-3 shadow-sm">
+                  {canvasEquipment.find(eq => eq.id === selectedEquipment)?.metrics.map((metric, idx) => (
+                    <div key={idx} className="flex items-center justify-between">
+                      <span className="text-gray-700">{metric.key}</span>
+                      <div className="w-32">
+                        {metric.editable ? (
+                          <Input 
+                            value={metric.value} 
+                            onChange={(e) => handleUpdateProperty(selectedEquipment, metric.key, e.target.value)}
+                            className="h-7 text-sm"
+                          />
+                        ) : (
+                          <div className="bg-gray-100 px-3 py-1 rounded text-gray-700 text-sm">{metric.value}</div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+      
+      <div className="bg-gradient-to-br from-teal-50 to-cyan-50 p-4 rounded-lg mb-6 shadow-md border border-teal-200">
+        <h3 className="text-lg font-medium mb-3 text-teal-800">Process Flow Steps</h3>
         <ProcessFlow />
       </div>
       
-      <div className="bg-gray-50 p-4 rounded-lg">
-        <h3 className="text-lg font-medium mb-3">Process Parameters</h3>
+      <div className="bg-gradient-to-br from-amber-50 to-orange-50 p-4 rounded-lg shadow-md border border-amber-200">
+        <h3 className="text-lg font-medium mb-3 text-amber-800">Process Parameters</h3>
         
         <Tabs defaultValue="basic">
-          <TabsList className="mb-4">
+          <TabsList className="mb-4 bg-white/50">
             <TabsTrigger value="basic">
               <Thermometer className="h-4 w-4 mr-1" />
               Operating Conditions
@@ -582,6 +853,7 @@ export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
                   onChange={(e) => setOperatingTemp(e.target.value)}
                   type="number"
                   placeholder="85"
+                  className="bg-white/80"
                 />
               </div>
               
@@ -593,6 +865,7 @@ export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
                   onChange={(e) => setOperatingPressure(e.target.value)}
                   type="number"
                   placeholder="150"
+                  className="bg-white/80"
                 />
               </div>
               
@@ -604,6 +877,7 @@ export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
                   onChange={(e) => setFeedFlowRate(e.target.value)}
                   type="number"
                   placeholder="1200"
+                  className="bg-white/80"
                 />
               </div>
             </div>
@@ -614,7 +888,7 @@ export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
               <div className="space-y-2">
                 <Label htmlFor="process-type">Process Type</Label>
                 <Select value={processType} onValueChange={setProcessType}>
-                  <SelectTrigger id="process-type">
+                  <SelectTrigger id="process-type" className="bg-white/80">
                     <SelectValue placeholder="Select process type" />
                   </SelectTrigger>
                   <SelectContent>
@@ -631,11 +905,11 @@ export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="reflux-ratio">Reflux Ratio</Label>
-                    <Input id="reflux-ratio" type="number" defaultValue="1.5" />
+                    <Input id="reflux-ratio" type="number" defaultValue="1.5" className="bg-white/80" />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="number-of-stages">Number of Theoretical Stages</Label>
-                    <Input id="number-of-stages" type="number" defaultValue="10" />
+                    <Input id="number-of-stages" type="number" defaultValue="10" className="bg-white/80" />
                   </div>
                 </div>
               )}
@@ -644,12 +918,12 @@ export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="conversion">Conversion (%)</Label>
-                    <Input id="conversion" type="number" defaultValue="95" />
+                    <Input id="conversion" type="number" defaultValue="95" className="bg-white/80" />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="reaction-order">Reaction Order</Label>
                     <Select defaultValue="first">
-                      <SelectTrigger id="reaction-order">
+                      <SelectTrigger id="reaction-order" className="bg-white/80">
                         <SelectValue placeholder="Select reaction order" />
                       </SelectTrigger>
                       <SelectContent>
@@ -667,12 +941,12 @@ export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
           <TabsContent value="components">
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label>Selected Components</Label>
+                <Label className="text-amber-800">Selected Components</Label>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                   {selectedComponents.map((component) => (
                     <div 
                       key={component} 
-                      className="p-2 bg-blue-50 border border-blue-100 rounded-md text-sm"
+                      className="p-2 bg-gradient-to-r from-amber-100 to-yellow-100 border border-amber-200 rounded-md text-sm text-amber-800 shadow-sm"
                     >
                       {component}
                     </div>
@@ -681,8 +955,8 @@ export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
               </div>
               
               <div className="space-y-2">
-                <Label>Using Thermodynamic Model: </Label>
-                <div className="p-2 bg-green-50 border border-green-100 rounded-md inline-block">
+                <Label className="text-amber-800">Using Thermodynamic Model: </Label>
+                <div className="p-2 bg-gradient-to-r from-green-100 to-emerald-100 border border-green-200 rounded-md inline-block text-green-800 shadow-sm">
                   {thermodynamicModel}
                 </div>
               </div>
@@ -694,7 +968,7 @@ export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
               <div className="space-y-2">
                 <Label htmlFor="calculation-method">Calculation Method</Label>
                 <Select defaultValue="inside-out">
-                  <SelectTrigger id="calculation-method">
+                  <SelectTrigger id="calculation-method" className="bg-white/80">
                     <SelectValue placeholder="Select calculation method" />
                   </SelectTrigger>
                   <SelectContent>
@@ -707,17 +981,37 @@ export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
               
               <div className="space-y-2">
                 <Label htmlFor="tolerance">Convergence Tolerance</Label>
-                <Input id="tolerance" type="number" defaultValue="0.0001" step="0.0001" />
+                <Input id="tolerance" type="number" defaultValue="0.0001" step="0.0001" className="bg-white/80" />
               </div>
               
               <div className="space-y-2">
                 <Label htmlFor="max-iterations">Maximum Iterations</Label>
-                <Input id="max-iterations" type="number" defaultValue="100" />
+                <Input id="max-iterations" type="number" defaultValue="100" className="bg-white/80" />
               </div>
             </div>
           </TabsContent>
         </Tabs>
       </div>
+
+      {simulationResults && (
+        <div className="mt-6">
+          <SimulationResults
+            simulationSubject={simulationSubject}
+            components={selectedComponents}
+            thermodynamicModel={thermodynamicModel}
+          />
+          <div className="mt-4 flex justify-end">
+            <Button 
+              variant="outline" 
+              className="bg-white text-gray-700 border-gray-300 hover:bg-gray-50 shadow-sm flex items-center"
+              onClick={() => setSimulationResults(false)}
+            >
+              <FileText className="h-4 w-4 mr-2" />
+              Export Report
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
