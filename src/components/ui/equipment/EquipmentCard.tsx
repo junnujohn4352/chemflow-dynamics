@@ -1,4 +1,3 @@
-
 import React from "react";
 import { EquipmentType, getEquipmentIcon } from "./EquipmentIcons";
 import EquipmentConnections from "./EquipmentConnections";
@@ -55,6 +54,7 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
 
   const handleConnectionPointClick = (point: string, e: React.MouseEvent) => {
     e.stopPropagation();
+    e.preventDefault();
     if (onConnectionPointClick) {
       onConnectionPointClick(point);
     }
@@ -63,6 +63,14 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
   const handleMetricChange = (key: string, value: string) => {
     if (onMetricEdit) {
       onMetricEdit(key, value);
+    }
+  };
+
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent default navigation
+    e.stopPropagation();
+    if (onClick) {
+      onClick();
     }
   };
 
@@ -90,7 +98,7 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
       `}
       draggable={draggable}
       onDragStart={handleDragStart}
-      onClick={onClick}
+      onClick={handleClick}
       data-testid="equipment-card"
       data-equipment-type={type}
     >
