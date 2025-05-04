@@ -101,16 +101,16 @@ const EquipmentMetrics: React.FC<EquipmentMetricsProps> = ({ metrics, onMetricCh
   };
 
   return (
-    <div className="grid grid-cols-1 gap-1 mt-2 max-h-[60px] overflow-y-auto w-full px-1">
+    <div className="grid grid-cols-1 gap-1 w-full px-1">
       {Object.entries(metricsObject).map(([key, value]) => {
         const originalMetric = getOriginalMetric(key);
         const unit = getUnitForKey(key);
         
         return (
-          <div key={key} className="p-1 rounded-md bg-gray-50 border border-gray-100 w-full">
+          <div key={key} className="p-1 rounded-md bg-white/90 border border-gray-200 w-full shadow-sm">
             <div className="flex items-center gap-1.5">
               {getIconForKey(key)}
-              <span className="text-[10px] text-gray-500">{formatKeyForDisplay(key)}</span>
+              <span className="text-[10px] text-gray-700 font-medium">{formatKeyForDisplay(key)}</span>
             </div>
             {originalMetric?.editable && onMetricChange ? (
               originalMetric.options ? (
@@ -140,7 +140,7 @@ const EquipmentMetrics: React.FC<EquipmentMetricsProps> = ({ metrics, onMetricCh
                 </div>
               )
             ) : (
-              <p className="text-[10px] font-medium mt-0.5">{String(value)}{unit}</p>
+              <p className="text-[11px] font-medium mt-0.5 text-blue-700">{String(value)}{unit}</p>
             )}
             {originalMetric?.description && (
               <p className="text-[8px] text-gray-500 mt-0.5 truncate" title={originalMetric.description}>

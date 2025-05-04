@@ -77,8 +77,8 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
 
   const sizeClasses = {
     sm: "w-[100px] h-[100px] p-2",
-    md: "w-[150px] h-[150px] p-3",
-    lg: "w-[200px] h-[200px] p-4",
+    md: "w-[150px] h-[150px] p-2",
+    lg: "w-[200px] h-[200px] p-3",
   };
 
   const statusColors = {
@@ -95,7 +95,7 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
 
   return (
     <div
-      className={`relative flex flex-col items-center justify-between ${sizeClasses[size]} ${statusColors[status]} 
+      className={`relative flex flex-col items-center ${sizeClasses[size]} ${statusColors[status]} 
         border rounded-lg shadow-sm cursor-pointer transition-all
         ${selected ? "ring-2 ring-blue-500 shadow-md" : "hover:shadow-md hover:border-blue-300"}
         ${draggable ? "cursor-grab active:cursor-grabbing" : ""}
@@ -115,7 +115,7 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
         />
       )}
 
-      <div className="z-10 flex flex-col items-center justify-center">
+      <div className="z-10 flex flex-col items-center justify-center mb-1">
         <div className="mb-1">{icon}</div>
         <div className="text-xs font-medium text-center whitespace-nowrap overflow-hidden text-ellipsis w-full">
           {title}
@@ -123,7 +123,7 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
       </div>
 
       {shouldShowMetrics && (
-        <div className="w-full mt-auto">
+        <div className="w-full mt-auto overflow-y-auto max-h-[70px] no-scrollbar">
           <EquipmentMetrics 
             metrics={metrics} 
             onMetricChange={handleMetricChange}
