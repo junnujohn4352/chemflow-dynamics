@@ -176,7 +176,7 @@ const CreateSimulation = () => {
   const dragOverHandler = (e: React.DragEvent) => {
     e.preventDefault();
     
-    // Highlight drop target
+    // Highlight drop target - Fix: Cast to HTMLElement before accessing style
     const dropTarget = e.target as HTMLElement;
     if (dropTarget && dropTarget.style) {
       dropTarget.style.backgroundColor = "rgba(0,0,255,0.1)";
@@ -185,7 +185,7 @@ const CreateSimulation = () => {
   };
 
   const dragLeaveHandler = (e: React.DragEvent) => {
-    // Remove highlight from drop target
+    // Remove highlight from drop target - Fix: Cast to HTMLElement before accessing style
     const dropTarget = e.target as HTMLElement;
     if (dropTarget && dropTarget.style) {
       dropTarget.style.backgroundColor = "";
@@ -196,7 +196,7 @@ const CreateSimulation = () => {
   const dropHandler = (e: React.DragEvent) => {
     e.preventDefault();
     
-    // Get the drop target
+    // Get the drop target - Fix: Cast to HTMLElement before accessing style
     const dropTarget = e.target as HTMLElement;
     if (dropTarget && dropTarget.style) {
       dropTarget.style.backgroundColor = "";
