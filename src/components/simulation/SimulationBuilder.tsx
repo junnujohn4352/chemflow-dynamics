@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { Card } from '@/components/ui/card';
 import EquipmentCard from '@/components/ui/equipment/EquipmentCard';
@@ -92,6 +91,7 @@ export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
   const [showPropertyEditor, setShowPropertyEditor] = useState(false);
   const [simulationResults, setSimulationResults] = useState<boolean>(false);
   const [simulationSubject, setSimulationSubject] = useState<string | null>(null);
+  const [showDottedLines, setShowDottedLines] = useState(true); // Add this line to control dotted lines visibility
   
   const [processSteps, setProcessSteps] = useState<string[]>([
     "Define simulation objectives",
@@ -626,6 +626,18 @@ export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
             <div className="flex gap-2">
               {canvasEquipment.length > 0 && (
                 <>
+                  <div className="flex items-center mr-3">
+                    <label htmlFor="show-dotted-lines" className="mr-2 text-sm text-blue-700">
+                      Show Flow Lines
+                    </label>
+                    <input
+                      id="show-dotted-lines"
+                      type="checkbox"
+                      checked={showDottedLines}
+                      onChange={(e) => setShowDottedLines(e.target.checked)}
+                      className="rounded text-blue-500 focus:ring-blue-500"
+                    />
+                  </div>
                   <Button 
                     onClick={handleRunSimulation}
                     className="bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white shadow-md"
@@ -718,6 +730,7 @@ export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
                     showConnections={true}
                     onConnectionPointClick={(point) => handleConnectionPointClick(equipment.id, point)}
                     activeConnectionPoints={equipment.activeConnectionPoints}
+                    showDottedLines={showDottedLines} // Pass the showDottedLines prop
                   />
                   
                   {selectedEquipment === equipment.id && (
