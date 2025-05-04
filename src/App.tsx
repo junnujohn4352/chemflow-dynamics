@@ -9,6 +9,7 @@ import ChemicalFormulas from "./pages/ChemicalFormulas";
 import CreateSimulation from "./pages/CreateSimulation";
 import LandingPage from "./pages/LandingPage";
 import Payment from "./pages/Payment";
+import CodeVerification from "./pages/CodeVerification";
 import NotFound from "./pages/NotFound";
 import Settings from "./pages/Settings";
 import Formulas from "./pages/Formulas";
@@ -24,17 +25,26 @@ import IntelligentSimulation from "./pages/IntelligentSimulation";
 // Components
 import { Toaster } from "./components/ui/toaster";
 
-// Payment protection wrapper component
-const PaymentProtectedRoute = ({ children }: { children: JSX.Element }) => {
-  const paymentCompleted = localStorage.getItem('chemflow-payment-completed') === 'true';
+// Activation and payment protection wrapper component
+const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   const location = useLocation();
   
-  // Skip payment check for these public routes
-  const publicRoutes = ['/', '/payment', '/about'];
+  // Get activation and payment status
+  const isActivated = localStorage.getItem('chemflow-activated') === 'true';
+  const paymentCompleted = localStorage.getItem('chemflow-payment-completed') === 'true';
+  
+  // Skip checks for these public routes
+  const publicRoutes = ['/', '/payment', '/code-verification', '/about'];
   const isPublicRoute = publicRoutes.includes(location.pathname);
   
+  // First check if payment is completed
   if (!paymentCompleted && !isPublicRoute) {
     return <Navigate to="/payment" replace />;
+  }
+  
+  // Then check if the app is activated with a valid code
+  if (paymentCompleted && !isActivated && !isPublicRoute && location.pathname !== '/code-verification') {
+    return <Navigate to="/code-verification" replace />;
   }
   
   return children;
@@ -47,150 +57,151 @@ const App: React.FC = () => {
         {/* Public routes */}
         <Route path="/" element={<LandingPage />} />
         <Route path="/payment" element={<Payment />} />
+        <Route path="/code-verification" element={<CodeVerification />} />
         <Route path="/about" element={<About />} />
         
         {/* Protected routes */}
         <Route path="/dashboard" element={
-          <PaymentProtectedRoute>
+          <ProtectedRoute>
             <Dashboard />
-          </PaymentProtectedRoute>
+          </ProtectedRoute>
         } />
         <Route path="/create-simulation" element={
-          <PaymentProtectedRoute>
+          <ProtectedRoute>
             <CreateSimulation />
-          </PaymentProtectedRoute>
+          </ProtectedRoute>
         } />
         <Route path="/intelligent-simulation" element={
-          <PaymentProtectedRoute>
+          <ProtectedRoute>
             <IntelligentSimulation />
-          </PaymentProtectedRoute>
+          </ProtectedRoute>
         } />
         <Route path="/simulations" element={
-          <PaymentProtectedRoute>
+          <ProtectedRoute>
             <Simulations />
-          </PaymentProtectedRoute>
+          </ProtectedRoute>
         } />
         <Route path="/formulas" element={
-          <PaymentProtectedRoute>
+          <ProtectedRoute>
             <Formulas />
-          </PaymentProtectedRoute>
+          </ProtectedRoute>
         } />
         <Route path="/chemical-formulas" element={
-          <PaymentProtectedRoute>
+          <ProtectedRoute>
             <ChemicalFormulas />
-          </PaymentProtectedRoute>
+          </ProtectedRoute>
         } />
         <Route path="/settings" element={
-          <PaymentProtectedRoute>
+          <ProtectedRoute>
             <Settings />
-          </PaymentProtectedRoute>
+          </ProtectedRoute>
         } />
         <Route path="/software-tools" element={
-          <PaymentProtectedRoute>
+          <ProtectedRoute>
             <SoftwareTools />
-          </PaymentProtectedRoute>
+          </ProtectedRoute>
         } />
         <Route path="/software-topics" element={
-          <PaymentProtectedRoute>
+          <ProtectedRoute>
             <SoftwareTopics />
-          </PaymentProtectedRoute>
+          </ProtectedRoute>
         } />
         <Route path="/hysys-calculations" element={
-          <PaymentProtectedRoute>
+          <ProtectedRoute>
             <HysysCalculations />
-          </PaymentProtectedRoute>
+          </ProtectedRoute>
         } />
         <Route path="/unit-converter" element={
-          <PaymentProtectedRoute>
+          <ProtectedRoute>
             <UnitConverter />
-          </PaymentProtectedRoute>
+          </ProtectedRoute>
         } />
         <Route path="/code-converter" element={
-          <PaymentProtectedRoute>
+          <ProtectedRoute>
             <CodeConverter />
-          </PaymentProtectedRoute>
+          </ProtectedRoute>
         } />
         
         {/* ChemLab Application Routes - all protected */}
         <Route path="/chemlab/aspen-plus" element={
-          <PaymentProtectedRoute>
+          <ProtectedRoute>
             <ChemicalFormulas />
-          </PaymentProtectedRoute>
+          </ProtectedRoute>
         } />
         <Route path="/chemlab/hysys" element={
-          <PaymentProtectedRoute>
+          <ProtectedRoute>
             <HysysCalculations />
-          </PaymentProtectedRoute>
+          </ProtectedRoute>
         } />
         <Route path="/chemlab/chemcad" element={
-          <PaymentProtectedRoute>
+          <ProtectedRoute>
             <UnitConverter />
-          </PaymentProtectedRoute>
+          </ProtectedRoute>
         } />
         <Route path="/chemlab/dwsim" element={
-          <PaymentProtectedRoute>
+          <ProtectedRoute>
             <CreateSimulation />
-          </PaymentProtectedRoute>
+          </ProtectedRoute>
         } />
         <Route path="/chemlab/unisim" element={
-          <PaymentProtectedRoute>
+          <ProtectedRoute>
             <Simulations />
-          </PaymentProtectedRoute>
+          </ProtectedRoute>
         } />
         <Route path="/chemlab/refprop" element={
-          <PaymentProtectedRoute>
+          <ProtectedRoute>
             <UnitConverter />
-          </PaymentProtectedRoute>
+          </ProtectedRoute>
         } />
         <Route path="/chemlab/properties" element={
-          <PaymentProtectedRoute>
+          <ProtectedRoute>
             <ChemicalFormulas />
-          </PaymentProtectedRoute>
+          </ProtectedRoute>
         } />
         <Route path="/chemlab/coolprop" element={
-          <PaymentProtectedRoute>
+          <ProtectedRoute>
             <CodeConverter />
-          </PaymentProtectedRoute>
+          </ProtectedRoute>
         } />
         <Route path="/chemlab/exchanger" element={
-          <PaymentProtectedRoute>
+          <ProtectedRoute>
             <HysysCalculations />
-          </PaymentProtectedRoute>
+          </ProtectedRoute>
         } />
         <Route path="/chemlab/column-design" element={
-          <PaymentProtectedRoute>
+          <ProtectedRoute>
             <CreateSimulation />
-          </PaymentProtectedRoute>
+          </ProtectedRoute>
         } />
         <Route path="/chemlab/pipe-flow" element={
-          <PaymentProtectedRoute>
+          <ProtectedRoute>
             <IntelligentSimulation />
-          </PaymentProtectedRoute>
+          </ProtectedRoute>
         } />
         <Route path="/chemlab/process-control" element={
-          <PaymentProtectedRoute>
+          <ProtectedRoute>
             <Simulations />
-          </PaymentProtectedRoute>
+          </ProtectedRoute>
         } />
         <Route path="/chemlab/pid-tuner" element={
-          <PaymentProtectedRoute>
+          <ProtectedRoute>
             <UnitConverter />
-          </PaymentProtectedRoute>
+          </ProtectedRoute>
         } />
         <Route path="/chemlab/doe" element={
-          <PaymentProtectedRoute>
+          <ProtectedRoute>
             <ChemicalFormulas />
-          </PaymentProtectedRoute>
+          </ProtectedRoute>
         } />
         <Route path="/chemlab/data-analytics" element={
-          <PaymentProtectedRoute>
+          <ProtectedRoute>
             <CodeConverter />
-          </PaymentProtectedRoute>
+          </ProtectedRoute>
         } />
         <Route path="/chemlab/lims" element={
-          <PaymentProtectedRoute>
+          <ProtectedRoute>
             <HysysCalculations />
-          </PaymentProtectedRoute>
+          </ProtectedRoute>
         } />
         
         <Route path="*" element={<NotFound />} />
