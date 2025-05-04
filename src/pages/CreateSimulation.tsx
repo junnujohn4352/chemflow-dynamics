@@ -22,7 +22,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { EquipmentType } from "@/components/ui/equipment/EquipmentIcons";
+import { EquipmentType, getEquipmentIcon } from "@/components/ui/equipment/EquipmentIcons";
 import { Separator } from "@/components/ui/separator";
 import HysysIntegration from "@/components/simulation/HysysIntegration";
 import EquipmentCard, { EquipmentMetric } from "@/components/ui/EquipmentCard";
