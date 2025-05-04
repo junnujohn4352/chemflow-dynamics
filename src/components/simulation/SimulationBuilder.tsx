@@ -18,12 +18,24 @@ interface SimulationBuilderProps {
   onRunSimulation?: () => void;
 }
 
+interface EquipmentPosition {
+  x: number;
+  y: number;
+}
+
+interface ConnectionPoint {
+  x: number;
+  y: number;
+  point: string;
+}
+
 interface CanvasEquipment {
   id: string;
   type: EquipmentType;
   title: string;
-  position: { x: number; y: number };
+  position: EquipmentPosition;
   metrics: { key: string; value: string }[];
+  activeConnectionPoints: string[];
 }
 
 interface Connection {
@@ -32,6 +44,8 @@ interface Connection {
   target: string;
   sourcePoint: string;
   targetPoint: string;
+  sourcePosition?: EquipmentPosition;
+  targetPosition?: EquipmentPosition;
 }
 
 export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
@@ -53,7 +67,6 @@ export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
   const [canvasEquipment, setCanvasEquipment] = useState<CanvasEquipment[]>([]);
   const [connections, setConnections] = useState<Connection[]>([]);
   const [selectedEquipment, setSelectedEquipment] = useState<string | null>(null);
-  const [isDrawingConnection, setIsDrawingConnection] = useState(false);
   const [connectionStart, setConnectionStart] = useState<{equipmentId: string, point: string} | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [draggedEquipment, setDraggedEquipment] = useState<string | null>(null);
@@ -111,7 +124,8 @@ export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
       type,
       title,
       position: { x, y },
-      metrics: [...equipmentMetrics]
+      metrics: [...equipmentMetrics],
+      activeConnectionPoints: []
     };
     
     setCanvasEquipment(prev => [...prev, newEquipment]);
@@ -160,6 +174,9 @@ export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
           : eq
       )
     );
+    
+    // Also update connections involving this equipment
+    updateConnectionPositions(draggedEquipment, { x: x + 50, y: y + 50 });
   };
   
   const handleMouseUp = () => {
@@ -197,40 +214,117 @@ export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
       description: "All equipment has been removed from the process canvas.",
     });
   };
+
+  const updateConnectionPositions = (equipmentId: string, newPosition: EquipmentPosition) => {
+    setConnections(prevConnections => 
+      prevConnections.map(conn => {
+        if (conn.source === equipmentId) {
+          return { ...conn, sourcePosition: newPosition };
+        }
+        if (conn.target === equipmentId) {
+          return { ...conn, targetPosition: newPosition };
+        }
+        return conn;
+      })
+    );
+  };
   
-  const handleConnectionPointClick = (e: React.MouseEvent, equipmentId: string) => {
-    // Only handle clicks on connection points
-    if (!(e.target as HTMLElement).dataset.connection) return;
-    
-    const pointType = (e.target as HTMLElement).dataset.connection as string;
-    
-    if (!isDrawingConnection) {
-      // Start drawing a connection
-      setIsDrawingConnection(true);
-      setConnectionStart({ equipmentId, point: pointType });
-    } else {
-      // Finish drawing a connection if not connecting to the same equipment
-      if (connectionStart && connectionStart.equipmentId !== equipmentId) {
-        const newConnection: Connection = {
-          id: `connection-${Date.now()}`,
-          source: connectionStart.equipmentId,
-          target: equipmentId,
-          sourcePoint: connectionStart.point,
-          targetPoint: pointType
-        };
-        
-        setConnections(prev => [...prev, newConnection]);
-        
-        toast({
-          title: "Connection Created",
-          description: "Equipment connection has been established.",
-        });
-      }
+  const handleConnectionPointClick = (equipmentId: string, point: string) => {
+    // If we're not already starting a connection, mark this as the start
+    if (!connectionStart) {
+      setConnectionStart({ equipmentId, point });
       
-      // Reset connection drawing state
-      setIsDrawingConnection(false);
-      setConnectionStart(null);
+      // Mark this connection point as active
+      setCanvasEquipment(prev => 
+        prev.map(eq => 
+          eq.id === equipmentId 
+            ? { ...eq, activeConnectionPoints: [...eq.activeConnectionPoints, point] } 
+            : eq
+        )
+      );
+      
+      return;
     }
+    
+    // Don't allow connecting to the same equipment
+    if (connectionStart.equipmentId === equipmentId) {
+      // If clicking the same point, cancel the connection
+      if (connectionStart.point === point) {
+        // Remove active status from the point
+        setCanvasEquipment(prev => 
+          prev.map(eq => 
+            eq.id === equipmentId 
+              ? { ...eq, activeConnectionPoints: eq.activeConnectionPoints.filter(p => p !== point) } 
+              : eq
+          )
+        );
+        
+        setConnectionStart(null);
+      }
+      return;
+    }
+    
+    // Create the connection
+    const sourceEquipment = canvasEquipment.find(eq => eq.id === connectionStart.equipmentId);
+    const targetEquipment = canvasEquipment.find(eq => eq.id === equipmentId);
+    
+    if (!sourceEquipment || !targetEquipment) return;
+    
+    const newConnection: Connection = {
+      id: `connection-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      source: connectionStart.equipmentId,
+      sourcePoint: connectionStart.point,
+      target: equipmentId,
+      targetPoint: point,
+      sourcePosition: sourceEquipment.position,
+      targetPosition: targetEquipment.position
+    };
+    
+    setConnections(prev => [...prev, newConnection]);
+    
+    // Mark the target connection point as active
+    setCanvasEquipment(prev => 
+      prev.map(eq => 
+        eq.id === equipmentId 
+          ? { ...eq, activeConnectionPoints: [...eq.activeConnectionPoints, point] } 
+          : eq
+      )
+    );
+    
+    // Clear the connection start state
+    setConnectionStart(null);
+    
+    toast({
+      title: "Connection Created",
+      description: "Flow connection has been established between equipment.",
+    });
+  };
+  
+  const handleRemoveConnection = (connectionId: string) => {
+    const connection = connections.find(conn => conn.id === connectionId);
+    if (!connection) return;
+    
+    // Remove active status from connection points
+    setCanvasEquipment(prev => 
+      prev.map(eq => {
+        if (eq.id === connection.source) {
+          return { 
+            ...eq, 
+            activeConnectionPoints: eq.activeConnectionPoints.filter(p => p !== connection.sourcePoint) 
+          };
+        }
+        if (eq.id === connection.target) {
+          return { 
+            ...eq, 
+            activeConnectionPoints: eq.activeConnectionPoints.filter(p => p !== connection.targetPoint) 
+          };
+        }
+        return eq;
+      })
+    );
+    
+    // Remove the connection
+    setConnections(prev => prev.filter(conn => conn.id !== connectionId));
   };
   
   const handleSelectEquipment = (type: EquipmentType) => {
@@ -242,7 +336,8 @@ export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
       type,
       title,
       position: { x: 200, y: 200 }, // Default position in the middle
-      metrics: [...equipmentMetrics]
+      metrics: [...equipmentMetrics],
+      activeConnectionPoints: []
     };
     
     setCanvasEquipment(prev => [...prev, newEquipment]);
@@ -253,66 +348,54 @@ export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     });
   };
   
-  // Calculate connections for the SVG lines
-  const calculateConnections = () => {
-    return connections.map(conn => {
-      const source = canvasEquipment.find(e => e.id === conn.source);
-      const target = canvasEquipment.find(e => e.id === conn.target);
-      
-      if (!source || !target) return null;
-      
-      // Get connection points based on the connection points of equipment
-      // These positions will need proper calculation based on the actual DOM elements
-      let sourceX = source.position.x;
-      let sourceY = source.position.y;
-      let targetX = target.position.x;
-      let targetY = target.position.y;
-      
-      // Adjust for connection points based on their position (left, right, top, bottom)
-      switch (conn.sourcePoint) {
-        case 'left':
-          sourceX -= 50;
-          break;
-        case 'right':
-          sourceX += 50;
-          break;
-        case 'top':
-          sourceY -= 50;
-          break;
-        case 'bottom':
-          sourceY += 50;
-          break;
-        default:
-          // Handle other connection points like input-2, shell-in, etc.
-          break;
-      }
-      
-      switch (conn.targetPoint) {
-        case 'left':
-          targetX -= 50;
-          break;
-        case 'right':
-          targetX += 50;
-          break;
-        case 'top':
-          targetY -= 50;
-          break;
-        case 'bottom':
-          targetY += 50;
-          break;
-        default:
-          // Handle other connection points
-          break;
-      }
-      
-      return {
-        id: conn.id,
-        x1: sourceX,
-        y1: sourceY,
-        x2: targetX,
-        y2: targetY
-      };
-    }).filter(Boolean);
+  // Calculate the position of a connection point on an equipment
+  const getConnectionPointPosition = (equipment: CanvasEquipment, point: string): ConnectionPoint => {
+    let x = equipment.position.x;
+    let y = equipment.position.y;
+    
+    // Adjust position based on connection point type
+    switch (point) {
+      case 'left':
+        x -= 15; // Adjust based on your connection point design
+        break;
+      case 'right':
+        x += 15;
+        break;
+      case 'top':
+        y -= 15;
+        break;
+      case 'bottom':
+        y += 15;
+        break;
+      // Add cases for other connection points as needed
+      default:
+        // For custom points like "input-2", "shell-in", etc.
+        if (point.includes('left') || point.includes('input')) {
+          x -= 15;
+        } else if (point.includes('right') || point.includes('output')) {
+          x += 15;
+        } else if (point.includes('top') || point.includes('in')) {
+          y -= 15;
+        } else if (point.includes('bottom') || point.includes('out')) {
+          y += 15;
+        }
+        break;
+    }
+    
+    return { x, y, point };
+  };
+  
+  // Calculate path points for the SVG connection lines
+  const calculateConnectionPath = (source: CanvasEquipment, target: CanvasEquipment, sourcePoint: string, targetPoint: string) => {
+    const sourcePos = getConnectionPointPosition(source, sourcePoint);
+    const targetPos = getConnectionPointPosition(target, targetPoint);
+    
+    return {
+      sourceX: sourcePos.x,
+      sourceY: sourcePos.y,
+      targetX: targetPos.x,
+      targetY: targetPos.y
+    };
   };
   
   return (
@@ -368,19 +451,47 @@ export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
             <div className="relative w-full h-[450px]">
               {/* Draw connections */}
               <svg className="absolute inset-0 pointer-events-none z-0">
-                {calculateConnections().map(conn => {
-                  if (!conn) return null;
+                <defs>
+                  <marker
+                    id="arrowhead"
+                    markerWidth="10"
+                    markerHeight="7"
+                    refX="9"
+                    refY="3.5"
+                    orient="auto"
+                  >
+                    <polygon points="0 0, 10 3.5, 0 7" fill="#6366f1" />
+                  </marker>
+                </defs>
+                
+                {connections.map(conn => {
+                  const source = canvasEquipment.find(e => e.id === conn.source);
+                  const target = canvasEquipment.find(e => e.id === conn.target);
+                  
+                  if (!source || !target) return null;
+                  
+                  const { sourceX, sourceY, targetX, targetY } = calculateConnectionPath(
+                    source, 
+                    target, 
+                    conn.sourcePoint, 
+                    conn.targetPoint
+                  );
+                  
                   return (
-                    <line 
-                      key={conn.id}
-                      x1={conn.x1} 
-                      y1={conn.y1}
-                      x2={conn.x2} 
-                      y2={conn.y2}
-                      stroke="#6366f1"
-                      strokeWidth="2"
-                      strokeDasharray="4"
-                    />
+                    <g key={conn.id}>
+                      <line 
+                        x1={sourceX} 
+                        y1={sourceY}
+                        x2={targetX} 
+                        y2={targetY}
+                        stroke="#6366f1"
+                        strokeWidth="2"
+                        strokeDasharray="4"
+                        markerEnd="url(#arrowhead)"
+                        onClick={() => handleRemoveConnection(conn.id)}
+                        className="hover:stroke-blue-700 hover:stroke-[3px] cursor-pointer"
+                      />
+                    </g>
                   );
                 })}
               </svg>
@@ -396,7 +507,6 @@ export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
                     transition: isDragging && draggedEquipment === equipment.id ? 'none' : 'all 0.2s'
                   }}
                   onMouseDown={(e) => handleMouseDown(e, equipment.id)}
-                  onClick={(e) => handleConnectionPointClick(e, equipment.id)}
                 >
                   <EquipmentCard 
                     type={equipment.type}
@@ -407,7 +517,10 @@ export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
                     onClick={() => handleEquipmentClick(equipment.id)}
                     size="sm"
                     showConnections={true}
+                    onConnectionPointClick={(point) => handleConnectionPointClick(equipment.id, point)}
+                    activeConnectionPoints={equipment.activeConnectionPoints}
                   />
+                  
                   {selectedEquipment === equipment.id && (
                     <div className="absolute top-0 right-0 -mt-2 -mr-2">
                       <Button 

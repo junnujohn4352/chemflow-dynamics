@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card } from '@/components/ui/card';
 import { EquipmentType, getEquipmentIcon } from './EquipmentIcons';
@@ -24,6 +23,8 @@ interface EquipmentCardProps {
   selected?: boolean;
   onClick?: () => void;
   showConnections?: boolean;
+  onConnectionPointClick?: (point: string) => void;
+  activeConnectionPoints?: string[];
 }
 
 export const EquipmentCard: React.FC<EquipmentCardProps> = ({
@@ -39,6 +40,8 @@ export const EquipmentCard: React.FC<EquipmentCardProps> = ({
   selected = false,
   onClick,
   showConnections = true,
+  onConnectionPointClick,
+  activeConnectionPoints = [],
 }) => {
   const getStatusIcon = () => {
     switch (status) {
@@ -100,6 +103,12 @@ export const EquipmentCard: React.FC<EquipmentCardProps> = ({
     }
   };
 
+  const handleConnectionPointClick = (point: string) => {
+    if (onConnectionPointClick) {
+      onConnectionPointClick(point);
+    }
+  };
+
   return (
     <Card
       className={`relative flex flex-col ${sizeClasses[size]} ${
@@ -153,7 +162,13 @@ export const EquipmentCard: React.FC<EquipmentCardProps> = ({
       )}
 
       {/* Connection Points */}
-      {showConnections && <EquipmentConnections type={type} />}
+      {showConnections && (
+        <EquipmentConnections 
+          type={type} 
+          onClick={handleConnectionPointClick}
+          activePoints={activeConnectionPoints}
+        />
+      )}
     </Card>
   );
 };
