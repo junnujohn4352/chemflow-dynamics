@@ -134,7 +134,7 @@ const Index = () => {
               ]}
             />
             <EquipmentCard 
-              type="column" 
+              type="distillation" 
               title="Distillation Column" 
               status="running" 
               metrics={[

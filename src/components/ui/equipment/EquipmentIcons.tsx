@@ -1,17 +1,19 @@
+
 import {
-  Flask2,
+  Flask,
   Flame,
   Waves,
   Droplet,
-  Compress,
+  Compass,
   Zap,
-  Cube,
-  Pipe,
+  Box,
+  PipeIcon,
   SlidersHorizontal,
-  MixerHorizontal,
+  MoreHorizontal,
   Split,
   Snowflake,
   Sun,
+  Beaker
 } from "lucide-react";
 
 export type EquipmentType = 
@@ -27,7 +29,11 @@ export type EquipmentType =
   | "mixer" 
   | "splitter" 
   | "cooler" 
-  | "heater";
+  | "heater"
+  | "column"
+  | "feed"
+  | "tank"
+  | "filter";
 
 export const getEquipmentIcon = (type: EquipmentType) => {
   switch (type) {
@@ -36,27 +42,35 @@ export const getEquipmentIcon = (type: EquipmentType) => {
     case "heat-exchanger":
       return <Waves />;
     case "distillation":
-      return <Flask2 />;
+      return <Flask />;
+    case "column":
+      return <Flask />;
     case "pump":
       return <Droplet />;
     case "compressor":
-      return <Compress />;
+      return <Compass />;
     case "flash":
       return <Zap />;
     case "vessel":
-      return <Cube />;
+      return <Box />;
     case "pipe":
-      return <Pipe />;
+      return <PipeIcon />;
     case "valve":
       return <SlidersHorizontal />;
     case "mixer":
-      return <MixerHorizontal />;
+      return <MoreHorizontal />;
     case "splitter":
       return <Split />;
     case "cooler":
       return <Snowflake />;
     case "heater":
       return <Sun />;
+    case "feed":
+      return <Droplet />;
+    case "tank":
+      return <Box />;
+    case "filter":
+      return <Beaker />;
     default:
       return null;
   }

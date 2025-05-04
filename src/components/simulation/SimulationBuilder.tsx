@@ -104,7 +104,7 @@ export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
   
   const libraryEquipment = [
     { type: "reactor" as EquipmentType, title: "CSTR Reactor" },
-    { type: "column" as EquipmentType, title: "Distillation" },
+    { type: "distillation" as EquipmentType, title: "Distillation" },
     { type: "heat-exchanger" as EquipmentType, title: "Heat Exchanger" },
     { type: "pump" as EquipmentType, title: "Centrifugal Pump" },
     { type: "flash" as EquipmentType, title: "Flash Drum" },
@@ -177,7 +177,7 @@ export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
         { key: "Conversion", value: "95%", editable: true },
         { key: "Residence Time", value: "60 min", editable: true }
       ];
-    } else if (type === "column") {
+    } else if (type === "column" || type === "distillation") {
       newEquipment.metrics = [
         { key: "Stages", value: "10", editable: true },
         { key: "Reflux Ratio", value: "1.5", editable: true },
@@ -400,12 +400,12 @@ export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     setConnections(prev => prev.filter(conn => conn.id !== connectionId));
   };
   
-  const handleSelectEquipment = (type: EquipmentType) => {
+  const handleSelectEquipment = (equipmentType: EquipmentType) => {
     // Create a new equipment with the selected type
-    let title = type.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+    let title = equipmentType.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
     
     // Special handling for feed streams
-    const isFeed = type === "feed";
+    const isFeed = equipmentType === "feed";
     let component = undefined;
     
     if (isFeed && selectedComponents.length > 0) {
@@ -537,7 +537,7 @@ export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     let processName = "Chemical Process";
     
     // Check if we have a distillation process
-    if (canvasEquipment.some(eq => eq.type === "column")) {
+    if (canvasEquipment.some(eq => eq.type === "distillation" || eq.type === "column")) {
       processName = "Distillation Process";
     } 
     // Check if we have a reaction process
