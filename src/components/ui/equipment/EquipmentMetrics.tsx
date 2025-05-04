@@ -29,7 +29,7 @@ interface EquipmentMetricsProps {
 }
 
 const EquipmentMetrics: React.FC<EquipmentMetricsProps> = ({ metrics, onMetricChange }) => {
-  if (!metrics) return null;
+  if (!metrics || (Array.isArray(metrics) && metrics.length === 0)) return null;
   
   // Convert array format to object format if needed
   const metricsObject = Array.isArray(metrics) 
@@ -101,13 +101,13 @@ const EquipmentMetrics: React.FC<EquipmentMetricsProps> = ({ metrics, onMetricCh
   };
 
   return (
-    <div className="grid grid-cols-1 gap-1 mt-2 max-h-[60px] overflow-y-auto">
+    <div className="grid grid-cols-1 gap-1 mt-2 max-h-[60px] overflow-y-auto w-full px-1">
       {Object.entries(metricsObject).map(([key, value]) => {
         const originalMetric = getOriginalMetric(key);
         const unit = getUnitForKey(key);
         
         return (
-          <div key={key} className="p-1 rounded-md bg-gray-50 border border-gray-100">
+          <div key={key} className="p-1 rounded-md bg-gray-50 border border-gray-100 w-full">
             <div className="flex items-center gap-1.5">
               {getIconForKey(key)}
               <span className="text-[10px] text-gray-500">{formatKeyForDisplay(key)}</span>

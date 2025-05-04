@@ -1,3 +1,4 @@
+
 import React from "react";
 import { EquipmentType, getEquipmentIcon } from "./EquipmentIcons";
 import EquipmentConnections from "./EquipmentConnections";
@@ -89,9 +90,12 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
 
   const icon = getEquipmentIcon(type);
 
+  // Determine if we should show metrics based on size and if metrics are provided
+  const shouldShowMetrics = size !== "sm" && metrics && metrics.length > 0;
+
   return (
     <div
-      className={`relative flex flex-col items-center justify-center ${sizeClasses[size]} ${statusColors[status]} 
+      className={`relative flex flex-col items-center justify-between ${sizeClasses[size]} ${statusColors[status]} 
         border rounded-lg shadow-sm cursor-pointer transition-all
         ${selected ? "ring-2 ring-blue-500 shadow-md" : "hover:shadow-md hover:border-blue-300"}
         ${draggable ? "cursor-grab active:cursor-grabbing" : ""}
@@ -118,11 +122,13 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
         </div>
       </div>
 
-      {metrics.length > 0 && size !== "sm" && (
-        <EquipmentMetrics 
-          metrics={metrics} 
-          onMetricChange={handleMetricChange}
-        />
+      {shouldShowMetrics && (
+        <div className="w-full mt-auto">
+          <EquipmentMetrics 
+            metrics={metrics} 
+            onMetricChange={handleMetricChange}
+          />
+        </div>
       )}
 
       {problem && selected && (
