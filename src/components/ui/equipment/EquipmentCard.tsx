@@ -91,6 +91,7 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
       draggable={draggable}
       onDragStart={handleDragStart}
       onClick={onClick}
+      data-testid="equipment-card"
     >
       {showConnections && (
         <EquipmentConnections 

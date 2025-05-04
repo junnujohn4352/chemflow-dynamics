@@ -2,6 +2,7 @@
 import React from "react";
 import { Thermometer, Gauge, Droplets, Container, FlaskConical, Blocks, Activity, Flame } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export interface EquipmentMetric {
   key: string;
@@ -53,6 +54,12 @@ const EquipmentMetrics: React.FC<EquipmentMetricsProps> = ({ metrics, onMetricCh
   };
 
   const handleChange = (key: string, value: string) => {
+    if (onMetricChange) {
+      onMetricChange(key, value);
+    }
+  };
+
+  const handleSelectChange = (key: string, value: string) => {
     if (onMetricChange) {
       onMetricChange(key, value);
     }
@@ -213,11 +220,29 @@ const EquipmentMetrics: React.FC<EquipmentMetricsProps> = ({ metrics, onMetricCh
               <span className="text-xs text-gray-500">{key}</span>
             </div>
             {originalMetric?.editable && onMetricChange ? (
-              <Input 
-                className="h-6 mt-1 p-1 text-xs font-medium"
-                value={String(value)}
-                onChange={(e) => handleChange(key, e.target.value)}
-              />
+              originalMetric.options ? (
+                <Select 
+                  value={String(value)}
+                  onValueChange={(newValue) => handleSelectChange(key, newValue)}
+                >
+                  <SelectTrigger className="h-6 mt-1 text-xs">
+                    <SelectValue placeholder="Select option" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {originalMetric.options.map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {option}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <Input 
+                  className="h-6 mt-1 p-1 text-xs font-medium"
+                  value={String(value)}
+                  onChange={(e) => handleChange(key, e.target.value)}
+                />
+              )
             ) : (
               <p className="font-medium mt-1">{String(value)}</p>
             )}

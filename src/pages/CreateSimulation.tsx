@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -595,7 +594,7 @@ const CreateSimulation = () => {
     if (!equipment) return null;
     
     return (
-      <div className="absolute top-0 right-0 w-72 h-full bg-white dark:bg-gray-800 border-l border-blue-200 dark:border-blue-800 p-4 shadow-lg overflow-y-auto z-10">
+      <div className="absolute top-0 right-0 w-72 h-full bg-white dark:bg-gray-800 border-l border-blue-200 dark:border-blue-800 p-4 shadow-lg overflow-y-auto z-20">
         <div className="flex justify-between items-center mb-4">
           <h3 className="font-medium text-blue-900 dark:text-blue-100">{equipment.title} Properties</h3>
           <Button variant="ghost" size="sm" onClick={() => setActiveEquipment(null)} className="h-7 w-7 p-0">
@@ -828,6 +827,12 @@ const CreateSimulation = () => {
                       onDragOver={dragOverHandler}
                       onDragLeave={dragLeaveHandler}
                       onDrop={dropHandler}
+                      onClick={(e) => {
+                        // If we click on the canvas background (not on equipment), deselect equipment
+                        if (e.target === e.currentTarget) {
+                          setActiveEquipment(null);
+                        }
+                      }}
                     >
                       <div ref={flowsheetRef} className="w-full h-full relative">
                         {/* Equipment Items */}
