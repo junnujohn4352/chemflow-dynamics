@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import { BrowserRouter, Route, Routes, Navigate, useLocation } from "react-router-dom";
 import "./App.css";
@@ -29,21 +28,15 @@ import { Toaster } from "./components/ui/toaster";
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   const location = useLocation();
   
-  // Get activation and payment status
+  // Get activation status
   const isActivated = localStorage.getItem('chemflow-activated') === 'true';
-  const paymentCompleted = localStorage.getItem('chemflow-payment-completed') === 'true';
   
   // Skip checks for these public routes
   const publicRoutes = ['/', '/payment', '/code-verification', '/about'];
   const isPublicRoute = publicRoutes.includes(location.pathname);
   
-  // First check if payment is completed
-  if (!paymentCompleted && !isPublicRoute) {
-    return <Navigate to="/payment" replace />;
-  }
-  
-  // Then check if the app is activated with a valid code
-  if (paymentCompleted && !isActivated && !isPublicRoute && location.pathname !== '/code-verification') {
+  // If not activated and not on a public route, redirect to code verification
+  if (!isActivated && !isPublicRoute) {
     return <Navigate to="/code-verification" replace />;
   }
   

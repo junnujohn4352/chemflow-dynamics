@@ -16,8 +16,16 @@ const PaymentPage: React.FC = () => {
   const [paymentStep, setPaymentStep] = useState<"qr" | "verification" | "success">("qr");
   const [activationCode, setActivationCode] = useState("");
   
-  // Check if payment is already completed when the page loads
+  // Check if activation is already completed when the page loads
   useEffect(() => {
+    const isActivated = localStorage.getItem('chemflow-activated');
+    if (isActivated === 'true') {
+      // Redirect to dashboard if already activated
+      navigate("/dashboard");
+      return;
+    }
+    
+    // Check if payment is already completed
     const paymentCompleted = localStorage.getItem('chemflow-payment-completed');
     if (paymentCompleted === 'true') {
       // Redirect to code verification if payment is already completed
@@ -216,7 +224,9 @@ const PaymentPage: React.FC = () => {
                     
                     <Card className="w-full max-w-md mx-auto mb-6 bg-blue-50 border border-blue-200">
                       <CardContent className="p-6">
-                        <div className="mb-2 text-sm text-blue-600 font-medium">Your Activation Code:</div>
+                        <div className="mb-2 text-sm text-blue-600 font-medium">
+                          Your Activation & Login Code:
+                        </div>
                         <div className="flex items-center">
                           <div className="flex-1 bg-white p-4 rounded border border-blue-200 font-mono text-lg font-semibold text-blue-800 tracking-wider text-center">
                             {activationCode}
@@ -231,7 +241,7 @@ const PaymentPage: React.FC = () => {
                           </Button>
                         </div>
                         <p className="text-xs text-blue-600 mt-2">
-                          Please save this code. You'll need it to activate your application.
+                          Please save this code carefully. You'll need it to activate the application and for future logins.
                         </p>
                       </CardContent>
                     </Card>
@@ -244,7 +254,7 @@ const PaymentPage: React.FC = () => {
                     </Button>
                     
                     <p className="text-sm text-gray-500 mt-4 text-center">
-                      You can access this code later in your account settings
+                      Keep this code secure - it's your permanent access key to the application
                     </p>
                   </div>
                 </div>

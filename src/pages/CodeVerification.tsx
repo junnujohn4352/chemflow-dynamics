@@ -16,6 +16,7 @@ const CodeVerification: React.FC = () => {
   const [isVerifying, setIsVerifying] = useState(false);
   const [storedCode, setStoredCode] = useState<string | null>(null);
   const [isActivated, setIsActivated] = useState(false);
+  const [isLogin, setIsLogin] = useState(false);
   
   useEffect(() => {
     // Check if already logged in
@@ -31,8 +32,13 @@ const CodeVerification: React.FC = () => {
     
     // Check if payment is completed
     const paymentCompleted = localStorage.getItem('chemflow-payment-completed');
-    if (paymentCompleted !== 'true') {
-      // Redirect to payment page if payment is not completed
+    
+    // If there's an activation code but no payment completed status,
+    // this is likely a returning user trying to log in
+    if (code && !paymentCompleted) {
+      setIsLogin(true);
+    } else if (paymentCompleted !== 'true') {
+      // Redirect to payment page if payment is not completed and not a login attempt
       navigate('/payment');
     }
   }, [navigate]);
@@ -49,28 +55,31 @@ const CodeVerification: React.FC = () => {
     
     // Simulate verification process
     setTimeout(() => {
-      if (activationCode === storedCode) {
-        // Set activation status in localStorage
+      // For login: Check if the entered code matches any stored code in the system
+      const storedActivationCode = localStorage.getItem('chemflow-activation-code');
+      
+      if (activationCode === storedActivationCode) {
+        // Set activation status in localStorage if not already set
         localStorage.setItem('chemflow-activated', 'true');
+        localStorage.setItem('chemflow-payment-completed', 'true');
         
         setIsActivated(true);
-        toast.success("Application successfully activated!");
+        
+        if (isLogin) {
+          toast.success("Login successful! Welcome back.");
+        } else {
+          toast.success("Application successfully activated!");
+        }
         
         // Redirect to dashboard after a short delay
         setTimeout(() => {
           navigate('/dashboard');
         }, 2000);
       } else {
-        toast.error("Invalid activation code. Please try again.");
+        toast.error(isLogin ? "Invalid login code. Please try again." : "Invalid activation code. Please try again.");
         setIsVerifying(false);
       }
     }, 1500);
-  };
-  
-  const formatCodeSegment = (code: string, index: number): string => {
-    if (!code) return "";
-    const segments = code.split('-');
-    return segments[index] || "";
   };
   
   return (
@@ -92,16 +101,20 @@ const CodeVerification: React.FC = () => {
                   <div className="p-3 rounded-full bg-blue-100 mb-4">
                     <KeySquare className="h-8 w-8 text-blue-600" />
                   </div>
-                  <h2 className="text-2xl font-bold text-gray-800 text-center">Activate ChemFlow</h2>
+                  <h2 className="text-2xl font-bold text-gray-800 text-center">
+                    {isLogin ? "Login to ChemFlow" : "Activate ChemFlow"}
+                  </h2>
                   <p className="text-gray-600 text-center mt-2">
-                    Enter your activation code to get started
+                    {isLogin 
+                      ? "Enter your unique code to access the application" 
+                      : "Enter your activation code to get started"}
                   </p>
                 </div>
                 
                 <form onSubmit={handleActivation} className="space-y-6">
                   <div className="space-y-2">
                     <Label htmlFor="activation-code" className="text-gray-700">
-                      Activation Code
+                      {isLogin ? "Access Code" : "Activation Code"}
                     </Label>
                     
                     <div className="flex justify-center mb-6">
@@ -137,7 +150,9 @@ const CodeVerification: React.FC = () => {
                     </div>
                     
                     <p className="text-sm text-gray-500 text-center mt-2">
-                      The code was generated after your payment was verified
+                      {isLogin 
+                        ? "The code was provided after your payment"
+                        : "The code was generated after your payment was verified"}
                     </p>
                   </div>
                   
@@ -149,18 +164,25 @@ const CodeVerification: React.FC = () => {
                     {isVerifying ? (
                       <div className="flex items-center justify-center">
                         <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                        Verifying...
+                        {isLogin ? "Logging in..." : "Verifying..."}
                       </div>
                     ) : (
                       <span className="flex items-center justify-center">
-                        Activate Software <ArrowRight className="ml-2 h-5 w-5" />
+                        {isLogin ? "Log In" : "Activate Software"} <ArrowRight className="ml-2 h-5 w-5" />
                       </span>
                     )}
                   </Button>
                   
                   <div className="text-center">
                     <p className="text-sm text-gray-500">
-                      Lost your code? <Button variant="link" className="p-0 h-auto" onClick={() => navigate('/payment')}>Return to payment page</Button>
+                      {isLogin ? "Need to purchase?" : "Lost your code?"} 
+                      <Button 
+                        variant="link" 
+                        className="p-0 h-auto" 
+                        onClick={() => navigate('/payment')}
+                      >
+                        {isLogin ? "Buy now" : "Return to payment page"}
+                      </Button>
                     </p>
                   </div>
                 </form>
@@ -170,7 +192,9 @@ const CodeVerification: React.FC = () => {
                 <div className="p-3 rounded-full bg-green-100 mb-4">
                   <CheckCircle2 className="h-8 w-8 text-green-600" />
                 </div>
-                <h2 className="text-2xl font-bold text-gray-800 text-center">Activation Successful!</h2>
+                <h2 className="text-2xl font-bold text-gray-800 text-center">
+                  {isLogin ? "Login Successful!" : "Activation Successful!"}
+                </h2>
                 <p className="text-gray-600 text-center mt-2 mb-8">
                   Redirecting you to the dashboard...
                 </p>
