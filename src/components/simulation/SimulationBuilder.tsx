@@ -3,10 +3,14 @@ import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import EquipmentCard from '@/components/ui/equipment/EquipmentCard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Thermometer, Beaker, Droplets, Activity } from "lucide-react";
+import { Thermometer, Beaker, Droplets, Activity, Trash2 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
+import { EquipmentType } from '@/components/ui/equipment/EquipmentIcons';
+import ProcessFlow from '@/components/ui/ProcessFlow';
 
 interface SimulationBuilderProps {
   selectedComponents: string[];
@@ -14,11 +18,20 @@ interface SimulationBuilderProps {
   onRunSimulation?: () => void;
 }
 
+interface CanvasEquipment {
+  id: string;
+  type: EquipmentType;
+  title: string;
+  position: { x: number; y: number };
+  metrics: { key: string; value: string }[];
+}
+
 export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
   selectedComponents,
   thermodynamicModel,
   onRunSimulation
 }) => {
+  const { toast } = useToast();
   const [equipmentMetrics, setEquipmentMetrics] = useState([
     { key: "Temperature", value: "85°C" },
     { key: "Pressure", value: "150 kPa" },
@@ -29,64 +42,185 @@ export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
   const [operatingTemp, setOperatingTemp] = useState("85");
   const [operatingPressure, setOperatingPressure] = useState("150");
   const [feedFlowRate, setFeedFlowRate] = useState("1200");
+  const [canvasEquipment, setCanvasEquipment] = useState<CanvasEquipment[]>([]);
+  const [selectedEquipment, setSelectedEquipment] = useState<string | null>(null);
+  const [processSteps, setProcessSteps] = useState<string[]>([
+    "Define simulation objectives",
+    "Develop process flowsheet", 
+    "Input thermodynamic and property data", 
+    "Specify operating conditions", 
+    "Solve simulation model", 
+    "Analyze results"
+  ]);
+  
+  const libraryEquipment = [
+    { type: "reactor" as EquipmentType, title: "CSTR Reactor" },
+    { type: "column" as EquipmentType, title: "Distillation" },
+    { type: "heat-exchanger" as EquipmentType, title: "Heat Exchanger" },
+    { type: "pump" as EquipmentType, title: "Centrifugal Pump" },
+    { type: "flash" as EquipmentType, title: "Flash Drum" },
+    { type: "compressor" as EquipmentType, title: "Compressor" },
+    { type: "valve" as EquipmentType, title: "Control Valve" },
+    { type: "mixer" as EquipmentType, title: "Mixer" },
+    { type: "tank" as EquipmentType, title: "Storage Tank" },
+    { type: "cooler" as EquipmentType, title: "Cooler" },
+    { type: "heater" as EquipmentType, title: "Heater" },
+    { type: "filter" as EquipmentType, title: "Filter" }
+  ];
+
+  const handleDragStart = (e: React.DragEvent, type: EquipmentType, title: string) => {
+    e.dataTransfer.setData("equipmentType", type);
+    e.dataTransfer.setData("equipmentTitle", title);
+    e.dataTransfer.effectAllowed = "copy";
+  };
+  
+  const handleCanvasDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "copy";
+  };
+  
+  const handleCanvasDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const type = e.dataTransfer.getData("equipmentType") as EquipmentType;
+    const title = e.dataTransfer.getData("equipmentTitle");
+    
+    if (!type || !title) return;
+    
+    // Get position relative to the drop target
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    const newEquipment: CanvasEquipment = {
+      id: `equipment-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      type,
+      title,
+      position: { x, y },
+      metrics: [...equipmentMetrics]
+    };
+    
+    setCanvasEquipment(prev => [...prev, newEquipment]);
+    
+    toast({
+      title: "Equipment Added",
+      description: `${title} added to the process canvas.`,
+    });
+  };
+
+  const handleEquipmentClick = (id: string) => {
+    setSelectedEquipment(prevSelected => prevSelected === id ? null : id);
+  };
+
+  const handleRemoveEquipment = (id: string) => {
+    setCanvasEquipment(prev => prev.filter(item => item.id !== id));
+    setSelectedEquipment(null);
+    
+    toast({
+      title: "Equipment Removed",
+      description: "The selected equipment has been removed.",
+    });
+  };
+
+  const handleClearCanvas = () => {
+    if (canvasEquipment.length === 0) return;
+    
+    setCanvasEquipment([]);
+    setSelectedEquipment(null);
+    
+    toast({
+      title: "Canvas Cleared",
+      description: "All equipment has been removed from the process canvas.",
+    });
+  };
   
   return (
     <div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="bg-gray-50 p-4 rounded-lg col-span-1">
           <h3 className="text-lg font-medium mb-3">Equipment Library</h3>
-          <div className="grid grid-cols-2 gap-2">
-            <EquipmentCard 
-              type="reactor" 
-              title="CSTR Reactor"
-              onEdit={() => {}}
-              metrics={equipmentMetrics}
-              status="ready"
-            />
-            <EquipmentCard 
-              type="column" 
-              title="Distillation"
-              onEdit={() => {}}
-              metrics={equipmentMetrics}
-              status="ready"
-            />
-            <EquipmentCard 
-              type="heat-exchanger" 
-              title="Heat Exchanger"
-              onEdit={() => {}}
-              metrics={equipmentMetrics}
-              status="ready"
-            />
-            <EquipmentCard 
-              type="pump" 
-              title="Centrifugal Pump"
-              onEdit={() => {}}
-              metrics={equipmentMetrics}
-              status="ready"
-            />
-            <EquipmentCard 
-              type="flash" 
-              title="Flash Drum"
-              onEdit={() => {}}
-              metrics={equipmentMetrics}
-              status="ready"
-            />
-            <EquipmentCard 
-              type="compressor" 
-              title="Compressor"
-              onEdit={() => {}}
-              metrics={equipmentMetrics}
-              status="ready"
-            />
+          <p className="text-sm text-gray-600 mb-2">Drag equipment to the canvas to build your process</p>
+          <div className="grid grid-cols-2 gap-2 max-h-[500px] overflow-y-auto pr-2">
+            {libraryEquipment.map((equipment, index) => (
+              <EquipmentCard 
+                key={index}
+                type={equipment.type} 
+                title={equipment.title}
+                onDragStart={handleDragStart}
+                metrics={equipmentMetrics}
+                status="ready"
+                size="sm"
+              />
+            ))}
           </div>
         </div>
         
-        <div className="bg-white border border-dashed border-gray-300 p-4 rounded-lg col-span-2">
-          <h3 className="text-lg font-medium mb-3">Process Canvas</h3>
-          <div className="min-h-[300px] flex items-center justify-center">
-            <p className="text-gray-400">Drag equipment here to build your process</p>
+        <div 
+          className="bg-white border border-dashed border-gray-300 p-4 rounded-lg col-span-2 relative min-h-[500px]"
+          onDragOver={handleCanvasDragOver}
+          onDrop={handleCanvasDrop}
+        >
+          <div className="flex justify-between items-center mb-3">
+            <h3 className="text-lg font-medium">Process Canvas</h3>
+            {canvasEquipment.length > 0 && (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="text-red-500 border-red-200 hover:bg-red-50"
+                onClick={handleClearCanvas}
+              >
+                <Trash2 className="h-3.5 w-3.5 mr-1" />
+                Clear Canvas
+              </Button>
+            )}
           </div>
+          
+          {canvasEquipment.length > 0 ? (
+            <div className="relative w-full h-[450px]">
+              {canvasEquipment.map(equipment => (
+                <div 
+                  key={equipment.id} 
+                  style={{ 
+                    position: 'absolute', 
+                    left: `${equipment.position.x - 50}px`, 
+                    top: `${equipment.position.y - 50}px`,
+                    zIndex: selectedEquipment === equipment.id ? 10 : 1
+                  }}
+                >
+                  <EquipmentCard 
+                    type={equipment.type}
+                    title={equipment.title}
+                    metrics={equipment.metrics}
+                    draggable={false}
+                    selected={selectedEquipment === equipment.id}
+                    onClick={() => handleEquipmentClick(equipment.id)}
+                    size="sm"
+                  />
+                  {selectedEquipment === equipment.id && (
+                    <div className="absolute top-0 right-0 -mt-2 -mr-2">
+                      <Button 
+                        size="icon" 
+                        variant="destructive" 
+                        className="h-6 w-6 rounded-full"
+                        onClick={() => handleRemoveEquipment(equipment.id)}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="h-[450px] flex items-center justify-center">
+              <p className="text-gray-400">Drag equipment here to build your process</p>
+            </div>
+          )}
         </div>
+      </div>
+      
+      <div className="bg-gray-50 p-4 rounded-lg mb-6">
+        <h3 className="text-lg font-medium mb-3">Process Flow Steps</h3>
+        <ProcessFlow />
       </div>
       
       <div className="bg-gray-50 p-4 rounded-lg">

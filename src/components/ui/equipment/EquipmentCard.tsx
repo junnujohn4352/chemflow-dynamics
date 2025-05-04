@@ -1,112 +1,125 @@
 
-import React from "react";
-import { getEquipmentIcon } from "./EquipmentIcons";
-import { Button } from "@/components/ui/button";
-import { 
-  Settings, Info, Trash2
-} from "lucide-react";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { EquipmentType } from "./EquipmentIcons";
-import { 
-  isVessel, 
-  isHeatExchanger, 
-  isFlowController, 
-  isReactor, 
-  isColumn 
-} from "./EquipmentTypeCheckers";
+import React from 'react';
+import { Card } from '@/components/ui/card';
+import { EquipmentType, getEquipmentIcon } from './EquipmentIcons';
+import { Edit, Check, AlertTriangle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
-export interface EquipmentCardProps {
+interface EquipmentMetric {
+  key: string;
+  value: string | number;
+}
+
+interface EquipmentCardProps {
   type: EquipmentType;
   title: string;
   onEdit?: () => void;
-  onInfo?: () => void;
-  onDelete?: () => void;
+  metrics?: EquipmentMetric[];
+  status?: 'ready' | 'warning' | 'error' | 'running';
+  className?: string;
+  draggable?: boolean;
+  onDragStart?: (e: React.DragEvent, type: EquipmentType, title: string) => void;
+  size?: 'sm' | 'md' | 'lg';
   selected?: boolean;
-  status?: string;
-  metrics?: {
-    key: string;
-    value: string | number;
-  }[];
+  onClick?: () => void;
 }
 
 export const EquipmentCard: React.FC<EquipmentCardProps> = ({
   type,
   title,
   onEdit,
-  onInfo,
-  onDelete,
+  metrics,
+  status = 'ready',
+  className = '',
+  draggable = true,
+  onDragStart,
+  size = 'md',
   selected = false,
-  status,
-  metrics = []
+  onClick,
 }) => {
-  // Determine icon color based on equipment type
-  const getIconColor = () => {
-    if (isReactor(type)) return "text-green-600";
-    if (isColumn(type)) return "text-blue-600";
-    if (isHeatExchanger(type)) return "text-red-600";
-    if (isFlowController(type)) return "text-purple-600";
-    if (isVessel(type)) return "text-amber-600";
-    return "text-gray-600";
+  const getStatusIcon = () => {
+    switch (status) {
+      case 'ready':
+        return <Check className="h-3.5 w-3.5 text-green-600" />;
+      case 'warning':
+        return <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />;
+      case 'error':
+        return <AlertTriangle className="h-3.5 w-3.5 text-red-500" />;
+      case 'running':
+        return (
+          <svg className="animate-spin h-3.5 w-3.5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+        );
+      default:
+        return null;
+    }
+  };
+
+  const handleDragStart = (e: React.DragEvent) => {
+    if (draggable && onDragStart) {
+      onDragStart(e, type, title);
+    }
+  };
+
+  const sizeClasses = {
+    sm: 'p-2 min-h-[80px]',
+    md: 'p-3 min-h-[120px]',
+    lg: 'p-4 min-h-[150px]',
   };
 
   return (
-    <Card 
-      className={`border overflow-hidden transition-all ${
-        selected 
-          ? "border-blue-400 ring-2 ring-blue-200" 
-          : "border-gray-200 hover:border-gray-300"
-      }`}
+    <Card
+      className={`relative flex flex-col ${sizeClasses[size]} ${
+        selected ? 'ring-2 ring-blue-500 shadow-md' : ''
+      } ${
+        draggable ? 'cursor-move' : 'cursor-pointer'
+      } transition-all hover:shadow-md ${className}`}
+      draggable={draggable}
+      onDragStart={handleDragStart}
+      onClick={onClick}
     >
-      <CardHeader className="p-4 pb-2">
-        <CardTitle className="text-sm font-medium flex items-center gap-2">
-          <span className={getIconColor()}>
+      <div className="flex justify-between items-start mb-2">
+        <div className="text-gray-600 dark:text-gray-300 flex items-center">
+          <div className="mr-1.5">
             {getEquipmentIcon(type)}
-          </span>
-          <span className="truncate">{title}</span>
-          {status && (
-            <span className={`ml-auto text-xs px-1.5 py-0.5 rounded-full ${
-              status === 'running' ? 'bg-green-100 text-green-700' : 
-              status === 'stopped' ? 'bg-red-100 text-red-700' : 
-              'bg-gray-100 text-gray-700'
-            }`}>
-              {status}
-            </span>
-          )}
-        </CardTitle>
-      </CardHeader>
-      
-      <CardContent className="p-4 pt-2 pb-2">
-        {metrics && metrics.length > 0 && (
-          <div className="grid grid-cols-2 gap-1 text-xs">
-            {metrics.slice(0, 4).map((metric, idx) => (
-              <div key={idx} className="flex justify-between">
-                <span className="text-gray-500">{metric.key}:</span>
-                <span className="font-medium">{metric.value}</span>
-              </div>
-            ))}
           </div>
-        )}
-      </CardContent>
+          <div className="text-xs font-medium">{title}</div>
+        </div>
+        
+        <div className="flex items-center space-x-1">
+          {status && (
+            <div className="flex items-center">
+              {getStatusIcon()}
+            </div>
+          )}
+          {onEdit && (
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-6 w-6"
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit();
+              }}
+            >
+              <Edit className="h-3.5 w-3.5" />
+            </Button>
+          )}
+        </div>
+      </div>
       
-      <CardFooter className="p-3 pt-0 flex justify-between gap-2">
-        {onEdit && (
-          <Button variant="outline" size="sm" onClick={onEdit} className="p-0 h-7 w-7">
-            <Settings className="h-3.5 w-3.5" />
-          </Button>
-        )}
-        
-        {onInfo && (
-          <Button variant="outline" size="sm" onClick={onInfo} className="p-0 h-7 w-7">
-            <Info className="h-3.5 w-3.5" />
-          </Button>
-        )}
-        
-        {onDelete && (
-          <Button variant="outline" size="sm" onClick={onDelete} className="p-0 h-7 w-7 hover:bg-red-50 hover:text-red-600 hover:border-red-200">
-            <Trash2 className="h-3.5 w-3.5" />
-          </Button>
-        )}
-      </CardFooter>
+      {metrics && metrics.length > 0 && (
+        <div className="mt-auto pt-2 space-y-1 text-xs">
+          {metrics.map((metric, idx) => (
+            <div key={idx} className="flex justify-between">
+              <span className="text-gray-500">{metric.key}:</span>
+              <span className="font-medium">{metric.value}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </Card>
   );
 };
