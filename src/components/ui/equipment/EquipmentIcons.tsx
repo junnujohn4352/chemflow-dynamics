@@ -1,13 +1,13 @@
 
 import {
-  Flask,
+  FlaskConical,
   Flame,
   Waves,
   Droplet,
   Compass,
   Zap,
   Box,
-  PipeIcon,
+  Pipe,
   SlidersHorizontal,
   MoreHorizontal,
   Split,
@@ -42,9 +42,9 @@ export const getEquipmentIcon = (type: EquipmentType) => {
     case "heat-exchanger":
       return <Waves />;
     case "distillation":
-      return <Flask />;
+      return <FlaskConical />;
     case "column":
-      return <Flask />;
+      return <FlaskConical />;
     case "pump":
       return <Droplet />;
     case "compressor":
@@ -54,7 +54,7 @@ export const getEquipmentIcon = (type: EquipmentType) => {
     case "vessel":
       return <Box />;
     case "pipe":
-      return <PipeIcon />;
+      return <Pipe />;
     case "valve":
       return <SlidersHorizontal />;
     case "mixer":

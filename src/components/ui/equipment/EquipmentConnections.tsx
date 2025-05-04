@@ -46,7 +46,7 @@ const connectionConfigs: Record<EquipmentType, EquipmentConnectionPoints> = {
     bottom: ["liquid"],
     left: ["feed"],
   },
-  "vessel": { // This is causing the error - making sure it's properly included in EquipmentType
+  "vessel": {
     top: ["vapor"],
     bottom: ["drain"],
     left: ["feed"],
@@ -76,6 +76,24 @@ const connectionConfigs: Record<EquipmentType, EquipmentConnectionPoints> = {
     left: ["inlet"],
     right: ["outlet"],
   },
+  "column": {
+    top: ["vapor"],
+    bottom: ["liquid"],
+    left: ["feed"],
+  },
+  "feed": {
+    right: ["outlet"],
+  },
+  "tank": {
+    top: ["vent"],
+    bottom: ["drain"],
+    right: ["outlet"],
+  },
+  "filter": {
+    left: ["inlet"],
+    right: ["outlet"],
+    bottom: ["drain"],
+  }
 };
 
 const EquipmentConnections: React.FC<EquipmentConnectionsProps> = ({ 
