@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Card } from '@/components/ui/card';
 import EquipmentCard from '@/components/ui/equipment/EquipmentCard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -56,6 +55,10 @@ export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
   const [selectedEquipment, setSelectedEquipment] = useState<string | null>(null);
   const [isDrawingConnection, setIsDrawingConnection] = useState(false);
   const [connectionStart, setConnectionStart] = useState<{equipmentId: string, point: string} | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [draggedEquipment, setDraggedEquipment] = useState<string | null>(null);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const canvasRef = useRef<HTMLDivElement>(null);
   const [processSteps, setProcessSteps] = useState<string[]>([
     "Define simulation objectives",
     "Develop process flowsheet", 
@@ -117,6 +120,51 @@ export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
       title: "Equipment Added",
       description: `${title} added to the process canvas.`,
     });
+  };
+
+  const handleMouseDown = (e: React.MouseEvent, equipmentId: string) => {
+    // If clicking on a connection point, handle connection logic instead
+    if ((e.target as HTMLElement).dataset.connection) {
+      return;
+    }
+    
+    e.stopPropagation();
+    const equipment = canvasEquipment.find(eq => eq.id === equipmentId);
+    if (!equipment) return;
+    
+    setIsDragging(true);
+    setDraggedEquipment(equipmentId);
+    setSelectedEquipment(equipmentId);
+    
+    // Calculate the offset between mouse position and equipment position
+    const rect = e.currentTarget.getBoundingClientRect();
+    const offsetX = e.clientX - rect.left;
+    const offsetY = e.clientY - rect.top;
+    setDragOffset({ x: offsetX, y: offsetY });
+  };
+  
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || !draggedEquipment || !canvasRef.current) return;
+    
+    e.preventDefault();
+    
+    const rect = canvasRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left - dragOffset.x;
+    const y = e.clientY - rect.top - dragOffset.y;
+    
+    // Update the position of the dragged equipment
+    setCanvasEquipment(prev => 
+      prev.map(eq => 
+        eq.id === draggedEquipment 
+          ? { ...eq, position: { x: x + 50, y: y + 50 } } 
+          : eq
+      )
+    );
+  };
+  
+  const handleMouseUp = () => {
+    setIsDragging(false);
+    setDraggedEquipment(null);
   };
 
   const handleEquipmentClick = (id: string) => {
@@ -205,6 +253,68 @@ export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     });
   };
   
+  // Calculate connections for the SVG lines
+  const calculateConnections = () => {
+    return connections.map(conn => {
+      const source = canvasEquipment.find(e => e.id === conn.source);
+      const target = canvasEquipment.find(e => e.id === conn.target);
+      
+      if (!source || !target) return null;
+      
+      // Get connection points based on the connection points of equipment
+      // These positions will need proper calculation based on the actual DOM elements
+      let sourceX = source.position.x;
+      let sourceY = source.position.y;
+      let targetX = target.position.x;
+      let targetY = target.position.y;
+      
+      // Adjust for connection points based on their position (left, right, top, bottom)
+      switch (conn.sourcePoint) {
+        case 'left':
+          sourceX -= 50;
+          break;
+        case 'right':
+          sourceX += 50;
+          break;
+        case 'top':
+          sourceY -= 50;
+          break;
+        case 'bottom':
+          sourceY += 50;
+          break;
+        default:
+          // Handle other connection points like input-2, shell-in, etc.
+          break;
+      }
+      
+      switch (conn.targetPoint) {
+        case 'left':
+          targetX -= 50;
+          break;
+        case 'right':
+          targetX += 50;
+          break;
+        case 'top':
+          targetY -= 50;
+          break;
+        case 'bottom':
+          targetY += 50;
+          break;
+        default:
+          // Handle other connection points
+          break;
+      }
+      
+      return {
+        id: conn.id,
+        x1: sourceX,
+        y1: sourceY,
+        x2: targetX,
+        y2: targetY
+      };
+    }).filter(Boolean);
+  };
+  
   return (
     <div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -231,9 +341,13 @@ export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
         </div>
         
         <div 
+          ref={canvasRef}
           className="bg-white border border-dashed border-gray-300 p-4 rounded-lg col-span-2 relative min-h-[500px]"
           onDragOver={handleCanvasDragOver}
           onDrop={handleCanvasDrop}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
         >
           <div className="flex justify-between items-center mb-3">
             <h3 className="text-lg font-medium">Process Canvas</h3>
@@ -254,21 +368,15 @@ export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
             <div className="relative w-full h-[450px]">
               {/* Draw connections */}
               <svg className="absolute inset-0 pointer-events-none z-0">
-                {connections.map(conn => {
-                  const source = canvasEquipment.find(e => e.id === conn.source);
-                  const target = canvasEquipment.find(e => e.id === conn.target);
-                  
-                  if (!source || !target) return null;
-                  
-                  // This is simplified - in a real implementation, you'd calculate exact connector positions
-                  // based on the connection points and their positions
+                {calculateConnections().map(conn => {
+                  if (!conn) return null;
                   return (
                     <line 
                       key={conn.id}
-                      x1={source.position.x} 
-                      y1={source.position.y}
-                      x2={target.position.x} 
-                      y2={target.position.y}
+                      x1={conn.x1} 
+                      y1={conn.y1}
+                      x2={conn.x2} 
+                      y2={conn.y2}
                       stroke="#6366f1"
                       strokeWidth="2"
                       strokeDasharray="4"
@@ -280,12 +388,14 @@ export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
               {canvasEquipment.map(equipment => (
                 <div 
                   key={equipment.id} 
+                  className={`absolute ${isDragging && draggedEquipment === equipment.id ? 'cursor-grabbing' : 'cursor-grab'}`}
                   style={{ 
-                    position: 'absolute', 
                     left: `${equipment.position.x - 50}px`, 
                     top: `${equipment.position.y - 50}px`,
-                    zIndex: selectedEquipment === equipment.id ? 10 : 1
+                    zIndex: selectedEquipment === equipment.id ? 10 : 1,
+                    transition: isDragging && draggedEquipment === equipment.id ? 'none' : 'all 0.2s'
                   }}
+                  onMouseDown={(e) => handleMouseDown(e, equipment.id)}
                   onClick={(e) => handleConnectionPointClick(e, equipment.id)}
                 >
                   <EquipmentCard 

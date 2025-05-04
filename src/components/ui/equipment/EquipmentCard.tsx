@@ -63,13 +63,41 @@ export const EquipmentCard: React.FC<EquipmentCardProps> = ({
   const handleDragStart = (e: React.DragEvent) => {
     if (draggable && onDragStart) {
       onDragStart(e, type, title);
+      
+      // Set a ghost image for drag
+      const ghostEl = document.createElement('div');
+      ghostEl.style.width = '100px'; 
+      ghostEl.style.height = '60px';
+      ghostEl.style.backgroundColor = 'rgba(0,0,0,0.1)';
+      ghostEl.style.borderRadius = '8px';
+      document.body.appendChild(ghostEl);
+      e.dataTransfer.setDragImage(ghostEl, 50, 30);
+      
+      setTimeout(() => {
+        document.body.removeChild(ghostEl);
+      }, 0);
     }
   };
 
   const sizeClasses = {
-    sm: 'p-2 min-h-[80px]',
-    md: 'p-3 min-h-[120px]',
-    lg: 'p-4 min-h-[150px]',
+    sm: 'p-2 min-h-[80px] w-[100px]',
+    md: 'p-3 min-h-[120px] w-[140px]',
+    lg: 'p-4 min-h-[150px] w-[180px]',
+  };
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Don't trigger card click if we're clicking on a connection point or the edit button
+    if (
+      (e.target as HTMLElement).dataset.connection || 
+      (e.target as HTMLElement).closest('button')
+    ) {
+      e.stopPropagation();
+      return;
+    }
+    
+    if (onClick) {
+      onClick();
+    }
   };
 
   return (
@@ -77,11 +105,11 @@ export const EquipmentCard: React.FC<EquipmentCardProps> = ({
       className={`relative flex flex-col ${sizeClasses[size]} ${
         selected ? 'ring-2 ring-blue-500 shadow-md' : ''
       } ${
-        draggable ? 'cursor-move' : 'cursor-pointer'
+        draggable ? 'cursor-move' : ''
       } transition-all hover:shadow-md ${className}`}
       draggable={draggable}
       onDragStart={handleDragStart}
-      onClick={onClick}
+      onClick={handleCardClick}
     >
       <div className="flex justify-between items-start mb-2">
         <div className="text-gray-600 dark:text-gray-300 flex items-center">
