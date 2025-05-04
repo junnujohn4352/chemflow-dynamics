@@ -1,12 +1,14 @@
 
 import React from "react";
 import { Thermometer, Gauge, Droplets, Container, FlaskConical, Blocks, Activity, Flame } from "lucide-react";
+import { Input } from "@/components/ui/input";
 
 export interface EquipmentMetric {
   key: string;
   value: string | number;
   editable?: boolean;
   options?: string[];
+  description?: string;
 }
 
 interface EquipmentMetricsProps {
@@ -22,9 +24,10 @@ interface EquipmentMetricsProps {
     duty?: number | string;
     [key: string]: any;
   } | EquipmentMetric[];
+  onMetricChange?: (key: string, value: string) => void;
 }
 
-const EquipmentMetrics: React.FC<EquipmentMetricsProps> = ({ metrics }) => {
+const EquipmentMetrics: React.FC<EquipmentMetricsProps> = ({ metrics, onMetricChange }) => {
   if (!metrics) return null;
   
   // Convert array format to object format if needed
@@ -41,6 +44,20 @@ const EquipmentMetrics: React.FC<EquipmentMetricsProps> = ({ metrics }) => {
       }, {})
     : metrics as Record<string, string | number>;
 
+  // Find original metric objects to check if they're editable
+  const getOriginalMetric = (key: string) => {
+    if (Array.isArray(metrics)) {
+      return metrics.find(m => m.key === key);
+    }
+    return null;
+  };
+
+  const handleChange = (key: string, value: string) => {
+    if (onMetricChange) {
+      onMetricChange(key, value);
+    }
+  };
+
   return (
     <div className="grid grid-cols-2 gap-2 mt-4">
       {metricsObject.temperature !== undefined && (
@@ -49,7 +66,15 @@ const EquipmentMetrics: React.FC<EquipmentMetricsProps> = ({ metrics }) => {
             <Thermometer className="h-3.5 w-3.5 text-gray-500" />
             <span className="text-xs text-gray-500">Temp</span>
           </div>
-          <p className="font-medium mt-1">{metricsObject.temperature}°C</p>
+          {getOriginalMetric('temperature')?.editable && onMetricChange ? (
+            <Input 
+              className="h-6 mt-1 p-1 text-xs font-medium"
+              value={String(metricsObject.temperature)}
+              onChange={(e) => handleChange('temperature', e.target.value)}
+            />
+          ) : (
+            <p className="font-medium mt-1">{metricsObject.temperature}°C</p>
+          )}
         </div>
       )}
       {metricsObject.pressure !== undefined && (
@@ -58,7 +83,15 @@ const EquipmentMetrics: React.FC<EquipmentMetricsProps> = ({ metrics }) => {
             <Gauge className="h-3.5 w-3.5 text-gray-500" />
             <span className="text-xs text-gray-500">Press</span>
           </div>
-          <p className="font-medium mt-1">{metricsObject.pressure} kPa</p>
+          {getOriginalMetric('pressure')?.editable && onMetricChange ? (
+            <Input 
+              className="h-6 mt-1 p-1 text-xs font-medium"
+              value={String(metricsObject.pressure)}
+              onChange={(e) => handleChange('pressure', e.target.value)}
+            />
+          ) : (
+            <p className="font-medium mt-1">{metricsObject.pressure} kPa</p>
+          )}
         </div>
       )}
       {metricsObject.flow !== undefined && (
@@ -67,7 +100,15 @@ const EquipmentMetrics: React.FC<EquipmentMetricsProps> = ({ metrics }) => {
             <Droplets className="h-3.5 w-3.5 text-gray-500" />
             <span className="text-xs text-gray-500">Flow</span>
           </div>
-          <p className="font-medium mt-1">{metricsObject.flow} m³/h</p>
+          {getOriginalMetric('flow')?.editable && onMetricChange ? (
+            <Input 
+              className="h-6 mt-1 p-1 text-xs font-medium"
+              value={String(metricsObject.flow)}
+              onChange={(e) => handleChange('flow', e.target.value)}
+            />
+          ) : (
+            <p className="font-medium mt-1">{metricsObject.flow} m³/h</p>
+          )}
         </div>
       )}
       {metricsObject.level !== undefined && (
@@ -76,7 +117,15 @@ const EquipmentMetrics: React.FC<EquipmentMetricsProps> = ({ metrics }) => {
             <Container className="h-3.5 w-3.5 text-gray-500" />
             <span className="text-xs text-gray-500">Level</span>
           </div>
-          <p className="font-medium mt-1">{metricsObject.level}%</p>
+          {getOriginalMetric('level')?.editable && onMetricChange ? (
+            <Input 
+              className="h-6 mt-1 p-1 text-xs font-medium"
+              value={String(metricsObject.level)}
+              onChange={(e) => handleChange('level', e.target.value)}
+            />
+          ) : (
+            <p className="font-medium mt-1">{metricsObject.level}%</p>
+          )}
         </div>
       )}
       {metricsObject.conversion !== undefined && (
@@ -85,7 +134,15 @@ const EquipmentMetrics: React.FC<EquipmentMetricsProps> = ({ metrics }) => {
             <FlaskConical className="h-3.5 w-3.5 text-gray-500" />
             <span className="text-xs text-gray-500">Conv</span>
           </div>
-          <p className="font-medium mt-1">{metricsObject.conversion}%</p>
+          {getOriginalMetric('conversion')?.editable && onMetricChange ? (
+            <Input 
+              className="h-6 mt-1 p-1 text-xs font-medium"
+              value={String(metricsObject.conversion)}
+              onChange={(e) => handleChange('conversion', e.target.value)}
+            />
+          ) : (
+            <p className="font-medium mt-1">{metricsObject.conversion}%</p>
+          )}
         </div>
       )}
       {metricsObject.power !== undefined && (
@@ -94,7 +151,15 @@ const EquipmentMetrics: React.FC<EquipmentMetricsProps> = ({ metrics }) => {
             <Blocks className="h-3.5 w-3.5 text-gray-500" />
             <span className="text-xs text-gray-500">Power</span>
           </div>
-          <p className="font-medium mt-1">{metricsObject.power} kW</p>
+          {getOriginalMetric('power')?.editable && onMetricChange ? (
+            <Input 
+              className="h-6 mt-1 p-1 text-xs font-medium"
+              value={String(metricsObject.power)}
+              onChange={(e) => handleChange('power', e.target.value)}
+            />
+          ) : (
+            <p className="font-medium mt-1">{metricsObject.power} kW</p>
+          )}
         </div>
       )}
       {metricsObject.efficiency !== undefined && (
@@ -103,7 +168,15 @@ const EquipmentMetrics: React.FC<EquipmentMetricsProps> = ({ metrics }) => {
             <Activity className="h-3.5 w-3.5 text-gray-500" />
             <span className="text-xs text-gray-500">Eff</span>
           </div>
-          <p className="font-medium mt-1">{metricsObject.efficiency}%</p>
+          {getOriginalMetric('efficiency')?.editable && onMetricChange ? (
+            <Input 
+              className="h-6 mt-1 p-1 text-xs font-medium"
+              value={String(metricsObject.efficiency)}
+              onChange={(e) => handleChange('efficiency', e.target.value)}
+            />
+          ) : (
+            <p className="font-medium mt-1">{metricsObject.efficiency}%</p>
+          )}
         </div>
       )}
       {metricsObject.duty !== undefined && (
@@ -112,7 +185,15 @@ const EquipmentMetrics: React.FC<EquipmentMetricsProps> = ({ metrics }) => {
             <Flame className="h-3.5 w-3.5 text-gray-500" />
             <span className="text-xs text-gray-500">Duty</span>
           </div>
-          <p className="font-medium mt-1">{metricsObject.duty} kW</p>
+          {getOriginalMetric('duty')?.editable && onMetricChange ? (
+            <Input 
+              className="h-6 mt-1 p-1 text-xs font-medium"
+              value={String(metricsObject.duty)}
+              onChange={(e) => handleChange('duty', e.target.value)}
+            />
+          ) : (
+            <p className="font-medium mt-1">{metricsObject.duty} kW</p>
+          )}
         </div>
       )}
       
@@ -123,13 +204,26 @@ const EquipmentMetrics: React.FC<EquipmentMetricsProps> = ({ metrics }) => {
           return null;
         }
         
+        const originalMetric = getOriginalMetric(key);
+        
         return (
           <div key={key} className="p-2 rounded-lg bg-gray-50">
             <div className="flex items-center gap-2">
               <Activity className="h-3.5 w-3.5 text-gray-500" />
               <span className="text-xs text-gray-500">{key}</span>
             </div>
-            <p className="font-medium mt-1">{String(value)}</p>
+            {originalMetric?.editable && onMetricChange ? (
+              <Input 
+                className="h-6 mt-1 p-1 text-xs font-medium"
+                value={String(value)}
+                onChange={(e) => handleChange(key, e.target.value)}
+              />
+            ) : (
+              <p className="font-medium mt-1">{String(value)}</p>
+            )}
+            {originalMetric?.description && (
+              <p className="text-xs text-gray-500 mt-1">{originalMetric.description}</p>
+            )}
           </div>
         );
       })}

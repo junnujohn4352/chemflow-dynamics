@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import { Textarea } from '@/components/ui/textarea';
 
 interface EquipmentDesignInterfaceProps {
   software: Software;
@@ -21,7 +22,43 @@ const EquipmentDesignInterface: React.FC<EquipmentDesignInterfaceProps> = ({ sof
   const [coldOutletTemp, setColdOutletTemp] = useState<number>(70);
   const [isDesigning, setIsDesigning] = useState<boolean>(false);
   const [designResults, setDesignResults] = useState<any>(null);
+  const [problemDescription, setProblemDescription] = useState<string>("");
   const { toast } = useToast();
+
+  // Generate equipment parameters based on problem description
+  const handleProblemAnalysis = () => {
+    if (!problemDescription) {
+      toast({
+        title: "Please enter a problem description",
+        description: "A problem description is needed to generate appropriate parameters.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // This would normally involve AI or a more sophisticated algorithm
+    // For now, we'll use some simple rules to determine optimization parameters
+    const lowerCaseProblem = problemDescription.toLowerCase();
+    
+    // Adjust parameters based on keywords in the problem description
+    if (lowerCaseProblem.includes("high temperature")) {
+      setHotInletTemp(200);
+      setHotOutletTemp(120);
+      setColdOutletTemp(100);
+    } else if (lowerCaseProblem.includes("energy efficiency") || lowerCaseProblem.includes("energy saving")) {
+      setHotOutletTemp(50); // Lower exit temp for better heat recovery
+    } else if (lowerCaseProblem.includes("cooling")) {
+      setColdInletTemp(10);
+      setColdOutletTemp(30);
+    } else if (lowerCaseProblem.includes("flow rate") || lowerCaseProblem.includes("high flow")) {
+      setFlowRate(2000);
+    }
+
+    toast({
+      title: "Problem Analyzed",
+      description: "Parameters have been adjusted based on your problem description.",
+    });
+  };
 
   const handleDesign = () => {
     setIsDesigning(true);
@@ -59,7 +96,28 @@ const EquipmentDesignInterface: React.FC<EquipmentDesignInterfaceProps> = ({ sof
   return (
     <BaseSoftwareInterface software={software}>
       <div className="mt-4 border-t pt-4">
-        <h5 className="font-medium mb-2">Equipment Design Tool</h5>
+        <h5 className="font-medium mb-4">Equipment Design Tool</h5>
+        
+        <div className="space-y-4 mb-6 border p-4 rounded-lg bg-gray-50">
+          <h6 className="font-medium">Problem Description</h6>
+          <div className="space-y-2">
+            <Label htmlFor="problemDescription">Describe the problem you're trying to solve</Label>
+            <Textarea 
+              id="problemDescription" 
+              value={problemDescription}
+              onChange={(e) => setProblemDescription(e.target.value)}
+              placeholder="E.g., Design a heat exchanger for cooling process water from 80°C to 40°C using cooling water that enters at 25°C..."
+              className="min-h-[100px]"
+            />
+            <Button 
+              onClick={handleProblemAnalysis}
+              variant="secondary"
+              className="w-full"
+            >
+              Analyze Problem & Generate Parameters
+            </Button>
+          </div>
+        </div>
         
         <div className="space-y-4 mb-4">
           <div className="space-y-2">

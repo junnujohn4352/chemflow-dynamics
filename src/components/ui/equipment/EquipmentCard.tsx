@@ -9,6 +9,7 @@ export interface EquipmentMetric {
   value: string;
   editable?: boolean;
   options?: string[];
+  description?: string; // Added description to provide context for the parameter
 }
 
 interface EquipmentCardProps {
@@ -25,6 +26,8 @@ interface EquipmentCardProps {
   onConnectionPointClick?: (point: string) => void;
   activeConnectionPoints?: string[];
   showDottedLines?: boolean;
+  onMetricEdit?: (key: string, value: string) => void; // New prop for handling metric edits
+  problem?: string; // New prop to provide context for parameter editing
 }
 
 const EquipmentCard: React.FC<EquipmentCardProps> = ({
@@ -40,7 +43,9 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
   showConnections = false,
   onConnectionPointClick,
   activeConnectionPoints = [],
-  showDottedLines = false
+  showDottedLines = false,
+  onMetricEdit,
+  problem
 }) => {
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>) => {
     if (onDragStart) {
@@ -52,6 +57,12 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
     e.stopPropagation();
     if (onConnectionPointClick) {
       onConnectionPointClick(point);
+    }
+  };
+
+  const handleMetricChange = (key: string, value: string) => {
+    if (onMetricEdit) {
+      onMetricEdit(key, value);
     }
   };
 
@@ -98,7 +109,16 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
       </div>
 
       {metrics.length > 0 && size !== "sm" && (
-        <EquipmentMetrics metrics={metrics} />
+        <EquipmentMetrics 
+          metrics={metrics} 
+          onMetricChange={handleMetricChange}
+        />
+      )}
+
+      {problem && selected && (
+        <div className="absolute top-0 left-0 translate-y-[-100%] bg-white p-2 rounded shadow-lg text-xs max-w-[200px] z-20">
+          <strong>Problem Context:</strong> {problem}
+        </div>
       )}
     </div>
   );
