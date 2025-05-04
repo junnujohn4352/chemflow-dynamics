@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { EquipmentType } from '@/components/ui/equipment/EquipmentIcons';
 import ProcessFlow from '@/components/ui/ProcessFlow';
+import EquipmentSelector from './EquipmentSelector';
 
 interface SimulationBuilderProps {
   selectedComponents: string[];
@@ -24,6 +25,14 @@ interface CanvasEquipment {
   title: string;
   position: { x: number; y: number };
   metrics: { key: string; value: string }[];
+}
+
+interface Connection {
+  id: string;
+  source: string;
+  target: string;
+  sourcePoint: string;
+  targetPoint: string;
 }
 
 export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
@@ -43,7 +52,10 @@ export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
   const [operatingPressure, setOperatingPressure] = useState("150");
   const [feedFlowRate, setFeedFlowRate] = useState("1200");
   const [canvasEquipment, setCanvasEquipment] = useState<CanvasEquipment[]>([]);
+  const [connections, setConnections] = useState<Connection[]>([]);
   const [selectedEquipment, setSelectedEquipment] = useState<string | null>(null);
+  const [isDrawingConnection, setIsDrawingConnection] = useState(false);
+  const [connectionStart, setConnectionStart] = useState<{equipmentId: string, point: string} | null>(null);
   const [processSteps, setProcessSteps] = useState<string[]>([
     "Define simulation objectives",
     "Develop process flowsheet", 
@@ -112,6 +124,10 @@ export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
   };
 
   const handleRemoveEquipment = (id: string) => {
+    // Remove all connections involving this equipment
+    setConnections(prev => prev.filter(conn => conn.source !== id && conn.target !== id));
+    
+    // Remove the equipment itself
     setCanvasEquipment(prev => prev.filter(item => item.id !== id));
     setSelectedEquipment(null);
     
@@ -125,11 +141,67 @@ export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
     if (canvasEquipment.length === 0) return;
     
     setCanvasEquipment([]);
+    setConnections([]);
     setSelectedEquipment(null);
     
     toast({
       title: "Canvas Cleared",
       description: "All equipment has been removed from the process canvas.",
+    });
+  };
+  
+  const handleConnectionPointClick = (e: React.MouseEvent, equipmentId: string) => {
+    // Only handle clicks on connection points
+    if (!(e.target as HTMLElement).dataset.connection) return;
+    
+    const pointType = (e.target as HTMLElement).dataset.connection as string;
+    
+    if (!isDrawingConnection) {
+      // Start drawing a connection
+      setIsDrawingConnection(true);
+      setConnectionStart({ equipmentId, point: pointType });
+    } else {
+      // Finish drawing a connection if not connecting to the same equipment
+      if (connectionStart && connectionStart.equipmentId !== equipmentId) {
+        const newConnection: Connection = {
+          id: `connection-${Date.now()}`,
+          source: connectionStart.equipmentId,
+          target: equipmentId,
+          sourcePoint: connectionStart.point,
+          targetPoint: pointType
+        };
+        
+        setConnections(prev => [...prev, newConnection]);
+        
+        toast({
+          title: "Connection Created",
+          description: "Equipment connection has been established.",
+        });
+      }
+      
+      // Reset connection drawing state
+      setIsDrawingConnection(false);
+      setConnectionStart(null);
+    }
+  };
+  
+  const handleSelectEquipment = (type: EquipmentType) => {
+    // Create a new equipment with the selected type
+    const title = type.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+    
+    const newEquipment: CanvasEquipment = {
+      id: `equipment-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      type,
+      title,
+      position: { x: 200, y: 200 }, // Default position in the middle
+      metrics: [...equipmentMetrics]
+    };
+    
+    setCanvasEquipment(prev => [...prev, newEquipment]);
+    
+    toast({
+      title: "Equipment Added",
+      description: `${title} added to the process canvas.`,
     });
   };
   
@@ -139,7 +211,10 @@ export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
         <div className="bg-gray-50 p-4 rounded-lg col-span-1">
           <h3 className="text-lg font-medium mb-3">Equipment Library</h3>
           <p className="text-sm text-gray-600 mb-2">Drag equipment to the canvas to build your process</p>
-          <div className="grid grid-cols-2 gap-2 max-h-[500px] overflow-y-auto pr-2">
+          
+          <EquipmentSelector onSelectEquipment={handleSelectEquipment} />
+          
+          <div className="mt-4 grid grid-cols-2 gap-2 max-h-[300px] overflow-y-auto pr-2">
             {libraryEquipment.map((equipment, index) => (
               <EquipmentCard 
                 key={index}
@@ -149,6 +224,7 @@ export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
                 metrics={equipmentMetrics}
                 status="ready"
                 size="sm"
+                showConnections={false}
               />
             ))}
           </div>
@@ -176,6 +252,31 @@ export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
           
           {canvasEquipment.length > 0 ? (
             <div className="relative w-full h-[450px]">
+              {/* Draw connections */}
+              <svg className="absolute inset-0 pointer-events-none z-0">
+                {connections.map(conn => {
+                  const source = canvasEquipment.find(e => e.id === conn.source);
+                  const target = canvasEquipment.find(e => e.id === conn.target);
+                  
+                  if (!source || !target) return null;
+                  
+                  // This is simplified - in a real implementation, you'd calculate exact connector positions
+                  // based on the connection points and their positions
+                  return (
+                    <line 
+                      key={conn.id}
+                      x1={source.position.x} 
+                      y1={source.position.y}
+                      x2={target.position.x} 
+                      y2={target.position.y}
+                      stroke="#6366f1"
+                      strokeWidth="2"
+                      strokeDasharray="4"
+                    />
+                  );
+                })}
+              </svg>
+              
               {canvasEquipment.map(equipment => (
                 <div 
                   key={equipment.id} 
@@ -185,6 +286,7 @@ export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
                     top: `${equipment.position.y - 50}px`,
                     zIndex: selectedEquipment === equipment.id ? 10 : 1
                   }}
+                  onClick={(e) => handleConnectionPointClick(e, equipment.id)}
                 >
                   <EquipmentCard 
                     type={equipment.type}
@@ -194,6 +296,7 @@ export const SimulationBuilder: React.FC<SimulationBuilderProps> = ({
                     selected={selectedEquipment === equipment.id}
                     onClick={() => handleEquipmentClick(equipment.id)}
                     size="sm"
+                    showConnections={true}
                   />
                   {selectedEquipment === equipment.id && (
                     <div className="absolute top-0 right-0 -mt-2 -mr-2">

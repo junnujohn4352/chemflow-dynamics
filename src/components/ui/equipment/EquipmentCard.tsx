@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card';
 import { EquipmentType, getEquipmentIcon } from './EquipmentIcons';
 import { Edit, Check, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import EquipmentConnections from './EquipmentConnections';
 
 interface EquipmentMetric {
   key: string;
@@ -22,6 +23,7 @@ interface EquipmentCardProps {
   size?: 'sm' | 'md' | 'lg';
   selected?: boolean;
   onClick?: () => void;
+  showConnections?: boolean;
 }
 
 export const EquipmentCard: React.FC<EquipmentCardProps> = ({
@@ -36,6 +38,7 @@ export const EquipmentCard: React.FC<EquipmentCardProps> = ({
   size = 'md',
   selected = false,
   onClick,
+  showConnections = true,
 }) => {
   const getStatusIcon = () => {
     switch (status) {
@@ -120,6 +123,9 @@ export const EquipmentCard: React.FC<EquipmentCardProps> = ({
           ))}
         </div>
       )}
+
+      {/* Connection Points */}
+      {showConnections && <EquipmentConnections type={type} />}
     </Card>
   );
 };
