@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from "react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -25,11 +26,13 @@ import { Progress } from "@/components/ui/progress";
 import { EquipmentType } from "@/components/ui/equipment/EquipmentIcons";
 import { Separator } from "@/components/ui/separator";
 import HysysIntegration from "@/components/simulation/HysysIntegration";
-import EquipmentCard from "@/components/ui/EquipmentCard";
+import EquipmentCard, { EquipmentMetric } from "@/components/ui/EquipmentCard";
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 // Connection interface for tracking equipment connections
 interface Connection {
@@ -45,6 +48,7 @@ interface EquipmentItem {
   type: EquipmentType;
   title: string;
   position: { x: number; y: number };
+  metrics?: EquipmentMetric[];
   connections?: string[];
 }
 
@@ -58,6 +62,7 @@ const CreateSimulation = () => {
   const [simulationComplete, setSimulationComplete] = useState(false);
   const [simulationProgress, setSimulationProgress] = useState(0);
   const [simulationName, setSimulationName] = useState('Untitled Simulation');
+  const [problemDescription, setProblemDescription] = useState<string>('');
   const resultsRef = useRef<HTMLDivElement>(null);
   
   // New state variables for the enhanced canvas functionality
@@ -78,6 +83,54 @@ const CreateSimulation = () => {
       case 'equipment': return 75;
       case 'results': return 100;
       default: return 0;
+    }
+  };
+
+  // Generate default metrics based on equipment type
+  const generateDefaultMetrics = (equipmentType: EquipmentType): EquipmentMetric[] => {
+    switch(equipmentType) {
+      case 'reactor':
+        return [
+          { key: 'temperature', value: '250', editable: true, description: 'Operating temperature of the reactor' },
+          { key: 'pressure', value: '1500', editable: true, description: 'Operating pressure in kPa' },
+          { key: 'conversion', value: '85', editable: true, description: 'Expected conversion percentage' }
+        ];
+      case 'heat-exchanger':
+        return [
+          { key: 'duty', value: '500', editable: true, description: 'Heat transfer rate in kW' },
+          { key: 'temperature', value: '95', editable: true, description: 'Hot side outlet temperature in °C' },
+          { key: 'efficiency', value: '75', editable: true, description: 'Heat exchanger efficiency' }
+        ];
+      case 'distillation-column':
+        return [
+          { key: 'pressure', value: '101.3', editable: true, description: 'Column operating pressure in kPa' },
+          { key: 'reflux-ratio', value: '3.5', editable: true, description: 'Reflux ratio for the column' },
+          { key: 'stages', value: '20', editable: true, description: 'Number of theoretical stages' }
+        ];
+      case 'pump':
+        return [
+          { key: 'flow', value: '100', editable: true, description: 'Volumetric flow rate in m³/h' },
+          { key: 'pressure', value: '300', editable: true, description: 'Discharge pressure in kPa' },
+          { key: 'efficiency', value: '65', editable: true, description: 'Pump efficiency percentage' }
+        ];
+      case 'compressor':
+        return [
+          { key: 'pressure', value: '500', editable: true, description: 'Discharge pressure in kPa' },
+          { key: 'power', value: '75', editable: true, description: 'Power consumption in kW' },
+          { key: 'efficiency', value: '70', editable: true, description: 'Adiabatic efficiency percentage' }
+        ];
+      case 'flash-separator':
+        return [
+          { key: 'temperature', value: '65', editable: true, description: 'Flash temperature in °C' },
+          { key: 'pressure', value: '150', editable: true, description: 'Vessel pressure in kPa' },
+          { key: 'vapor-fraction', value: '0.35', editable: true, description: 'Vapor fraction' }
+        ];
+      // Add defaults for other equipment types
+      default:
+        return [
+          { key: 'parameter1', value: '0', editable: true, description: 'Equipment parameter 1' },
+          { key: 'parameter2', value: '0', editable: true, description: 'Equipment parameter 2' }
+        ];
     }
   };
 
@@ -135,6 +188,7 @@ const CreateSimulation = () => {
         type: equipmentType,
         title: equipmentType.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
         position: { x: centerX, y: centerY },
+        metrics: generateDefaultMetrics(equipmentType),
       };
       
       setPlacedEquipment([...placedEquipment, newEquipment]);
@@ -352,6 +406,26 @@ const CreateSimulation = () => {
     setSimulationProgress(calculateProgress());
   };
 
+  // Handle edits to equipment metrics
+  const handleMetricEdit = (equipmentId: string, metricKey: string, value: string) => {
+    setPlacedEquipment(prev => prev.map(eq => {
+      if (eq.id === equipmentId && eq.metrics) {
+        return {
+          ...eq,
+          metrics: eq.metrics.map(metric => 
+            metric.key === metricKey ? { ...metric, value } : metric
+          )
+        };
+      }
+      return eq;
+    }));
+    
+    toast({
+      title: "Parameter updated",
+      description: `${metricKey} has been updated to ${value}`,
+    });
+  };
+
   const runSimulation = () => {
     setSimulationRunning(true);
     
@@ -513,6 +587,56 @@ const CreateSimulation = () => {
     });
   };
 
+  // Add sidebar panel component for equipment details
+  const EquipmentDetailsPanel = () => {
+    if (!activeEquipment) return null;
+    
+    const equipment = placedEquipment.find(eq => eq.id === activeEquipment);
+    if (!equipment) return null;
+    
+    return (
+      <div className="absolute top-0 right-0 w-72 h-full bg-white dark:bg-gray-800 border-l border-blue-200 dark:border-blue-800 p-4 shadow-lg overflow-y-auto z-10">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="font-medium text-blue-900 dark:text-blue-100">{equipment.title} Properties</h3>
+          <Button variant="ghost" size="sm" onClick={() => setActiveEquipment(null)} className="h-7 w-7 p-0">
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+        
+        {equipment.metrics && equipment.metrics.length > 0 ? (
+          <div className="space-y-4">
+            {equipment.metrics.map((metric, index) => (
+              <div key={`${metric.key}-${index}`} className="space-y-1">
+                <div className="flex justify-between">
+                  <label htmlFor={`metric-${metric.key}`} className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    {metric.key.charAt(0).toUpperCase() + metric.key.slice(1).replace(/-/g, ' ')}
+                  </label>
+                  {metric.description && (
+                    <span className="text-xs text-blue-500 dark:text-blue-400 cursor-help" title={metric.description}>
+                      ?
+                    </span>
+                  )}
+                </div>
+                <Input
+                  id={`metric-${metric.key}`}
+                  value={String(metric.value)}
+                  onChange={(e) => handleMetricEdit(equipment.id, metric.key, e.target.value)}
+                  className="h-8"
+                  readOnly={!metric.editable}
+                />
+                {metric.description && (
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{metric.description}</p>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-gray-500">No editable parameters available.</p>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-br from-blue-100 to-purple-100 dark:from-gray-900 dark:to-purple-900">
       <Navbar />
@@ -638,6 +762,23 @@ const CreateSimulation = () => {
                 </Button>
               </div>
               
+              {/* Problem Description Input */}
+              <div className="mb-4 bg-blue-50 dark:bg-blue-900/50 p-4 rounded-lg">
+                <label htmlFor="problem-description" className="block text-sm font-medium text-blue-900 dark:text-blue-100 mb-1">
+                  Problem Description (Context for equipment parameters)
+                </label>
+                <Textarea
+                  id="problem-description"
+                  placeholder="Describe the process problem or scenario that will provide context for equipment parameters..."
+                  value={problemDescription}
+                  onChange={(e) => setProblemDescription(e.target.value)}
+                  className="h-20 resize-none"
+                />
+                <p className="text-xs text-blue-600 dark:text-blue-300 mt-1">
+                  Adding a problem description helps provide context for equipment parameter adjustments.
+                </p>
+              </div>
+              
               <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
                 {/* Equipment Selector Panel */}
                 <div className="col-span-1 bg-blue-50 dark:bg-blue-900 p-4 rounded-lg">
@@ -704,6 +845,7 @@ const CreateSimulation = () => {
                             <EquipmentCard
                               type={equipment.type}
                               title={equipment.title}
+                              metrics={equipment.metrics}
                               draggable={true}
                               onDragStart={(e) => handleDragStart(e, equipment)}
                               size="md"
@@ -720,6 +862,8 @@ const CreateSimulation = () => {
                                   conn.fromEquipmentId === equipment.id ? 
                                   conn.fromPoint : conn.toPoint
                                 )}
+                              onMetricEdit={(key, value) => handleMetricEdit(equipment.id, key, value)}
+                              problem={problemDescription}
                             />
                             
                             {/* Equipment Controls */}
@@ -740,6 +884,9 @@ const CreateSimulation = () => {
                         
                         {/* Connection Lines */}
                         {renderConnections()}
+                        
+                        {/* Equipment Details Panel */}
+                        <EquipmentDetailsPanel />
                       </div>
                     </div>
                     
