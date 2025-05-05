@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { BrowserRouter, Route, Routes, Navigate, useLocation } from "react-router-dom";
 import "./App.css";
 
@@ -7,7 +7,6 @@ import Dashboard from "./pages/Dashboard";
 import ChemicalFormulas from "./pages/ChemicalFormulas";
 import CreateSimulation from "./pages/CreateSimulation";
 import LandingPage from "./pages/LandingPage";
-import Payment from "./pages/Payment";
 import CodeVerification from "./pages/CodeVerification";
 import NotFound from "./pages/NotFound";
 import Settings from "./pages/Settings";
@@ -24,7 +23,7 @@ import IntelligentSimulation from "./pages/IntelligentSimulation";
 // Components
 import { Toaster } from "./components/ui/toaster";
 
-// Activation and payment protection wrapper component
+// Activation protection wrapper component
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   const location = useLocation();
   
@@ -32,7 +31,7 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   const isActivated = localStorage.getItem('chemflow-activated') === 'true';
   
   // Skip checks for these public routes
-  const publicRoutes = ['/', '/payment', '/code-verification', '/about'];
+  const publicRoutes = ['/', '/code-verification', '/about'];
   const isPublicRoute = publicRoutes.includes(location.pathname);
   
   // If not activated and not on a public route, redirect to code verification
@@ -49,7 +48,6 @@ const App: React.FC = () => {
       <Routes>
         {/* Public routes */}
         <Route path="/" element={<LandingPage />} />
-        <Route path="/payment" element={<Payment />} />
         <Route path="/code-verification" element={<CodeVerification />} />
         <Route path="/about" element={<About />} />
         

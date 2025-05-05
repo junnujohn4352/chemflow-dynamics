@@ -1,21 +1,23 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChemFlowLogo } from "@/assets/icons/ChemFlowLogo";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
-import { KeySquare, ArrowRight, CheckCircle2, XCircle } from "lucide-react";
+import { KeySquare, ArrowRight, CheckCircle2 } from "lucide-react";
 import { InputOTP, InputOTPGroup, InputOTPSlot, InputOTPSeparator } from "@/components/ui/input-otp";
 
 const CodeVerification: React.FC = () => {
   const navigate = useNavigate();
   const [activationCode, setActivationCode] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
-  const [storedCode, setStoredCode] = useState<string | null>(null);
   const [isActivated, setIsActivated] = useState(false);
   const [isLogin, setIsLogin] = useState(false);
+  
+  // Default activation code for direct access
+  const defaultActivationCode = "12345678";
   
   useEffect(() => {
     // Check if already logged in
@@ -25,21 +27,20 @@ const CodeVerification: React.FC = () => {
       return;
     }
     
-    // Get the stored activation code
-    const code = localStorage.getItem('chemflow-activation-code');
-    setStoredCode(code);
+    // Get the stored activation code or use the default
+    const storedCode = localStorage.getItem('chemflow-activation-code') || defaultActivationCode;
     
-    // Check if payment is completed
-    const paymentCompleted = localStorage.getItem('chemflow-payment-completed');
-    
-    // If there's an activation code but no payment completed status,
-    // this is likely a returning user trying to log in
-    if (code && !paymentCompleted) {
-      setIsLogin(true);
-    } else if (paymentCompleted !== 'true') {
-      // Redirect to payment page if payment is not completed and not a login attempt
-      navigate('/payment');
+    // Store the default activation code if none exists
+    if (!localStorage.getItem('chemflow-activation-code')) {
+      localStorage.setItem('chemflow-activation-code', defaultActivationCode);
     }
+    
+    // Check if this is likely a returning user
+    const isReturningUser = localStorage.getItem('chemflow-accessed-before') === 'true';
+    setIsLogin(isReturningUser);
+    
+    // Mark that the app has been accessed before
+    localStorage.setItem('chemflow-accessed-before', 'true');
   }, [navigate]);
   
   const handleActivation = (e: React.FormEvent) => {
@@ -54,13 +55,12 @@ const CodeVerification: React.FC = () => {
     
     // Simulate verification process
     setTimeout(() => {
-      // For login: Check if the entered code matches any stored code in the system
-      const storedActivationCode = localStorage.getItem('chemflow-activation-code');
+      // Check if the entered code matches the stored/default code
+      const storedActivationCode = localStorage.getItem('chemflow-activation-code') || defaultActivationCode;
       
       if (activationCode === storedActivationCode) {
-        // Set activation status in localStorage if not already set
+        // Set activation status in localStorage
         localStorage.setItem('chemflow-activated', 'true');
-        localStorage.setItem('chemflow-payment-completed', 'true');
         
         setIsActivated(true);
         
@@ -136,8 +136,8 @@ const CodeVerification: React.FC = () => {
                     
                     <p className="text-sm text-gray-500 text-center mt-2">
                       {isLogin 
-                        ? "The code was provided after your payment"
-                        : "The code was generated after your payment was verified"}
+                        ? "The default code is 12345678 if you haven't set one"
+                        : "The default activation code is 12345678"}
                     </p>
                   </div>
                   
@@ -160,14 +160,7 @@ const CodeVerification: React.FC = () => {
                   
                   <div className="text-center">
                     <p className="text-sm text-gray-500">
-                      {isLogin ? "Need to purchase?" : "Lost your code?"} 
-                      <Button 
-                        variant="link" 
-                        className="p-0 h-auto" 
-                        onClick={() => navigate('/payment')}
-                      >
-                        {isLogin ? "Buy now" : "Return to payment page"}
-                      </Button>
+                      Default code: 12345678
                     </p>
                   </div>
                 </form>
