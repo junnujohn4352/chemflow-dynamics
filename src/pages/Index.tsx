@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import ProcessFlow from "@/components/ui/ProcessFlow";
@@ -8,6 +8,8 @@ import EquipmentCard from "@/components/ui/equipment/EquipmentCard";
 import { ArrowRight, ChevronRight, Download, Play, BookOpen, Server, Gauge, FlaskConical, PieChart, Atom } from "lucide-react";
 
 const Index = () => {
+  const navigate = useNavigate();
+  
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -33,10 +35,10 @@ const Index = () => {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 animate-fade-in-up" style={{ animationDelay: "300ms" }}>
                 <Link
-                  to="/simulations"
+                  to="/dashboard"
                   className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-flow-blue text-white font-medium shadow-sm hover:bg-flow-blue/90 transition-colors"
                 >
-                  Start Simulating
+                  Go to Dashboard
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
                 <a
