@@ -955,6 +955,14 @@ const Resources: React.FC = () => {
           from { transform: translateX(-100%); }
           to { transform: translateX(100%); }
         }
+        
+        .playing .playing-indicator {
+          display: block;
+        }
+        
+        .playing-indicator:before {
+          animation: progress 2s ease-in-out infinite;
+        }
         `}
       </style>
     </div>
