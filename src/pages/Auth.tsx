@@ -48,7 +48,7 @@ const Auth = () => {
         toast({
           title: "Account created successfully!",
           description: "Please check your email for verification.",
-          variant: "success",
+          variant: "default",
         });
         
         navigate('/resources');
@@ -80,7 +80,7 @@ const Auth = () => {
       toast({
         title: "Welcome back!",
         description: "You've successfully signed in.",
-        variant: "success",
+        variant: "default",
       });
       
       navigate('/resources');

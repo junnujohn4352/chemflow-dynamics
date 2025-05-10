@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -950,7 +949,7 @@ const Resources: React.FC = () => {
         </TabsContent>
       </Tabs>
 
-      <style jsx global>{`
+      <style jsx>{`
         @keyframes progress {
           from { transform: translateX(-100%); }
           to { transform: translateX(100%); }
