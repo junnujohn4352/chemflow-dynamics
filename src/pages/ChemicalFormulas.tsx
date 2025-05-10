@@ -1,11 +1,16 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Layout } from "@/components/layout/Layout";
 import GlassPanel from "@/components/ui/GlassPanel";
-import { Atom, Calculator, Waves, Thermometer, Gauge, Plus, FlaskConical, Beaker, FlaskRound, MoveVertical, Droplets } from "lucide-react";
+import { 
+  Atom, Calculator, Waves, Thermometer, Gauge, Plus, 
+  FlaskConical, Beaker, FlaskRound, MoveVertical, Droplets, 
+  BookOpen, FileText, Search, CirclePlus
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { chemicalEngineeringFormulas, getAllCategories } from "@/data/chemicalEngineeringFormulas";
+import { Badge } from "@/components/ui/badge";
 
 type FormulaCategory = 
   | "thermodynamics" 
@@ -21,11 +26,16 @@ type FormulaCategory =
   | "chemical-equilibrium"
   | "phase-equilibria"
   | "fluid-particle-systems"
-  | "separation-processes";
+  | "separation-processes"
+  | "corrosion-engineering"
+  | "environmental-engineering"
+  | "safety-engineering"
+  | "process-economics";
 
 const ChemicalFormulas = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [formulaCount, setFormulaCount] = useState<number>(0);
   
   const filteredFormulas = chemicalEngineeringFormulas.filter(formula => {
     const matchesSearch = formula.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -37,10 +47,14 @@ const ChemicalFormulas = () => {
     return matchesSearch && matchesCategory;
   });
 
+  useEffect(() => {
+    setFormulaCount(filteredFormulas.length);
+  }, [filteredFormulas]);
+
   const categoryIcons: Record<string, React.ReactNode> = {
-    "all": <Plus className="h-4 w-4" />,
+    "all": <CirclePlus className="h-4 w-4" />,
     "thermodynamics": <Atom className="h-4 w-4" />,
-    "fluid-dynamics": <Waves className="h-4 w-4" />,
+    "fluid-mechanics": <Waves className="h-4 w-4" />,
     "mass-transfer": <FlaskConical className="h-4 w-4" />,
     "heat-transfer": <Thermometer className="h-4 w-4" />,
     "reaction-engineering": <Calculator className="h-4 w-4" />,
@@ -48,7 +62,15 @@ const ChemicalFormulas = () => {
     "transport-phenomena": <MoveVertical className="h-4 w-4" />,
     "equipment-design": <Beaker className="h-4 w-4" />,
     "biochemical-engineering": <FlaskRound className="h-4 w-4" />,
-    "separation-processes": <Droplets className="h-4 w-4" />
+    "separation-processes": <Droplets className="h-4 w-4" />,
+    "polymer-engineering": <FileText className="h-4 w-4" />,
+    "chemical-equilibrium": <BookOpen className="h-4 w-4" />,
+    "phase-equilibria": <Calculator className="h-4 w-4" />,
+    "fluid-particle-systems": <Waves className="h-4 w-4" />,
+    "corrosion-engineering": <FileText className="h-4 w-4" />,
+    "environmental-engineering": <Beaker className="h-4 w-4" />,
+    "safety-engineering": <Gauge className="h-4 w-4" />,
+    "process-economics": <Calculator className="h-4 w-4" />
   };
 
   const categories = ["all", ...new Set(chemicalEngineeringFormulas.map(formula => 
@@ -60,37 +82,47 @@ const ChemicalFormulas = () => {
       <div className="py-10 px-6 max-w-screen-xl mx-auto">
         <div className="mb-8">
           <h1 className="text-4xl font-display font-bold mb-4 bg-gradient-to-r from-flow-blue to-flow-teal bg-clip-text text-transparent">
-            Chemical Engineering Formulas
+            Chemical & Engineering Formulas
           </h1>
           <p className="text-gray-600 dark:text-gray-300 max-w-3xl">
-            Comprehensive reference for essential chemical engineering formulas, equations, and correlations used in process design and simulation.
+            Comprehensive reference for essential chemical and process engineering formulas, equations, and correlations used in process design and simulation.
           </p>
         </div>
         
         <div className="flex flex-col md:flex-row gap-4 mb-8">
           <div className="relative flex-1">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search className="h-4 w-4 text-gray-400" />
+            </div>
             <Input 
+              className="pl-10"
               placeholder="Search formulas..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
           
+          <Badge variant="outline" className="h-10 px-4 flex items-center gap-1 text-flow-blue">
+            <BookOpen className="h-4 w-4" />
+            <span>{formulaCount} formula{formulaCount !== 1 ? 's' : ''} found</span>
+          </Badge>
+        </div>
+        
+        <div className="mb-8 overflow-x-auto">
           <Tabs 
             value={selectedCategory} 
             onValueChange={setSelectedCategory}
-            className="w-full md:w-auto"
+            className="w-full"
           >
-            <TabsList className="w-full md:w-auto overflow-x-auto">
+            <TabsList className="w-full flex flex-wrap h-auto p-1 gap-1">
               {categories.map((category) => (
                 <TabsTrigger 
                   key={category} 
                   value={category} 
-                  className="flex items-center gap-1"
+                  className="flex items-center gap-1 capitalize"
                 >
                   {categoryIcons[category] || <Plus className="h-4 w-4" />}
-                  <span>{category === "all" ? "All" : category.replace('-', ' ')}
-                  </span>
+                  <span>{category === "all" ? "All Categories" : category.replace('-', ' ')}</span>
                 </TabsTrigger>
               ))}
             </TabsList>
@@ -102,7 +134,7 @@ const ChemicalFormulas = () => {
             {filteredFormulas.map((formula) => (
               <GlassPanel 
                 key={formula.id} 
-                className={`p-6 bg-${formula.category.toLowerCase().replace(' ', '-')}-50/10 hover:shadow-lg transition-shadow`}
+                className={`p-6 bg-${formula.category.toLowerCase().replace(' ', '-')}-50/10 hover:shadow-lg transition-shadow border border-gray-100/30`}
               >
                 <div className="flex justify-between items-start mb-3">
                   <h3 className="text-xl font-medium text-gray-900 dark:text-gray-50">{formula.title}</h3>
@@ -127,7 +159,7 @@ const ChemicalFormulas = () => {
                 {formula.variables && Object.keys(formula.variables).length > 0 && (
                   <div className="mb-4">
                     <h4 className="text-sm font-medium mb-1 text-gray-700 dark:text-gray-200">Variables:</h4>
-                    <div className="grid grid-cols-2 gap-1">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
                       {Object.entries(formula.variables).map(([key, value], idx) => (
                         <div key={idx} className="text-xs text-gray-600 dark:text-gray-300 flex items-start">
                           <span className="font-mono font-medium mr-1">{key}:</span>
