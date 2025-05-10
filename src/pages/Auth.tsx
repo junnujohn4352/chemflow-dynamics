@@ -20,9 +20,14 @@ const Auth = () => {
   // Check if user is already logged in
   useEffect(() => {
     const checkSession = async () => {
-      const { data } = await supabase.auth.getSession();
-      if (data.session) {
-        navigate('/resources');
+      try {
+        const { data } = await supabase.auth.getSession();
+        if (data.session) {
+          console.log("Active session found, redirecting to resources");
+          navigate('/resources');
+        }
+      } catch (error) {
+        console.error("Error checking session:", error);
       }
     };
     
@@ -30,6 +35,7 @@ const Auth = () => {
     
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Auth state changed:", event, !!session);
       if (session) {
         navigate('/resources');
       }
@@ -74,6 +80,10 @@ const Auth = () => {
         });
         
         // Navigation will be handled by the onAuthStateChange listener
+        // Explicitly navigate in case the listener doesn't trigger
+        setTimeout(() => {
+          navigate('/resources');
+        }, 500);
       }
     } catch (error: any) {
       toast({
@@ -92,6 +102,7 @@ const Auth = () => {
     setLoading(true);
     
     try {
+      console.log("Attempting sign in with:", email);
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -99,6 +110,8 @@ const Auth = () => {
 
       if (error) throw error;
 
+      console.log("Sign in successful, data:", data);
+      
       toast({
         title: "Welcome back!",
         description: "You've successfully signed in.",
@@ -106,7 +119,12 @@ const Auth = () => {
       });
       
       // Navigation will be handled by the onAuthStateChange listener
+      // Explicitly navigate in case the listener doesn't trigger
+      setTimeout(() => {
+        navigate('/resources');
+      }, 500);
     } catch (error: any) {
+      console.error("Sign in error:", error);
       toast({
         title: "Sign in failed",
         description: error.message || "Invalid credentials",
