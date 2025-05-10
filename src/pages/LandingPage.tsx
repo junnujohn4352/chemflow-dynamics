@@ -5,7 +5,7 @@ import LoadingScreen from "@/components/landing/LoadingScreen";
 import { Button } from "@/components/ui/button";
 import { ChemFlowLogo } from "@/assets/icons/ChemFlowLogo";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, Beaker, FlaskConical, LineChart, Atom, Thermometer, Database, Waves, Gauge, FlaskRound, BookOpen, Users } from "lucide-react";
+import { ArrowRight, Beaker, FlaskConical, LineChart, Atom, Thermometer, Database, Waves, Gauge, BookOpen, Users } from "lucide-react";
 
 const LandingPage = () => {
   const { loading, opacity } = useLoadingAnimation();
@@ -40,7 +40,7 @@ const LandingPage = () => {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
                 <Button 
-                  onClick={() => navigate("/chemical-tools")}
+                  onClick={() => navigate("/dashboard")}
                   className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-lg py-6 px-8"
                   size="lg"
                 >
@@ -215,7 +215,7 @@ const LandingPage = () => {
                 Join chemical engineers worldwide who use ChemFlow to design, analyze, and optimize their processes
               </p>
               <Button 
-                onClick={() => navigate("/chemical-tools")}
+                onClick={() => navigate("/dashboard")}
                 className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-lg py-6 px-10"
                 size="lg"
               >
