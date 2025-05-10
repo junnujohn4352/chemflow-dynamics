@@ -14,14 +14,13 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader, Mail, Phone, User, Check, ArrowRight, Key, Eye } from "lucide-react";
+import { Loader, Mail, User, Check, ArrowRight, Key, Eye } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 // Define schemas for form validation
 const signUpSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters" }),
   email: z.string().email({ message: "Please enter a valid email address" }),
-  phone: z.string().optional(),
   password: z.string().min(6, { message: "Password must be at least 6 characters" }),
 });
 
@@ -37,7 +36,6 @@ const otpSchema = z.object({
 const Auth = () => {
   const [loading, setLoading] = useState(false);
   const [showOtpForm, setShowOtpForm] = useState(false);
-  const [verificationMethod, setVerificationMethod] = useState<'email' | 'phone'>('email');
   const [verificationSent, setVerificationSent] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
@@ -51,7 +49,6 @@ const Auth = () => {
     defaultValues: {
       name: "",
       email: "",
-      phone: "",
       password: "",
     },
   });
@@ -88,6 +85,7 @@ const Auth = () => {
     
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Auth event:", event);
       if (session) {
         navigate('/resources');
       }
@@ -101,43 +99,39 @@ const Auth = () => {
   const handleOtpSubmit = async (values: z.infer<typeof otpSchema>) => {
     setLoading(true);
     try {
-      if (verificationMethod === 'email') {
-        // Verify email OTP
-        const { data, error } = await supabase.auth.verifyOtp({
-          email: signUpForm.getValues('email'),
-          token: values.otp,
-          type: 'signup',
-        });
+      // Verify email OTP
+      const { data, error } = await supabase.auth.verifyOtp({
+        email: signUpForm.getValues('email'),
+        token: values.otp,
+        type: 'signup',
+      });
 
-        if (error) throw error;
+      if (error) throw error;
 
-        toast({
-          title: "Verification successful",
-          description: "Your account has been verified",
-          variant: "success",
-        });
+      toast({
+        title: "Verification successful",
+        description: "Your account has been verified. Redirecting to resources...",
+        variant: "success",
+      });
 
-        // If user ID was stored, create profile
-        if (userId) {
-          const { error: profileError } = await supabase
-            .from('user_profiles')
-            .insert([
-              { id: userId, name: signUpForm.getValues('name'), email: signUpForm.getValues('email') }
-            ]);
+      // If user ID was stored, create profile
+      if (userId) {
+        const { error: profileError } = await supabase
+          .from('user_profiles')
+          .insert([
+            { id: userId, name: signUpForm.getValues('name'), email: signUpForm.getValues('email') }
+          ]);
 
-          if (profileError) {
-            console.error("Error creating profile:", profileError);
-          }
+        if (profileError) {
+          console.error("Error creating profile:", profileError);
         }
-      } else {
-        // Verify phone OTP (if implemented)
-        // This would require additional Supabase configuration for phone auth
-        toast({
-          title: "Phone verification",
-          description: "Phone verification currently requires additional configuration",
-          variant: "default",
-        });
       }
+      
+      // Wait a moment before redirecting
+      setTimeout(() => {
+        navigate('/resources');
+      }, 1500);
+      
     } catch (error: any) {
       toast({
         title: "Verification failed",
@@ -149,42 +143,34 @@ const Auth = () => {
     }
   };
 
-  // Sign up with email and password
+  // Sign up with email
   const handleSignUp = async (values: z.infer<typeof signUpSchema>) => {
     setLoading(true);
     
     try {
-      if (verificationMethod === 'email') {
-        // Email signup flow
-        const { data, error } = await supabase.auth.signUp({ 
-          email: values.email, 
-          password: values.password,
-          options: {
-            data: {
-              name: values.name,
-            }
-          }
-        });
-
-        if (error) throw error;
-
-        if (data.user) {
-          setUserId(data.user.id);
-          setVerificationSent(true);
-          setShowOtpForm(true);
-          
-          toast({
-            title: "Verification email sent!",
-            description: "Please check your email for the verification code.",
-            variant: "success",
-          });
+      // Email signup flow
+      const { data, error } = await supabase.auth.signUp({ 
+        email: values.email, 
+        password: values.password,
+        options: {
+          data: {
+            name: values.name,
+          },
+          emailRedirectTo: window.location.origin + '/resources'
         }
-      } else {
-        // Phone signup flow (would require additional Supabase configuration)
+      });
+
+      if (error) throw error;
+
+      if (data.user) {
+        setUserId(data.user.id);
+        setVerificationSent(true);
+        setShowOtpForm(true);
+        
         toast({
-          title: "Phone signup",
-          description: "Phone signup requires additional Supabase configuration",
-          variant: "default",
+          title: "Verification email sent!",
+          description: "Please check your email for the verification code.",
+          variant: "success",
         });
       }
     } catch (error: any) {
@@ -215,6 +201,9 @@ const Auth = () => {
         description: "You've successfully signed in.",
         variant: "success",
       });
+      
+      // Navigate after successful sign in
+      navigate('/resources');
     } catch (error: any) {
       toast({
         title: "Sign in failed",
@@ -226,26 +215,23 @@ const Auth = () => {
     }
   };
 
-  // Toggle between email and phone verification methods
-  const toggleVerificationMethod = () => {
-    setVerificationMethod(prev => prev === 'email' ? 'phone' : 'email');
-  };
-
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400 p-4 overflow-hidden relative">
-      {/* Animated 3D Background Elements */}
+      {/* Enhanced Animated 3D Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute left-1/4 top-1/4 w-64 h-64 bg-blue-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-float"></div>
         <div className="absolute right-1/4 bottom-1/4 w-80 h-80 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-float" style={{ animationDelay: "2s" }}></div>
         <div className="absolute left-1/3 bottom-1/4 w-72 h-72 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-float" style={{ animationDelay: "4s" }}></div>
         <div className="absolute right-1/3 top-1/3 w-96 h-96 bg-indigo-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-float" style={{ animationDelay: "3s" }}></div>
+        <div className="absolute left-1/2 bottom-1/3 w-64 h-64 bg-cyan-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-float" style={{ animationDelay: "5s" }}></div>
+        <div className="absolute right-1/2 top-1/2 w-48 h-48 bg-teal-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-float" style={{ animationDelay: "6s" }}></div>
       </div>
 
-      {/* Glass card effect */}
-      <Card className="w-full max-w-md bg-white/80 backdrop-blur-md shadow-xl rounded-xl overflow-hidden border-0 animate-fade-in">
+      {/* Glass card effect with enhanced animations */}
+      <Card className="w-full max-w-md bg-white/80 backdrop-blur-md shadow-xl rounded-xl overflow-hidden border-0 animate-fade-in hover:shadow-2xl transition-all duration-500">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold bg-gradient-to-r from-blue-500 to-purple-600 text-transparent bg-clip-text">ChemFlow Learning</CardTitle>
-          <CardDescription className="text-gray-600">
+          <CardTitle className="text-2xl font-bold bg-gradient-to-r from-blue-500 to-purple-600 text-transparent bg-clip-text animate-fade-in-up">ChemFlow Learning</CardTitle>
+          <CardDescription className="text-gray-600 animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
             Access all learning resources by creating an account
           </CardDescription>
         </CardHeader>
@@ -253,9 +239,9 @@ const Auth = () => {
         {showOtpForm ? (
           <CardContent className="space-y-4 animate-fade-in-up">
             <div className="text-center mb-4">
-              <Badge variant="success" className="mb-2">Verification Required</Badge>
+              <Badge variant="outline" className="mb-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white animate-pulse-subtle">Verification Required</Badge>
               <h3 className="text-lg font-medium">Enter the verification code</h3>
-              <p className="text-sm text-gray-500">We've sent a 6-digit code to your {verificationMethod}</p>
+              <p className="text-sm text-gray-500">We've sent a 6-digit code to your email</p>
             </div>
 
             <Form {...otpForm}>
@@ -269,12 +255,12 @@ const Auth = () => {
                       <FormControl>
                         <InputOTP maxLength={6} {...field}>
                           <InputOTPGroup>
-                            <InputOTPSlot index={0} />
-                            <InputOTPSlot index={1} />
-                            <InputOTPSlot index={2} />
-                            <InputOTPSlot index={3} />
-                            <InputOTPSlot index={4} />
-                            <InputOTPSlot index={5} />
+                            <InputOTPSlot index={0} className="border-blue-300 focus:border-blue-500 transition-colors" />
+                            <InputOTPSlot index={1} className="border-blue-300 focus:border-blue-500 transition-colors" />
+                            <InputOTPSlot index={2} className="border-blue-300 focus:border-blue-500 transition-colors" />
+                            <InputOTPSlot index={3} className="border-blue-300 focus:border-blue-500 transition-colors" />
+                            <InputOTPSlot index={4} className="border-blue-300 focus:border-blue-500 transition-colors" />
+                            <InputOTPSlot index={5} className="border-blue-300 focus:border-blue-500 transition-colors" />
                           </InputOTPGroup>
                         </InputOTP>
                       </FormControl>
@@ -284,7 +270,7 @@ const Auth = () => {
                 />
                 <Button 
                   type="submit" 
-                  className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700" 
+                  className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 transition-all duration-300 transform hover:-translate-y-1" 
                   disabled={loading}
                 >
                   {loading ? <Loader className="mr-2 h-4 w-4 animate-spin" /> : <Check className="mr-2 h-4 w-4" />}
@@ -294,7 +280,7 @@ const Auth = () => {
                   <Button 
                     variant="link" 
                     onClick={() => setShowOtpForm(false)} 
-                    className="text-sm"
+                    className="text-sm text-blue-600 hover:text-blue-800 transition-colors"
                   >
                     Go back to sign in
                   </Button>
@@ -304,12 +290,12 @@ const Auth = () => {
           </CardContent>
         ) : (
           <Tabs defaultValue="signin">
-            <TabsList className="grid w-full grid-cols-2 mb-4">
-              <TabsTrigger value="signin" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white">Sign In</TabsTrigger>
-              <TabsTrigger value="signup" className="data-[state=active]:bg-purple-500 data-[state=active]:text-white">Sign Up</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-2 mb-4 animate-fade-in-up" style={{ animationDelay: "0.3s" }}>
+              <TabsTrigger value="signin" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white transition-all">Sign In</TabsTrigger>
+              <TabsTrigger value="signup" className="data-[state=active]:bg-purple-500 data-[state=active]:text-white transition-all">Sign Up</TabsTrigger>
             </TabsList>
             
-            <TabsContent value="signin" className="animate-fade-in-up">
+            <TabsContent value="signin" className="animate-fade-in-up" style={{ animationDelay: "0.4s" }}>
               <Form {...signInForm}>
                 <form onSubmit={signInForm.handleSubmit(handleSignIn)}>
                   <CardContent className="space-y-4">
@@ -324,7 +310,7 @@ const Auth = () => {
                               <Mail className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
                               <Input 
                                 placeholder="your@email.com" 
-                                className="pl-10" 
+                                className="pl-10 border-blue-300 focus:border-blue-500 transition-colors" 
                                 {...field} 
                               />
                             </div>
@@ -345,14 +331,14 @@ const Auth = () => {
                               <Key className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
                               <Input 
                                 type={showPassword ? "text" : "password"} 
-                                className="pl-10" 
+                                className="pl-10 border-blue-300 focus:border-blue-500 transition-colors" 
                                 {...field} 
                               />
                               <Button 
                                 type="button" 
                                 variant="ghost" 
                                 size="icon" 
-                                className="absolute right-0 top-0 h-10 w-10"
+                                className="absolute right-0 top-0 h-10 w-10 text-gray-400 hover:text-gray-600 transition-colors"
                                 onClick={() => setShowPassword(!showPassword)}
                               >
                                 <Eye className="h-4 w-4" />
@@ -367,7 +353,7 @@ const Auth = () => {
                   <CardFooter>
                     <Button 
                       type="submit" 
-                      className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700" 
+                      className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 transition-all duration-300 transform hover:-translate-y-1" 
                       disabled={loading}
                     >
                       {loading ? <Loader className="mr-2 h-4 w-4 animate-spin" /> : <ArrowRight className="mr-2 h-4 w-4" />}
@@ -378,36 +364,10 @@ const Auth = () => {
               </Form>
             </TabsContent>
             
-            <TabsContent value="signup" className="animate-fade-in-up">
+            <TabsContent value="signup" className="animate-fade-in-up" style={{ animationDelay: "0.5s" }}>
               <Form {...signUpForm}>
                 <form onSubmit={signUpForm.handleSubmit(handleSignUp)}>
                   <CardContent className="space-y-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="text-sm font-medium">Verification via:</h3>
-                      <div className="flex items-center space-x-2">
-                        <Button 
-                          type="button" 
-                          variant={verificationMethod === 'email' ? 'default' : 'outline'} 
-                          size="sm" 
-                          onClick={() => setVerificationMethod('email')}
-                          className={verificationMethod === 'email' ? 'bg-blue-500' : ''}
-                        >
-                          <Mail className="mr-1 h-3 w-3" />
-                          Email
-                        </Button>
-                        <Button 
-                          type="button" 
-                          variant={verificationMethod === 'phone' ? 'default' : 'outline'} 
-                          size="sm" 
-                          onClick={() => setVerificationMethod('phone')}
-                          className={verificationMethod === 'phone' ? 'bg-blue-500' : ''}
-                        >
-                          <Phone className="mr-1 h-3 w-3" />
-                          Phone
-                        </Button>
-                      </div>
-                    </div>
-                    
                     <FormField
                       control={signUpForm.control}
                       name="name"
@@ -419,7 +379,7 @@ const Auth = () => {
                               <User className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
                               <Input 
                                 placeholder="John Doe" 
-                                className="pl-10" 
+                                className="pl-10 border-purple-300 focus:border-purple-500 transition-colors" 
                                 {...field} 
                               />
                             </div>
@@ -440,7 +400,7 @@ const Auth = () => {
                               <Mail className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
                               <Input 
                                 placeholder="your@email.com" 
-                                className="pl-10" 
+                                className="pl-10 border-purple-300 focus:border-purple-500 transition-colors" 
                                 {...field} 
                               />
                             </div>
@@ -449,29 +409,6 @@ const Auth = () => {
                         </FormItem>
                       )}
                     />
-                    
-                    {verificationMethod === 'phone' && (
-                      <FormField
-                        control={signUpForm.control}
-                        name="phone"
-                        render={({ field }) => (
-                          <FormItem className="space-y-1">
-                            <FormLabel>Phone Number</FormLabel>
-                            <FormControl>
-                              <div className="relative">
-                                <Phone className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-                                <Input 
-                                  placeholder="+1 (555) 123-4567" 
-                                  className="pl-10" 
-                                  {...field} 
-                                />
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    )}
                     
                     <FormField
                       control={signUpForm.control}
@@ -484,14 +421,14 @@ const Auth = () => {
                               <Key className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
                               <Input 
                                 type={showPassword ? "text" : "password"} 
-                                className="pl-10" 
+                                className="pl-10 border-purple-300 focus:border-purple-500 transition-colors" 
                                 {...field} 
                               />
                               <Button 
                                 type="button" 
                                 variant="ghost" 
                                 size="icon" 
-                                className="absolute right-0 top-0 h-10 w-10"
+                                className="absolute right-0 top-0 h-10 w-10 text-gray-400 hover:text-gray-600 transition-colors"
                                 onClick={() => setShowPassword(!showPassword)}
                               >
                                 <Eye className="h-4 w-4" />
@@ -509,7 +446,7 @@ const Auth = () => {
                   <CardFooter>
                     <Button 
                       type="submit" 
-                      className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600" 
+                      className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 transition-all duration-300 transform hover:-translate-y-1" 
                       disabled={loading}
                     >
                       {loading ? <Loader className="mr-2 h-4 w-4 animate-spin" /> : <ArrowRight className="mr-2 h-4 w-4" />}
