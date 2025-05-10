@@ -10,20 +10,59 @@ import Dashboard from './pages/Dashboard';
 import Settings from './pages/Settings';
 import IntelligentSimulation from './pages/IntelligentSimulation';
 import CreateSimulation from './pages/CreateSimulation';
+import LandingPage from './pages/LandingPage';
+import { Layout } from './components/layout/Layout';
 
 function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/settings" element={<Settings />} />
-        <Route path="/chemical-formulas" element={<ChemicalFormulas />} />
-        <Route path="/engineering-formulas" element={<ChemicalFormulas />} /> {/* Redirect to Chemical Formulas */}
-        <Route path="/unit-converter" element={<UnitConverter />} />
-        <Route path="/intelligent-simulation" element={<IntelligentSimulation />} />
-        <Route path="/create-simulation" element={<CreateSimulation />} />
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/home" element={
+          <Layout>
+            <Home />
+          </Layout>
+        } />
+        <Route path="/about" element={
+          <Layout>
+            <About />
+          </Layout>
+        } />
+        <Route path="/dashboard" element={
+          <Layout>
+            <Dashboard />
+          </Layout>
+        } />
+        <Route path="/settings" element={
+          <Layout>
+            <Settings />
+          </Layout>
+        } />
+        <Route path="/chemical-formulas" element={
+          <Layout>
+            <ChemicalFormulas />
+          </Layout>
+        } />
+        <Route path="/engineering-formulas" element={
+          <Layout>
+            <ChemicalFormulas />
+          </Layout>
+        } /> {/* Redirect to Chemical Formulas */}
+        <Route path="/unit-converter" element={
+          <Layout>
+            <UnitConverter />
+          </Layout>
+        } />
+        <Route path="/intelligent-simulation" element={
+          <Layout>
+            <IntelligentSimulation />
+          </Layout>
+        } />
+        <Route path="/create-simulation" element={
+          <Layout>
+            <CreateSimulation />
+          </Layout>
+        } />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
