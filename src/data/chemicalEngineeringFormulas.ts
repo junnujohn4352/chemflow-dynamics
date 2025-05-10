@@ -1,96 +1,37 @@
 
-// This file contains a comprehensive collection of chemical engineering formulas
+import { v4 as uuidv4 } from 'uuid';
 
 export interface Formula {
   id: string;
-  category: string;
   title: string;
+  category: string;
   formula: string;
   description?: string;
-  variables?: { [key: string]: string };
+  variables?: Record<string, string>;
 }
 
-// Collection of formulas organized by category
 export const chemicalEngineeringFormulas: Formula[] = [
-  // Fluid Mechanics
+  // Thermodynamics
   {
-    id: "reynolds-number",
-    category: "Fluid Mechanics",
-    title: "Reynolds Number",
-    formula: "Re = (ρ × v × D) / μ",
-    description: "Dimensionless number used to predict flow patterns in fluid flow situations",
-    variables: {
-      "Re": "Reynolds Number (dimensionless)",
-      "ρ": "Fluid density (kg/m³)",
-      "v": "Fluid velocity (m/s)",
-      "D": "Characteristic length (m)",
-      "μ": "Dynamic viscosity (Pa·s)"
-    }
-  },
-  {
-    id: "bernoulli-equation",
-    category: "Fluid Mechanics",
-    title: "Bernoulli's Equation",
-    formula: "P₁ + ½ρv₁² + ρgh₁ = P₂ + ½ρv₂² + ρgh₂",
-    description: "Relates pressure, velocity and elevation in a fluid flow",
+    id: uuidv4(),
+    title: "Ideal Gas Law",
+    category: "Thermodynamics",
+    formula: "PV = nRT",
+    description: "Relates pressure, volume, amount of substance, and temperature for an ideal gas.",
     variables: {
       "P": "Pressure (Pa)",
-      "ρ": "Fluid density (kg/m³)",
-      "v": "Fluid velocity (m/s)",
-      "g": "Gravitational acceleration (m/s²)",
-      "h": "Height (m)"
+      "V": "Volume (m³)",
+      "n": "Amount of substance (mol)",
+      "R": "Gas constant (8.314 J/(mol·K))",
+      "T": "Temperature (K)"
     }
   },
   {
-    id: "darcy-friction",
-    category: "Fluid Mechanics",
-    title: "Darcy-Weisbach Equation",
-    formula: "ΔP = f × (L/D) × (ρv²/2)",
-    description: "Calculates pressure loss due to friction in pipe flow",
-    variables: {
-      "ΔP": "Pressure drop (Pa)",
-      "f": "Darcy friction factor",
-      "L": "Length of pipe (m)",
-      "D": "Diameter of pipe (m)",
-      "ρ": "Fluid density (kg/m³)",
-      "v": "Fluid velocity (m/s)"
-    }
-  },
-  {
-    id: "hagen-poiseuille",
-    category: "Fluid Mechanics",
-    title: "Hagen-Poiseuille Equation",
-    formula: "ΔP = (8μLQ)/(πr⁴)",
-    description: "Pressure drop in laminar flow through a pipe",
-    variables: {
-      "ΔP": "Pressure drop (Pa)",
-      "μ": "Dynamic viscosity (Pa·s)",
-      "L": "Length of pipe (m)",
-      "Q": "Volumetric flow rate (m³/s)",
-      "r": "Pipe radius (m)"
-    }
-  },
-  {
-    id: "moody-friction-factor",
-    category: "Fluid Mechanics",
-    title: "Colebrook Equation",
-    formula: "1/√f = -2log(ε/(3.7D) + 2.51/(Re·√f))",
-    description: "Implicit equation for Darcy friction factor in turbulent flow",
-    variables: {
-      "f": "Darcy friction factor",
-      "ε": "Pipe roughness (m)",
-      "D": "Pipe diameter (m)",
-      "Re": "Reynolds number"
-    }
-  },
-  
-  // Advanced Thermodynamics
-  {
-    id: "gibbs-free-energy",
-    category: "Thermodynamics",
+    id: uuidv4(),
     title: "Gibbs Free Energy",
+    category: "Thermodynamics",
     formula: "ΔG = ΔH - TΔS",
-    description: "Relates the change in Gibbs free energy to enthalpy, temperature, and entropy changes",
+    description: "Determines the spontaneity of a process at constant temperature and pressure.",
     variables: {
       "ΔG": "Change in Gibbs free energy (J)",
       "ΔH": "Change in enthalpy (J)",
@@ -99,741 +40,1110 @@ export const chemicalEngineeringFormulas: Formula[] = [
     }
   },
   {
-    id: "clausius-clapeyron",
-    category: "Thermodynamics",
+    id: uuidv4(),
     title: "Clausius-Clapeyron Equation",
+    category: "Thermodynamics",
     formula: "ln(P₂/P₁) = (ΔH_vap/R)(1/T₁ - 1/T₂)",
-    description: "Relates vapor pressure to temperature for a pure substance",
+    description: "Describes the phase transition between two phases of matter.",
     variables: {
-      "P₁, P₂": "Vapor pressures at temperatures T₁ and T₂ (Pa)",
-      "ΔH_vap": "Heat of vaporization (J/mol)",
+      "P₁, P₂": "Vapor pressures at T₁ and T₂ (Pa)",
+      "ΔH_vap": "Enthalpy of vaporization (J/mol)",
       "R": "Gas constant (8.314 J/(mol·K))",
       "T₁, T₂": "Temperatures (K)"
     }
   },
   {
-    id: "carnot-efficiency",
+    id: uuidv4(),
+    title: "Adiabatic Flame Temperature",
     category: "Thermodynamics",
-    title: "Carnot Efficiency",
-    formula: "η = 1 - T_C/T_H",
-    description: "Maximum theoretical efficiency of a heat engine operating between two temperatures",
+    formula: "T_ad = T_i + Q_r/(m·C_p)",
+    description: "Maximum temperature that can be achieved by combustion.",
     variables: {
-      "η": "Efficiency (dimensionless)",
-      "T_C": "Cold reservoir temperature (K)",
-      "T_H": "Hot reservoir temperature (K)"
+      "T_ad": "Adiabatic flame temperature (K)",
+      "T_i": "Initial temperature (K)",
+      "Q_r": "Heat released by reaction (J)",
+      "m": "Mass of products (kg)",
+      "C_p": "Heat capacity of products (J/(kg·K))"
     }
   },
   {
-    id: "joule-thomson",
+    id: uuidv4(),
+    title: "Fugacity Coefficient",
     category: "Thermodynamics",
-    title: "Joule-Thomson Coefficient",
-    formula: "μ_JT = (∂T/∂P)_H",
-    description: "Rate of temperature change with pressure during an isenthalpic process",
+    formula: "φ = f/P",
+    description: "Ratio of fugacity to pressure, measures deviation from ideal gas behavior.",
     variables: {
-      "μ_JT": "Joule-Thomson coefficient (K/Pa)",
-      "(∂T/∂P)_H": "Partial derivative of temperature with respect to pressure at constant enthalpy"
+      "φ": "Fugacity coefficient (dimensionless)",
+      "f": "Fugacity (Pa)",
+      "P": "Pressure (Pa)"
     }
   },
+  
+  // Fluid Mechanics
   {
-    id: "peng-robinson",
-    category: "Thermodynamics",
-    title: "Peng-Robinson Equation of State",
-    formula: "P = (RT/(V-b)) - (a(T)/(V(V+b) + b(V-b)))",
-    description: "Equation of state commonly used in chemical process simulations",
+    id: uuidv4(),
+    title: "Bernoulli's Equation",
+    category: "Fluid Mechanics",
+    formula: "P₁ + ½ρv₁² + ρgh₁ = P₂ + ½ρv₂² + ρgh₂",
+    description: "Conservation of energy for flowing fluids.",
     variables: {
       "P": "Pressure (Pa)",
-      "R": "Gas constant (8.314 J/(mol·K))",
-      "T": "Temperature (K)",
-      "V": "Molar volume (m³/mol)",
-      "a(T)": "Temperature-dependent parameter",
-      "b": "Volume correction parameter"
-    }
-  },
-  
-  // Chemical Reaction Engineering
-  {
-    id: "damkohler-number",
-    category: "Reaction Engineering",
-    title: "Damköhler Number",
-    formula: "Da = reaction rate / transport rate",
-    description: "Ratio of reaction rate to mass transport rate, indicating which process is limiting",
-    variables: {
-      "Da": "Damköhler number (dimensionless)",
-      "reaction rate": "Rate of chemical reaction",
-      "transport rate": "Rate of mass transport"
+      "ρ": "Density (kg/m³)",
+      "v": "Fluid velocity (m/s)",
+      "g": "Gravitational acceleration (9.81 m/s²)",
+      "h": "Height (m)"
     }
   },
   {
-    id: "catalyst-effectiveness",
-    category: "Reaction Engineering",
-    title: "Catalyst Effectiveness Factor",
-    formula: "η = actual reaction rate / reaction rate without diffusion limitation",
-    description: "Measure of how effectively a catalyst is being utilized",
+    id: uuidv4(),
+    title: "Darcy-Weisbach Equation",
+    category: "Fluid Mechanics",
+    formula: "ΔP = f·(L/D)·(ρv²/2)",
+    description: "Pressure drop in pipe flow due to friction.",
     variables: {
-      "η": "Effectiveness factor (dimensionless)"
+      "ΔP": "Pressure drop (Pa)",
+      "f": "Darcy friction factor",
+      "L": "Pipe length (m)",
+      "D": "Pipe diameter (m)",
+      "ρ": "Fluid density (kg/m³)",
+      "v": "Flow velocity (m/s)"
     }
   },
   {
-    id: "reaction-selectivity",
-    category: "Reaction Engineering",
-    title: "Reaction Selectivity",
-    formula: "S = rate of desired product formation / rate of undesired product formation",
-    description: "Ratio of the rate of desired product formation to undesired product formation",
+    id: uuidv4(),
+    title: "Reynolds Number",
+    category: "Fluid Mechanics",
+    formula: "Re = ρvD/μ",
+    description: "Ratio of inertial to viscous forces, determines flow regime.",
     variables: {
-      "S": "Selectivity (dimensionless)"
+      "Re": "Reynolds number (dimensionless)",
+      "ρ": "Fluid density (kg/m³)",
+      "v": "Flow velocity (m/s)",
+      "D": "Characteristic length (m)",
+      "μ": "Dynamic viscosity (Pa·s)"
     }
   },
   {
-    id: "batch-reactor-design",
-    category: "Reaction Engineering",
-    title: "Batch Reactor Design Equation",
-    formula: "t = ∫(dX/(−r_A))",
-    description: "Time needed to reach a certain conversion in a batch reactor",
+    id: uuidv4(),
+    title: "Navier-Stokes Equation",
+    category: "Fluid Mechanics",
+    formula: "ρ(∂v/∂t + v·∇v) = -∇P + μ∇²v + ρg",
+    description: "Equation governing fluid motion.",
     variables: {
+      "ρ": "Fluid density (kg/m³)",
+      "v": "Flow velocity (m/s)",
       "t": "Time (s)",
-      "X": "Conversion",
-      "−r_A": "Reaction rate (mol/(m³·s))"
+      "P": "Pressure (Pa)",
+      "μ": "Dynamic viscosity (Pa·s)",
+      "g": "Gravitational acceleration (m/s²)"
     }
   },
   {
-    id: "cstr-design",
-    category: "Reaction Engineering",
-    title: "CSTR Design Equation",
-    formula: "τ = C_A0 · X / (−r_A)",
-    description: "Residence time needed to reach a certain conversion in a CSTR",
+    id: uuidv4(),
+    title: "Hagen-Poiseuille Equation",
+    category: "Fluid Mechanics",
+    formula: "Q = (πr⁴ΔP)/(8μL)",
+    description: "Volumetric flow rate for laminar flow in a pipe.",
     variables: {
-      "τ": "Residence time (s)",
-      "C_A0": "Initial concentration (mol/m³)",
-      "X": "Conversion",
-      "−r_A": "Reaction rate (mol/(m³·s))"
-    }
-  },
-  {
-    id: "pfr-design",
-    category: "Reaction Engineering",
-    title: "PFR Design Equation",
-    formula: "V/F_A0 = ∫(dX/(−r_A))",
-    description: "Volume needed to reach a certain conversion in a PFR",
-    variables: {
-      "V": "Reactor volume (m³)",
-      "F_A0": "Molar flow rate of reactant (mol/s)",
-      "X": "Conversion",
-      "−r_A": "Reaction rate (mol/(m³·s))"
-    }
-  },
-  {
-    id: "arrhenius-equation",
-    category: "Reaction Engineering",
-    title: "Arrhenius Equation",
-    formula: "k = A·e^(-E_a/RT)",
-    description: "Relationship between reaction rate constant and temperature",
-    variables: {
-      "k": "Rate constant",
-      "A": "Pre-exponential factor",
-      "E_a": "Activation energy (J/mol)",
-      "R": "Gas constant (8.314 J/(mol·K))",
-      "T": "Temperature (K)"
-    }
-  },
-  {
-    id: "thiele-modulus",
-    category: "Reaction Engineering",
-    title: "Thiele Modulus",
-    formula: "φ = L·√(k/D_e)",
-    description: "Dimensionless number relating reaction rate to diffusion rate in a catalyst pellet",
-    variables: {
-      "φ": "Thiele modulus",
-      "L": "Characteristic length (m)",
-      "k": "Reaction rate constant (1/s)",
-      "D_e": "Effective diffusivity (m²/s)"
+      "Q": "Volumetric flow rate (m³/s)",
+      "r": "Pipe radius (m)",
+      "ΔP": "Pressure difference (Pa)",
+      "μ": "Dynamic viscosity (Pa·s)",
+      "L": "Pipe length (m)"
     }
   },
   
-  // Advanced Transport Phenomena
+  // Mass Transfer
   {
-    id: "biot-number",
-    category: "Transport Phenomena",
-    title: "Biot Number",
-    formula: "Bi = h·L/k",
-    description: "Ratio of heat transfer resistances inside and at the surface of a body",
+    id: uuidv4(),
+    title: "Fick's First Law",
+    category: "Mass Transfer",
+    formula: "J = -D(∂C/∂x)",
+    description: "Diffusive flux due to concentration gradient.",
     variables: {
-      "Bi": "Biot number (dimensionless)",
+      "J": "Diffusive flux (mol/(m²·s))",
+      "D": "Diffusion coefficient (m²/s)",
+      "C": "Concentration (mol/m³)",
+      "x": "Position (m)"
+    }
+  },
+  {
+    id: uuidv4(),
+    title: "Fick's Second Law",
+    category: "Mass Transfer",
+    formula: "∂C/∂t = D(∂²C/∂x²)",
+    description: "Change in concentration with time due to diffusion.",
+    variables: {
+      "C": "Concentration (mol/m³)",
+      "t": "Time (s)",
+      "D": "Diffusion coefficient (m²/s)",
+      "x": "Position (m)"
+    }
+  },
+  {
+    id: uuidv4(),
+    title: "Sherwood Number",
+    category: "Mass Transfer",
+    formula: "Sh = k·L/D",
+    description: "Ratio of convective to diffusive mass transport.",
+    variables: {
+      "Sh": "Sherwood number (dimensionless)",
+      "k": "Mass transfer coefficient (m/s)",
+      "L": "Characteristic length (m)",
+      "D": "Diffusion coefficient (m²/s)"
+    }
+  },
+  {
+    id: uuidv4(),
+    title: "Schmidt Number",
+    category: "Mass Transfer",
+    formula: "Sc = μ/(ρD)",
+    description: "Ratio of momentum diffusivity to mass diffusivity.",
+    variables: {
+      "Sc": "Schmidt number (dimensionless)",
+      "μ": "Dynamic viscosity (Pa·s)",
+      "ρ": "Density (kg/m³)",
+      "D": "Diffusion coefficient (m²/s)"
+    }
+  },
+  {
+    id: uuidv4(),
+    title: "Mass Transfer Coefficient",
+    category: "Mass Transfer",
+    formula: "N = k(CA,i - CA,b)",
+    description: "Rate of mass transfer across an interface.",
+    variables: {
+      "N": "Mass flux (mol/(m²·s))",
+      "k": "Mass transfer coefficient (m/s)",
+      "CA,i": "Interface concentration (mol/m³)",
+      "CA,b": "Bulk concentration (mol/m³)"
+    }
+  },
+  
+  // Heat Transfer
+  {
+    id: uuidv4(),
+    title: "Fourier's Law",
+    category: "Heat Transfer",
+    formula: "q = -k(∂T/∂x)",
+    description: "Conductive heat flux is proportional to temperature gradient.",
+    variables: {
+      "q": "Heat flux (W/m²)",
+      "k": "Thermal conductivity (W/(m·K))",
+      "T": "Temperature (K)",
+      "x": "Position (m)"
+    }
+  },
+  {
+    id: uuidv4(),
+    title: "Heat Transfer Coefficient",
+    category: "Heat Transfer",
+    formula: "q = h(Ts - T∞)",
+    description: "Convective heat transfer between a surface and a fluid.",
+    variables: {
+      "q": "Heat flux (W/m²)",
+      "h": "Heat transfer coefficient (W/(m²·K))",
+      "Ts": "Surface temperature (K)",
+      "T∞": "Fluid temperature (K)"
+    }
+  },
+  {
+    id: uuidv4(),
+    title: "Nusselt Number",
+    category: "Heat Transfer",
+    formula: "Nu = hL/k",
+    description: "Ratio of convective to conductive heat transfer.",
+    variables: {
+      "Nu": "Nusselt number (dimensionless)",
       "h": "Heat transfer coefficient (W/(m²·K))",
       "L": "Characteristic length (m)",
       "k": "Thermal conductivity (W/(m·K))"
     }
   },
   {
-    id: "peclet-number",
-    category: "Transport Phenomena",
-    title: "Péclet Number",
-    formula: "Pe = L·u/D",
-    description: "Ratio of advective transport to diffusive transport",
+    id: uuidv4(),
+    title: "Stefan-Boltzmann Law",
+    category: "Heat Transfer",
+    formula: "q = εσT⁴",
+    description: "Radiative heat flux from a surface.",
     variables: {
-      "Pe": "Péclet number (dimensionless)",
-      "L": "Characteristic length (m)",
-      "u": "Flow velocity (m/s)",
-      "D": "Diffusion coefficient (m²/s)"
+      "q": "Heat flux (W/m²)",
+      "ε": "Emissivity (dimensionless)",
+      "σ": "Stefan-Boltzmann constant (5.67×10⁻⁸ W/(m²·K⁴))",
+      "T": "Surface temperature (K)"
     }
   },
   {
-    id: "graetz-number",
-    category: "Transport Phenomena",
-    title: "Graetz Number",
-    formula: "Gz = (D/L)·Re·Pr",
-    description: "Characterizes thermal developing flow in a channel",
+    id: uuidv4(),
+    title: "Overall Heat Transfer Coefficient",
+    category: "Heat Transfer",
+    formula: "1/U = 1/hi + Σ(Δx/k) + 1/ho",
+    description: "Combined effect of conduction and convection in heat exchangers.",
     variables: {
-      "Gz": "Graetz number (dimensionless)",
-      "D": "Diameter (m)",
-      "L": "Length (m)",
-      "Re": "Reynolds number",
-      "Pr": "Prandtl number"
+      "U": "Overall heat transfer coefficient (W/(m²·K))",
+      "hi": "Inner heat transfer coefficient (W/(m²·K))",
+      "Δx": "Wall thickness (m)",
+      "k": "Thermal conductivity (W/(m·K))",
+      "ho": "Outer heat transfer coefficient (W/(m²·K))"
+    }
+  },
+  
+  // Reaction Engineering
+  {
+    id: uuidv4(),
+    title: "Arrhenius Equation",
+    category: "Reaction Engineering",
+    formula: "k = A·e^(-Ea/RT)",
+    description: "Temperature dependence of reaction rate constant.",
+    variables: {
+      "k": "Rate constant",
+      "A": "Pre-exponential factor",
+      "Ea": "Activation energy (J/mol)",
+      "R": "Gas constant (8.314 J/(mol·K))",
+      "T": "Temperature (K)"
     }
   },
   {
-    id: "grashof-number",
-    category: "Transport Phenomena",
-    title: "Grashof Number",
-    formula: "Gr = (g·β·ΔT·L³)/ν²",
-    description: "Ratio of buoyancy to viscous forces in natural convection",
+    id: uuidv4(),
+    title: "First-Order Reaction",
+    category: "Reaction Engineering",
+    formula: "-rA = k·CA",
+    description: "Rate of reaction for first-order kinetics.",
     variables: {
-      "Gr": "Grashof number (dimensionless)",
-      "g": "Gravitational acceleration (m/s²)",
-      "β": "Thermal expansion coefficient (1/K)",
-      "ΔT": "Temperature difference (K)",
-      "L": "Characteristic length (m)",
-      "ν": "Kinematic viscosity (m²/s)"
+      "-rA": "Reaction rate (mol/(m³·s))",
+      "k": "Rate constant (1/s)",
+      "CA": "Concentration of reactant A (mol/m³)"
     }
   },
   {
-    id: "sherwood-number",
-    category: "Transport Phenomena",
-    title: "Sherwood Number",
-    formula: "Sh = k·L/D",
-    description: "Dimensionless mass transfer coefficient",
+    id: uuidv4(),
+    title: "Residence Time",
+    category: "Reaction Engineering",
+    formula: "τ = V/Q",
+    description: "Average time a particle spends in a reactor.",
     variables: {
-      "Sh": "Sherwood number",
-      "k": "Mass transfer coefficient (m/s)",
-      "L": "Characteristic length (m)",
-      "D": "Diffusion coefficient (m²/s)"
+      "τ": "Residence time (s)",
+      "V": "Reactor volume (m³)",
+      "Q": "Volumetric flow rate (m³/s)"
+    }
+  },
+  {
+    id: uuidv4(),
+    title: "Damköhler Number",
+    category: "Reaction Engineering",
+    formula: "Da = reaction rate / mass transfer rate",
+    description: "Ratio of reaction rate to mass transfer rate.",
+    variables: {
+      "Da": "Damköhler number (dimensionless)"
+    }
+  },
+  {
+    id: uuidv4(),
+    title: "CSTR Design Equation",
+    category: "Reaction Engineering",
+    formula: "V = FA0·X / (-rA)",
+    description: "Volume required for a continuous stirred-tank reactor.",
+    variables: {
+      "V": "Reactor volume (m³)",
+      "FA0": "Molar flow rate of A entering (mol/s)",
+      "X": "Conversion (dimensionless)",
+      "-rA": "Reaction rate (mol/(m³·s))"
     }
   },
   
   // Process Control
   {
-    id: "process-gain",
+    id: uuidv4(),
+    title: "PID Controller",
     category: "Process Control",
-    title: "Process Gain",
-    formula: "K_p = Δy/Δu",
-    description: "Ratio of output change to input change in a process",
+    formula: "u(t) = Kp·e(t) + Ki∫e(t)dt + Kd·de(t)/dt",
+    description: "Control signal for a proportional-integral-derivative controller.",
     variables: {
-      "K_p": "Process gain",
-      "Δy": "Change in process output",
-      "Δu": "Change in process input"
+      "u(t)": "Control signal",
+      "Kp": "Proportional gain",
+      "Ki": "Integral gain",
+      "Kd": "Derivative gain",
+      "e(t)": "Error signal"
     }
   },
   {
-    id: "time-constant",
+    id: uuidv4(),
+    title: "Transfer Function",
     category: "Process Control",
-    title: "First Order Time Constant",
-    formula: "y(t) = K·(1-e^(-t/τ))·u(t)",
-    description: "Response of a first-order system to a step input",
+    formula: "G(s) = Y(s)/U(s)",
+    description: "Relationship between output and input in the Laplace domain.",
     variables: {
-      "y(t)": "Output at time t",
-      "K": "Process gain",
-      "τ": "Time constant (s)",
-      "u(t)": "Step input"
+      "G(s)": "Transfer function",
+      "Y(s)": "Output in Laplace domain",
+      "U(s)": "Input in Laplace domain"
     }
   },
   {
-    id: "ziegler-nichols",
+    id: uuidv4(),
+    title: "Time Constant",
     category: "Process Control",
-    title: "Ziegler-Nichols Tuning",
-    formula: "K_p = 0.6·K_u, T_i = 0.5·T_u, T_d = 0.125·T_u",
-    description: "Method for tuning PID controllers based on ultimate gain and period",
+    formula: "G(s) = K/(τs + 1)",
+    description: "First-order system response.",
     variables: {
-      "K_p": "Proportional gain",
-      "T_i": "Integral time (s)",
-      "T_d": "Derivative time (s)",
-      "K_u": "Ultimate gain",
-      "T_u": "Ultimate period (s)"
+      "G(s)": "Transfer function",
+      "K": "Steady-state gain",
+      "τ": "Time constant (s)"
     }
   },
   {
-    id: "pid-controller",
+    id: uuidv4(),
+    title: "Feedback Control",
     category: "Process Control",
-    title: "PID Controller Equation",
-    formula: "u(t) = K_p·e(t) + K_i·∫e(t)dt + K_d·de(t)/dt",
-    description: "Standard PID controller output calculation",
+    formula: "G_closed = G/(1 + GH)",
+    description: "Closed-loop transfer function with feedback.",
     variables: {
-      "u(t)": "Controller output",
-      "e(t)": "Error (setpoint - measured value)",
-      "K_p": "Proportional gain",
-      "K_i": "Integral gain",
-      "K_d": "Derivative gain"
+      "G_closed": "Closed-loop transfer function",
+      "G": "Forward path transfer function",
+      "H": "Feedback path transfer function"
+    }
+  },
+  {
+    id: uuidv4(),
+    title: "Stability Criterion",
+    category: "Process Control",
+    formula: "All poles of G_closed must have negative real parts",
+    description: "Condition for a stable feedback control system.",
+    variables: {
+      "G_closed": "Closed-loop transfer function"
     }
   },
   
-  // Fluid-Particle Systems
+  // Transport Phenomena
   {
-    id: "terminal-velocity",
-    category: "Fluid-Particle Systems",
-    title: "Terminal Velocity",
-    formula: "u_t = √(4·g·d·(ρ_p - ρ_f)/(3·C_D·ρ_f))",
-    description: "Maximum velocity of a particle falling through a fluid",
+    id: uuidv4(),
+    title: "Prandtl Number",
+    category: "Transport Phenomena",
+    formula: "Pr = Cp·μ/k",
+    description: "Ratio of momentum diffusivity to thermal diffusivity.",
     variables: {
-      "u_t": "Terminal velocity (m/s)",
-      "g": "Gravitational acceleration (m/s²)",
-      "d": "Particle diameter (m)",
-      "ρ_p": "Particle density (kg/m³)",
-      "ρ_f": "Fluid density (kg/m³)",
-      "C_D": "Drag coefficient"
+      "Pr": "Prandtl number (dimensionless)",
+      "Cp": "Specific heat capacity (J/(kg·K))",
+      "μ": "Dynamic viscosity (Pa·s)",
+      "k": "Thermal conductivity (W/(m·K))"
     }
   },
   {
-    id: "fluidization-velocity",
-    category: "Fluid-Particle Systems",
-    title: "Minimum Fluidization Velocity",
-    formula: "u_mf = (d_p²·g·(ρ_p - ρ_f))/(150·μ)·(ε_mf³/(1-ε_mf))",
-    description: "Minimum velocity needed to fluidize a bed of particles",
+    id: uuidv4(),
+    title: "Lewis Number",
+    category: "Transport Phenomena",
+    formula: "Le = α/D",
+    description: "Ratio of thermal to mass diffusivity.",
     variables: {
-      "u_mf": "Minimum fluidization velocity (m/s)",
-      "d_p": "Particle diameter (m)",
-      "g": "Gravitational acceleration (m/s²)",
-      "ρ_p": "Particle density (kg/m³)",
-      "ρ_f": "Fluid density (kg/m³)",
-      "μ": "Fluid viscosity (Pa·s)",
-      "ε_mf": "Void fraction at minimum fluidization"
+      "Le": "Lewis number (dimensionless)",
+      "α": "Thermal diffusivity (m²/s)",
+      "D": "Mass diffusivity (m²/s)"
     }
   },
   {
-    id: "ergun-equation",
-    category: "Fluid-Particle Systems",
-    title: "Ergun Equation",
-    formula: "ΔP/L = 150((1-ε)²/ε³)(μu/d_p²) + 1.75((1-ε)/ε³)(ρu²/d_p)",
-    description: "Pressure drop through a packed bed",
+    id: uuidv4(),
+    title: "Film Theory",
+    category: "Transport Phenomena",
+    formula: "j = k(Ci - Cb)",
+    description: "Mass or heat transfer across a film.",
     variables: {
-      "ΔP": "Pressure drop (Pa)",
-      "L": "Bed length (m)",
-      "ε": "Void fraction",
+      "j": "Flux (mol/(m²·s) or W/m²)",
+      "k": "Transfer coefficient",
+      "Ci": "Interface concentration/temperature",
+      "Cb": "Bulk concentration/temperature"
+    }
+  },
+  {
+    id: uuidv4(),
+    title: "Chilton-Colburn Analogy",
+    category: "Transport Phenomena",
+    formula: "jH = jD = f/2",
+    description: "Relationship between heat, mass, and momentum transfer.",
+    variables: {
+      "jH": "Heat transfer j-factor",
+      "jD": "Mass transfer j-factor",
+      "f": "Friction factor"
+    }
+  },
+  {
+    id: uuidv4(),
+    title: "Shell Energy Balance",
+    category: "Transport Phenomena",
+    formula: "∂(ρCpT)/∂t + ∇·(ρCpvT) = ∇·(k∇T) + S",
+    description: "Energy conservation in a fluid element.",
+    variables: {
+      "ρ": "Density (kg/m³)",
+      "Cp": "Specific heat capacity (J/(kg·K))",
+      "T": "Temperature (K)",
+      "t": "Time (s)",
+      "v": "Velocity vector (m/s)",
+      "k": "Thermal conductivity (W/(m·K))",
+      "S": "Energy source term (W/m³)"
+    }
+  },
+  
+  // Equipment Design
+  {
+    id: uuidv4(),
+    title: "Distillation Column Sizing",
+    category: "Equipment Design",
+    formula: "N = ln[(xD/xB)·((1-xB)/(1-xD))] / ln(α)",
+    description: "Number of theoretical plates in binary distillation.",
+    variables: {
+      "N": "Number of theoretical plates",
+      "xD": "Distillate composition",
+      "xB": "Bottom composition",
+      "α": "Relative volatility"
+    }
+  },
+  {
+    id: uuidv4(),
+    title: "Heat Exchanger Design",
+    category: "Equipment Design",
+    formula: "Q = U·A·LMTD",
+    description: "Heat transfer in a heat exchanger.",
+    variables: {
+      "Q": "Heat transfer rate (W)",
+      "U": "Overall heat transfer coefficient (W/(m²·K))",
+      "A": "Heat transfer area (m²)",
+      "LMTD": "Log mean temperature difference (K)"
+    }
+  },
+  {
+    id: uuidv4(),
+    title: "Reactor Volume",
+    category: "Equipment Design",
+    formula: "V = F·τ",
+    description: "Volume of a reactor based on flowrate and residence time.",
+    variables: {
+      "V": "Reactor volume (m³)",
+      "F": "Volumetric flow rate (m³/s)",
+      "τ": "Residence time (s)"
+    }
+  },
+  {
+    id: uuidv4(),
+    title: "Pump Power",
+    category: "Equipment Design",
+    formula: "P = ρ·g·H·Q / η",
+    description: "Power required for a pump.",
+    variables: {
+      "P": "Power (W)",
+      "ρ": "Fluid density (kg/m³)",
+      "g": "Gravitational acceleration (9.81 m/s²)",
+      "H": "Head (m)",
+      "Q": "Volumetric flow rate (m³/s)",
+      "η": "Pump efficiency"
+    }
+  },
+  {
+    id: uuidv4(),
+    title: "Fluidized Bed Velocity",
+    category: "Equipment Design",
+    formula: "umf = (ρp - ρf)·g·dp² / (150·μ) · (ε³ / (1-ε))",
+    description: "Minimum fluidization velocity.",
+    variables: {
+      "umf": "Minimum fluidization velocity (m/s)",
+      "ρp": "Particle density (kg/m³)",
+      "ρf": "Fluid density (kg/m³)",
+      "g": "Gravitational acceleration (9.81 m/s²)",
+      "dp": "Particle diameter (m)",
       "μ": "Fluid viscosity (Pa·s)",
-      "u": "Superficial velocity (m/s)",
-      "d_p": "Particle diameter (m)",
-      "ρ": "Fluid density (kg/m³)"
+      "ε": "Bed voidage"
+    }
+  },
+  
+  // Biochemical Engineering
+  {
+    id: uuidv4(),
+    title: "Monod Equation",
+    category: "Biochemical Engineering",
+    formula: "μ = μmax · S / (Ks + S)",
+    description: "Specific growth rate of microorganisms.",
+    variables: {
+      "μ": "Specific growth rate (1/h)",
+      "μmax": "Maximum specific growth rate (1/h)",
+      "S": "Substrate concentration (g/L)",
+      "Ks": "Half-saturation constant (g/L)"
+    }
+  },
+  {
+    id: uuidv4(),
+    title: "Michaelis-Menten Kinetics",
+    category: "Biochemical Engineering",
+    formula: "v = vmax · [S] / (Km + [S])",
+    description: "Rate of enzymatic reactions.",
+    variables: {
+      "v": "Reaction rate",
+      "vmax": "Maximum reaction rate",
+      "[S]": "Substrate concentration",
+      "Km": "Michaelis constant"
+    }
+  },
+  {
+    id: uuidv4(),
+    title: "Oxygen Transfer Rate",
+    category: "Biochemical Engineering",
+    formula: "OTR = kLa · (C* - C)",
+    description: "Rate of oxygen transfer in a bioreactor.",
+    variables: {
+      "OTR": "Oxygen transfer rate (mol/(m³·s))",
+      "kLa": "Volumetric mass transfer coefficient (1/s)",
+      "C*": "Saturated dissolved oxygen concentration (mol/m³)",
+      "C": "Actual dissolved oxygen concentration (mol/m³)"
+    }
+  },
+  {
+    id: uuidv4(),
+    title: "Bioreactor Productivity",
+    category: "Biochemical Engineering",
+    formula: "P = D·X",
+    description: "Productivity of a continuous bioreactor.",
+    variables: {
+      "P": "Productivity (g/(L·h))",
+      "D": "Dilution rate (1/h)",
+      "X": "Cell concentration (g/L)"
+    }
+  },
+  {
+    id: uuidv4(),
+    title: "Cell Growth",
+    category: "Biochemical Engineering",
+    formula: "dX/dt = μX - kd·X",
+    description: "Change in cell concentration over time.",
+    variables: {
+      "X": "Cell concentration (g/L)",
+      "t": "Time (h)",
+      "μ": "Specific growth rate (1/h)",
+      "kd": "Death rate constant (1/h)"
+    }
+  },
+  
+  // Separation Processes
+  {
+    id: uuidv4(),
+    title: "Relative Volatility",
+    category: "Separation Processes",
+    formula: "α = (y1/x1) / (y2/x2)",
+    description: "Ratio of vapor-liquid equilibrium constants.",
+    variables: {
+      "α": "Relative volatility",
+      "y": "Mole fraction in vapor phase",
+      "x": "Mole fraction in liquid phase"
+    }
+  },
+  {
+    id: uuidv4(),
+    title: "McCabe-Thiele Method",
+    category: "Separation Processes",
+    formula: "yn+1 = α·xn / (1 + (α-1)·xn)",
+    description: "Relationship between liquid and vapor compositions in distillation.",
+    variables: {
+      "yn+1": "Vapor composition leaving stage n+1",
+      "xn": "Liquid composition leaving stage n",
+      "α": "Relative volatility"
+    }
+  },
+  {
+    id: uuidv4(),
+    title: "Minimum Reflux Ratio",
+    category: "Separation Processes",
+    formula: "Rmin = xD/(xD - xF)",
+    description: "Minimum reflux ratio for a distillation column.",
+    variables: {
+      "Rmin": "Minimum reflux ratio",
+      "xD": "Distillate composition",
+      "xF": "Feed composition"
+    }
+  },
+  {
+    id: uuidv4(),
+    title: "HETP",
+    category: "Separation Processes",
+    formula: "HETP = H / N",
+    description: "Height equivalent to a theoretical plate.",
+    variables: {
+      "HETP": "Height equivalent to a theoretical plate (m)",
+      "H": "Total packing height (m)",
+      "N": "Number of theoretical plates"
+    }
+  },
+  {
+    id: uuidv4(),
+    title: "Extraction Distribution Coefficient",
+    category: "Separation Processes",
+    formula: "KD = Cextract / Craffinate",
+    description: "Ratio of concentrations at equilibrium in liquid-liquid extraction.",
+    variables: {
+      "KD": "Distribution coefficient",
+      "Cextract": "Concentration in extract phase",
+      "Craffinate": "Concentration in raffinate phase"
     }
   },
   
   // Polymer Engineering
   {
-    id: "molecular-weight",
+    id: uuidv4(),
+    title: "Degree of Polymerization",
     category: "Polymer Engineering",
-    title: "Number Average Molecular Weight",
-    formula: "M_n = ∑(n_i·M_i)/∑n_i",
-    description: "Average molecular weight based on number of molecules",
+    formula: "Xn = 1 / (1 - p)",
+    description: "Average chain length in step-growth polymerization.",
     variables: {
-      "M_n": "Number average molecular weight (g/mol)",
-      "n_i": "Number of molecules with molecular weight M_i",
-      "M_i": "Molecular weight of species i (g/mol)"
+      "Xn": "Number-average degree of polymerization",
+      "p": "Extent of reaction"
     }
   },
   {
-    id: "weight-average-mw",
+    id: uuidv4(),
+    title: "Mark-Houwink Equation",
     category: "Polymer Engineering",
-    title: "Weight Average Molecular Weight",
-    formula: "M_w = ∑(w_i·M_i)/∑w_i",
-    description: "Average molecular weight based on weight of molecules",
+    formula: "[η] = K·Mᵃ",
+    description: "Relationship between intrinsic viscosity and molecular weight.",
     variables: {
-      "M_w": "Weight average molecular weight (g/mol)",
-      "w_i": "Weight of molecules with molecular weight M_i",
-      "M_i": "Molecular weight of species i (g/mol)"
+      "[η]": "Intrinsic viscosity",
+      "K": "Constant dependent on polymer-solvent system",
+      "M": "Molecular weight",
+      "a": "Exponent related to polymer shape"
     }
   },
   {
-    id: "polydispersity",
+    id: uuidv4(),
+    title: "Glass Transition Temperature",
     category: "Polymer Engineering",
-    title: "Polydispersity Index",
-    formula: "PDI = M_w/M_n",
-    description: "Measure of the distribution of molecular weights in a polymer",
+    formula: "1/Tg = w1/Tg1 + w2/Tg2",
+    description: "Glass transition temperature of a polymer blend.",
     variables: {
-      "PDI": "Polydispersity index (dimensionless)",
-      "M_w": "Weight average molecular weight (g/mol)",
-      "M_n": "Number average molecular weight (g/mol)"
+      "Tg": "Glass transition temperature of blend (K)",
+      "Tg1, Tg2": "Glass transition temperatures of components (K)",
+      "w1, w2": "Weight fractions of components"
     }
   },
   {
-    id: "flory-fox",
+    id: uuidv4(),
+    title: "Flory-Huggins Theory",
     category: "Polymer Engineering",
-    title: "Flory-Fox Equation",
-    formula: "T_g = T_g∞ - K/M_n",
-    description: "Relationship between glass transition temperature and molecular weight",
+    formula: "ΔGmix/RT = n1·ln(φ1) + n2·ln(φ2) + n1·φ2·χ12",
+    description: "Free energy of mixing for polymer solutions.",
     variables: {
-      "T_g": "Glass transition temperature (K)",
-      "T_g∞": "Glass transition temperature at infinite molecular weight (K)",
-      "K": "Polymer-specific constant",
-      "M_n": "Number average molecular weight (g/mol)"
+      "ΔGmix": "Gibbs free energy of mixing (J)",
+      "R": "Gas constant (8.314 J/(mol·K))",
+      "T": "Temperature (K)",
+      "n1, n2": "Moles of solvent and polymer",
+      "φ1, φ2": "Volume fractions",
+      "χ12": "Flory-Huggins interaction parameter"
+    }
+  },
+  {
+    id: uuidv4(),
+    title: "Molecular Weight Distribution",
+    category: "Polymer Engineering",
+    formula: "PDI = Mw/Mn",
+    description: "Polydispersity index, measure of molecular weight distribution.",
+    variables: {
+      "PDI": "Polydispersity index",
+      "Mw": "Weight-average molecular weight",
+      "Mn": "Number-average molecular weight"
     }
   },
   
   // Chemical Equilibrium
   {
-    id: "equilibrium-constant",
-    category: "Chemical Equilibrium",
+    id: uuidv4(),
     title: "Equilibrium Constant",
-    formula: "K_eq = exp(-ΔG°/RT)",
-    description: "Relates standard Gibbs free energy change to equilibrium constant",
+    category: "Chemical Equilibrium",
+    formula: "K = exp(-ΔG°/RT)",
+    description: "Relationship between standard Gibbs free energy change and equilibrium constant.",
     variables: {
-      "K_eq": "Equilibrium constant (dimensionless)",
+      "K": "Equilibrium constant",
       "ΔG°": "Standard Gibbs free energy change (J/mol)",
       "R": "Gas constant (8.314 J/(mol·K))",
       "T": "Temperature (K)"
     }
   },
   {
-    id: "vantvhoff-equation",
+    id: uuidv4(),
+    title: "Le Chatelier's Principle",
     category: "Chemical Equilibrium",
-    title: "van't Hoff Equation",
-    formula: "d(ln K)/d(1/T) = -ΔH°/R",
-    description: "Effect of temperature on equilibrium constant",
+    formula: "K = K(T, P, concentration)",
+    description: "Equilibrium shifts to counteract imposed changes.",
     variables: {
       "K": "Equilibrium constant",
       "T": "Temperature (K)",
-      "ΔH°": "Standard enthalpy change (J/mol)",
-      "R": "Gas constant (8.314 J/(mol·K))"
+      "P": "Pressure (Pa)"
     }
   },
   {
-    id: "reaction-quotient",
+    id: uuidv4(),
+    title: "Activity Coefficient",
     category: "Chemical Equilibrium",
-    title: "Reaction Quotient",
-    formula: "Q = [C]^c[D]^d/[A]^a[B]^b",
-    description: "For a reaction aA + bB ⇌ cC + dD, the reaction quotient helps determine direction of equilibrium shift",
+    formula: "ai = γi·xi",
+    description: "Activity of a component in a non-ideal solution.",
     variables: {
-      "Q": "Reaction quotient",
-      "[A],[B],[C],[D]": "Concentrations or partial pressures",
-      "a,b,c,d": "Stoichiometric coefficients"
+      "ai": "Activity of component i",
+      "γi": "Activity coefficient",
+      "xi": "Mole fraction"
+    }
+  },
+  {
+    id: uuidv4(),
+    title: "van't Hoff Equation",
+    category: "Chemical Equilibrium",
+    formula: "ln(K2/K1) = (ΔH°/R)·(1/T1 - 1/T2)",
+    description: "Temperature dependence of equilibrium constant.",
+    variables: {
+      "K1, K2": "Equilibrium constants at T1 and T2",
+      "ΔH°": "Standard enthalpy change (J/mol)",
+      "R": "Gas constant (8.314 J/(mol·K))",
+      "T1, T2": "Temperatures (K)"
+    }
+  },
+  {
+    id: uuidv4(),
+    title: "Equilibrium Conversion",
+    category: "Chemical Equilibrium",
+    formula: "K = (CA,e·CB,e)/(CC,e·CD,e)",
+    description: "Equilibrium concentrations for reaction A + B ⇌ C + D.",
+    variables: {
+      "K": "Equilibrium constant",
+      "Ci,e": "Equilibrium concentration of component i (mol/m³)"
     }
   },
   
   // Phase Equilibria
   {
-    id: "distribution-coefficient",
-    category: "Phase Equilibria",
-    title: "Distribution Coefficient",
-    formula: "K_D = c_1/c_2",
-    description: "Ratio of concentrations of a substance in two phases at equilibrium",
-    variables: {
-      "K_D": "Distribution coefficient",
-      "c_1": "Concentration in phase 1",
-      "c_2": "Concentration in phase 2"
-    }
-  },
-  {
-    id: "relative-volatility",
-    category: "Phase Equilibria",
-    title: "Relative Volatility",
-    formula: "α_ij = K_i/K_j",
-    description: "Ratio of K-values for components i and j",
-    variables: {
-      "α_ij": "Relative volatility",
-      "K_i": "K-value for component i",
-      "K_j": "K-value for component j"
-    }
-  },
-  {
-    id: "raoults-law",
-    category: "Phase Equilibria",
+    id: uuidv4(),
     title: "Raoult's Law",
-    formula: "P_i = x_i·P_i°",
-    description: "Partial pressure of component in vapor phase is proportional to its mole fraction in liquid phase",
-    variables: {
-      "P_i": "Partial pressure of component i (Pa)",
-      "x_i": "Mole fraction in liquid phase",
-      "P_i°": "Vapor pressure of pure component i (Pa)"
-    }
-  },
-  {
-    id: "henrys-law",
     category: "Phase Equilibria",
+    formula: "Pi = xi·Pi°",
+    description: "Vapor pressure of component in ideal solution.",
+    variables: {
+      "Pi": "Partial pressure of component i (Pa)",
+      "xi": "Mole fraction in liquid phase",
+      "Pi°": "Vapor pressure of pure component i (Pa)"
+    }
+  },
+  {
+    id: uuidv4(),
     title: "Henry's Law",
-    formula: "P_i = H_i·x_i",
-    description: "Solubility of a gas in a liquid is directly proportional to the gas pressure",
+    category: "Phase Equilibria",
+    formula: "Pi = Hi·xi",
+    description: "Solubility of gases in liquids at low concentrations.",
     variables: {
-      "P_i": "Partial pressure of gas (Pa)",
-      "H_i": "Henry's constant (Pa)",
-      "x_i": "Mole fraction of gas in solution"
-    }
-  },
-  
-  // Equipment Design - Additional
-  {
-    id: "pump-power",
-    category: "Equipment Design",
-    title: "Pump Power",
-    formula: "P = ρ·g·Q·H/η",
-    description: "Power required for a pump",
-    variables: {
-      "P": "Power (W)",
-      "ρ": "Fluid density (kg/m³)",
-      "g": "Gravitational acceleration (m/s²)",
-      "Q": "Volumetric flow rate (m³/s)",
-      "H": "Head (m)",
-      "η": "Pump efficiency"
+      "Pi": "Partial pressure of gas (Pa)",
+      "Hi": "Henry's constant (Pa)",
+      "xi": "Mole fraction in liquid"
     }
   },
   {
-    id: "compressor-work",
-    category: "Equipment Design",
-    title: "Adiabatic Compressor Work",
-    formula: "W = (γ/(γ-1))·R·T_1·[(P_2/P_1)^((γ-1)/γ) - 1]",
-    description: "Work required for adiabatic compression",
+    id: uuidv4(),
+    title: "Gibbs Phase Rule",
+    category: "Phase Equilibria",
+    formula: "F = C - P + 2",
+    description: "Degrees of freedom in a thermodynamic system.",
     variables: {
-      "W": "Specific work (J/mol)",
-      "γ": "Heat capacity ratio",
-      "R": "Gas constant (8.314 J/(mol·K))",
-      "T_1": "Inlet temperature (K)",
-      "P_1": "Inlet pressure (Pa)",
-      "P_2": "Outlet pressure (Pa)"
+      "F": "Degrees of freedom",
+      "C": "Number of components",
+      "P": "Number of phases"
     }
   },
   {
-    id: "distillation-reflux",
-    category: "Equipment Design",
-    title: "Minimum Reflux Ratio",
-    formula: "R_min = 1/(α_LK,HK·(x_D,LK/x_D,HK)·(x_F,HK/x_F,LK) - 1)",
-    description: "Minimum reflux ratio for a binary distillation",
+    id: uuidv4(),
+    title: "Lever Rule",
+    category: "Phase Equilibria",
+    formula: "mα/mβ = (xβ - x)/(x - xα)",
+    description: "Mass ratio of phases in a two-phase region.",
     variables: {
-      "R_min": "Minimum reflux ratio",
-      "α_LK,HK": "Relative volatility between light and heavy key components",
-      "x_D,LK": "Mole fraction of light key in distillate",
-      "x_D,HK": "Mole fraction of heavy key in distillate",
-      "x_F,LK": "Mole fraction of light key in feed",
-      "x_F,HK": "Mole fraction of heavy key in feed"
+      "mα, mβ": "Masses of phases α and β",
+      "xα, xβ": "Compositions of phases α and β",
+      "x": "Overall composition"
     }
   },
   {
-    id: "heat-exchanger-lmtd",
-    category: "Equipment Design",
-    title: "LMTD for Heat Exchangers",
-    formula: "LMTD = (ΔT₁ - ΔT₂)/ln(ΔT₁/ΔT₂)",
-    description: "Log Mean Temperature Difference for heat exchanger design",
+    id: uuidv4(),
+    title: "NRTL Model",
+    category: "Phase Equilibria",
+    formula: "ln(γi) = [Σ(τji·Gji·xj)]/[Σ(Gki·xk)] + Σ[xj·Gij·(τij - [Σ(τkj·Gkj·xk)]/[Σ(Gkj·xk)])]/[Σ(Gij·xj)]",
+    description: "Non-Random Two-Liquid model for activity coefficients.",
     variables: {
-      "LMTD": "Log Mean Temperature Difference (K)",
-      "ΔT₁": "Temperature difference at one end (K)",
-      "ΔT₂": "Temperature difference at other end (K)"
+      "γi": "Activity coefficient of component i",
+      "τij": "Binary interaction parameter",
+      "Gij": "Function of τij and non-randomness parameter",
+      "xj": "Mole fraction of component j"
     }
   },
-  {
-    id: "shell-heat-transfer",
-    category: "Equipment Design",
-    title: "Shell and Tube Heat Exchanger Area",
-    formula: "Q = U·A·LMTD",
-    description: "Heat transfer in a shell and tube heat exchanger",
-    variables: {
-      "Q": "Heat transfer rate (W)",
-      "U": "Overall heat transfer coefficient (W/(m²·K))",
-      "A": "Heat transfer area (m²)",
-      "LMTD": "Log Mean Temperature Difference (K)"
-    }
-  },
-  
-  // Bioreactors
-  {
-    id: "monod-equation",
-    category: "Biochemical Engineering",
-    title: "Monod Equation",
-    formula: "μ = μ_max·S/(K_s + S)",
-    description: "Growth rate of microorganisms as a function of substrate concentration",
-    variables: {
-      "μ": "Specific growth rate (1/h)",
-      "μ_max": "Maximum specific growth rate (1/h)",
-      "S": "Substrate concentration (g/L)",
-      "K_s": "Half-saturation constant (g/L)"
-    }
-  },
-  {
-    id: "oxygen-transfer",
-    category: "Biochemical Engineering",
-    title: "Oxygen Transfer Rate",
-    formula: "OTR = k_La·(C* - C_L)",
-    description: "Rate of oxygen transfer in a bioreactor",
-    variables: {
-      "OTR": "Oxygen transfer rate (mg O₂/(L·h))",
-      "k_La": "Volumetric mass transfer coefficient (1/h)",
-      "C*": "Saturation concentration of oxygen (mg/L)",
-      "C_L": "Dissolved oxygen concentration (mg/L)"
-    }
-  },
-  {
-    id: "michaelis-menten",
-    category: "Biochemical Engineering",
-    title: "Michaelis-Menten Kinetics",
-    formula: "v = v_max·[S]/(K_m + [S])",
-    description: "Rate of enzymatic reactions as a function of substrate concentration",
-    variables: {
-      "v": "Reaction rate",
-      "v_max": "Maximum reaction rate",
-      "[S]": "Substrate concentration",
-      "K_m": "Michaelis constant"
-    }
-  },
-  {
-    id: "cell-growth",
-    category: "Biochemical Engineering",
-    title: "Cell Growth Equation",
-    formula: "dX/dt = μ·X",
-    description: "Exponential growth of cell population in batch culture",
-    variables: {
-      "dX/dt": "Rate of change of cell concentration",
-      "μ": "Specific growth rate (1/h)",
-      "X": "Cell concentration (g/L)"
-    }
-  },
-  
+
   // Corrosion Engineering
   {
-    id: "corrosion-rate",
-    category: "Corrosion Engineering",
+    id: uuidv4(),
     title: "Corrosion Rate",
-    formula: "CR = (K·W)/(A·T·ρ)",
-    description: "Calculation of corrosion rate from weight loss",
+    category: "Corrosion Engineering",
+    formula: "CR = (K·W)/(A·T·D)",
+    description: "Rate of material loss due to corrosion.",
     variables: {
       "CR": "Corrosion rate (mm/year)",
       "K": "Constant (8.76×10⁴ for mm/year)",
-      "W": "Weight loss (g)",
+      "W": "Mass loss (g)",
       "A": "Area (cm²)",
       "T": "Time (h)",
-      "ρ": "Density (g/cm³)"
+      "D": "Density (g/cm³)"
     }
   },
   {
-    id: "nernst-equation",
+    id: uuidv4(),
+    title: "Tafel Equation",
     category: "Corrosion Engineering",
-    title: "Nernst Equation",
-    formula: "E = E° - (RT/nF)·ln(a_red/a_ox)",
-    description: "Relationship between reduction potential and activities of species in a half-cell",
+    formula: "η = β·log(i/i0)",
+    description: "Relationship between overpotential and current density.",
     variables: {
-      "E": "Cell potential (V)",
-      "E°": "Standard cell potential (V)",
+      "η": "Overpotential (V)",
+      "β": "Tafel slope (V)",
+      "i": "Current density (A/m²)",
+      "i0": "Exchange current density (A/m²)"
+    }
+  },
+  {
+    id: uuidv4(),
+    title: "Galvanic Series",
+    category: "Corrosion Engineering",
+    formula: "More negative E → more anodic → more corrosive",
+    description: "Electrochemical potential series for metals.",
+    variables: {
+      "E": "Standard electrode potential (V)"
+    }
+  },
+  {
+    id: uuidv4(),
+    title: "Nernst Equation",
+    category: "Corrosion Engineering",
+    formula: "E = E° - (RT/nF)·ln(aRed/aOx)",
+    description: "Electrode potential under non-standard conditions.",
+    variables: {
+      "E": "Electrode potential (V)",
+      "E°": "Standard electrode potential (V)",
       "R": "Gas constant (8.314 J/(mol·K))",
       "T": "Temperature (K)",
       "n": "Number of electrons transferred",
-      "F": "Faraday constant (96,485 C/mol)",
-      "a_red": "Activity of reduced species",
-      "a_ox": "Activity of oxidized species"
+      "F": "Faraday constant (96485 C/mol)",
+      "aRed, aOx": "Activities of reduced and oxidized species"
     }
   },
-  
+  {
+    id: uuidv4(),
+    title: "Pourbaix Diagram",
+    category: "Corrosion Engineering",
+    formula: "E-pH diagrams",
+    description: "Map of stable phases as functions of potential and pH.",
+    variables: {
+      "E": "Electrode potential (V)",
+      "pH": "Acidity"
+    }
+  },
+
   // Environmental Engineering
   {
-    id: "bod-kinetics",
+    id: uuidv4(),
+    title: "BOD Removal",
     category: "Environmental Engineering",
-    title: "BOD Kinetics",
-    formula: "BOD_t = BOD_u·(1-e^(-k·t))",
-    description: "Biochemical oxygen demand as a function of time",
+    formula: "BOD removal = (BODin - BODout)/BODin × 100%",
+    description: "Efficiency of biological oxygen demand removal.",
     variables: {
-      "BOD_t": "BOD at time t (mg/L)",
-      "BOD_u": "Ultimate BOD (mg/L)",
-      "k": "Rate constant (1/day)",
-      "t": "Time (days)"
+      "BODin": "Influent BOD (mg/L)",
+      "BODout": "Effluent BOD (mg/L)"
     }
   },
   {
-    id: "henry-constant-temp",
+    id: uuidv4(),
+    title: "Adsorption Isotherm (Langmuir)",
     category: "Environmental Engineering",
-    title: "Temperature Effect on Henry's Constant",
-    formula: "H(T) = H(T°)·exp[C·((1/T°)-(1/T))]",
-    description: "Temperature dependence of Henry's constant",
+    formula: "qe = (qmax·KL·Ce)/(1 + KL·Ce)",
+    description: "Relationship between adsorbent loading and equilibrium concentration.",
     variables: {
-      "H(T)": "Henry's constant at temperature T",
-      "H(T°)": "Henry's constant at reference temperature T°",
-      "C": "Temperature coefficient",
-      "T": "Temperature (K)",
-      "T°": "Reference temperature (K)"
+      "qe": "Adsorption capacity at equilibrium (mg/g)",
+      "qmax": "Maximum adsorption capacity (mg/g)",
+      "KL": "Langmuir constant (L/mg)",
+      "Ce": "Equilibrium concentration (mg/L)"
     }
   },
-  
+  {
+    id: uuidv4(),
+    title: "Henry's Law Constant",
+    category: "Environmental Engineering",
+    formula: "KH = p/c",
+    description: "Partitioning between gas and aqueous phase.",
+    variables: {
+      "KH": "Henry's law constant (Pa·m³/mol)",
+      "p": "Partial pressure (Pa)",
+      "c": "Aqueous concentration (mol/m³)"
+    }
+  },
+  {
+    id: uuidv4(),
+    title: "Activated Sludge Process",
+    category: "Environmental Engineering",
+    formula: "SRT = V·X/(Qw·Xw)",
+    description: "Solids retention time in activated sludge systems.",
+    variables: {
+      "SRT": "Solids retention time (days)",
+      "V": "Reactor volume (m³)",
+      "X": "MLSS concentration (mg/L)",
+      "Qw": "Waste sludge flow rate (m³/day)",
+      "Xw": "Waste sludge concentration (mg/L)"
+    }
+  },
+  {
+    id: uuidv4(),
+    title: "Dispersion Model",
+    category: "Environmental Engineering",
+    formula: "C(x,y,z) = (Q/(2π·u·σy·σz))·exp(-y²/(2σy²))·exp(-z²/(2σz²))",
+    description: "Gaussian dispersion model for air pollutants.",
+    variables: {
+      "C": "Concentration (g/m³)",
+      "Q": "Emission rate (g/s)",
+      "u": "Wind speed (m/s)",
+      "σy, σz": "Dispersion coefficients (m)",
+      "x,y,z": "Coordinates (m)"
+    }
+  },
+
   // Safety Engineering
   {
-    id: "tnt-equivalence",
+    id: uuidv4(),
+    title: "Lower Flammability Limit",
     category: "Safety Engineering",
-    title: "TNT Equivalence",
-    formula: "W_TNT = η·W_fuel·ΔH_c/ΔH_TNT",
-    description: "Equivalent TNT mass for explosion energy calculation",
+    formula: "LFL = 100·(ΣCi·LFLi)/[100 - Σ((100 - LFLi)·Ci/LFLi)]",
+    description: "Lower flammability limit for gas mixtures.",
     variables: {
-      "W_TNT": "Equivalent TNT mass (kg)",
-      "η": "Explosion efficiency",
-      "W_fuel": "Mass of fuel (kg)",
-      "ΔH_c": "Heat of combustion of fuel (J/kg)",
-      "ΔH_TNT": "TNT explosion energy (4.68 MJ/kg)"
+      "LFL": "Lower flammability limit of mixture (%vol)",
+      "Ci": "Concentration of component i (%vol)",
+      "LFLi": "Lower flammability limit of component i (%vol)"
     }
   },
   {
-    id: "dow-fire-explosion",
+    id: uuidv4(),
+    title: "TNT Equivalence",
     category: "Safety Engineering",
-    title: "Dow F&EI Calculation",
-    formula: "F&EI = MF × (1 + GPH + SPH)",
-    description: "Fire and Explosion Index for hazard ranking of process units",
+    formula: "WTNT = α·W·(HC/HCTNT)",
+    description: "TNT equivalent for explosion hazard assessment.",
+    variables: {
+      "WTNT": "TNT equivalent mass (kg)",
+      "α": "Yield factor",
+      "W": "Mass of flammable material (kg)",
+      "HC": "Heat of combustion (J/kg)",
+      "HCTNT": "Heat of combustion of TNT (4.68×10⁶ J/kg)"
+    }
+  },
+  {
+    id: uuidv4(),
+    title: "Dow Fire and Explosion Index",
+    category: "Safety Engineering",
+    formula: "F&EI = MF · (1 + GPH + SPH)",
+    description: "Index for hazard assessment of process units.",
     variables: {
       "F&EI": "Fire and Explosion Index",
       "MF": "Material Factor",
-      "GPH": "General Process Hazards factor",
-      "SPH": "Special Process Hazards factor"
+      "GPH": "General Process Hazards",
+      "SPH": "Special Process Hazards"
     }
   },
-  
+  {
+    id: uuidv4(),
+    title: "Pressure Relief Valve Sizing",
+    category: "Safety Engineering",
+    formula: "A = Q/(C·Kd·P1·Kb·√(MW/ZT))",
+    description: "Required relief area for gases/vapors.",
+    variables: {
+      "A": "Relief area (mm²)",
+      "Q": "Flow capacity (kg/h)",
+      "C": "Coefficient of discharge",
+      "Kd": "Effective coefficient of discharge",
+      "P1": "Upstream pressure (kPa absolute)",
+      "Kb": "Capacity correction factor",
+      "MW": "Molecular weight (kg/kmol)",
+      "Z": "Compressibility factor",
+      "T": "Temperature (K)"
+    }
+  },
+  {
+    id: uuidv4(),
+    title: "Risk Assessment",
+    category: "Safety Engineering",
+    formula: "Risk = Probability × Consequence",
+    description: "Basic formula for quantitative risk assessment.",
+    variables: {
+      "Risk": "Risk level",
+      "Probability": "Likelihood of occurrence",
+      "Consequence": "Severity of outcome"
+    }
+  },
+
   // Process Economics
   {
-    id: "net-present-value",
-    category: "Process Economics",
-    title: "Net Present Value",
-    formula: "NPV = -C₀ + ∑(C_t/(1+r)^t)",
-    description: "Net present value of an investment project",
-    variables: {
-      "NPV": "Net Present Value",
-      "C₀": "Initial investment",
-      "C_t": "Cash flow at time t",
-      "r": "Discount rate",
-      "t": "Time period"
-    }
-  },
-  {
-    id: "internal-rate-return",
-    category: "Process Economics",
-    title: "Internal Rate of Return",
-    formula: "0 = -C₀ + ∑(C_t/(1+IRR)^t)",
-    description: "Discount rate that makes the net present value zero",
-    variables: {
-      "C₀": "Initial investment",
-      "C_t": "Cash flow at time t",
-      "IRR": "Internal Rate of Return",
-      "t": "Time period"
-    }
-  },
-  {
-    id: "payback-period",
-    category: "Process Economics",
+    id: uuidv4(),
     title: "Payback Period",
-    formula: "PBP = C₀/CF_annual",
-    description: "Simple payback period for an investment (for uniform cash flows)",
+    category: "Process Economics",
+    formula: "PBP = Capital Investment / Annual Cash Flow",
+    description: "Time required to recover the cost of an investment.",
     variables: {
-      "PBP": "Payback Period (years)",
-      "C₀": "Initial investment",
-      "CF_annual": "Annual cash flow"
+      "PBP": "Payback period (years)",
+      "Capital Investment": "Initial investment (currency)",
+      "Annual Cash Flow": "Net annual revenue (currency/year)"
+    }
+  },
+  {
+    id: uuidv4(),
+    title: "Net Present Value",
+    category: "Process Economics",
+    formula: "NPV = Σ[CFt / (1+r)ᵗ] - CI",
+    description: "Present value of future cash flows minus initial investment.",
+    variables: {
+      "NPV": "Net present value (currency)",
+      "CFt": "Cash flow in period t (currency)",
+      "r": "Discount rate",
+      "t": "Time period (years)",
+      "CI": "Capital investment (currency)"
+    }
+  },
+  {
+    id: uuidv4(),
+    title: "Return on Investment",
+    category: "Process Economics",
+    formula: "ROI = (Annual Profit / Total Investment) × 100%",
+    description: "Measure of investment profitability.",
+    variables: {
+      "ROI": "Return on investment (%)",
+      "Annual Profit": "Net annual profit (currency/year)",
+      "Total Investment": "Total capital investment (currency)"
+    }
+  },
+  {
+    id: uuidv4(),
+    title: "Capital Cost Estimation",
+    category: "Process Economics",
+    formula: "C2 = C1·(Q2/Q1)ⁿ",
+    description: "Scaling relationship for equipment cost.",
+    variables: {
+      "C2": "Cost of equipment with capacity Q2 (currency)",
+      "C1": "Known cost of equipment with capacity Q1 (currency)",
+      "Q2, Q1": "Capacities",
+      "n": "Scaling exponent (typically 0.6-0.7)"
+    }
+  },
+  {
+    id: uuidv4(),
+    title: "Discount Cash Flow Rate of Return",
+    category: "Process Economics",
+    formula: "Σ[CFt / (1+DCFRR)ᵗ] - CI = 0",
+    description: "Discount rate that makes NPV equal to zero.",
+    variables: {
+      "CFt": "Cash flow in period t (currency)",
+      "DCFRR": "Discount cash flow rate of return",
+      "t": "Time period (years)",
+      "CI": "Capital investment (currency)"
     }
   }
 ];
 
-// Helper function to get formulas by category
-export const getFormulasByCategory = (category: string): Formula[] => {
-  return chemicalEngineeringFormulas.filter(formula => formula.category === category);
-};
-
-// Helper function to get all categories
-export const getAllCategories = (): string[] => {
-  return [...new Set(chemicalEngineeringFormulas.map(formula => formula.category))];
-};
-
-// Helper function to get a formula by ID
-export const getFormulaById = (id: string): Formula | undefined => {
-  return chemicalEngineeringFormulas.find(formula => formula.id === id);
-};
+// Function to get all unique categories
+export function getAllCategories(): string[] {
+  const categories = new Set(chemicalEngineeringFormulas.map(formula => formula.category));
+  return Array.from(categories);
+}
