@@ -1,4 +1,3 @@
-
 import React from "react";
 import { motion } from "framer-motion";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -158,7 +157,7 @@ const EquipmentPanel: React.FC<EquipmentPanelProps> = ({ onEquipmentSelect }) =>
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: itemIdx * 0.1, duration: 0.3 }}
                     draggable
-                    onDragStart={(e) => {
+                    onDragStart={(e: React.DragEvent<HTMLDivElement>) => {
                       e.dataTransfer.setData("equipment-type", item.type);
                       e.dataTransfer.effectAllowed = "copy";
                     }}
@@ -169,7 +168,6 @@ const EquipmentPanel: React.FC<EquipmentPanelProps> = ({ onEquipmentSelect }) =>
                       size="sm"
                       showConnections={true}
                       showDottedLines={false}
-                      className="shadow-md hover:shadow-lg transition-shadow duration-300"
                     />
                     <div className="absolute inset-0 bg-gradient-to-tr from-blue-600/5 to-transparent rounded-lg pointer-events-none"></div>
                   </motion.div>

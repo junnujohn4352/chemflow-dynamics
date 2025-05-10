@@ -28,6 +28,7 @@ interface EquipmentCardProps {
   showDottedLines?: boolean;
   onMetricEdit?: (key: string, value: string) => void; // New prop for handling metric edits
   problem?: string; // New prop to provide context for parameter editing
+  className?: string; // Added className prop to support custom styling
 }
 
 const EquipmentCard: React.FC<EquipmentCardProps> = ({
@@ -45,7 +46,8 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
   activeConnectionPoints = [],
   showDottedLines = false,
   onMetricEdit,
-  problem
+  problem,
+  className = "" // Default to empty string
 }) => {
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>) => {
     if (onDragStart) {
@@ -99,6 +101,7 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
         border rounded-lg shadow-sm cursor-pointer transition-all
         ${selected ? "ring-2 ring-blue-500 shadow-md" : "hover:shadow-md hover:border-blue-300"}
         ${draggable ? "cursor-grab active:cursor-grabbing" : ""}
+        ${className}
       `}
       draggable={draggable}
       onDragStart={handleDragStart}
