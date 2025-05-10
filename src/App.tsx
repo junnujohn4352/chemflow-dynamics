@@ -1,5 +1,5 @@
 
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
 import Home from './pages/Home';
 import ChemicalFormulas from './pages/ChemicalFormulas';
@@ -13,88 +13,22 @@ import CreateSimulation from './pages/CreateSimulation';
 import LandingPage from './pages/LandingPage';
 import { Layout } from './components/layout/Layout';
 import ChemistryGame from './pages/ChemistryGame';
+import CodeVerification from './pages/CodeVerification';
 
-// Import or create the new pages
+// Import pages
 import Documentation from './pages/Documentation';
 import Bookmarks from './pages/Bookmarks';
 import Resources from './pages/Resources';
 import DataAnalysis from './pages/DataAnalysis';
 import Reports from './pages/Reports';
-import Auth from './pages/Auth';
-import { useEffect, useState } from 'react';
-import { supabase } from './integrations/supabase/client';
 import { Toaster } from '@/components/ui/toaster';
-import { useToast } from '@/hooks/use-toast';
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
-  const { toast } = useToast();
-
-  useEffect(() => {
-    // Check authentication status on load
-    const checkAuth = async () => {
-      try {
-        // Set up auth state listener FIRST
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-          console.log("App auth event:", event);
-          setIsAuthenticated(!!session);
-          
-          if (event === 'SIGNED_IN') {
-            toast({
-              title: "Signed in successfully",
-              description: "Welcome to ChemFlow!",
-              variant: "success",
-            });
-          } else if (event === 'SIGNED_OUT') {
-            toast({
-              title: "Signed out successfully",
-              description: "You have been signed out",
-              variant: "default",
-            });
-          } else if (event === 'USER_UPDATED') {
-            toast({
-              title: "Account updated",
-              description: "Your account has been updated",
-              variant: "default",
-            });
-          }
-        });
-        
-        // THEN check for existing session
-        const { data, error } = await supabase.auth.getSession();
-        if (error) {
-          console.error("Auth session error:", error);
-          setIsAuthenticated(false);
-          return;
-        }
-        
-        console.log("Initial session check:", data);
-        setIsAuthenticated(!!data.session);
-        
-        return () => subscription.unsubscribe();
-      } catch (error) {
-        console.error("Auth check error:", error);
-        setIsAuthenticated(false);
-      }
-    };
-    
-    checkAuth();
-  }, [toast]);
-
-  // Loading state while checking authentication
-  if (isAuthenticated === null) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin h-10 w-10 border-4 border-blue-500 rounded-full border-t-transparent"></div>
-      </div>
-    );
-  }
-
   return (
     <Router>
       <Routes>
         <Route path="/" element={<LandingPage />} />
-        <Route path="/auth" element={isAuthenticated ? <Navigate to="/resources" /> : <Auth />} />
+        <Route path="/code-verification" element={<CodeVerification />} />
         <Route path="/chemistry-game" element={<ChemistryGame />} />
         <Route path="/home" element={
           <Layout>
@@ -107,22 +41,14 @@ function App() {
           </Layout>
         } />
         <Route path="/dashboard" element={
-          isAuthenticated ? (
-            <Layout>
-              <Dashboard />
-            </Layout>
-          ) : (
-            <Navigate to="/auth" />
-          )
+          <Layout>
+            <Dashboard />
+          </Layout>
         } />
         <Route path="/settings" element={
-          isAuthenticated ? (
-            <Layout>
-              <Settings />
-            </Layout>
-          ) : (
-            <Navigate to="/auth" />
-          )
+          <Layout>
+            <Settings />
+          </Layout>
         } />
         <Route path="/chemical-formulas" element={
           <Layout>
@@ -140,22 +66,14 @@ function App() {
           </Layout>
         } />
         <Route path="/intelligent-simulation" element={
-          isAuthenticated ? (
-            <Layout>
-              <IntelligentSimulation />
-            </Layout>
-          ) : (
-            <Navigate to="/auth" />
-          )
+          <Layout>
+            <IntelligentSimulation />
+          </Layout>
         } />
         <Route path="/create-simulation" element={
-          isAuthenticated ? (
-            <Layout>
-              <CreateSimulation />
-            </Layout>
-          ) : (
-            <Navigate to="/auth" />
-          )
+          <Layout>
+            <CreateSimulation />
+          </Layout>
         } />
         {/* Resources sections */}
         <Route path="/documentation" element={
@@ -164,40 +82,24 @@ function App() {
           </Layout>
         } />
         <Route path="/bookmarks" element={
-          isAuthenticated ? (
-            <Layout>
-              <Bookmarks />
-            </Layout>
-          ) : (
-            <Navigate to="/auth" />
-          )
+          <Layout>
+            <Bookmarks />
+          </Layout>
         } />
         <Route path="/resources" element={
-          isAuthenticated ? (
-            <Layout>
-              <Resources />
-            </Layout>
-          ) : (
-            <Navigate to="/auth" />
-          )
+          <Layout>
+            <Resources />
+          </Layout>
         } />
         <Route path="/data-analysis" element={
-          isAuthenticated ? (
-            <Layout>
-              <DataAnalysis />
-            </Layout>
-          ) : (
-            <Navigate to="/auth" />
-          )
+          <Layout>
+            <DataAnalysis />
+          </Layout>
         } />
         <Route path="/reports" element={
-          isAuthenticated ? (
-            <Layout>
-              <Reports />
-            </Layout>
-          ) : (
-            <Navigate to="/auth" />
-          )
+          <Layout>
+            <Reports />
+          </Layout>
         } />
         <Route path="*" element={<NotFound />} />
       </Routes>
