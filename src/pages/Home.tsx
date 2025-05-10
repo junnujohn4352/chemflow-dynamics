@@ -1,19 +1,30 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import ChemAssistant from "@/components/ai/ChemAssistant";
+import OpenSourceAI from "@/components/ai/OpenSourceAI";
 import { Beaker, Calculator, BookOpen, Atom, Globe, Zap, FileText, Bookmark, BarChart3, Database } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const Home: React.FC = () => {
+  const { toast } = useToast();
+  
+  // Show welcome message once on initial load
+  useEffect(() => {
+    toast({
+      title: "Welcome to ChemFlow",
+      description: "Your open-source chemical engineering platform",
+    });
+  }, []);
+  
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold mb-2">Welcome to ChemFlow</h1>
-        <p className="text-xl text-muted-foreground">Chemical Engineering Simulation & Tools</p>
+      <div className="text-center mb-12 animate-fade-in">
+        <h1 className="text-4xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">Welcome to ChemFlow</h1>
+        <p className="text-xl text-muted-foreground">Open-Source Chemical Engineering Simulation & Tools</p>
         <div className="mt-4">
-          <Button asChild variant="outline">
+          <Button asChild variant="outline" className="hover-scale">
             <Link to="/" className="flex items-center justify-center">
               Visit Landing Page
             </Link>
@@ -22,7 +33,7 @@ const Home: React.FC = () => {
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-        <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+        <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 animate-fade-in" style={{ animationDelay: '0.1s' }}>
           <CardHeader>
             <div className="flex items-center mb-2">
               <Beaker className="h-6 w-6 text-blue-500 mr-2" />
@@ -43,7 +54,7 @@ const Home: React.FC = () => {
           </CardFooter>
         </Card>
         
-        <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+        <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 animate-fade-in" style={{ animationDelay: '0.2s' }}>
           <CardHeader>
             <div className="flex items-center mb-2">
               <BookOpen className="h-6 w-6 text-purple-500 mr-2" />
@@ -64,7 +75,7 @@ const Home: React.FC = () => {
           </CardFooter>
         </Card>
         
-        <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+        <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 animate-fade-in" style={{ animationDelay: '0.3s' }}>
           <CardHeader>
             <div className="flex items-center mb-2">
               <Calculator className="h-6 w-6 text-green-500 mr-2" />
@@ -87,7 +98,7 @@ const Home: React.FC = () => {
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
-        <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+        <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 animate-fade-in" style={{ animationDelay: '0.4s' }}>
           <CardHeader>
             <div className="flex items-center mb-2">
               <BookOpen className="h-6 w-6 text-blue-500 mr-2" />
@@ -107,7 +118,7 @@ const Home: React.FC = () => {
           </CardFooter>
         </Card>
         
-        <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+        <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 animate-fade-in" style={{ animationDelay: '0.5s' }}>
           <CardHeader>
             <div className="flex items-center mb-2">
               <Bookmark className="h-6 w-6 text-purple-500 mr-2" />
@@ -127,7 +138,7 @@ const Home: React.FC = () => {
           </CardFooter>
         </Card>
         
-        <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+        <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 animate-fade-in" style={{ animationDelay: '0.6s' }}>
           <CardHeader>
             <div className="flex items-center mb-2">
               <BarChart3 className="h-6 w-6 text-green-500 mr-2" />
@@ -147,7 +158,7 @@ const Home: React.FC = () => {
           </CardFooter>
         </Card>
         
-        <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+        <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 animate-fade-in" style={{ animationDelay: '0.7s' }}>
           <CardHeader>
             <div className="flex items-center mb-2">
               <FileText className="h-6 w-6 text-orange-500 mr-2" />
@@ -168,10 +179,10 @@ const Home: React.FC = () => {
         </Card>
       </div>
 
-      <div className="mt-12 bg-gradient-to-br from-blue-50 to-purple-50 p-6 rounded-xl shadow-sm">
-        <h2 className="text-2xl font-bold mb-4 text-blue-700">Need Assistance?</h2>
+      <div className="mt-12 bg-gradient-to-br from-blue-50 to-purple-50 p-6 rounded-xl shadow-sm animate-fade-in" style={{ animationDelay: '0.8s' }}>
+        <h2 className="text-2xl font-bold mb-4 text-blue-700">Open-Source AI Assistant</h2>
         <div className="h-[400px] relative overflow-hidden rounded-lg border">
-          <ChemAssistant />
+          <OpenSourceAI />
         </div>
       </div>
     </div>

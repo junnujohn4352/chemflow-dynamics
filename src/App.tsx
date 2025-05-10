@@ -70,7 +70,7 @@ function App() {
             <CreateSimulation />
           </Layout>
         } />
-        {/* New routes for the resources sections */}
+        {/* Resources sections */}
         <Route path="/documentation" element={
           <Layout>
             <Documentation />
