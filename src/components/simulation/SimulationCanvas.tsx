@@ -20,6 +20,7 @@ const SimulationCanvas: React.FC<SimulationCanvasProps> = ({ equipment, onEquipm
   const [connectionStart, setConnectionStart] = useState<{ id: string; point: string } | null>(null);
   const [hoveredEquipment, setHoveredEquipment] = useState<string | null>(null);
   const [isFlowActive, setIsFlowActive] = useState<boolean>(false);
+  const [flowDirection, setFlowDirection] = useState<"forward" | "reverse">("forward");
   const canvasRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -31,6 +32,26 @@ const SimulationCanvas: React.FC<SimulationCanvasProps> = ({ equipment, onEquipm
     
     return () => clearTimeout(timer);
   }, []);
+
+  // Simulated pumping effect every 10 seconds
+  useEffect(() => {
+    if (connections.length > 0) {
+      const interval = setInterval(() => {
+        setFlowDirection(prev => prev === "forward" ? "reverse" : "forward");
+        
+        // Find a pump in the equipment and add a short highlight
+        const pump = equipment.find(e => e.type === "pump" || e.type === "compressor");
+        if (pump && pump.id) {
+          setSelectedEquipmentId(pump.id);
+          setTimeout(() => {
+            setSelectedEquipmentId(null);
+          }, 1000);
+        }
+      }, 10000);
+      
+      return () => clearInterval(interval);
+    }
+  }, [connections.length, equipment]);
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -94,12 +115,31 @@ const SimulationCanvas: React.FC<SimulationCanvasProps> = ({ equipment, onEquipm
         description: "Equipment connected successfully.",
       });
       
+      // Add temporary highlighting to both connected equipments
+      setSelectedEquipmentId(connectionStart.id);
+      setTimeout(() => {
+        setSelectedEquipmentId(equipmentId);
+        setTimeout(() => {
+          setSelectedEquipmentId(null);
+        }, 800);
+      }, 800);
+      
       setConnectionStart(null);
     }
   };
 
   const handleEquipmentSelect = (id: string) => {
     setSelectedEquipmentId(id === selectedEquipmentId ? null : id);
+  };
+
+  // Generate random dots for flow line animation
+  const generateFlowDots = (count: number) => {
+    return Array.from({ length: count }).map((_, i) => ({
+      id: `dot-${i}`,
+      offset: Math.random() * 100,
+      size: Math.random() * 2 + 1,
+      speed: Math.random() * 10 + 5
+    }));
   };
 
   return (
@@ -153,6 +193,7 @@ const SimulationCanvas: React.FC<SimulationCanvasProps> = ({ equipment, onEquipm
                 { key: "temp", value: "25 °C", editable: true },
                 { key: "press", value: "1 bar", editable: true },
               ]}
+              status={connections.some(c => c.from === item.id || c.to === item.id) ? "running" : "ready"}
               showDottedLines={connectionStart?.id === item.id}
               className="shadow-lg hover:shadow-xl transition-shadow duration-300"
             />
@@ -189,6 +230,19 @@ const SimulationCanvas: React.FC<SimulationCanvasProps> = ({ equipment, onEquipm
                 className={isFlowActive ? "animate-pulse" : ""}
               />
             </pattern>
+            
+            {/* More realistic fluid flow pattern */}
+            <linearGradient id="flowGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.2" />
+              <stop offset="50%" stopColor="#3b82f6" stopOpacity="0.7" />
+              <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.2" />
+            </linearGradient>
+            
+            {/* Glowing effect for active connections */}
+            <filter id="glow">
+              <feGaussianBlur stdDeviation="2" result="blur" />
+              <feComposite in="SourceGraphic" in2="blur" operator="over" />
+            </filter>
           </defs>
           
           {connections.map((connection, idx) => {
@@ -197,44 +251,105 @@ const SimulationCanvas: React.FC<SimulationCanvasProps> = ({ equipment, onEquipm
             
             if (!fromEquipment || !toEquipment) return null;
             
+            // Calculate path control points for a curved line
+            const dx = toEquipment.position.x - fromEquipment.position.x;
+            const dy = toEquipment.position.y - fromEquipment.position.y;
+            const midX = (fromEquipment.position.x + toEquipment.position.x) / 2;
+            const midY = (fromEquipment.position.y + toEquipment.position.y) / 2;
+            
+            // Add some curvature based on distance
+            const curve = Math.min(Math.sqrt(dx * dx + dy * dy) * 0.2, 50);
+            
+            // Create path
+            const path = `M ${fromEquipment.position.x} ${fromEquipment.position.y} 
+                         Q ${midX} ${midY - curve} ${toEquipment.position.x} ${toEquipment.position.y}`;
+            
+            // This creates a visible flow path
             const flowLine = (
-              <>
-                {/* Base connection line */}
-                <line
-                  key={`line-${idx}`}
-                  x1={fromEquipment.position.x}
-                  y1={fromEquipment.position.y}
-                  x2={toEquipment.position.x}
-                  y2={toEquipment.position.y}
+              <g key={`connection-${idx}`}>
+                {/* Base connection pipe */}
+                <path
+                  d={path}
                   stroke="#3b82f6"
-                  strokeWidth="3"
-                  strokeOpacity="0.6"
-                  strokeDasharray={selectedEquipmentId === fromEquipment.id || selectedEquipmentId === toEquipment.id ? "none" : "5,5"}
-                  className="transition-all duration-300"
-                  markerEnd="url(#arrowhead)"
+                  strokeWidth="6"
+                  strokeOpacity="0.3"
+                  fill="none"
+                  strokeLinecap="round"
                 />
                 
-                {/* Animated flow overlay */}
+                {/* Dotted outline for active pipes */}
+                <path
+                  d={path}
+                  stroke="#3b82f6"
+                  strokeWidth="7"
+                  strokeOpacity="0.1"
+                  fill="none"
+                  strokeDasharray="3,3"
+                  className={isFlowActive ? "connection-line" : ""}
+                />
+                
+                {/* Flow animation */}
                 {isFlowActive && (
-                  <motion.line
-                    key={`flow-${idx}`}
-                    x1={fromEquipment.position.x}
-                    y1={fromEquipment.position.y}
-                    x2={toEquipment.position.x}
-                    y2={toEquipment.position.y}
-                    stroke="url(#flowPattern)"
-                    strokeWidth="6"
-                    strokeOpacity="0.8"
-                    initial={{ strokeDasharray: "5,15", strokeDashoffset: 0 }}
-                    animate={{ strokeDashoffset: -20 }}
-                    transition={{ 
-                      duration: 1, 
-                      repeat: Infinity, 
-                      ease: "linear",
-                    }}
-                  />
+                  <g>
+                    {/* Animated fluid */}
+                    <motion.path
+                      d={path}
+                      stroke="url(#flowGradient)"
+                      strokeWidth="4"
+                      fill="none"
+                      strokeLinecap="round"
+                      initial={{ pathLength: 0, pathOffset: flowDirection === "forward" ? 1 : 0 }}
+                      animate={{ 
+                        pathLength: 0.2, 
+                        pathOffset: flowDirection === "forward" ? 0 : 1
+                      }}
+                      transition={{ 
+                        duration: 3, 
+                        repeat: Infinity, 
+                        ease: "linear",
+                      }}
+                    />
+                    
+                    {/* Moving particle effect */}
+                    {generateFlowDots(5).map(dot => (
+                      <motion.circle
+                        key={dot.id}
+                        r={dot.size}
+                        fill="#60a5fa"
+                        initial={{ 
+                          offsetDistance: `${flowDirection === "forward" ? 0 : 100}%`,
+                        }}
+                        animate={{ 
+                          offsetDistance: `${flowDirection === "forward" ? 100 : 0}%`,
+                        }}
+                        style={{
+                          offsetPath: `path("${path}")`,
+                        }}
+                        transition={{
+                          duration: dot.speed,
+                          repeat: Infinity,
+                          ease: "linear",
+                          delay: dot.offset / 100
+                        }}
+                      />
+                    ))}
+                  </g>
                 )}
-              </>
+                
+                {/* Arrow */}
+                <motion.path
+                  d={path}
+                  stroke="none"
+                  fill="none"
+                  initial={{
+                    opacity: 0
+                  }}
+                  animate={{
+                    opacity: 1
+                  }}
+                  markerEnd="url(#arrowhead)"
+                />
+              </g>
             );
             
             return flowLine;

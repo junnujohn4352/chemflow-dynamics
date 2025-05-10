@@ -5,7 +5,7 @@ import LoadingScreen from "@/components/landing/LoadingScreen";
 import { Button } from "@/components/ui/button";
 import { ChemFlowLogo } from "@/assets/icons/ChemFlowLogo";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, Beaker, FlaskConical, LineChart, Atom, Thermometer, Database, Waves, Gauge, BookOpen, Users } from "lucide-react";
+import { ArrowRight, Beaker, FlaskConical, LineChart, Atom, Thermometer, Database } from "lucide-react";
 
 const LandingPage = () => {
   const { loading, opacity } = useLoadingAnimation();
@@ -91,32 +91,12 @@ const LandingPage = () => {
                 title="Component Database"
                 description="Access extensive database of chemical components with accurate property data"
               />
-              <FeatureCard 
-                icon={<BookOpen className="h-10 w-10 text-green-600" />}
-                title="Formula Reference"
-                description="Access over 50+ chemical engineering formulas and equations for quick reference"
-              />
-              <FeatureCard 
-                icon={<Gauge className="h-10 w-10 text-amber-600" />}
-                title="Process Control"
-                description="Design and simulate control strategies for your chemical processes"
-              />
-              <FeatureCard 
-                icon={<Waves className="h-10 w-10 text-cyan-600" />}
-                title="Fluid Dynamics"
-                description="Model and analyze fluid behaviors in your process equipment"
-              />
             </div>
           </section>
           
           {/* Founders Section */}
           <section className="py-16 bg-white/60 backdrop-blur-sm rounded-3xl shadow-sm my-8">
             <div className="max-w-6xl mx-auto px-4">
-              <h2 className="text-3xl font-bold text-center mb-12 text-gray-800 flex items-center justify-center">
-                <Users className="mr-3 h-8 w-8 text-blue-600" />
-                Our Founders
-              </h2>
-              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-xl shadow-sm border border-blue-100">
                   <h3 className="text-xl font-bold text-gray-800 mb-2">P. Janardhan Reddy</h3>
@@ -139,88 +119,6 @@ const LandingPage = () => {
                   </p>
                 </div>
               </div>
-            </div>
-          </section>
-          
-          {/* New Testimonials Section */}
-          <section className="py-16 bg-white/60 backdrop-blur-sm rounded-3xl shadow-sm my-8">
-            <div className="max-w-6xl mx-auto px-4">
-              <h2 className="text-3xl font-bold text-center mb-12 text-gray-800">
-                Trusted by Chemical Engineers Worldwide
-              </h2>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <TestimonialCard
-                  quote="ChemFlow has revolutionized how we approach process design. The simulation tools are intuitive yet powerful."
-                  author="Dr. Sarah Chen"
-                  role="Process Engineer, PetroChem Industries"
-                />
-                <TestimonialCard
-                  quote="The formula database alone saved me countless hours of reference checking. An essential tool for any chemical engineer."
-                  author="Alex Rodriguez"
-                  role="Senior Researcher, Advanced Materials"
-                />
-                <TestimonialCard
-                  quote="I've used many simulation tools, but ChemFlow's attention to detail and accuracy stands out from the competition."
-                  author="Dr. Michael Okonkwo"
-                  role="Professor of Chemical Engineering"
-                />
-              </div>
-            </div>
-          </section>
-          
-          {/* New Price Section */}
-          <section className="py-16 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-3xl my-8">
-            <div className="max-w-4xl mx-auto text-center px-4">
-              <h2 className="text-3xl font-bold mb-6 text-gray-800">Simple, Transparent Pricing</h2>
-              <p className="text-xl text-gray-600 mb-8">Get full access to all ChemFlow features</p>
-              
-              <div className="bg-white rounded-xl shadow-xl p-8 max-w-md mx-auto">
-                <h3 className="text-2xl font-bold text-gray-800 mb-2">Full Access</h3>
-                <div className="text-5xl font-bold text-blue-600 mb-4">Free</div>
-                <p className="text-gray-600 mb-8">Unlimited access to all features</p>
-                
-                <ul className="text-left space-y-3 mb-8">
-                  {[
-                    "Complete simulation toolkit",
-                    "All chemical formulas & references",
-                    "Process design templates",
-                    "Equipment sizing tools",
-                    "Unlimited projects",
-                    "Export & share results"
-                  ].map((feature, i) => (
-                    <li key={i} className="flex items-center">
-                      <div className="mr-2 text-green-500">✓</div>
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-                
-                <Button 
-                  onClick={() => navigate("/chemical-tools")}
-                  className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 w-full py-6"
-                  size="lg"
-                >
-                  Get Started Now
-                </Button>
-              </div>
-            </div>
-          </section>
-          
-          {/* CTA Section */}
-          <section className="py-16 text-center">
-            <div className="bg-gradient-to-r from-blue-100 to-indigo-100 rounded-2xl shadow-lg p-12">
-              <h2 className="text-3xl font-bold mb-4 text-gray-800">Ready to transform your engineering workflow?</h2>
-              <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
-                Join chemical engineers worldwide who use ChemFlow to design, analyze, and optimize their processes
-              </p>
-              <Button 
-                onClick={() => navigate("/dashboard")}
-                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-lg py-6 px-10"
-                size="lg"
-              >
-                Start Your Journey <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
             </div>
           </section>
           
@@ -256,25 +154,6 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description }) =
       </div>
       <h3 className="text-xl font-semibold mb-3 text-gray-800">{title}</h3>
       <p className="text-gray-600">{description}</p>
-    </div>
-  );
-};
-
-interface TestimonialCardProps {
-  quote: string;
-  author: string;
-  role: string;
-}
-
-const TestimonialCard: React.FC<TestimonialCardProps> = ({ quote, author, role }) => {
-  return (
-    <div className="bg-white/60 backdrop-blur-sm p-6 rounded-xl shadow-sm">
-      <div className="text-blue-600 mb-4 text-3xl">"</div>
-      <p className="text-gray-700 italic mb-6">{quote}</p>
-      <div>
-        <p className="font-semibold text-gray-800">{author}</p>
-        <p className="text-gray-600 text-sm">{role}</p>
-      </div>
     </div>
   );
 };

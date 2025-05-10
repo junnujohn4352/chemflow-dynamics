@@ -95,11 +95,30 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
   // Determine if we should show metrics based on size and if metrics are provided
   const shouldShowMetrics = size !== "sm" && metrics && metrics.length > 0;
 
+  // Add specific animation classes based on equipment type
+  const getEquipmentAnimation = () => {
+    switch (type) {
+      case "reactor":
+        return "reactor-animation";
+      case "heat-exchanger":
+        return "heat-exchanger-animation";
+      case "pump":
+      case "compressor":
+        return "spin-slow";
+      case "flash":
+      case "vessel":
+      case "tank":
+        return "bubble-container";
+      default:
+        return "";
+    }
+  };
+
   return (
     <div
       className={`relative flex flex-col items-center ${sizeClasses[size]} ${statusColors[status]} 
-        border rounded-lg shadow-sm cursor-pointer transition-all
-        ${selected ? "ring-2 ring-blue-500 shadow-md" : "hover:shadow-md hover:border-blue-300"}
+        border rounded-lg shadow-sm cursor-pointer transition-all equipment-3d-effect ${getEquipmentAnimation()}
+        ${selected ? "ring-2 ring-blue-500 shadow-md glow" : "hover:shadow-md hover:border-blue-300"}
         ${draggable ? "cursor-grab active:cursor-grabbing" : ""}
         ${className}
       `}
@@ -118,9 +137,34 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
         />
       )}
 
-      <div className="z-10 flex flex-col items-center justify-center mb-1">
-        <div className="mb-1">{icon}</div>
-        <div className="text-xs font-medium text-center whitespace-nowrap overflow-hidden text-ellipsis w-full">
+      <div className="z-10 flex flex-col items-center justify-center mb-1 relative">
+        {/* Add animated inner content based on equipment type */}
+        {(type === "reactor" || type === "vessel" || type === "flash" || type === "tank") && (
+          <div className="absolute inset-0 overflow-hidden">
+            {[...Array(4)].map((_, i) => (
+              <div 
+                key={i} 
+                className="bubble absolute rounded-full"
+                style={{ 
+                  width: `${Math.random() * 6 + 3}px`, 
+                  height: `${Math.random() * 6 + 3}px`,
+                  left: `${Math.random() * 80 + 10}%`,
+                  animationDelay: `${Math.random() * 3}s`,
+                  animationDuration: `${Math.random() * 3 + 2}s`
+                }}
+              ></div>
+            ))}
+          </div>
+        )}
+        
+        {/* Main icon */}
+        <div className={`mb-1 ${status === "running" ? "animate-pulse" : ""}`}>{icon}</div>
+        
+        {/* Title with gradient for running equipment */}
+        <div 
+          className={`text-xs font-medium text-center whitespace-nowrap overflow-hidden text-ellipsis w-full
+            ${status === "running" ? "text-gradient" : ""}`}
+        >
           {title}
         </div>
       </div>
@@ -143,6 +187,11 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
       {/* Visual indicator that the card is selected */}
       {selected && (
         <div className="absolute -top-2 -right-2 bg-blue-500 w-4 h-4 rounded-full border-2 border-white"></div>
+      )}
+      
+      {/* Status indicator */}
+      {status === "running" && (
+        <div className="absolute bottom-1 right-1 w-2 h-2 bg-amber-500 rounded-full animate-pulse"></div>
       )}
     </div>
   );
