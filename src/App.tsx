@@ -9,6 +9,7 @@ import Dashboard from './pages/Dashboard';
 import Settings from './pages/Settings';
 import IntelligentSimulation from './pages/IntelligentSimulation';
 import HysysCalculations from './pages/HysysCalculations';
+import CreateSimulation from './pages/CreateSimulation';
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
         <Route path="/unit-converter" element={<UnitConverter />} />
         <Route path="/intelligent-simulation" element={<IntelligentSimulation />} />
         <Route path="/hysys-calculations" element={<HysysCalculations />} />
+        <Route path="/create-simulation" element={<CreateSimulation />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
