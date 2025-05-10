@@ -1,5 +1,6 @@
 
 import React from "react";
+import { motion } from "framer-motion";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Layers, FlaskConical, Thermometer, Droplets, Zap, Beaker, ArrowRight, Cylinder, Database } from "lucide-react";
 import EquipmentCard from "@/components/ui/equipment/EquipmentCard";
@@ -19,7 +20,8 @@ const EquipmentPanel: React.FC<EquipmentPanelProps> = ({ onEquipmentSelect }) =>
     } else {
       toast({
         title: "Equipment Selected",
-        description: `${type} has been selected. Drag it to the canvas.`
+        description: `${type.replace('-', ' ')} has been selected. Drag it to the canvas.`,
+        variant: "default",
       });
     }
   };
@@ -28,6 +30,7 @@ const EquipmentPanel: React.FC<EquipmentPanelProps> = ({ onEquipmentSelect }) =>
     {
       title: "Reactors",
       icon: <FlaskConical className="h-5 w-5 text-green-600" />,
+      color: "from-green-100 to-green-50",
       equipment: [
         { type: "reactor", title: "CSTR" },
         { type: "reactor", title: "PFR" },
@@ -37,6 +40,7 @@ const EquipmentPanel: React.FC<EquipmentPanelProps> = ({ onEquipmentSelect }) =>
     {
       title: "Columns",
       icon: <Layers className="h-5 w-5 text-blue-600" />,
+      color: "from-blue-100 to-blue-50",
       equipment: [
         { type: "distillation", title: "Distillation" },
         { type: "column", title: "Absorption" },
@@ -46,6 +50,7 @@ const EquipmentPanel: React.FC<EquipmentPanelProps> = ({ onEquipmentSelect }) =>
     {
       title: "Heat Exchangers",
       icon: <Thermometer className="h-5 w-5 text-red-600" />,
+      color: "from-red-100 to-red-50",
       equipment: [
         { type: "heat-exchanger", title: "Shell & Tube" },
         { type: "cooler", title: "Cooler" },
@@ -55,6 +60,7 @@ const EquipmentPanel: React.FC<EquipmentPanelProps> = ({ onEquipmentSelect }) =>
     {
       title: "Separators",
       icon: <Droplets className="h-5 w-5 text-purple-600" />,
+      color: "from-purple-100 to-purple-50",
       equipment: [
         { type: "flash", title: "Flash Drum" },
         { type: "filter", title: "Filter" }
@@ -63,6 +69,7 @@ const EquipmentPanel: React.FC<EquipmentPanelProps> = ({ onEquipmentSelect }) =>
     {
       title: "Flow Control",
       icon: <ArrowRight className="h-5 w-5 text-indigo-600" />,
+      color: "from-indigo-100 to-indigo-50",
       equipment: [
         { type: "pump", title: "Pump" },
         { type: "compressor", title: "Compressor" },
@@ -74,6 +81,7 @@ const EquipmentPanel: React.FC<EquipmentPanelProps> = ({ onEquipmentSelect }) =>
     {
       title: "Vessels",
       icon: <Cylinder className="h-5 w-5 text-amber-600" />,
+      color: "from-amber-100 to-amber-50",
       equipment: [
         { type: "tank", title: "Storage Tank" },
         { type: "vessel", title: "Vessel" }
@@ -82,6 +90,7 @@ const EquipmentPanel: React.FC<EquipmentPanelProps> = ({ onEquipmentSelect }) =>
     {
       title: "Mass Transfer",
       icon: <Database className="h-5 w-5 text-teal-600" />,
+      color: "from-teal-100 to-teal-50",
       equipment: [
         { type: "column", title: "Extraction" },
         { type: "vessel", title: "Absorption" }
@@ -90,6 +99,7 @@ const EquipmentPanel: React.FC<EquipmentPanelProps> = ({ onEquipmentSelect }) =>
     {
       title: "Utilities",
       icon: <Zap className="h-5 w-5 text-yellow-600" />,
+      color: "from-yellow-100 to-yellow-50",
       equipment: [
         { type: "heater", title: "Boiler" },
         { type: "cooler", title: "Cooling Tower" }
@@ -97,40 +107,79 @@ const EquipmentPanel: React.FC<EquipmentPanelProps> = ({ onEquipmentSelect }) =>
     }
   ];
 
+  const container = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const item = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0 }
+  };
+
   return (
-    <div className="space-y-6 overflow-auto max-h-[calc(100vh-300px)] pr-2 animate-fade-in">
+    <motion.div 
+      className="space-y-6 overflow-auto max-h-[calc(100vh-300px)] pr-2 hide-scrollbar"
+      variants={container}
+      initial="hidden"
+      animate="show"
+    >
       {equipmentCategories.map((category, idx) => (
-        <Card key={idx} className="border-blue-200 shadow-md hover:shadow-blue-200 transition-all bg-gradient-to-br from-white to-blue-50">
-          <CardHeader className="bg-gradient-to-r from-blue-100 to-indigo-100 rounded-t-lg py-3">
-            <CardTitle className="flex items-center gap-2 text-blue-700 text-lg">
-              {category.icon}
-              <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                {category.title}
-              </span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-3 pb-2">
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {category.equipment.map((item, itemIdx) => (
-                <div 
-                  key={itemIdx} 
-                  onClick={() => handleEquipmentSelect(item.type as EquipmentType)}
-                  className="transform transition-transform hover:scale-105 cursor-grab active:cursor-grabbing"
-                >
-                  <EquipmentCard
-                    type={item.type as EquipmentType}
-                    title={item.title}
-                    size="sm"
-                    showConnections={true}
-                    showDottedLines={false}
-                  />
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        <motion.div 
+          key={idx}
+          variants={item}
+          whileHover={{ scale: 1.02 }}
+          transition={{ duration: 0.2 }}
+        >
+          <Card className={`border-blue-200 shadow-md transition-all duration-300 hover:shadow-blue-200/50 bg-gradient-to-br ${category.color}`}>
+            <CardHeader className="bg-gradient-to-r from-blue-100/70 to-indigo-100/70 rounded-t-lg py-3">
+              <CardTitle className="flex items-center gap-2 text-blue-700 text-lg">
+                {category.icon}
+                <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                  {category.title}
+                </span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-3 pb-2">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {category.equipment.map((item, itemIdx) => (
+                  <motion.div 
+                    key={itemIdx} 
+                    onClick={() => handleEquipmentSelect(item.type as EquipmentType)}
+                    className="cursor-grab active:cursor-grabbing relative"
+                    whileHover={{ scale: 1.05, zIndex: 10 }}
+                    whileTap={{ scale: 0.95 }}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: itemIdx * 0.1, duration: 0.3 }}
+                    draggable
+                    onDragStart={(e) => {
+                      e.dataTransfer.setData("equipment-type", item.type);
+                      e.dataTransfer.effectAllowed = "copy";
+                    }}
+                  >
+                    <EquipmentCard
+                      type={item.type as EquipmentType}
+                      title={item.title}
+                      size="sm"
+                      showConnections={true}
+                      showDottedLines={false}
+                      className="shadow-md hover:shadow-lg transition-shadow duration-300"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-tr from-blue-600/5 to-transparent rounded-lg pointer-events-none"></div>
+                  </motion.div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
       ))}
-    </div>
+    </motion.div>
   );
 };
 

@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useRef } from "react";
+import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import EquipmentCard from "@/components/ui/equipment/EquipmentCard";
 import { EquipmentType } from "@/components/ui/equipment/EquipmentIcons";
@@ -18,8 +19,18 @@ const SimulationCanvas: React.FC<SimulationCanvasProps> = ({ equipment, onEquipm
   const [selectedEquipmentId, setSelectedEquipmentId] = useState<string | null>(null);
   const [connectionStart, setConnectionStart] = useState<{ id: string; point: string } | null>(null);
   const [hoveredEquipment, setHoveredEquipment] = useState<string | null>(null);
+  const [isFlowActive, setIsFlowActive] = useState<boolean>(false);
   const canvasRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+
+  // Start flow animation after component mounts
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsFlowActive(true);
+    }, 1500);
+    
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -43,6 +54,13 @@ const SimulationCanvas: React.FC<SimulationCanvasProps> = ({ equipment, onEquipm
 
     if (onEquipmentDrop) {
       onEquipmentDrop(equipmentType, { x, y });
+      
+      // Show toast with animation
+      toast({
+        title: "Equipment Added",
+        description: `${equipmentType.replace('-', ' ')} has been added to the flowsheet`,
+        variant: "default",
+      });
     }
   };
 
@@ -87,24 +105,40 @@ const SimulationCanvas: React.FC<SimulationCanvasProps> = ({ equipment, onEquipm
   return (
     <div 
       ref={canvasRef}
-      className="min-h-[500px] w-full bg-blue-50/50 rounded-lg border border-dashed border-blue-300 relative overflow-hidden"
+      className="min-h-[500px] w-full bg-gradient-to-br from-blue-50/50 via-purple-50/30 to-indigo-50/50 rounded-lg border border-dashed border-blue-300 relative overflow-hidden"
       onDragOver={handleDragOver}
       onDrop={handleDrop}
     >
+      {/* Animated background elements */}
       <div className="absolute inset-0 p-4 grid grid-cols-10 gap-4 bg-[url('/grid-pattern.svg')] bg-repeat">
+        <div className="absolute top-10 left-10 w-32 h-32 rounded-full bg-blue-200 opacity-10 blur-3xl animate-pulse" style={{ animationDuration: '15s' }}></div>
+        <div className="absolute bottom-20 right-20 w-40 h-40 rounded-full bg-purple-200 opacity-15 blur-2xl animate-pulse" style={{ animationDuration: '18s' }}></div>
+        
         {equipment.map((item) => (
-          <div 
+          <motion.div 
             key={item.id}
             style={{
               position: "absolute",
               left: `${item.position.x}px`,
               top: `${item.position.y}px`,
-              transform: "translate(-50%, -50%)",
               zIndex: selectedEquipmentId === item.id ? 10 : 1,
             }}
-            className="transition-all duration-200"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ 
+              opacity: 1, 
+              scale: 1,
+              x: "-50%", 
+              y: "-50%",
+            }}
+            transition={{ 
+              type: "spring",
+              duration: 0.5,
+              bounce: 0.3
+            }}
+            whileHover={{ scale: 1.05 }}
             onMouseEnter={() => setHoveredEquipment(item.id)}
             onMouseLeave={() => setHoveredEquipment(null)}
+            className="equipment-card"
           >
             <EquipmentCard
               type={item.type}
@@ -120,48 +154,130 @@ const SimulationCanvas: React.FC<SimulationCanvasProps> = ({ equipment, onEquipm
                 { key: "press", value: "1 bar", editable: true },
               ]}
               showDottedLines={connectionStart?.id === item.id}
+              className="shadow-lg hover:shadow-xl transition-shadow duration-300"
             />
-          </div>
+          </motion.div>
         ))}
 
-        {/* Draw connections between equipment */}
+        {/* Draw connections between equipment with animated flow */}
         <svg className="absolute inset-0 pointer-events-none">
+          <defs>
+            <marker 
+              id="arrowhead" 
+              markerWidth="10" 
+              markerHeight="7" 
+              refX="0" 
+              refY="3.5" 
+              orient="auto"
+            >
+              <polygon points="0 0, 10 3.5, 0 7" fill="#3b82f6" />
+            </marker>
+            
+            {/* Define animated flow pattern */}
+            <pattern
+              id="flowPattern"
+              width="20"
+              height="20"
+              patternUnits="userSpaceOnUse"
+              patternTransform="rotate(0)"
+            >
+              <circle 
+                cx="10" 
+                cy="10" 
+                r="2" 
+                fill="#3b82f6" 
+                className={isFlowActive ? "animate-pulse" : ""}
+              />
+            </pattern>
+          </defs>
+          
           {connections.map((connection, idx) => {
             const fromEquipment = equipment.find(e => e.id === connection.from);
             const toEquipment = equipment.find(e => e.id === connection.to);
             
             if (!fromEquipment || !toEquipment) return null;
             
-            return (
-              <line
-                key={idx}
-                x1={fromEquipment.position.x}
-                y1={fromEquipment.position.y}
-                x2={toEquipment.position.x}
-                y2={toEquipment.position.y}
-                stroke="#3b82f6"
-                strokeWidth="2"
-                strokeDasharray={selectedEquipmentId === fromEquipment.id || selectedEquipmentId === toEquipment.id ? "none" : "5,5"}
-              />
+            const flowLine = (
+              <>
+                {/* Base connection line */}
+                <line
+                  key={`line-${idx}`}
+                  x1={fromEquipment.position.x}
+                  y1={fromEquipment.position.y}
+                  x2={toEquipment.position.x}
+                  y2={toEquipment.position.y}
+                  stroke="#3b82f6"
+                  strokeWidth="3"
+                  strokeOpacity="0.6"
+                  strokeDasharray={selectedEquipmentId === fromEquipment.id || selectedEquipmentId === toEquipment.id ? "none" : "5,5"}
+                  className="transition-all duration-300"
+                  markerEnd="url(#arrowhead)"
+                />
+                
+                {/* Animated flow overlay */}
+                {isFlowActive && (
+                  <motion.line
+                    key={`flow-${idx}`}
+                    x1={fromEquipment.position.x}
+                    y1={fromEquipment.position.y}
+                    x2={toEquipment.position.x}
+                    y2={toEquipment.position.y}
+                    stroke="url(#flowPattern)"
+                    strokeWidth="6"
+                    strokeOpacity="0.8"
+                    initial={{ strokeDasharray: "5,15", strokeDashoffset: 0 }}
+                    animate={{ strokeDashoffset: -20 }}
+                    transition={{ 
+                      duration: 1, 
+                      repeat: Infinity, 
+                      ease: "linear",
+                    }}
+                  />
+                )}
+              </>
             );
+            
+            return flowLine;
           })}
         </svg>
       </div>
       
       {/* Canvas guidance */}
       {equipment.length === 0 && (
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-blue-400 text-center px-8 py-12 max-w-md">
-            <div className="text-6xl mb-4">✨</div>
-            <h3 className="text-xl font-semibold mb-2">Start Building Your Process</h3>
-            <p>Drag equipment from the panel on the left and drop them here to create a process flowsheet.</p>
+        <motion.div 
+          className="absolute inset-0 flex items-center justify-center"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.5 }}
+        >
+          <div className="text-blue-400 text-center px-8 py-12 max-w-md bg-white/80 backdrop-blur-sm rounded-xl shadow-lg">
+            <motion.div 
+              className="text-6xl mb-4"
+              animate={{ 
+                rotateY: [0, 360],
+              }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+            >
+              ✨
+            </motion.div>
+            <h3 className="text-xl font-semibold mb-2 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              Start Building Your Process
+            </h3>
+            <p className="text-blue-600">
+              Drag equipment from the panel on the left and drop them here to create a process flowsheet.
+            </p>
           </div>
-        </div>
+        </motion.div>
       )}
       
       {/* Connection guidance when connecting */}
       {connectionStart && (
-        <div className="absolute bottom-4 right-4 bg-blue-600 text-white px-4 py-2 rounded-md shadow-lg">
+        <motion.div 
+          className="absolute bottom-4 right-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2 rounded-md shadow-lg"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.3 }}
+        >
           <p>Click on another connection point to complete</p>
           <button 
             className="text-xs underline mt-1"
@@ -169,7 +285,7 @@ const SimulationCanvas: React.FC<SimulationCanvasProps> = ({ equipment, onEquipm
           >
             Cancel
           </button>
-        </div>
+        </motion.div>
       )}
     </div>
   );

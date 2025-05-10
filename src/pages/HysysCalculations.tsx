@@ -1,5 +1,6 @@
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import { motion } from "framer-motion";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import ComponentSelector from "@/components/simulation/ComponentSelector";
@@ -20,7 +21,6 @@ import { Progress } from "@/components/ui/progress";
 import { EquipmentType } from "@/components/ui/equipment/EquipmentIcons";
 import { Separator } from "@/components/ui/separator";
 import HysysIntegration from "@/components/simulation/HysysIntegration";
-import html2canvas from 'jspdf';
 import jsPDF from 'jspdf';
 
 const HysysCalculations = () => {
@@ -32,7 +32,17 @@ const HysysCalculations = () => {
   const [simulationRunning, setSimulationRunning] = useState(false);
   const [simulationComplete, setSimulationComplete] = useState(false);
   const [simulationProgress, setSimulationProgress] = useState(0);
+  const [loadingAnimationComplete, setLoadingAnimationComplete] = useState(false);
   const resultsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Show initial animation then set the state to complete
+    const timer = setTimeout(() => {
+      setLoadingAnimationComplete(true);
+    }, 1000);
+    
+    return () => clearTimeout(timer);
+  }, []);
 
   // Calculate progress based on current step
   const calculateProgress = () => {
@@ -163,182 +173,322 @@ const HysysCalculations = () => {
     }
   };
 
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { 
+      opacity: 1,
+      transition: { 
+        duration: 0.6,
+        when: "beforeChildren",
+        staggerChildren: 0.2
+      }
+    }
+  };
+  
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: { y: 0, opacity: 1 }
+  };
+
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-900 dark:to-blue-900">
+    <div className="flex flex-col min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-900 dark:to-blue-900 relative overflow-hidden">
       <Navbar />
       
-      <main className="flex-1 container mx-auto px-4 py-6">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">HYSYS Calculations</h1>
-          
-          <div className="mb-6">
-            <div className="flex justify-between text-sm mb-1">
-              <span className={`${currentStep === 'chemicals' ? 'font-medium text-blue-600' : ''}`}>
-                1. Select Chemicals
-              </span>
-              <span className={`${currentStep === 'thermodynamics' ? 'font-medium text-blue-600' : ''}`}>
-                2. Thermodynamic Model
-              </span>
-              <span className={`${currentStep === 'equipment' ? 'font-medium text-blue-600' : ''}`}>
-                3. Equipment Flow
-              </span>
-              <span className={`${currentStep === 'results' ? 'font-medium text-blue-600' : ''}`}>
-                4. Results
-              </span>
-            </div>
-            <Progress value={simulationProgress} className="h-2" />
-          </div>
-        </div>
-        
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 mb-6">
-          {currentStep === 'chemicals' && (
-            <div className="animate-fade-in">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Select Chemical Components</h2>
-                <Button 
-                  onClick={handleComponentSelectionDone}
-                  className="flex items-center"
+      {/* Animated background elements */}
+      <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden">
+        <div className="absolute -top-20 right-10 w-72 h-72 rounded-full bg-blue-300 opacity-20 blur-3xl animate-pulse" style={{ animationDuration: '15s' }}></div>
+        <div className="absolute top-40 -left-20 w-80 h-80 rounded-full bg-purple-300 opacity-15 blur-3xl animate-pulse" style={{ animationDuration: '18s' }}></div>
+        <div className="absolute bottom-20 right-1/4 w-96 h-96 rounded-full bg-indigo-300 opacity-10 blur-3xl animate-pulse" style={{ animationDuration: '12s' }}></div>
+      </div>
+      
+      <main className="flex-1 container mx-auto px-4 py-6 relative z-10">
+        <motion.div 
+          initial="hidden"
+          animate={loadingAnimationComplete ? "visible" : "hidden"}
+          variants={containerVariants}
+        >
+          <motion.div className="mb-6" variants={itemVariants}>
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">HYSYS Calculations</h1>
+            
+            <div className="mb-6">
+              <div className="flex justify-between text-sm mb-2">
+                <motion.span 
+                  className={`${currentStep === 'chemicals' ? 'font-medium text-blue-600' : ''} transition-colors duration-300`}
+                  whileHover={{ scale: 1.05 }}
                 >
-                  Next
-                  <ChevronRight className="h-4 w-4 ml-1" />
-                </Button>
-              </div>
-              
-              <ComponentSelector 
-                selectedComponents={selectedComponents} 
-                setSelectedComponents={setSelectedComponents} 
-              />
-            </div>
-          )}
-          
-          {currentStep === 'thermodynamics' && (
-            <div className="animate-fade-in">
-              <div className="flex justify-between items-center mb-4">
-                <div className="flex items-center">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={handleGoBack}
-                    className="mr-4"
-                  >
-                    <ArrowLeft className="h-4 w-4 mr-1" />
-                    Back
-                  </Button>
-                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Select Thermodynamic Model</h2>
-                </div>
-                <Button 
-                  onClick={handleThermodynamicsSelectionDone}
-                  className="flex items-center"
+                  1. Select Chemicals
+                </motion.span>
+                <motion.span 
+                  className={`${currentStep === 'thermodynamics' ? 'font-medium text-blue-600' : ''} transition-colors duration-300`}
+                  whileHover={{ scale: 1.05 }}
                 >
-                  Next
-                  <ChevronRight className="h-4 w-4 ml-1" />
-                </Button>
-              </div>
-              
-              <ThermodynamicsSelector 
-                selectedModel={selectedModel}
-                setSelectedModel={setSelectedModel}
-                selectedComponents={selectedComponents}
-              />
-            </div>
-          )}
-          
-          {currentStep === 'equipment' && (
-            <div className="animate-fade-in">
-              <div className="flex justify-between items-center mb-4">
-                <div className="flex items-center">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={handleGoBack}
-                    className="mr-4"
-                  >
-                    <ArrowLeft className="h-4 w-4 mr-1" />
-                    Back
-                  </Button>
-                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Equipment Flow Selection</h2>
-                </div>
-                <Button 
-                  onClick={handleEquipmentSelectionDone}
-                  className="flex items-center"
+                  2. Thermodynamic Model
+                </motion.span>
+                <motion.span 
+                  className={`${currentStep === 'equipment' ? 'font-medium text-blue-600' : ''} transition-colors duration-300`}
+                  whileHover={{ scale: 1.05 }}
                 >
-                  Run Simulation
-                  <Play className="h-4 w-4 ml-1" />
-                </Button>
-              </div>
-              
-              <div className="mb-4">
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Select equipment to add to your flowsheet. Current selection: {selectedEquipment.length} item(s)
-                </p>
-              </div>
-              
-              <EquipmentSelector onSelectEquipment={handleSelectEquipment} />
-              
-              {selectedEquipment.length > 0 && (
-                <div className="mt-4 p-4 border rounded-md">
-                  <h3 className="text-md font-medium mb-2">Selected Equipment:</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedEquipment.map((eq, idx) => (
-                      <div key={idx} className="px-3 py-2 bg-blue-50 dark:bg-blue-900 rounded-md text-sm">
-                        {eq.replace("-", " ")}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-          
-          {currentStep === 'results' && (
-            <div className="animate-fade-in" ref={resultsRef}>
-              <div className="flex justify-between items-center mb-4">
-                <div className="flex items-center">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={handleGoBack}
-                    className="mr-4"
-                  >
-                    <ArrowLeft className="h-4 w-4 mr-1" />
-                    Back
-                  </Button>
-                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Simulation Results</h2>
-                </div>
-                <Button 
-                  onClick={handleExportToPDF}
-                  variant="outline"
-                  className="flex items-center"
+                  3. Equipment Flow
+                </motion.span>
+                <motion.span 
+                  className={`${currentStep === 'results' ? 'font-medium text-blue-600' : ''} transition-colors duration-300`}
+                  whileHover={{ scale: 1.05 }}
                 >
-                  <FileText className="h-4 w-4 mr-1" />
-                  Export PDF
-                </Button>
+                  4. Results
+                </motion.span>
               </div>
-              
-              {simulationRunning ? (
-                <div className="flex flex-col items-center justify-center py-12">
-                  <RefreshCw className="h-10 w-10 text-blue-600 animate-spin mb-4" />
-                  <h3 className="text-lg font-medium">Running HYSYS Calculations</h3>
-                  <p className="text-gray-600 dark:text-gray-400">
-                    Please wait while we process your simulation...
-                  </p>
-                </div>
-              ) : simulationComplete ? (
-                <HysysIntegration 
-                  selectedComponents={selectedComponents}
-                  thermodynamicModel={selectedModel}
+              <motion.div 
+                className="relative h-2 bg-blue-100 rounded-full overflow-hidden"
+                initial={{ width: "100%" }}
+              >
+                <motion.div 
+                  className="absolute top-0 left-0 h-full bg-gradient-to-r from-blue-500 to-indigo-600"
+                  initial={{ width: "0%" }}
+                  animate={{ width: `${simulationProgress}%` }}
+                  transition={{ 
+                    duration: 0.5, 
+                    ease: "easeInOut" 
+                  }}
                 />
-              ) : (
-                <div className="flex flex-col items-center justify-center py-12">
-                  <h3 className="text-lg font-medium">Ready to Run Simulation</h3>
-                  <p className="text-gray-600 dark:text-gray-400">
-                    Click "Run Simulation" to start HYSYS calculations
+              </motion.div>
+            </div>
+          </motion.div>
+          
+          <motion.div 
+            className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-blue-100 p-6 mb-6"
+            variants={itemVariants}
+          >
+            {currentStep === 'chemicals' && (
+              <motion.div 
+                className="animate-fade-in"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-xl font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Select Chemical Components</h2>
+                  <Button 
+                    onClick={handleComponentSelectionDone}
+                    className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 shadow-md hover:shadow-blue-300/30"
+                  >
+                    Next
+                    <ChevronRight className="h-4 w-4 ml-1" />
+                  </Button>
+                </div>
+                
+                <ComponentSelector 
+                  selectedComponents={selectedComponents} 
+                  setSelectedComponents={setSelectedComponents} 
+                />
+              </motion.div>
+            )}
+            
+            {currentStep === 'thermodynamics' && (
+              <motion.div 
+                className="animate-fade-in"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                <div className="flex justify-between items-center mb-4">
+                  <div className="flex items-center">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={handleGoBack}
+                      className="mr-4 border-blue-200 hover:bg-blue-50"
+                    >
+                      <ArrowLeft className="h-4 w-4 mr-1" />
+                      Back
+                    </Button>
+                    <h2 className="text-xl font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Select Thermodynamic Model</h2>
+                  </div>
+                  <Button 
+                    onClick={handleThermodynamicsSelectionDone}
+                    className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 shadow-md hover:shadow-blue-300/30"
+                  >
+                    Next
+                    <ChevronRight className="h-4 w-4 ml-1" />
+                  </Button>
+                </div>
+                
+                <ThermodynamicsSelector 
+                  selectedModel={selectedModel}
+                  setSelectedModel={setSelectedModel}
+                  selectedComponents={selectedComponents}
+                />
+              </motion.div>
+            )}
+            
+            {currentStep === 'equipment' && (
+              <motion.div 
+                className="animate-fade-in"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                <div className="flex justify-between items-center mb-4">
+                  <div className="flex items-center">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={handleGoBack}
+                      className="mr-4 border-blue-200 hover:bg-blue-50"
+                    >
+                      <ArrowLeft className="h-4 w-4 mr-1" />
+                      Back
+                    </Button>
+                    <h2 className="text-xl font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Equipment Flow Selection</h2>
+                  </div>
+                  <Button 
+                    onClick={handleEquipmentSelectionDone}
+                    className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 shadow-md hover:shadow-blue-300/30"
+                  >
+                    Run Simulation
+                    <Play className="h-4 w-4 ml-1" />
+                  </Button>
+                </div>
+                
+                <div className="mb-4">
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Select equipment to add to your flowsheet. Current selection: {selectedEquipment.length} item(s)
                   </p>
                 </div>
-              )}
-            </div>
-          )}
-        </div>
+                
+                <EquipmentSelector onSelectEquipment={handleSelectEquipment} />
+                
+                {selectedEquipment.length > 0 && (
+                  <motion.div 
+                    className="mt-4 p-4 border border-blue-100 rounded-md bg-blue-50/50"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ 
+                      opacity: 1, 
+                      height: 'auto',
+                      transition: { duration: 0.3 }
+                    }}
+                  >
+                    <h3 className="text-md font-medium mb-2 text-blue-700">Selected Equipment:</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedEquipment.map((eq, idx) => (
+                        <motion.div 
+                          key={idx} 
+                          className="px-3 py-2 bg-gradient-to-r from-blue-100 to-indigo-100 rounded-md text-sm text-blue-700 shadow-sm"
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ 
+                            opacity: 1, 
+                            scale: 1,
+                            transition: { delay: idx * 0.1 }
+                          }}
+                          whileHover={{ scale: 1.05 }}
+                        >
+                          {eq.replace("-", " ")}
+                        </motion.div>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </motion.div>
+            )}
+            
+            {currentStep === 'results' && (
+              <motion.div 
+                className="animate-fade-in"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                ref={resultsRef}
+              >
+                <div className="flex justify-between items-center mb-4">
+                  <div className="flex items-center">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={handleGoBack}
+                      className="mr-4 border-blue-200 hover:bg-blue-50"
+                    >
+                      <ArrowLeft className="h-4 w-4 mr-1" />
+                      Back
+                    </Button>
+                    <h2 className="text-xl font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Simulation Results</h2>
+                  </div>
+                  <Button 
+                    onClick={handleExportToPDF}
+                    variant="outline"
+                    className="flex items-center border-blue-200 hover:bg-blue-50"
+                    disabled={!simulationComplete}
+                  >
+                    <FileText className="h-4 w-4 mr-1" />
+                    Export PDF
+                  </Button>
+                </div>
+                
+                {simulationRunning ? (
+                  <motion.div 
+                    className="flex flex-col items-center justify-center py-12"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    <motion.div
+                      animate={{ 
+                        rotate: 360,
+                        transition: { duration: 2, repeat: Infinity, ease: "linear" }
+                      }}
+                    >
+                      <RefreshCw className="h-16 w-16 text-blue-600 mb-4" />
+                    </motion.div>
+                    <motion.h3 
+                      className="text-lg font-medium bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"
+                      initial={{ opacity: 0, y: 5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.2, duration: 0.3 }}
+                    >
+                      Running HYSYS Calculations
+                    </motion.h3>
+                    <motion.p 
+                      className="text-gray-600 dark:text-gray-400"
+                      initial={{ opacity: 0, y: 5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.4, duration: 0.3 }}
+                    >
+                      Please wait while we process your simulation...
+                    </motion.p>
+                  </motion.div>
+                ) : simulationComplete ? (
+                  <HysysIntegration 
+                    selectedComponents={selectedComponents}
+                    thermodynamicModel={selectedModel}
+                  />
+                ) : (
+                  <motion.div 
+                    className="flex flex-col items-center justify-center py-12"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    <motion.h3 
+                      className="text-lg font-medium mb-2"
+                      initial={{ opacity: 0, y: 5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.2, duration: 0.3 }}
+                    >
+                      Ready to Run Simulation
+                    </motion.h3>
+                    <motion.p 
+                      className="text-gray-600 dark:text-gray-400"
+                      initial={{ opacity: 0, y: 5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.4, duration: 0.3 }}
+                    >
+                      Click "Run Simulation" to start HYSYS calculations
+                    </motion.p>
+                  </motion.div>
+                )}
+              </motion.div>
+            )}
+          </motion.div>
+        </motion.div>
       </main>
       
       <Footer />
