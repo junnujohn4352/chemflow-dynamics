@@ -1,3 +1,4 @@
+
 import React from "react";
 import { motion } from "framer-motion";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -23,6 +24,12 @@ const EquipmentPanel: React.FC<EquipmentPanelProps> = ({ onEquipmentSelect }) =>
         variant: "default",
       });
     }
+  };
+
+  // Create a function to handle dataTransfer separately from Framer Motion events
+  const handleDragStart = (type: string, e: React.DragEvent<HTMLDivElement>) => {
+    e.dataTransfer.setData("equipment-type", type);
+    e.dataTransfer.effectAllowed = "copy";
   };
 
   const equipmentCategories = [
@@ -146,32 +153,36 @@ const EquipmentPanel: React.FC<EquipmentPanelProps> = ({ onEquipmentSelect }) =>
             </CardHeader>
             <CardContent className="pt-3 pb-2">
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {category.equipment.map((item, itemIdx) => (
-                  <motion.div 
-                    key={itemIdx} 
-                    onClick={() => handleEquipmentSelect(item.type as EquipmentType)}
-                    className="cursor-grab active:cursor-grabbing relative"
-                    whileHover={{ scale: 1.05, zIndex: 10 }}
-                    whileTap={{ scale: 0.95 }}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: itemIdx * 0.1, duration: 0.3 }}
-                    draggable
-                    onDragStart={(e: React.DragEvent<HTMLDivElement>) => {
-                      e.dataTransfer.setData("equipment-type", item.type);
-                      e.dataTransfer.effectAllowed = "copy";
-                    }}
-                  >
-                    <EquipmentCard
-                      type={item.type as EquipmentType}
-                      title={item.title}
-                      size="sm"
-                      showConnections={true}
-                      showDottedLines={false}
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-tr from-blue-600/5 to-transparent rounded-lg pointer-events-none"></div>
-                  </motion.div>
-                ))}
+                {category.equipment.map((item, itemIdx) => {
+                  // Use a regular div with onDragStart instead of using Framer Motion's drag handlers
+                  return (
+                    <motion.div 
+                      key={itemIdx} 
+                      onClick={() => handleEquipmentSelect(item.type as EquipmentType)}
+                      className="cursor-grab active:cursor-grabbing relative"
+                      whileHover={{ scale: 1.05, zIndex: 10 }}
+                      whileTap={{ scale: 0.95 }}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: itemIdx * 0.1, duration: 0.3 }}
+                    >
+                      <div
+                        draggable
+                        onDragStart={(e) => handleDragStart(item.type, e)}
+                      >
+                        <EquipmentCard
+                          type={item.type as EquipmentType}
+                          title={item.title}
+                          size="sm"
+                          showConnections={true}
+                          showDottedLines={false}
+                          className="shadow-md hover:shadow-lg transition-shadow duration-300"
+                        />
+                      </div>
+                      <div className="absolute inset-0 bg-gradient-to-tr from-blue-600/5 to-transparent rounded-lg pointer-events-none"></div>
+                    </motion.div>
+                  );
+                })}
               </div>
             </CardContent>
           </Card>
