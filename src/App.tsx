@@ -13,6 +13,13 @@ import CreateSimulation from './pages/CreateSimulation';
 import LandingPage from './pages/LandingPage';
 import { Layout } from './components/layout/Layout';
 
+// Import or create the new pages
+import Documentation from './pages/Documentation';
+import Bookmarks from './pages/Bookmarks';
+import Resources from './pages/Resources';
+import DataAnalysis from './pages/DataAnalysis';
+import Reports from './pages/Reports';
+
 function App() {
   return (
     <Router>
@@ -61,6 +68,32 @@ function App() {
         <Route path="/create-simulation" element={
           <Layout>
             <CreateSimulation />
+          </Layout>
+        } />
+        {/* New routes for the resources sections */}
+        <Route path="/documentation" element={
+          <Layout>
+            <Documentation />
+          </Layout>
+        } />
+        <Route path="/bookmarks" element={
+          <Layout>
+            <Bookmarks />
+          </Layout>
+        } />
+        <Route path="/resources" element={
+          <Layout>
+            <Resources />
+          </Layout>
+        } />
+        <Route path="/data-analysis" element={
+          <Layout>
+            <DataAnalysis />
+          </Layout>
+        } />
+        <Route path="/reports" element={
+          <Layout>
+            <Reports />
           </Layout>
         } />
         <Route path="*" element={<NotFound />} />

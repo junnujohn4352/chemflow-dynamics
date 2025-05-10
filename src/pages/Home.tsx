@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import ChemAssistant from "@/components/ai/ChemAssistant";
-import { Beaker, Calculator, BookOpen, Atom, Globe, Zap } from "lucide-react";
+import { Beaker, Calculator, BookOpen, Atom, Globe, Zap, FileText, Bookmark, BarChart3, Database } from "lucide-react";
 
 const Home: React.FC = () => {
   return (
@@ -12,9 +12,16 @@ const Home: React.FC = () => {
       <div className="text-center mb-12">
         <h1 className="text-4xl font-bold mb-2">Welcome to ChemFlow</h1>
         <p className="text-xl text-muted-foreground">Chemical Engineering Simulation & Tools</p>
+        <div className="mt-4">
+          <Button asChild variant="outline">
+            <Link to="/" className="flex items-center justify-center">
+              Visit Landing Page
+            </Link>
+          </Button>
+        </div>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
           <CardHeader>
             <div className="flex items-center mb-2">
@@ -73,6 +80,88 @@ const Home: React.FC = () => {
               <Link to="/unit-converter" className="flex items-center justify-center">
                 Convert Units
                 <Globe className="ml-2 h-4 w-4 transition-transform group-hover:rotate-180" />
+              </Link>
+            </Button>
+          </CardFooter>
+        </Card>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+        <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+          <CardHeader>
+            <div className="flex items-center mb-2">
+              <BookOpen className="h-6 w-6 text-blue-500 mr-2" />
+              <CardTitle>Learning Resources</CardTitle>
+            </div>
+            <CardDescription>Educational materials for chemical engineering</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p>Access textbooks, tutorials, practice problems, and quizzes</p>
+          </CardContent>
+          <CardFooter>
+            <Button asChild variant="outline" className="w-full group">
+              <Link to="/resources" className="flex items-center justify-center">
+                Browse Resources
+              </Link>
+            </Button>
+          </CardFooter>
+        </Card>
+        
+        <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+          <CardHeader>
+            <div className="flex items-center mb-2">
+              <Bookmark className="h-6 w-6 text-purple-500 mr-2" />
+              <CardTitle>My Bookmarks</CardTitle>
+            </div>
+            <CardDescription>Save and organize your favorite resources</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p>Quickly access your saved formulas, articles, and simulations</p>
+          </CardContent>
+          <CardFooter>
+            <Button asChild variant="outline" className="w-full group">
+              <Link to="/bookmarks" className="flex items-center justify-center">
+                View Bookmarks
+              </Link>
+            </Button>
+          </CardFooter>
+        </Card>
+        
+        <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+          <CardHeader>
+            <div className="flex items-center mb-2">
+              <BarChart3 className="h-6 w-6 text-green-500 mr-2" />
+              <CardTitle>Data Analysis</CardTitle>
+            </div>
+            <CardDescription>Process data visualization and analysis</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p>Visualize and analyze chemical engineering data with powerful charts</p>
+          </CardContent>
+          <CardFooter>
+            <Button asChild variant="outline" className="w-full group">
+              <Link to="/data-analysis" className="flex items-center justify-center">
+                Open Analysis Tools
+              </Link>
+            </Button>
+          </CardFooter>
+        </Card>
+        
+        <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+          <CardHeader>
+            <div className="flex items-center mb-2">
+              <FileText className="h-6 w-6 text-orange-500 mr-2" />
+              <CardTitle>My Reports</CardTitle>
+            </div>
+            <CardDescription>Access and manage your simulation reports</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p>View, download, and share your previous simulation results</p>
+          </CardContent>
+          <CardFooter>
+            <Button asChild variant="outline" className="w-full group">
+              <Link to="/reports" className="flex items-center justify-center">
+                View Reports
               </Link>
             </Button>
           </CardFooter>

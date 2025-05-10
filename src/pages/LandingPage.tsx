@@ -4,7 +4,7 @@ import { useLoadingAnimation } from "@/hooks/useLoadingAnimation";
 import { Button } from "@/components/ui/button";
 import { ChemFlowLogo } from "@/assets/icons/ChemFlowLogo";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, Beaker, FlaskConical, LineChart, Atom, Thermometer, Database, ChevronDown } from "lucide-react";
+import { ArrowRight, Beaker, FlaskConical, LineChart, Atom, Thermometer, Database, ChevronDown, BookOpen, Bookmark, BarChart3, FileText, Github, Code } from "lucide-react";
 import FormulaCard from "@/components/landing/FormulaCard";
 
 const LandingPage = () => {
@@ -101,6 +101,105 @@ const LandingPage = () => {
             <FlaskConical className="absolute right-0 transform translate-x-1/2 text-purple-500 opacity-20 w-12 h-12" />
             <LineChart className="absolute bottom-0 transform translate-y-1/2 text-indigo-500 opacity-20 w-12 h-12" />
             <Atom className="absolute left-0 transform -translate-x-1/2 text-cyan-500 opacity-20 w-12 h-12" />
+          </div>
+        </div>
+      </section>
+
+      {/* Open Source Section */}
+      <section className="py-20 bg-gradient-to-br from-blue-50 to-indigo-50">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-6">
+            Free & Open-Source Chemical Engineering Platform
+          </h2>
+          <p className="text-center text-lg mb-12 max-w-3xl mx-auto">
+            ChemFlow is 100% free and open-source, built by engineers for engineers, without requiring any API keys
+          </p>
+          
+          <div className="flex flex-col md:flex-row gap-8 max-w-5xl mx-auto">
+            <div className="flex-1 bg-white p-6 rounded-xl shadow-sm border border-blue-100 transform transition-all duration-300 hover:-translate-y-1 hover:shadow-md">
+              <div className="flex items-center mb-4">
+                <div className="p-3 bg-blue-100 rounded-full mr-3">
+                  <Github className="h-6 w-6 text-blue-700" />
+                </div>
+                <h3 className="text-xl font-semibold text-blue-700">Community Driven</h3>
+              </div>
+              <p className="text-gray-700">
+                Join our growing community of contributors and help shape the future of chemical engineering software. 
+                Fork us on GitHub, submit issues, and contribute code to help make ChemFlow better for everyone.
+              </p>
+              <Button 
+                variant="outline"
+                className="mt-4 border-blue-200 hover:bg-blue-50"
+                onClick={() => window.open("https://github.com/chemflow/open-source", "_blank")}
+              >
+                <Github className="h-4 w-4 mr-2" />
+                View Source Code
+              </Button>
+            </div>
+            
+            <div className="flex-1 bg-white p-6 rounded-xl shadow-sm border border-purple-100 transform transition-all duration-300 hover:-translate-y-1 hover:shadow-md">
+              <div className="flex items-center mb-4">
+                <div className="p-3 bg-purple-100 rounded-full mr-3">
+                  <Code className="h-6 w-6 text-purple-700" />
+                </div>
+                <h3 className="text-xl font-semibold text-purple-700">API-Free Solution</h3>
+              </div>
+              <p className="text-gray-700">
+                ChemFlow works completely offline without requiring any third-party APIs or paid services. 
+                All simulations and calculations run locally in your browser, ensuring data privacy and accessibility.
+              </p>
+              <Button 
+                variant="outline" 
+                className="mt-4 border-purple-200 hover:bg-purple-50"
+                onClick={() => navigate("/documentation")}
+              >
+                <FileText className="h-4 w-4 mr-2" />
+                Read Documentation
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Learning Resources Section */}
+      <section className="py-20 bg-white">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-16">
+            Educational Resources & Tools
+          </h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <ResourceCard 
+              icon={<BookOpen className="h-10 w-10 text-blue-600" />}
+              title="Learning Resources"
+              description="Access textbooks, tutorials, practice problems, and quizzes to enhance your learning experience."
+              buttonText="Browse Resources"
+              buttonLink="/resources"
+            />
+            
+            <ResourceCard 
+              icon={<Bookmark className="h-10 w-10 text-purple-600" />}
+              title="My Bookmarks"
+              description="Save and organize your favorite formulas, articles, and simulations for quick reference."
+              buttonText="View Bookmarks"
+              buttonLink="/bookmarks"
+            />
+            
+            <ResourceCard 
+              icon={<BarChart3 className="h-10 w-10 text-green-600" />}
+              title="Data Analysis"
+              description="Visualize and analyze chemical engineering data with powerful charts and statistical tools."
+              buttonText="Open Analysis Tools"
+              buttonLink="/data-analysis"
+            />
+            
+            <ResourceCard 
+              icon={<FileText className="h-10 w-10 text-orange-500" />}
+              title="My Reports"
+              description="Access and manage your simulation reports, calculations, and project documentation."
+              buttonText="View Reports"
+              buttonLink="/reports"
+            />
           </div>
         </div>
       </section>
@@ -383,6 +482,35 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description, del
       </div>
       <h3 className="text-xl font-semibold mb-3 text-gray-800">{title}</h3>
       <p className="text-gray-600">{description}</p>
+    </div>
+  );
+};
+
+interface ResourceCardProps {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  buttonText: string;
+  buttonLink: string;
+}
+
+const ResourceCard: React.FC<ResourceCardProps> = ({ icon, title, description, buttonText, buttonLink }) => {
+  const navigate = useNavigate();
+
+  return (
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 transform transition-all duration-300 hover:-translate-y-1 hover:shadow-md">
+      <div className="bg-blue-50 p-4 rounded-full inline-flex items-center justify-center mb-4 text-blue-600">
+        {icon}
+      </div>
+      <h3 className="text-xl font-semibold mb-3 text-gray-800">{title}</h3>
+      <p className="text-gray-600 mb-6">{description}</p>
+      <Button
+        variant="outline"
+        onClick={() => navigate(buttonLink)}
+        className="w-full border-blue-200 hover:bg-blue-50"
+      >
+        {buttonText}
+      </Button>
     </div>
   );
 };
