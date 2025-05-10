@@ -13,7 +13,7 @@ import {
   Thermometer,
   Waves,
   Beaker,
-  Convert
+  ArrowRightLeft // Replaced 'Convert' with 'ArrowRightLeft' which is a valid icon for conversions
 } from "lucide-react";
 
 const ChemicalTools = () => {
@@ -99,7 +99,7 @@ const ChemicalTools = () => {
           {/* Unit Converter Panel */}
           <GlassPanel className="flex flex-col h-full">
             <div className="bg-indigo-50 rounded-full p-4 w-16 h-16 flex items-center justify-center mb-4">
-              <Calculator className="h-8 w-8 text-indigo-600" />
+              <ArrowRightLeft className="h-8 w-8 text-indigo-600" />
             </div>
             <h2 className="text-2xl font-semibold mb-2">Unit Converter</h2>
             <p className="text-gray-600 mb-6 flex-grow">
