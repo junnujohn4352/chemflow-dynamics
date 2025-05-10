@@ -40,13 +40,13 @@ const LandingPage = () => {
               </Button>
             </Link>
 
-            <Link to="/code-verification">
+            <Link to="/process-simulation">
               <Button 
                 size="lg" 
                 variant="outline"
                 className="w-full md:w-auto border-green-500 text-green-600 hover:bg-green-50 text-lg"
               >
-                Enter Activation Code
+                Process Simulation Environment
               </Button>
             </Link>
           </div>

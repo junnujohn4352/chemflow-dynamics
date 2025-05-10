@@ -14,6 +14,7 @@ import LandingPage from './pages/LandingPage';
 import { Layout } from './components/layout/Layout';
 import ChemistryGame from './pages/ChemistryGame';
 import CodeVerification from './pages/CodeVerification';
+import ProcessSimulation from './pages/ProcessSimulation';
 
 // Import pages
 import Documentation from './pages/Documentation';
@@ -73,6 +74,11 @@ function App() {
         <Route path="/create-simulation" element={
           <Layout>
             <CreateSimulation />
+          </Layout>
+        } />
+        <Route path="/process-simulation" element={
+          <Layout>
+            <ProcessSimulation />
           </Layout>
         } />
         {/* Resources sections */}
