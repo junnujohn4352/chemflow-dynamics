@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -10,6 +10,9 @@ import { useToast } from "@/hooks/use-toast";
 import { SimulationBuilder } from "@/components/simulation/SimulationBuilder";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import HysysIntegration from "@/components/simulation/HysysIntegration";
+import EquipmentPanel from "@/components/simulation/EquipmentPanel";
+import { EquipmentType } from "@/components/ui/equipment/EquipmentIcons";
+import SimulationCanvas from "@/components/simulation/SimulationCanvas";
 
 const IntelligentSimulation = () => {
   const navigate = useNavigate();
@@ -17,6 +20,8 @@ const IntelligentSimulation = () => {
   const [activeView, setActiveView] = useState<'builder' | 'hysys'>('builder');
   const [selectedComponents, setSelectedComponents] = useState<string[]>(["Methanol", "Ethanol", "Water"]);
   const [thermodynamicModel, setThermodynamicModel] = useState<string>("Peng-Robinson");
+  const [canvasEquipment, setCanvasEquipment] = useState<{type: EquipmentType, id: string, position: {x: number, y: number}}[]>([]);
+  const canvasRef = useRef<HTMLDivElement>(null);
   
   const handleStartAISimulation = () => {
     toast({
@@ -34,6 +39,19 @@ const IntelligentSimulation = () => {
         description: `${component} has been added to your simulation.`
       });
     }
+  };
+
+  const handleEquipmentDrop = (type: EquipmentType, position: {x: number, y: number}) => {
+    setCanvasEquipment([...canvasEquipment, {
+      type,
+      id: `${type}-${Date.now()}`,
+      position
+    }]);
+    
+    toast({
+      title: "Equipment Added",
+      description: `${type.replace('-', ' ')} has been added to your simulation.`
+    });
   };
   
   return (
@@ -189,19 +207,28 @@ const IntelligentSimulation = () => {
           </div>
           
           <div className="mb-8 relative z-10">
-            <h2 className="text-xl font-semibold mb-4 text-blue-700">Process Simulation Environment</h2>
-            <div className="bg-white/80 backdrop-blur-sm p-6 rounded-xl border border-blue-200 shadow-lg hover:shadow-blue-200 transition-shadow">
-              {activeView === 'builder' ? (
-                <SimulationBuilder 
-                  selectedComponents={selectedComponents}
-                  thermodynamicModel={thermodynamicModel}
-                />
-              ) : (
-                <HysysIntegration 
-                  selectedComponents={selectedComponents}
-                  thermodynamicModel={thermodynamicModel}
-                />
-              )}
+            <h2 className="text-xl font-semibold mb-4 text-blue-700 bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              Process Simulation Environment
+            </h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <div className="col-span-1 bg-white/80 backdrop-blur-sm p-4 rounded-xl border border-blue-200 shadow-lg hover:shadow-blue-200 transition-shadow">
+                <h3 className="text-lg font-semibold mb-4 text-blue-700">Equipment Library</h3>
+                <EquipmentPanel />
+              </div>
+              
+              <div className="col-span-3 bg-white/80 backdrop-blur-sm rounded-xl border border-blue-200 shadow-lg hover:shadow-blue-200 transition-shadow">
+                <div className="p-4 border-b border-blue-200">
+                  <h3 className="text-lg font-semibold text-blue-700">Simulation Workspace</h3>
+                  <p className="text-sm text-blue-600">Drag equipment from the library to build your process flowsheet</p>
+                </div>
+                <div className="p-4" ref={canvasRef}>
+                  <SimulationCanvas 
+                    equipment={canvasEquipment}
+                    onEquipmentDrop={handleEquipmentDrop}
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </div>
