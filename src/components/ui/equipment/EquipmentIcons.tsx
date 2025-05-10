@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Beaker, Layers, Thermometer, ArrowRight, Pump, Zap, FlaskConical, Droplets, Gauge, Cylinder, Filter, Database } from "lucide-react";
+import { Beaker, Layers, Thermometer, ArrowRight, Zap, FlaskConical, Droplets, Gauge, Cylinder, Filter, Database, CircleDot } from "lucide-react";
 
 export type EquipmentType = 
   | "reactor" 
@@ -38,7 +38,7 @@ export const DistillationIcon: React.FC<EquipmentIconProps> = ({ className }) =>
 );
 
 export const PumpIcon: React.FC<EquipmentIconProps> = ({ className }) => (
-  <Pump className={`h-6 w-6 text-purple-600 ${className || ""}`} />
+  <CircleDot className={`h-6 w-6 text-purple-600 ${className || ""}`} />
 );
 
 export const CompressorIcon: React.FC<EquipmentIconProps> = ({ className }) => (
