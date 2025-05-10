@@ -78,12 +78,6 @@ const Auth = () => {
           description: "Please check your email for verification.",
           variant: "success",
         });
-        
-        // Navigation will be handled by the onAuthStateChange listener
-        // Explicitly navigate in case the listener doesn't trigger
-        setTimeout(() => {
-          navigate('/resources');
-        }, 500);
       }
     } catch (error: any) {
       toast({
@@ -117,12 +111,6 @@ const Auth = () => {
         description: "You've successfully signed in.",
         variant: "success",
       });
-      
-      // Navigation will be handled by the onAuthStateChange listener
-      // Explicitly navigate in case the listener doesn't trigger
-      setTimeout(() => {
-        navigate('/resources');
-      }, 500);
     } catch (error: any) {
       console.error("Sign in error:", error);
       toast({

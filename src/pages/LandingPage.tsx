@@ -1,12 +1,13 @@
 
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
 const LandingPage = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   
   // Check if user is logged in
   const checkAuth = async () => {
@@ -28,10 +29,10 @@ const LandingPage = () => {
       const isAuthenticated = await checkAuth();
       if (isAuthenticated) {
         // User is already logged in, redirect to resources
-        window.location.href = "/resources";
+        navigate("/resources");
       } else {
         // User is not logged in, redirect to auth page
-        window.location.href = "/auth";
+        navigate("/auth");
       }
     } catch (error) {
       console.error("Error in Get Started handler:", error);
