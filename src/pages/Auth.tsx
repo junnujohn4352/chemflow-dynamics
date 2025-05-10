@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -184,6 +185,8 @@ const Auth = () => {
       });
 
       if (error) throw error;
+
+      console.log("Resend verification response:", data);
 
       setResendCooldown(60); // Set cooldown to 60 seconds
       setInfoMessage("A new verification code has been sent to your email. Please check your inbox and spam folder.");

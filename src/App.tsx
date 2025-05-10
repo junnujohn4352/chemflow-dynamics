@@ -12,6 +12,7 @@ import IntelligentSimulation from './pages/IntelligentSimulation';
 import CreateSimulation from './pages/CreateSimulation';
 import LandingPage from './pages/LandingPage';
 import { Layout } from './components/layout/Layout';
+import ChemistryGame from './pages/ChemistryGame';
 
 // Import or create the new pages
 import Documentation from './pages/Documentation';
@@ -60,7 +61,14 @@ function App() {
         });
         
         // THEN check for existing session
-        const { data } = await supabase.auth.getSession();
+        const { data, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error("Auth session error:", error);
+          setIsAuthenticated(false);
+          return;
+        }
+        
+        console.log("Initial session check:", data);
         setIsAuthenticated(!!data.session);
         
         return () => subscription.unsubscribe();
@@ -87,6 +95,7 @@ function App() {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/auth" element={isAuthenticated ? <Navigate to="/resources" /> : <Auth />} />
+        <Route path="/chemistry-game" element={<ChemistryGame />} />
         <Route path="/home" element={
           <Layout>
             <Home />

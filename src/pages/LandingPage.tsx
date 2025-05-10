@@ -49,6 +49,29 @@ const LandingPage = () => {
     <div className="min-h-screen flex flex-col">
       <main className="flex-grow">
         <LandingContent />
+        
+        {/* Action Buttons */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="flex flex-col md:flex-row gap-6 justify-center items-center">
+            <Button 
+              size="lg" 
+              onClick={handleGetStarted}
+              className="w-full md:w-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-lg"
+            >
+              Get Started with ChemFlow
+            </Button>
+            
+            <Link to="/chemistry-game">
+              <Button 
+                size="lg" 
+                variant="outline"
+                className="w-full md:w-auto border-blue-500 text-blue-600 hover:bg-blue-50 text-lg"
+              >
+                Play Chemistry Game
+              </Button>
+            </Link>
+          </div>
+        </div>
       </main>
 
       {/* Footer */}
