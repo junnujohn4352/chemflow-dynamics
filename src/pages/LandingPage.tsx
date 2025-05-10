@@ -1,3 +1,4 @@
+
 import React from "react";
 import { useLoadingAnimation } from "@/hooks/useLoadingAnimation";
 import LoadingScreen from "@/components/landing/LoadingScreen";
@@ -39,7 +40,7 @@ const LandingPage = () => {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
                 <Button 
-                  onClick={() => navigate("/chemical-formulas")}
+                  onClick={() => navigate("/chemical-tools")}
                   className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-lg py-6 px-8"
                   size="lg"
                 >
@@ -196,7 +197,7 @@ const LandingPage = () => {
                 </ul>
                 
                 <Button 
-                  onClick={() => navigate("/chemical-formulas")}
+                  onClick={() => navigate("/chemical-tools")}
                   className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 w-full py-6"
                   size="lg"
                 >
@@ -214,7 +215,7 @@ const LandingPage = () => {
                 Join chemical engineers worldwide who use ChemFlow to design, analyze, and optimize their processes
               </p>
               <Button 
-                onClick={() => navigate("/chemical-formulas")}
+                onClick={() => navigate("/chemical-tools")}
                 className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-lg py-6 px-10"
                 size="lg"
               >

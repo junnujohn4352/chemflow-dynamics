@@ -19,6 +19,7 @@ import HysysCalculations from "./pages/HysysCalculations";
 import UnitConverter from "./pages/UnitConverter";
 import CodeConverter from "./pages/CodeConverter";
 import IntelligentSimulation from "./pages/IntelligentSimulation";
+import ChemicalTools from "./pages/ChemicalTools";
 
 // Components
 import { Toaster } from "./components/ui/toaster";
@@ -42,6 +43,7 @@ const App: React.FC = () => {
         <Route path="/hysys-calculations" element={<HysysCalculations />} />
         <Route path="/unit-converter" element={<UnitConverter />} />
         <Route path="/code-converter" element={<CodeConverter />} />
+        <Route path="/chemical-tools" element={<ChemicalTools />} />
         
         {/* ChemLab Application Routes - all public now */}
         <Route path="/chemlab/aspen-plus" element={<ChemicalFormulas />} />
