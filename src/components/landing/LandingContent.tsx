@@ -29,6 +29,8 @@ const LandingContent: React.FC = () => {
       <div className="absolute top-20 left-1/3 w-16 h-16 border-2 border-blue-300/30 rounded-lg rotate-12 animate-spin-slow opacity-70"></div>
       <div className="absolute bottom-60 right-1/3 w-12 h-12 border-2 border-purple-300/30 rounded-full animate-spin-slow opacity-70" style={{ animationDelay: "7s" }}></div>
       <div className="absolute bottom-20 left-2/3 w-20 h-20 border-2 border-pink-300/30 rounded-lg -rotate-12 animate-spin-slow opacity-70" style={{ animationDelay: "5s", animationDirection: "reverse" }}></div>
+      <div className="absolute top-40 right-1/4 w-24 h-24 border border-indigo-300/20 rounded-lg rotate-45 animate-float opacity-80" style={{ animationDelay: "3.5s" }}></div>
+      <div className="absolute bottom-32 left-1/4 w-32 h-16 border border-cyan-300/20 rounded-xl -rotate-12 animate-float-reverse opacity-80" style={{ animationDelay: "4.5s" }}></div>
       
       <div className="flex justify-center mb-10 hover:scale-105 transition-transform animate-scale-in">
         <ChemFlowLogo className="h-32 w-auto drop-shadow-lg" />

@@ -20,13 +20,49 @@ import Resources from './pages/Resources';
 import DataAnalysis from './pages/DataAnalysis';
 import Reports from './pages/Reports';
 import Auth from './pages/Auth';
+import { useEffect, useState } from 'react';
+import { supabase } from './integrations/supabase/client';
 
 function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    // Check authentication status on load
+    const checkAuth = async () => {
+      try {
+        const { data } = await supabase.auth.getSession();
+        setIsAuthenticated(!!data.session);
+        
+        // Set up auth state listener
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+          console.log("App auth event:", event);
+          setIsAuthenticated(!!session);
+        });
+        
+        return () => subscription.unsubscribe();
+      } catch (error) {
+        console.error("Auth check error:", error);
+        setIsAuthenticated(false);
+      }
+    };
+    
+    checkAuth();
+  }, []);
+
+  // Loading state while checking authentication
+  if (isAuthenticated === null) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin h-10 w-10 border-4 border-blue-500 rounded-full border-t-transparent"></div>
+      </div>
+    );
+  }
+
   return (
     <Router>
       <Routes>
         <Route path="/" element={<LandingPage />} />
-        <Route path="/auth" element={<Auth />} />
+        <Route path="/auth" element={isAuthenticated ? <Navigate to="/resources" /> : <Auth />} />
         <Route path="/home" element={
           <Layout>
             <Home />
@@ -84,9 +120,13 @@ function App() {
           </Layout>
         } />
         <Route path="/resources" element={
-          <Layout>
-            <Resources />
-          </Layout>
+          isAuthenticated ? (
+            <Layout>
+              <Resources />
+            </Layout>
+          ) : (
+            <Navigate to="/auth" />
+          )
         } />
         <Route path="/data-analysis" element={
           <Layout>

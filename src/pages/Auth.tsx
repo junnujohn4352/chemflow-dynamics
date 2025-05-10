@@ -14,7 +14,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader, Mail, User, Check, ArrowRight, Key, Eye } from "lucide-react";
+import { Loader, Mail, User, Check, ArrowRight, Key, Eye, AlertCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 // Define schemas for form validation
@@ -39,6 +39,8 @@ const Auth = () => {
   const [verificationSent, setVerificationSent] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const [tempEmail, setTempEmail] = useState<string>("");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -73,6 +75,7 @@ const Auth = () => {
     const checkSession = async () => {
       try {
         const { data } = await supabase.auth.getSession();
+        console.log("Session check:", data);
         if (data.session) {
           navigate('/resources');
         }
@@ -85,28 +88,38 @@ const Auth = () => {
     
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log("Auth event:", event);
-      if (session) {
+      console.log("Auth event:", event, session);
+      if (session && event === 'SIGNED_IN') {
+        toast({
+          title: "Signed in successfully",
+          description: "Welcome to ChemFlow!",
+          variant: "success",
+        });
         navigate('/resources');
       }
     });
     
     // Cleanup subscription
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, toast]);
 
   // Handle OTP verification
   const handleOtpSubmit = async (values: z.infer<typeof otpSchema>) => {
     setLoading(true);
+    setErrorMessage(null);
     try {
+      console.log("Verifying OTP:", values.otp, "for email:", tempEmail);
+      
       // Verify email OTP
       const { data, error } = await supabase.auth.verifyOtp({
-        email: signUpForm.getValues('email'),
+        email: tempEmail,
         token: values.otp,
         type: 'signup',
       });
 
       if (error) throw error;
+
+      console.log("OTP verification response:", data);
 
       toast({
         title: "Verification successful",
@@ -116,14 +129,18 @@ const Auth = () => {
 
       // If user ID was stored, create profile
       if (userId) {
-        const { error: profileError } = await supabase
-          .from('user_profiles')
-          .insert([
-            { id: userId, name: signUpForm.getValues('name'), email: signUpForm.getValues('email') }
-          ]);
+        try {
+          const { error: profileError } = await supabase
+            .from('user_profiles')
+            .insert([
+              { id: userId, name: signUpForm.getValues('name'), email: tempEmail }
+            ]);
 
-        if (profileError) {
-          console.error("Error creating profile:", profileError);
+          if (profileError) {
+            console.error("Error creating profile:", profileError);
+          }
+        } catch (profileErr) {
+          console.error("Error in profile creation:", profileErr);
         }
       }
       
@@ -133,6 +150,8 @@ const Auth = () => {
       }, 1500);
       
     } catch (error: any) {
+      console.error("OTP verification error:", error);
+      setErrorMessage(error.message || "Invalid verification code");
       toast({
         title: "Verification failed",
         description: error.message || "Invalid verification code",
@@ -143,11 +162,59 @@ const Auth = () => {
     }
   };
 
+  // Resend verification email
+  const handleResendOtp = async () => {
+    if (!tempEmail) {
+      toast({
+        title: "Error",
+        description: "Email address is missing",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.signUp({
+        email: tempEmail,
+        password: signUpForm.getValues('password'),
+        options: {
+          emailRedirectTo: `${window.location.origin}/resources`,
+          data: {
+            name: signUpForm.getValues('name'),
+          }
+        }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Verification email sent!",
+        description: "Please check your email for the new verification code.",
+        variant: "success",
+      });
+    } catch (error: any) {
+      console.error("Error resending verification:", error);
+      toast({
+        title: "Error sending verification",
+        description: error.message || "Something went wrong",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Sign up with email
   const handleSignUp = async (values: z.infer<typeof signUpSchema>) => {
     setLoading(true);
+    setErrorMessage(null);
     
     try {
+      console.log("Starting sign up process for:", values.email);
+      // Store email for OTP verification
+      setTempEmail(values.email);
+      
       // Email signup flow
       const { data, error } = await supabase.auth.signUp({ 
         email: values.email, 
@@ -156,9 +223,11 @@ const Auth = () => {
           data: {
             name: values.name,
           },
-          emailRedirectTo: window.location.origin + '/resources'
+          emailRedirectTo: `${window.location.origin}/resources`
         }
       });
+
+      console.log("Sign up response:", data, error);
 
       if (error) throw error;
 
@@ -174,6 +243,8 @@ const Auth = () => {
         });
       }
     } catch (error: any) {
+      console.error("Sign up error:", error);
+      setErrorMessage(error.message || "Something went wrong");
       toast({
         title: "Error creating account",
         description: error.message || "Something went wrong",
@@ -187,12 +258,16 @@ const Auth = () => {
   // Sign in with email and password
   const handleSignIn = async (values: z.infer<typeof signInSchema>) => {
     setLoading(true);
+    setErrorMessage(null);
     
     try {
+      console.log("Signing in with:", values.email);
       const { data, error } = await supabase.auth.signInWithPassword({
         email: values.email,
         password: values.password,
       });
+
+      console.log("Sign in response:", data, error);
 
       if (error) throw error;
       
@@ -205,6 +280,8 @@ const Auth = () => {
       // Navigate after successful sign in
       navigate('/resources');
     } catch (error: any) {
+      console.error("Sign in error:", error);
+      setErrorMessage(error.message || "Invalid credentials");
       toast({
         title: "Sign in failed",
         description: error.message || "Invalid credentials",
@@ -225,6 +302,12 @@ const Auth = () => {
         <div className="absolute right-1/3 top-1/3 w-96 h-96 bg-indigo-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-float" style={{ animationDelay: "3s" }}></div>
         <div className="absolute left-1/2 bottom-1/3 w-64 h-64 bg-cyan-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-float" style={{ animationDelay: "5s" }}></div>
         <div className="absolute right-1/2 top-1/2 w-48 h-48 bg-teal-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-float" style={{ animationDelay: "6s" }}></div>
+        
+        {/* 3D Elements */}
+        <div className="absolute top-20 left-20 w-16 h-16 border-2 border-white/20 rounded-lg transform rotate-12 animate-spin-slow"></div>
+        <div className="absolute bottom-20 right-20 w-24 h-24 border-2 border-white/20 rounded-full transform animate-spin-slow" style={{ animationDuration: "15s" }}></div>
+        <div className="absolute top-1/3 right-40 w-12 h-12 border-2 border-white/20 rounded-lg transform -rotate-12 animate-spin-slow" style={{ animationDuration: "25s", animationDirection: "reverse" }}></div>
+        <div className="absolute bottom-40 left-1/3 w-20 h-20 border-2 border-white/20 rounded-xl transform rotate-45 animate-spin-slow" style={{ animationDuration: "30s" }}></div>
       </div>
 
       {/* Glass card effect with enhanced animations */}
@@ -236,12 +319,22 @@ const Auth = () => {
           </CardDescription>
         </CardHeader>
         
+        {errorMessage && (
+          <div className="px-6 -mt-2 mb-2">
+            <Alert variant="destructive" className="animate-fade-in">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>{errorMessage}</AlertDescription>
+            </Alert>
+          </div>
+        )}
+        
         {showOtpForm ? (
           <CardContent className="space-y-4 animate-fade-in-up">
             <div className="text-center mb-4">
               <Badge variant="outline" className="mb-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white animate-pulse-subtle">Verification Required</Badge>
               <h3 className="text-lg font-medium">Enter the verification code</h3>
-              <p className="text-sm text-gray-500">We've sent a 6-digit code to your email</p>
+              <p className="text-sm text-gray-500">We've sent a 6-digit code to your email at <span className="font-medium">{tempEmail}</span></p>
             </div>
 
             <Form {...otpForm}>
@@ -268,22 +361,33 @@ const Auth = () => {
                     </FormItem>
                   )}
                 />
-                <Button 
-                  type="submit" 
-                  className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 transition-all duration-300 transform hover:-translate-y-1" 
-                  disabled={loading}
-                >
-                  {loading ? <Loader className="mr-2 h-4 w-4 animate-spin" /> : <Check className="mr-2 h-4 w-4" />}
-                  Verify Code
-                </Button>
-                <div className="text-center">
+                <div className="flex flex-col space-y-3">
                   <Button 
-                    variant="link" 
-                    onClick={() => setShowOtpForm(false)} 
-                    className="text-sm text-blue-600 hover:text-blue-800 transition-colors"
+                    type="submit" 
+                    className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 transition-all duration-300 transform hover:-translate-y-1" 
+                    disabled={loading}
                   >
-                    Go back to sign in
+                    {loading ? <Loader className="mr-2 h-4 w-4 animate-spin" /> : <Check className="mr-2 h-4 w-4" />}
+                    Verify Code
                   </Button>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={handleResendOtp}
+                    disabled={loading}
+                    className="w-full border-blue-300 hover:bg-blue-50 text-blue-600 transition-all"
+                  >
+                    Resend verification code
+                  </Button>
+                  <div className="text-center">
+                    <Button 
+                      variant="link" 
+                      onClick={() => setShowOtpForm(false)} 
+                      className="text-sm text-blue-600 hover:text-blue-800 transition-colors"
+                    >
+                      Go back to sign in
+                    </Button>
+                  </div>
                 </div>
               </form>
             </Form>
