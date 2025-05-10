@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileText, Book, BookOpen, Code, Database, Flask } from "lucide-react";
+import { FileText, Book, BookOpen, Code, Database, FlaskConical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -37,7 +37,7 @@ const Documentation: React.FC = () => {
               description="Learn the basics of ChemFlow and set up your first project"
             />
             <DocCard 
-              icon={<Flask className="h-6 w-6 text-purple-500" />}
+              icon={<FlaskConical className="h-6 w-6 text-purple-500" />}
               title="Simulation Basics"
               description="Understand the core concepts of process simulation"
             />
