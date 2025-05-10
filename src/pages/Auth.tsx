@@ -14,7 +14,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader, Mail, User, Check, ArrowRight, Key, Eye, AlertCircle, Info, RefreshCw } from "lucide-react";
+import { Loader, Mail, User, Check, ArrowRight, Key, Eye, AlertCircle, Info, RefreshCw, Phone } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 // Define schemas for form validation
@@ -24,8 +24,19 @@ const signUpSchema = z.object({
   password: z.string().min(6, { message: "Password must be at least 6 characters" }),
 });
 
+const phoneSignUpSchema = z.object({
+  name: z.string().min(2, { message: "Name must be at least 2 characters" }),
+  phone: z.string().min(10, { message: "Please enter a valid phone number" }),
+  password: z.string().min(6, { message: "Password must be at least 6 characters" }),
+});
+
 const signInSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
+  password: z.string().min(1, { message: "Please enter your password" }),
+});
+
+const phoneSignInSchema = z.object({
+  phone: z.string().min(10, { message: "Please enter a valid phone number" }),
   password: z.string().min(1, { message: "Please enter your password" }),
 });
 
@@ -40,9 +51,11 @@ const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [tempEmail, setTempEmail] = useState<string>("");
+  const [tempPhone, setTempPhone] = useState<string>("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
   const [resendCooldown, setResendCooldown] = useState(0);
+  const [authMethod, setAuthMethod] = useState<"email" | "phone">("phone");
   
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -57,10 +70,27 @@ const Auth = () => {
     },
   });
 
+  const phoneSignUpForm = useForm<z.infer<typeof phoneSignUpSchema>>({
+    resolver: zodResolver(phoneSignUpSchema),
+    defaultValues: {
+      name: "",
+      phone: "",
+      password: "",
+    },
+  });
+
   const signInForm = useForm<z.infer<typeof signInSchema>>({
     resolver: zodResolver(signInSchema),
     defaultValues: {
       email: "",
+      password: "",
+    },
+  });
+
+  const phoneSignInForm = useForm<z.infer<typeof phoneSignInSchema>>({
+    resolver: zodResolver(phoneSignInSchema),
+    defaultValues: {
+      phone: "",
       password: "",
     },
   });
@@ -100,20 +130,45 @@ const Auth = () => {
     return () => clearInterval(interval);
   }, [resendCooldown]);
 
+  // Format phone number for Supabase (must be in E.164 format)
+  const formatPhoneNumber = (phone: string) => {
+    // Remove any non-digit characters
+    const cleanPhone = phone.replace(/\D/g, '');
+    
+    // Check if the number already has a country code
+    if (cleanPhone.startsWith('1')) {
+      return `+${cleanPhone}`;
+    }
+    
+    // Add US country code (+1) as default
+    return `+1${cleanPhone}`;
+  };
+
   // Handle OTP verification
   const handleOtpSubmit = async (values: z.infer<typeof otpSchema>) => {
     setLoading(true);
     setErrorMessage(null);
     try {
-      console.log("Verifying OTP:", values.otp, "for email:", tempEmail);
+      console.log(`Verifying OTP: ${values.otp} for ${authMethod === "email" ? "email: " + tempEmail : "phone: " + tempPhone}`);
       
-      // Verify email OTP
-      const { data, error } = await supabase.auth.verifyOtp({
-        email: tempEmail,
-        token: values.otp,
-        type: 'signup',
-      });
-
+      // Verify OTP based on the auth method
+      let verifyResponse;
+      
+      if (authMethod === "email") {
+        verifyResponse = await supabase.auth.verifyOtp({
+          email: tempEmail,
+          token: values.otp,
+          type: 'signup',
+        });
+      } else {
+        verifyResponse = await supabase.auth.verifyOtp({
+          phone: formatPhoneNumber(tempPhone),
+          token: values.otp,
+          type: 'sms',
+        });
+      }
+      
+      const { data, error } = verifyResponse;
       if (error) throw error;
 
       console.log("OTP verification response:", data);
@@ -130,7 +185,12 @@ const Auth = () => {
           const { error: profileError } = await supabase
             .from('user_profiles')
             .insert([
-              { id: userId, name: signUpForm.getValues('name'), email: tempEmail }
+              { 
+                id: userId, 
+                name: authMethod === "email" ? signUpForm.getValues('name') : phoneSignUpForm.getValues('name'),
+                email: authMethod === "email" ? tempEmail : null,
+                phone: authMethod === "phone" ? tempPhone : null
+              }
             ]);
 
           if (profileError) {
@@ -159,16 +219,16 @@ const Auth = () => {
     }
   };
 
-  // Resend verification email
+  // Resend verification code
   const handleResendOtp = async () => {
     if (resendCooldown > 0) {
       return;
     }
     
-    if (!tempEmail) {
+    if ((authMethod === "email" && !tempEmail) || (authMethod === "phone" && !tempPhone)) {
       toast({
         title: "Error",
-        description: "Email address is missing",
+        description: authMethod === "email" ? "Email address is missing" : "Phone number is missing",
         variant: "destructive",
       });
       return;
@@ -176,24 +236,34 @@ const Auth = () => {
 
     setLoading(true);
     setErrorMessage(null);
-    setInfoMessage("Sending verification email...");
+    setInfoMessage("Sending verification code...");
     
     try {
-      const { data, error } = await supabase.auth.resend({
-        type: 'signup',
-        email: tempEmail,
-      });
+      let resendResponse;
+      
+      if (authMethod === "email") {
+        resendResponse = await supabase.auth.resend({
+          type: 'signup',
+          email: tempEmail,
+        });
+      } else {
+        resendResponse = await supabase.auth.resend({
+          type: 'sms',
+          phone: formatPhoneNumber(tempPhone),
+        });
+      }
 
+      const { data, error } = resendResponse;
       if (error) throw error;
 
       console.log("Resend verification response:", data);
 
       setResendCooldown(60); // Set cooldown to 60 seconds
-      setInfoMessage("A new verification code has been sent to your email. Please check your inbox and spam folder.");
+      setInfoMessage(`A new verification code has been sent to your ${authMethod}. Please check your ${authMethod === "email" ? "inbox and spam folder" : "phone"}.`);
       
       toast({
-        title: "Verification email sent!",
-        description: "Please check your email for the new verification code.",
+        title: "Verification code sent!",
+        description: `Please check your ${authMethod === "email" ? "email" : "phone"} for the new verification code.`,
         variant: "success",
       });
     } catch (error: any) {
@@ -211,15 +281,16 @@ const Auth = () => {
     }
   };
 
-  // Sign up with email
+  // Sign up with email or phone
   const handleSignUp = async (values: z.infer<typeof signUpSchema>) => {
     setLoading(true);
     setErrorMessage(null);
     
     try {
-      console.log("Starting sign up process for:", values.email);
+      console.log("Starting email sign up process for:", values.email);
       // Store email for OTP verification
       setTempEmail(values.email);
+      setAuthMethod("email");
       
       // Email signup flow
       const { data, error } = await supabase.auth.signUp({ 
@@ -262,7 +333,60 @@ const Auth = () => {
     }
   };
 
-  // Sign in with email and password
+  // Sign up with phone
+  const handlePhoneSignUp = async (values: z.infer<typeof phoneSignUpSchema>) => {
+    setLoading(true);
+    setErrorMessage(null);
+    
+    try {
+      const formattedPhone = formatPhoneNumber(values.phone);
+      console.log("Starting phone sign up process for:", formattedPhone);
+      
+      // Store phone for OTP verification
+      setTempPhone(values.phone);
+      setAuthMethod("phone");
+      
+      // Phone signup flow
+      const { data, error } = await supabase.auth.signUp({ 
+        phone: formattedPhone, 
+        password: values.password,
+        options: {
+          data: {
+            name: values.name,
+          },
+        }
+      });
+
+      console.log("Phone sign up response:", data, error);
+
+      if (error) throw error;
+
+      if (data.user) {
+        setUserId(data.user.id);
+        setVerificationSent(true);
+        setShowOtpForm(true);
+        setInfoMessage("A verification code has been sent to your phone. Please check your messages.");
+        
+        toast({
+          title: "Verification SMS sent!",
+          description: "Please check your phone for the verification code.",
+          variant: "success",
+        });
+      }
+    } catch (error: any) {
+      console.error("Phone sign up error:", error);
+      setErrorMessage(error.message || "Something went wrong");
+      toast({
+        title: "Error creating account",
+        description: error.message || "Something went wrong",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Sign in with email
   const handleSignIn = async (values: z.infer<typeof signInSchema>) => {
     setLoading(true);
     setErrorMessage(null);
@@ -288,6 +412,45 @@ const Auth = () => {
       navigate('/resources');
     } catch (error: any) {
       console.error("Sign in error:", error);
+      setErrorMessage(error.message || "Invalid credentials");
+      toast({
+        title: "Sign in failed",
+        description: error.message || "Invalid credentials",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Sign in with phone
+  const handlePhoneSignIn = async (values: z.infer<typeof phoneSignInSchema>) => {
+    setLoading(true);
+    setErrorMessage(null);
+    
+    try {
+      const formattedPhone = formatPhoneNumber(values.phone);
+      console.log("Signing in with phone:", formattedPhone);
+      
+      const { data, error } = await supabase.auth.signInWithPassword({
+        phone: formattedPhone,
+        password: values.password,
+      });
+
+      console.log("Phone sign in response:", data, error);
+
+      if (error) throw error;
+      
+      toast({
+        title: "Welcome back!",
+        description: "You've successfully signed in.",
+        variant: "success",
+      });
+      
+      // Navigate after successful sign in
+      navigate('/resources');
+    } catch (error: any) {
+      console.error("Phone sign in error:", error);
       setErrorMessage(error.message || "Invalid credentials");
       toast({
         title: "Sign in failed",
@@ -351,7 +514,10 @@ const Auth = () => {
             <div className="text-center mb-4">
               <Badge variant="outline" className="mb-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white animate-pulse-subtle">Verification Required</Badge>
               <h3 className="text-lg font-medium">Enter the verification code</h3>
-              <p className="text-sm text-gray-500">We've sent a 6-digit code to your email at <span className="font-medium">{tempEmail}</span></p>
+              <p className="text-sm text-gray-500">
+                We've sent a 6-digit code to your {authMethod === "email" ? "email" : "phone"} at{" "}
+                <span className="font-medium">{authMethod === "email" ? tempEmail : tempPhone}</span>
+              </p>
             </div>
 
             <Form {...otpForm}>
@@ -376,7 +542,7 @@ const Auth = () => {
                       </FormControl>
                       <FormMessage />
                       <p className="text-xs text-gray-500 mt-1">
-                        Please check your inbox and spam folder for the verification code.
+                        Please check your {authMethod === "email" ? "inbox and spam folder" : "phone"} for the verification code.
                       </p>
                     </FormItem>
                   )}
@@ -429,167 +595,352 @@ const Auth = () => {
               <TabsTrigger value="signup" className="data-[state=active]:bg-purple-500 data-[state=active]:text-white transition-all">Sign Up</TabsTrigger>
             </TabsList>
             
-            <TabsContent value="signin" className="animate-fade-in-up" style={{ animationDelay: "0.4s" }}>
-              <Form {...signInForm}>
-                <form onSubmit={signInForm.handleSubmit(handleSignIn)}>
-                  <CardContent className="space-y-4">
-                    <FormField
-                      control={signInForm.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem className="space-y-1">
-                          <FormLabel>Email</FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                              <Mail className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-                              <Input 
-                                placeholder="your@email.com" 
-                                className="pl-10 border-blue-300 focus:border-blue-500 transition-colors" 
-                                {...field} 
-                              />
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={signInForm.control}
-                      name="password"
-                      render={({ field }) => (
-                        <FormItem className="space-y-1">
-                          <FormLabel>Password</FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                              <Key className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-                              <Input 
-                                type={showPassword ? "text" : "password"} 
-                                className="pl-10 border-blue-300 focus:border-blue-500 transition-colors" 
-                                {...field} 
-                              />
-                              <Button 
-                                type="button" 
-                                variant="ghost" 
-                                size="icon" 
-                                className="absolute right-0 top-0 h-10 w-10 text-gray-400 hover:text-gray-600 transition-colors"
-                                onClick={() => setShowPassword(!showPassword)}
-                              >
-                                <Eye className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </CardContent>
-                  <CardFooter>
-                    <Button 
-                      type="submit" 
-                      className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 transition-all duration-300 transform hover:-translate-y-1" 
-                      disabled={loading}
-                    >
-                      {loading ? <Loader className="mr-2 h-4 w-4 animate-spin" /> : <ArrowRight className="mr-2 h-4 w-4" />}
-                      Sign In
-                    </Button>
-                  </CardFooter>
-                </form>
-              </Form>
-            </TabsContent>
+            <Tabs defaultValue="phone" className="px-6 mb-4">
+              <TabsList className="w-full grid grid-cols-2 mb-2">
+                <TabsTrigger value="phone">
+                  <Phone className="w-4 h-4 mr-2" />
+                  Phone
+                </TabsTrigger>
+                <TabsTrigger value="email">
+                  <Mail className="w-4 h-4 mr-2" />
+                  Email
+                </TabsTrigger>
+              </TabsList>
             
-            <TabsContent value="signup" className="animate-fade-in-up" style={{ animationDelay: "0.5s" }}>
-              <Form {...signUpForm}>
-                <form onSubmit={signUpForm.handleSubmit(handleSignUp)}>
-                  <CardContent className="space-y-4">
-                    <FormField
-                      control={signUpForm.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem className="space-y-1">
-                          <FormLabel>Full Name</FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                              <User className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-                              <Input 
-                                placeholder="John Doe" 
-                                className="pl-10 border-purple-300 focus:border-purple-500 transition-colors" 
-                                {...field} 
-                              />
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={signUpForm.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem className="space-y-1">
-                          <FormLabel>Email</FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                              <Mail className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-                              <Input 
-                                placeholder="your@email.com" 
-                                className="pl-10 border-purple-300 focus:border-purple-500 transition-colors" 
-                                {...field} 
-                              />
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={signUpForm.control}
-                      name="password"
-                      render={({ field }) => (
-                        <FormItem className="space-y-1">
-                          <FormLabel>Create Password</FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                              <Key className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-                              <Input 
-                                type={showPassword ? "text" : "password"} 
-                                className="pl-10 border-purple-300 focus:border-purple-500 transition-colors" 
-                                {...field} 
-                              />
-                              <Button 
-                                type="button" 
-                                variant="ghost" 
-                                size="icon" 
-                                className="absolute right-0 top-0 h-10 w-10 text-gray-400 hover:text-gray-600 transition-colors"
-                                onClick={() => setShowPassword(!showPassword)}
-                              >
-                                <Eye className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </FormControl>
-                          <FormDescription className="text-xs text-gray-500">
-                            Must be at least 6 characters
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </CardContent>
-                  <CardFooter>
-                    <Button 
-                      type="submit" 
-                      className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 transition-all duration-300 transform hover:-translate-y-1" 
-                      disabled={loading}
-                    >
-                      {loading ? <Loader className="mr-2 h-4 w-4 animate-spin" /> : <ArrowRight className="mr-2 h-4 w-4" />}
-                      Create Account
-                    </Button>
-                  </CardFooter>
-                </form>
-              </Form>
-            </TabsContent>
+              <TabsContent value="signin" className="animate-fade-in-up" style={{ animationDelay: "0.4s" }}>
+                <TabsContent value="email">
+                  <Form {...signInForm}>
+                    <form onSubmit={signInForm.handleSubmit(handleSignIn)}>
+                      <CardContent className="space-y-4">
+                        <FormField
+                          control={signInForm.control}
+                          name="email"
+                          render={({ field }) => (
+                            <FormItem className="space-y-1">
+                              <FormLabel>Email</FormLabel>
+                              <FormControl>
+                                <div className="relative">
+                                  <Mail className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                                  <Input 
+                                    placeholder="your@email.com" 
+                                    className="pl-10 border-blue-300 focus:border-blue-500 transition-colors" 
+                                    {...field} 
+                                  />
+                                </div>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={signInForm.control}
+                          name="password"
+                          render={({ field }) => (
+                            <FormItem className="space-y-1">
+                              <FormLabel>Password</FormLabel>
+                              <FormControl>
+                                <div className="relative">
+                                  <Key className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                                  <Input 
+                                    type={showPassword ? "text" : "password"} 
+                                    className="pl-10 border-blue-300 focus:border-blue-500 transition-colors" 
+                                    {...field} 
+                                  />
+                                  <Button 
+                                    type="button" 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    className="absolute right-0 top-0 h-10 w-10 text-gray-400 hover:text-gray-600 transition-colors"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                  >
+                                    <Eye className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </CardContent>
+                      <CardFooter>
+                        <Button 
+                          type="submit" 
+                          className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 transition-all duration-300 transform hover:-translate-y-1" 
+                          disabled={loading}
+                        >
+                          {loading ? <Loader className="mr-2 h-4 w-4 animate-spin" /> : <ArrowRight className="mr-2 h-4 w-4" />}
+                          Sign In with Email
+                        </Button>
+                      </CardFooter>
+                    </form>
+                  </Form>
+                </TabsContent>
+
+                <TabsContent value="phone">
+                  <Form {...phoneSignInForm}>
+                    <form onSubmit={phoneSignInForm.handleSubmit(handlePhoneSignIn)}>
+                      <CardContent className="space-y-4">
+                        <FormField
+                          control={phoneSignInForm.control}
+                          name="phone"
+                          render={({ field }) => (
+                            <FormItem className="space-y-1">
+                              <FormLabel>Phone Number</FormLabel>
+                              <FormControl>
+                                <div className="relative">
+                                  <Phone className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                                  <Input 
+                                    placeholder="1234567890" 
+                                    className="pl-10 border-blue-300 focus:border-blue-500 transition-colors" 
+                                    {...field} 
+                                  />
+                                </div>
+                              </FormControl>
+                              <FormDescription className="text-xs">
+                                Include country code if non-US (e.g., +44 for UK)
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={phoneSignInForm.control}
+                          name="password"
+                          render={({ field }) => (
+                            <FormItem className="space-y-1">
+                              <FormLabel>Password</FormLabel>
+                              <FormControl>
+                                <div className="relative">
+                                  <Key className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                                  <Input 
+                                    type={showPassword ? "text" : "password"} 
+                                    className="pl-10 border-blue-300 focus:border-blue-500 transition-colors" 
+                                    {...field} 
+                                  />
+                                  <Button 
+                                    type="button" 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    className="absolute right-0 top-0 h-10 w-10 text-gray-400 hover:text-gray-600 transition-colors"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                  >
+                                    <Eye className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </CardContent>
+                      <CardFooter>
+                        <Button 
+                          type="submit" 
+                          className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 transition-all duration-300 transform hover:-translate-y-1" 
+                          disabled={loading}
+                        >
+                          {loading ? <Loader className="mr-2 h-4 w-4 animate-spin" /> : <ArrowRight className="mr-2 h-4 w-4" />}
+                          Sign In with Phone
+                        </Button>
+                      </CardFooter>
+                    </form>
+                  </Form>
+                </TabsContent>
+              </TabsContent>
+              
+              <TabsContent value="signup" className="animate-fade-in-up" style={{ animationDelay: "0.5s" }}>
+                <TabsContent value="email">
+                  <Form {...signUpForm}>
+                    <form onSubmit={signUpForm.handleSubmit(handleSignUp)}>
+                      <CardContent className="space-y-4">
+                        <FormField
+                          control={signUpForm.control}
+                          name="name"
+                          render={({ field }) => (
+                            <FormItem className="space-y-1">
+                              <FormLabel>Full Name</FormLabel>
+                              <FormControl>
+                                <div className="relative">
+                                  <User className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                                  <Input 
+                                    placeholder="John Doe" 
+                                    className="pl-10 border-purple-300 focus:border-purple-500 transition-colors" 
+                                    {...field} 
+                                  />
+                                </div>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={signUpForm.control}
+                          name="email"
+                          render={({ field }) => (
+                            <FormItem className="space-y-1">
+                              <FormLabel>Email</FormLabel>
+                              <FormControl>
+                                <div className="relative">
+                                  <Mail className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                                  <Input 
+                                    placeholder="your@email.com" 
+                                    className="pl-10 border-purple-300 focus:border-purple-500 transition-colors" 
+                                    {...field} 
+                                  />
+                                </div>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={signUpForm.control}
+                          name="password"
+                          render={({ field }) => (
+                            <FormItem className="space-y-1">
+                              <FormLabel>Create Password</FormLabel>
+                              <FormControl>
+                                <div className="relative">
+                                  <Key className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                                  <Input 
+                                    type={showPassword ? "text" : "password"} 
+                                    className="pl-10 border-purple-300 focus:border-purple-500 transition-colors" 
+                                    {...field} 
+                                  />
+                                  <Button 
+                                    type="button" 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    className="absolute right-0 top-0 h-10 w-10 text-gray-400 hover:text-gray-600 transition-colors"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                  >
+                                    <Eye className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </FormControl>
+                              <FormDescription className="text-xs text-gray-500">
+                                Must be at least 6 characters
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </CardContent>
+                      <CardFooter>
+                        <Button 
+                          type="submit" 
+                          className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 transition-all duration-300 transform hover:-translate-y-1" 
+                          disabled={loading}
+                        >
+                          {loading ? <Loader className="mr-2 h-4 w-4 animate-spin" /> : <ArrowRight className="mr-2 h-4 w-4" />}
+                          Create Account with Email
+                        </Button>
+                      </CardFooter>
+                    </form>
+                  </Form>
+                </TabsContent>
+
+                <TabsContent value="phone">
+                  <Form {...phoneSignUpForm}>
+                    <form onSubmit={phoneSignUpForm.handleSubmit(handlePhoneSignUp)}>
+                      <CardContent className="space-y-4">
+                        <FormField
+                          control={phoneSignUpForm.control}
+                          name="name"
+                          render={({ field }) => (
+                            <FormItem className="space-y-1">
+                              <FormLabel>Full Name</FormLabel>
+                              <FormControl>
+                                <div className="relative">
+                                  <User className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                                  <Input 
+                                    placeholder="John Doe" 
+                                    className="pl-10 border-purple-300 focus:border-purple-500 transition-colors" 
+                                    {...field} 
+                                  />
+                                </div>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={phoneSignUpForm.control}
+                          name="phone"
+                          render={({ field }) => (
+                            <FormItem className="space-y-1">
+                              <FormLabel>Phone Number</FormLabel>
+                              <FormControl>
+                                <div className="relative">
+                                  <Phone className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                                  <Input 
+                                    placeholder="1234567890" 
+                                    className="pl-10 border-purple-300 focus:border-purple-500 transition-colors" 
+                                    {...field} 
+                                  />
+                                </div>
+                              </FormControl>
+                              <FormDescription className="text-xs">
+                                Include country code if non-US (e.g., +44 for UK)
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={phoneSignUpForm.control}
+                          name="password"
+                          render={({ field }) => (
+                            <FormItem className="space-y-1">
+                              <FormLabel>Create Password</FormLabel>
+                              <FormControl>
+                                <div className="relative">
+                                  <Key className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                                  <Input 
+                                    type={showPassword ? "text" : "password"} 
+                                    className="pl-10 border-purple-300 focus:border-purple-500 transition-colors" 
+                                    {...field} 
+                                  />
+                                  <Button 
+                                    type="button" 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    className="absolute right-0 top-0 h-10 w-10 text-gray-400 hover:text-gray-600 transition-colors"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                  >
+                                    <Eye className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </FormControl>
+                              <FormDescription className="text-xs text-gray-500">
+                                Must be at least 6 characters
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </CardContent>
+                      <CardFooter>
+                        <Button 
+                          type="submit" 
+                          className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 transition-all duration-300 transform hover:-translate-y-1" 
+                          disabled={loading}
+                        >
+                          {loading ? <Loader className="mr-2 h-4 w-4 animate-spin" /> : <ArrowRight className="mr-2 h-4 w-4" />}
+                          Create Account with Phone
+                        </Button>
+                      </CardFooter>
+                    </form>
+                  </Form>
+                </TabsContent>
+              </TabsContent>
+            </Tabs>
           </Tabs>
         )}
       </Card>
