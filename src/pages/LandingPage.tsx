@@ -39,7 +39,7 @@ const LandingPage = () => {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
                 <Button 
-                  onClick={() => navigate("/payment")}
+                  onClick={() => navigate("/chemical-formulas")}
                   className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-lg py-6 px-8"
                   size="lg"
                 >
@@ -176,8 +176,8 @@ const LandingPage = () => {
               
               <div className="bg-white rounded-xl shadow-xl p-8 max-w-md mx-auto">
                 <h3 className="text-2xl font-bold text-gray-800 mb-2">Full Access</h3>
-                <div className="text-5xl font-bold text-blue-600 mb-4">₹500</div>
-                <p className="text-gray-600 mb-8">One-time payment, lifetime access</p>
+                <div className="text-5xl font-bold text-blue-600 mb-4">Free</div>
+                <p className="text-gray-600 mb-8">Unlimited access to all features</p>
                 
                 <ul className="text-left space-y-3 mb-8">
                   {[
@@ -196,7 +196,7 @@ const LandingPage = () => {
                 </ul>
                 
                 <Button 
-                  onClick={() => navigate("/payment")}
+                  onClick={() => navigate("/chemical-formulas")}
                   className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 w-full py-6"
                   size="lg"
                 >
@@ -214,7 +214,7 @@ const LandingPage = () => {
                 Join chemical engineers worldwide who use ChemFlow to design, analyze, and optimize their processes
               </p>
               <Button 
-                onClick={() => navigate("/payment")}
+                onClick={() => navigate("/chemical-formulas")}
                 className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-lg py-6 px-10"
                 size="lg"
               >
