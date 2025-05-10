@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +16,28 @@ const Auth = () => {
   const [name, setName] = useState('');
   const { toast } = useToast();
   const navigate = useNavigate();
+  
+  // Check if user is already logged in
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (data.session) {
+        navigate('/resources');
+      }
+    };
+    
+    checkSession();
+    
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session) {
+        navigate('/resources');
+      }
+    });
+    
+    // Cleanup subscription
+    return () => subscription.unsubscribe();
+  }, [navigate]);
 
   // Sign up with email and password
   const handleSignUp = async (e: React.FormEvent) => {
@@ -48,10 +70,10 @@ const Auth = () => {
         toast({
           title: "Account created successfully!",
           description: "Please check your email for verification.",
-          variant: "default",
+          variant: "success",
         });
         
-        navigate('/resources');
+        // Navigation will be handled by the onAuthStateChange listener
       }
     } catch (error: any) {
       toast({
@@ -80,10 +102,10 @@ const Auth = () => {
       toast({
         title: "Welcome back!",
         description: "You've successfully signed in.",
-        variant: "default",
+        variant: "success",
       });
       
-      navigate('/resources');
+      // Navigation will be handled by the onAuthStateChange listener
     } catch (error: any) {
       toast({
         title: "Sign in failed",
