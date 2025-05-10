@@ -37,6 +37,7 @@ const App: React.FC = () => {
         <Route path="/simulations" element={<Simulations />} />
         <Route path="/formulas" element={<Formulas />} />
         <Route path="/chemical-formulas" element={<ChemicalFormulas />} />
+        <Route path="/engineering-formulas" element={<ChemicalFormulas />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/software-tools" element={<SoftwareTools />} />
         <Route path="/software-topics" element={<SoftwareTopics />} />

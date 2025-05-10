@@ -1,16 +1,22 @@
 
 import { useLocation, Link } from "react-router-dom";
-import { useEffect } from "react";
-import { ArrowLeft, Home } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ArrowLeft, Home, FileText } from "lucide-react";
 
 const NotFound = () => {
   const location = useLocation();
+  const [showFormulaLink, setShowFormulaLink] = useState(false);
 
   useEffect(() => {
     console.error(
       "404 Error: User attempted to access non-existent route:",
       location.pathname
     );
+    
+    // Check if this is the engineering formulas route to show helpful suggestion
+    if (location.pathname === "/engineering-formulas") {
+      setShowFormulaLink(true);
+    }
   }, [location.pathname]);
 
   return (
@@ -25,6 +31,20 @@ const NotFound = () => {
         <p className="text-gray-600 mb-8">
           The page you're looking for doesn't exist or has been moved.
         </p>
+        
+        {showFormulaLink && (
+          <div className="mb-8 p-4 bg-blue-50 rounded-lg">
+            <p className="text-blue-700 mb-3">Looking for engineering formulas?</p>
+            <Link 
+              to="/chemical-formulas"
+              className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-blue-100 text-blue-700 font-medium hover:bg-blue-200 transition-colors"
+            >
+              <FileText className="mr-2 h-4 w-4" />
+              Go to Chemical Formulas
+            </Link>
+          </div>
+        )}
+        
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link 
             to="/"
