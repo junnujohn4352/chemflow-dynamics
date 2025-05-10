@@ -949,20 +949,14 @@ const Resources: React.FC = () => {
         </TabsContent>
       </Tabs>
 
-      <style jsx>{`
+      <style>
+        {`
         @keyframes progress {
           from { transform: translateX(-100%); }
           to { transform: translateX(100%); }
         }
-        
-        .playing .playing-indicator {
-          display: block;
-        }
-        
-        .playing-indicator:before {
-          animation: progress 2s ease-in-out infinite;
-        }
-      `}</style>
+        `}
+      </style>
     </div>
   );
 };
