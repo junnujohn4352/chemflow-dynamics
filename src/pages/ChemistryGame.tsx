@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -6,7 +5,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Flask, Atom, Beaker, ArrowLeft } from "lucide-react";
+import { FlaskConical, Atom, Beaker, ArrowLeft } from "lucide-react";
 
 // Define Chemistry Elements
 const elements = [
@@ -202,7 +201,7 @@ const ChemistryGame = () => {
         <Card className="shadow-xl bg-white/90 backdrop-blur-sm">
           <CardHeader className="text-center border-b border-gray-100 pb-6">
             <div className="flex justify-center space-x-2 mb-4">
-              <Flask className="h-10 w-10 text-blue-500" />
+              <FlaskConical className="h-10 w-10 text-blue-500" />
               <Atom className="h-10 w-10 text-purple-500" />
               <Beaker className="h-10 w-10 text-green-500" />
             </div>
@@ -246,7 +245,7 @@ const ChemistryGame = () => {
                   >
                     <CardHeader className="pb-2">
                       <CardTitle className="flex items-center">
-                        <Flask className="h-5 w-5 mr-2 text-purple-500" />
+                        <FlaskConical className="h-5 w-5 mr-2 text-purple-500" />
                         Reactions
                       </CardTitle>
                     </CardHeader>
