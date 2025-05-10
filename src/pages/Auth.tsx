@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -336,7 +335,7 @@ const Auth = () => {
         
         {infoMessage && (
           <div className="px-6 -mt-2 mb-2">
-            <Alert variant="info" className="animate-fade-in bg-blue-50 text-blue-800 border-blue-200">
+            <Alert variant="default" className="animate-fade-in bg-blue-50 text-blue-800 border-blue-200">
               <Info className="h-4 w-4" />
               <AlertTitle>Info</AlertTitle>
               <AlertDescription>{infoMessage}</AlertDescription>
