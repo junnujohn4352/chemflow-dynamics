@@ -19,12 +19,14 @@ import Bookmarks from './pages/Bookmarks';
 import Resources from './pages/Resources';
 import DataAnalysis from './pages/DataAnalysis';
 import Reports from './pages/Reports';
+import Auth from './pages/Auth';
 
 function App() {
   return (
     <Router>
       <Routes>
         <Route path="/" element={<LandingPage />} />
+        <Route path="/auth" element={<Auth />} />
         <Route path="/home" element={
           <Layout>
             <Home />
