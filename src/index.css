@@ -2,326 +2,187 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
+ 
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-
+    --foreground: 240 10% 3.9%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-
+    --card-foreground: 240 10% 3.9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 240 5.9% 10%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 240 5.9% 10%;
     --radius: 0.5rem;
   }
-
+ 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 5.9% 10%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 240 4.9% 83.9%;
   }
 }
-
+ 
 @layer base {
   * {
     @apply border-border;
   }
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
 
-@layer utilities {
-  /* Hide scrollbar but allow scrolling */
-  .hide-scrollbar {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
+/* Equipment card effects */
+.equipment-3d-effect {
+  transform-style: preserve-3d;
+  perspective: 1000px;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.equipment-3d-effect:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.glow {
+  box-shadow: 0 0 8px rgba(59, 130, 246, 0.6);
+  animation: pulse 2s infinite;
+}
+
+.text-gradient {
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Flow animations */
+.spin-slow {
+  animation: spin 8s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
   }
-  .hide-scrollbar::-webkit-scrollbar {
-    display: none;  /* Chrome, Safari and Opera */
+  to {
+    transform: rotate(360deg);
   }
-  
-  /* Flow Animation */
-  .flow-circle {
-    animation: flow 2s linear infinite;
+}
+
+.reactor-animation::before {
+  content: "";
+  position: absolute;
+  top: 25%;
+  left: 25%;
+  width: 50%;
+  height: 50%;
+  background: radial-gradient(circle, rgba(79, 70, 229, 0.2) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+.heat-exchanger-animation::before {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to right, transparent, rgba(239, 68, 68, 0.3), transparent);
+  animation: heat-flow 3s infinite;
+}
+
+@keyframes heat-flow {
+  0% {
+    transform: translateX(-100%);
   }
-  
-  @keyframes flow {
-    0% {
-      transform: translateX(0);
-    }
-    100% {
-      transform: translateX(20px);
-    }
+  100% {
+    transform: translateX(100%);
   }
-  
-  /* Liquid Flow Animation */
-  .flow-animation {
-    position: relative;
-    overflow: hidden;
+}
+
+.bubble {
+  position: absolute;
+  background-color: rgba(147, 197, 253, 0.6);
+  border-radius: 50%;
+  animation: bubble-rise linear infinite;
+}
+
+@keyframes bubble-rise {
+  0% {
+    bottom: 0;
+    opacity: 0.8;
   }
-  
-  .flow-animation::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 200%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-    animation: flow-liquid 2s linear infinite;
-  }
-  
-  @keyframes flow-liquid {
-    0% {
-      transform: translateX(-50%);
-    }
-    100% {
-      transform: translateX(50%);
-    }
-  }
-  
-  /* Bubbling Animation */
-  .bubble {
-    position: absolute;
-    background-color: rgba(255, 255, 255, 0.6);
-    border-radius: 50%;
-    animation: bubble-rise 4s ease-in infinite;
+  100% {
+    bottom: 100%;
     opacity: 0;
   }
-  
-  @keyframes bubble-rise {
-    0% {
-      opacity: 0;
-      transform: translateY(0);
-    }
-    10% {
-      opacity: 0.8;
-    }
-    90% {
-      opacity: 0.6;
-    }
-    100% {
-      opacity: 0;
-      transform: translateY(-100%);
-    }
+}
+
+/* Connection animations */
+.connection-line {
+  animation: flow-dash 20s linear infinite;
+}
+
+@keyframes flow-dash {
+  to {
+    stroke-dashoffset: -1000;
   }
-  
-  /* Reactor Effect */
-  .reactor-effect {
-    position: relative;
-    overflow: hidden;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.6;
   }
-  
-  .reactor-effect::before {
-    content: '';
-    position: absolute;
-    inset: 30% 20%;
-    background: radial-gradient(circle, rgba(72, 187, 120, 0.7) 0%, transparent 70%);
-    animation: pulse 3s infinite alternate;
+  50% {
+    opacity: 1;
   }
-  
-  /* Equipment Icon Styling */
-  .equipment-icon {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
+  100% {
+    opacity: 0.6;
   }
-  
-  /* Heat Exchanger Animation */
-  .heat-exchanger-animation::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(59, 130, 246, 0.2));
-    animation: heat-exchange 4s ease-in-out infinite alternate;
-  }
-  
-  @keyframes heat-exchange {
-    0% {
-      opacity: 0.3;
-      transform: translateY(-2px);
-    }
-    100% {
-      opacity: 0.7;
-      transform: translateY(2px);
-    }
-  }
-  
-  /* Connection Line Animation */
-  .connection-line {
-    stroke-dasharray: 5;
-    animation: dash 1s linear infinite;
-  }
-  
-  @keyframes dash {
-    to {
-      stroke-dashoffset: -10;
-    }
-  }
-  
-  /* Animations */
-  .animate-float {
-    animation: float 8s ease-in-out infinite;
-  }
-  
-  @keyframes float {
-    0% {
-      transform: translateY(0px);
-    }
-    50% {
-      transform: translateY(-20px);
-    }
-    100% {
-      transform: translateY(0px);
-    }
-  }
-  
-  .animate-pulse {
-    animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  }
-  
-  @keyframes pulse {
-    0%, 100% {
-      opacity: 0.8;
-    }
-    50% {
-      opacity: 0.4;
-    }
-  }
-  
-  /* Liquid Level Animation */
-  .liquid-level {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(to bottom, rgba(59, 130, 246, 0.3), rgba(59, 130, 246, 0.7));
-    border-radius: 0 0 4px 4px;
-    transition: all 0.5s ease;
-  }
-  
-  /* Spin Animation */
-  .spin-slow {
-    animation: spin 8s linear infinite;
-  }
-  
-  @keyframes spin {
-    from {
-      transform: rotate(0deg);
-    }
-    to {
-      transform: rotate(360deg);
-    }
-  }
-  
-  .animate-fade-in {
-    animation: fadeIn 0.5s ease-out forwards;
-  }
-  
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-  
-  /* Glow Effect */
-  .glow {
-    box-shadow: 0 0 5px rgba(59, 130, 246, 0.5), 0 0 20px rgba(59, 130, 246, 0.3);
-    animation: glow 2s ease-in-out infinite alternate;
-  }
-  
-  @keyframes glow {
-    from {
-      box-shadow: 0 0 5px rgba(59, 130, 246, 0.5), 0 0 10px rgba(59, 130, 246, 0.3);
-    }
-    to {
-      box-shadow: 0 0 10px rgba(59, 130, 246, 0.7), 0 0 20px rgba(59, 130, 246, 0.5);
-    }
-  }
-  
-  /* Text Gradients */
-  .text-gradient {
-    @apply bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent;
-  }
-  
-  /* Card Styles */
-  .card-gradient {
-    @apply bg-gradient-to-br from-white to-blue-50 shadow-md hover:shadow-lg transition-all duration-300;
-  }
-  
-  /* Equipment Card Styles */
-  .equipment-card {
-    @apply transition-all duration-300;
-    filter: drop-shadow(0 4px 6px rgba(59, 130, 246, 0.1));
-  }
-  .equipment-card:hover {
-    filter: drop-shadow(0 8px 10px rgba(59, 130, 246, 0.2));
-  }
-  
-  /* 3D Effect for Equipment */
-  .equipment-3d-effect {
-    box-shadow: 
-      inset -2px -2px 8px rgba(255, 255, 255, 0.7),
-      inset 2px 2px 8px rgba(0, 0, 0, 0.2),
-      3px 3px 8px rgba(0, 0, 0, 0.1);
-    background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(0, 0, 0, 0.1));
-  }
+}
+
+/* Hide scrollbar but allow scrolling */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
