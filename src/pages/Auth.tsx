@@ -14,7 +14,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader, Mail, User, Check, ArrowRight, Key, Eye, AlertCircle } from "lucide-react";
+import { Loader, Mail, User, Check, ArrowRight, Key, Eye, AlertCircle, Info, RefreshCw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 // Define schemas for form validation
@@ -41,6 +41,8 @@ const Auth = () => {
   const [userId, setUserId] = useState<string | null>(null);
   const [tempEmail, setTempEmail] = useState<string>("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [infoMessage, setInfoMessage] = useState<string | null>(null);
+  const [resendCooldown, setResendCooldown] = useState(0);
   
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -85,23 +87,18 @@ const Auth = () => {
     };
     
     checkSession();
-    
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log("Auth event:", event, session);
-      if (session && event === 'SIGNED_IN') {
-        toast({
-          title: "Signed in successfully",
-          description: "Welcome to ChemFlow!",
-          variant: "success",
-        });
-        navigate('/resources');
-      }
-    });
-    
-    // Cleanup subscription
-    return () => subscription.unsubscribe();
-  }, [navigate, toast]);
+  }, [navigate]);
+  
+  // Resend cooldown timer
+  useEffect(() => {
+    let interval: number | undefined;
+    if (resendCooldown > 0) {
+      interval = window.setInterval(() => {
+        setResendCooldown((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [resendCooldown]);
 
   // Handle OTP verification
   const handleOtpSubmit = async (values: z.infer<typeof otpSchema>) => {
@@ -164,6 +161,10 @@ const Auth = () => {
 
   // Resend verification email
   const handleResendOtp = async () => {
+    if (resendCooldown > 0) {
+      return;
+    }
+    
     if (!tempEmail) {
       toast({
         title: "Error",
@@ -174,20 +175,20 @@ const Auth = () => {
     }
 
     setLoading(true);
+    setErrorMessage(null);
+    setInfoMessage("Sending verification email...");
+    
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.resend({
+        type: 'signup',
         email: tempEmail,
-        password: signUpForm.getValues('password'),
-        options: {
-          emailRedirectTo: `${window.location.origin}/resources`,
-          data: {
-            name: signUpForm.getValues('name'),
-          }
-        }
       });
 
       if (error) throw error;
 
+      setResendCooldown(60); // Set cooldown to 60 seconds
+      setInfoMessage("A new verification code has been sent to your email. Please check your inbox and spam folder.");
+      
       toast({
         title: "Verification email sent!",
         description: "Please check your email for the new verification code.",
@@ -195,6 +196,9 @@ const Auth = () => {
       });
     } catch (error: any) {
       console.error("Error resending verification:", error);
+      setErrorMessage(error.message || "Something went wrong");
+      setInfoMessage(null);
+      
       toast({
         title: "Error sending verification",
         description: error.message || "Something went wrong",
@@ -235,6 +239,7 @@ const Auth = () => {
         setUserId(data.user.id);
         setVerificationSent(true);
         setShowOtpForm(true);
+        setInfoMessage("A verification code has been sent to your email. Please check your inbox and spam folder.");
         
         toast({
           title: "Verification email sent!",
@@ -329,6 +334,16 @@ const Auth = () => {
           </div>
         )}
         
+        {infoMessage && (
+          <div className="px-6 -mt-2 mb-2">
+            <Alert variant="info" className="animate-fade-in bg-blue-50 text-blue-800 border-blue-200">
+              <Info className="h-4 w-4" />
+              <AlertTitle>Info</AlertTitle>
+              <AlertDescription>{infoMessage}</AlertDescription>
+            </Alert>
+          </div>
+        )}
+        
         {showOtpForm ? (
           <CardContent className="space-y-4 animate-fade-in-up">
             <div className="text-center mb-4">
@@ -358,6 +373,9 @@ const Auth = () => {
                         </InputOTP>
                       </FormControl>
                       <FormMessage />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Please check your inbox and spam folder for the verification code.
+                      </p>
                     </FormItem>
                   )}
                 />
@@ -374,10 +392,20 @@ const Auth = () => {
                     type="button" 
                     variant="outline" 
                     onClick={handleResendOtp}
-                    disabled={loading}
+                    disabled={loading || resendCooldown > 0}
                     className="w-full border-blue-300 hover:bg-blue-50 text-blue-600 transition-all"
                   >
-                    Resend verification code
+                    {resendCooldown > 0 ? (
+                      <>
+                        <span className="mr-2">{resendCooldown}s</span>
+                        Wait to resend
+                      </>
+                    ) : (
+                      <>
+                        <RefreshCw className="mr-2 h-4 w-4" />
+                        Resend verification code
+                      </>
+                    )}
                   </Button>
                   <div className="text-center">
                     <Button 

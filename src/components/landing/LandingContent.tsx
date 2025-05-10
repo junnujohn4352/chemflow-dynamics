@@ -18,7 +18,7 @@ const LandingContent: React.FC = () => {
   };
 
   return (
-    <div className="text-center max-w-5xl mx-auto px-6 relative">
+    <div className="text-center max-w-5xl mx-auto py-16 px-6 relative">
       {/* Enhanced decorative blobs with animations */}
       <div className="absolute -top-20 -left-20 w-64 h-64 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-float"></div>
       <div className="absolute -bottom-8 -right-8 w-48 h-48 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-float-reverse" style={{ animationDelay: "2s" }}></div>
