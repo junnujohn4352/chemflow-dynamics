@@ -9,9 +9,9 @@ const LandingPage = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   
-  // Get started button handler - now takes user directly to resources
+  // Get started button handler - now takes user directly to process simulation
   const handleGetStarted = () => {
-    navigate("/resources");
+    navigate("/process-simulation");
   };
 
   return (
@@ -30,13 +30,13 @@ const LandingPage = () => {
               Get Started with ChemFlow
             </Button>
             
-            <Link to="/chemistry-game">
+            <Link to="/unit-converter">
               <Button 
                 size="lg" 
                 variant="outline"
                 className="w-full md:w-auto border-blue-500 text-blue-600 hover:bg-blue-50 text-lg"
               >
-                Play Chemistry Game
+                Engineering Unit Converter
               </Button>
             </Link>
 
