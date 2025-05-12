@@ -2,20 +2,16 @@
 import React, { useState } from 'react';
 import { Software } from '@/types/software';
 import BaseSoftwareInterface from './BaseSoftwareInterface';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { PlusCircle, FlaskConical, FileText, Database, Download, Upload, PlayCircle } from 'lucide-react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import SimulationTabs from '../coco-simulator/SimulationTabs';
+import AddChemicalDialog from '../coco-simulator/AddChemicalDialog';
 
 interface ProcessSimulationInterfaceProps {
   software: Software;
 }
 
 const ProcessSimulationInterface: React.FC<ProcessSimulationInterfaceProps> = ({ software }) => {
+  // Process parameters
   const [feedTemperature, setFeedTemperature] = useState<number>(25);
   const [feedPressure, setFeedPressure] = useState<number>(101.325);
   const [feedFlowRate, setFeedFlowRate] = useState<number>(100);
@@ -110,327 +106,41 @@ const ProcessSimulationInterface: React.FC<ProcessSimulationInterfaceProps> = ({
       <div className="mt-4 border-t pt-4">
         <h5 className="font-medium mb-2">ChemFlow CAPE-OPEN Simulation Environment</h5>
         
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-4 mb-4">
-            <TabsTrigger value="simulation">COFE Flowsheet</TabsTrigger>
-            <TabsTrigger value="thermodynamics">TEA Package</TabsTrigger>
-            <TabsTrigger value="reactions">CORN Package</TabsTrigger>
-            <TabsTrigger value="unitops">COUSCOUS Units</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="simulation">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <div className="space-y-2">
-                <Label htmlFor="feedTemp">Feed Temperature (°C)</Label>
-                <Input 
-                  id="feedTemp" 
-                  type="number" 
-                  value={feedTemperature} 
-                  onChange={(e) => setFeedTemperature(Number(e.target.value))} 
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="feedPressure">Feed Pressure (kPa)</Label>
-                <Input 
-                  id="feedPressure" 
-                  type="number" 
-                  value={feedPressure} 
-                  onChange={(e) => setFeedPressure(Number(e.target.value))} 
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="feedFlowRate">Feed Flow Rate (kg/h)</Label>
-                <Input 
-                  id="feedFlowRate" 
-                  type="number" 
-                  value={feedFlowRate} 
-                  onChange={(e) => setFeedFlowRate(Number(e.target.value))} 
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="thermoModel">Thermodynamic Model</Label>
-                <Select value={thermodynamicModel} onValueChange={setThermodynamicModel}>
-                  <SelectTrigger id="thermoModel">
-                    <SelectValue placeholder="Select model" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="peng-robinson">Peng-Robinson</SelectItem>
-                    <SelectItem value="srk">Soave-Redlich-Kwong</SelectItem>
-                    <SelectItem value="nrtl">NRTL</SelectItem>
-                    <SelectItem value="wilson">Wilson</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            
-            <div className="mb-4">
-              <div className="flex justify-between items-center mb-2">
-                <h5 className="font-medium">Components</h5>
-                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button size="sm" variant="outline" className="flex items-center gap-1">
-                      <PlusCircle className="h-4 w-4" />
-                      Add Custom Chemical
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Add Custom Chemical</DialogTitle>
-                      <DialogDescription>
-                        Enter the properties of your custom chemical component.
-                      </DialogDescription>
-                    </DialogHeader>
-                    
-                    <div className="grid gap-4 py-4">
-                      <div className="grid grid-cols-1 gap-2">
-                        <Label htmlFor="chemicalName" className="text-right">
-                          Name
-                        </Label>
-                        <Input
-                          id="chemicalName"
-                          value={customChemicalName}
-                          onChange={(e) => setCustomChemicalName(e.target.value)}
-                          placeholder="e.g., Methanol"
-                        />
-                      </div>
-                      
-                      <div className="grid grid-cols-1 gap-2">
-                        <Label htmlFor="chemicalFormula" className="text-right">
-                          Chemical Formula
-                        </Label>
-                        <Input
-                          id="chemicalFormula"
-                          value={customChemicalFormula}
-                          onChange={(e) => setCustomChemicalFormula(e.target.value)}
-                          placeholder="e.g., CH3OH"
-                        />
-                      </div>
-                      
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="molecularWeight" className="text-right">
-                            Molecular Weight
-                          </Label>
-                          <Input
-                            id="molecularWeight"
-                            value={customChemicalMw}
-                            onChange={(e) => setCustomChemicalMw(e.target.value)}
-                            placeholder="g/mol"
-                          />
-                        </div>
-                        
-                        <div>
-                          <Label htmlFor="density" className="text-right">
-                            Density
-                          </Label>
-                          <Input
-                            id="density"
-                            value={customChemicalDensity}
-                            onChange={(e) => setCustomChemicalDensity(e.target.value)}
-                            placeholder="kg/m³"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <DialogFooter>
-                      <Button onClick={handleAddCustomChemical}>Add Chemical</Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-3 mb-2">
-                {/* Standard components */}
-                <div className="border rounded p-2 bg-blue-50 cursor-pointer hover:bg-blue-100">
-                  Methane (CH₄)
-                </div>
-                <div className="border rounded p-2 bg-blue-50 cursor-pointer hover:bg-blue-100">
-                  Ethane (C₂H₆)
-                </div>
-                <div className="border rounded p-2 bg-blue-50 cursor-pointer hover:bg-blue-100">
-                  Propane (C₃H₈)
-                </div>
-                <div className="border rounded p-2 bg-blue-50 cursor-pointer hover:bg-blue-100">
-                  Water (H₂O)
-                </div>
-                
-                {/* Custom chemicals */}
-                {customChemicalsList.map(chemical => (
-                  <div 
-                    key={chemical.id} 
-                    className="border rounded p-2 bg-green-50 cursor-pointer hover:bg-green-100"
-                  >
-                    {chemical.name} ({chemical.formula})
-                  </div>
-                ))}
-              </div>
-            </div>
-            
-            <div className="flex gap-4 mb-6">
-              <Button 
-                className="flex items-center gap-1"
-                variant="outline"
-              >
-                <Upload className="h-4 w-4" />
-                Import Flowsheet
-              </Button>
-              <Button 
-                className="flex items-center gap-1"
-                variant="outline"
-              >
-                <Download className="h-4 w-4" />
-                Export Flowsheet
-              </Button>
-              <Button 
-                className="flex items-center gap-1 ml-auto"
-                onClick={handleRunSimulation} 
-                disabled={isSimulating}
-              >
-                <PlayCircle className="h-4 w-4" />
-                {isSimulating ? "Simulating..." : "Run Simulation"}
-              </Button>
-            </div>
-            
-            {results && (
-              <div className="mt-4 border rounded-md p-4 bg-gray-50">
-                <h5 className="font-medium mb-2">Simulation Results</h5>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <div className="border rounded p-2">
-                    <span className="text-gray-600 text-sm">Outlet Temperature:</span>
-                    <div className="font-medium">{results.outletTemperature.toFixed(2)} °C</div>
-                  </div>
-                  <div className="border rounded p-2">
-                    <span className="text-gray-600 text-sm">Outlet Pressure:</span>
-                    <div className="font-medium">{results.outletPressure.toFixed(2)} kPa</div>
-                  </div>
-                  <div className="border rounded p-2">
-                    <span className="text-gray-600 text-sm">Conversion:</span>
-                    <div className="font-medium">{(results.conversion * 100).toFixed(2)}%</div>
-                  </div>
-                  <div className="border rounded p-2">
-                    <span className="text-gray-600 text-sm">Energy Usage:</span>
-                    <div className="font-medium">{results.energyUsage.toFixed(2)} kW</div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </TabsContent>
-          
-          <TabsContent value="thermodynamics">
-            <div className="border rounded-md p-4 mb-4">
-              <h3 className="font-medium mb-3">TEA - Thermodynamics for Engineering Applications</h3>
-              <p className="text-sm text-gray-600 mb-4">
-                Select thermodynamic packages and property models for your simulation.
-              </p>
-              
-              <div className="space-y-3">
-                {teaPackages.map(pkg => (
-                  <div key={pkg} className="flex items-center p-2 border rounded hover:bg-blue-50">
-                    <input type="checkbox" id={pkg} className="mr-2" defaultChecked />
-                    <label htmlFor={pkg}>{pkg} Thermodynamics Package</label>
-                  </div>
-                ))}
-              </div>
-              
-              <div className="mt-4">
-                <h4 className="font-medium mb-2">Property Methods</h4>
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="p-2 border rounded bg-blue-50">Equations of State</div>
-                  <div className="p-2 border rounded bg-blue-50">Activity Coefficient Models</div>
-                  <div className="p-2 border rounded bg-blue-50">Steam Tables</div>
-                  <div className="p-2 border rounded bg-blue-50">Transport Properties</div>
-                </div>
-              </div>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="reactions">
-            <div className="border rounded-md p-4 mb-4">
-              <h3 className="font-medium mb-3">CORN - CAPE-OPEN Reaction Numerics</h3>
-              <p className="text-sm text-gray-600 mb-4">
-                Define chemical reactions for your process simulation.
-              </p>
-              
-              <div className="flex justify-between items-center mb-3">
-                <h4 className="font-medium">Defined Reactions</h4>
-                <Button size="sm" onClick={handleAddReaction} className="flex items-center gap-1">
-                  <PlusCircle className="h-4 w-4" />
-                  Add Reaction
-                </Button>
-              </div>
-              
-              {cornReactions.length > 0 ? (
-                <div className="space-y-3">
-                  {cornReactions.map((reaction, index) => (
-                    <div key={index} className="p-3 border rounded flex flex-col">
-                      <div className="flex justify-between items-center mb-2">
-                        <h5 className="font-medium">{reaction}</h5>
-                        <Button variant="ghost" size="sm">Edit</Button>
-                      </div>
-                      <div className="p-2 bg-gray-50 rounded">
-                        <p className="text-sm font-mono">A + B → C + D</p>
-                      </div>
-                      <div className="mt-2 grid grid-cols-2 gap-2 text-xs text-gray-600">
-                        <div>Type: <span className="font-medium">Kinetic</span></div>
-                        <div>Base: <span className="font-medium">Mass</span></div>
-                        <div>Order: <span className="font-medium">1st</span></div>
-                        <div>Phase: <span className="font-medium">Liquid</span></div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="p-4 border border-dashed rounded-md text-center text-gray-500">
-                  <p>No reactions defined. Add a reaction to start.</p>
-                </div>
-              )}
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="unitops">
-            <div className="border rounded-md p-4 mb-4">
-              <h3 className="font-medium mb-3">COUSCOUS - CAPE-OPEN Unit Operations Simple</h3>
-              <p className="text-sm text-gray-600 mb-4">
-                Use the built-in unit operations for your process simulation.
-              </p>
-              
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {[
-                  "Mixer", "Splitter", "Pump", "Heat Exchanger", "Flash Separator",
-                  "Component Separator", "Reactor", "Distillation Column", "Valve",
-                  "Compressor", "Pipe Segment", "Heater", "Cooler", "Tank"
-                ].map(unit => (
-                  <div key={unit} className="p-3 border rounded hover:bg-blue-50 cursor-pointer flex items-center">
-                    <FlaskConical className="h-4 w-4 mr-2 text-blue-500" />
-                    <span>{unit}</span>
-                  </div>
-                ))}
-              </div>
-              
-              <div className="mt-4">
-                <h4 className="font-medium mb-2">External Unit Operations</h4>
-                <div className="flex space-x-2">
-                  <Button variant="outline" size="sm" className="flex items-center gap-1">
-                    <PlusCircle className="h-4 w-4" />
-                    Add CAPE-OPEN Unit
-                  </Button>
-                  <Button variant="outline" size="sm" className="flex items-center gap-1">
-                    <Database className="h-4 w-4" />
-                    Browse Repository
-                  </Button>
-                  <Button variant="outline" size="sm" className="flex items-center gap-1">
-                    <FileText className="h-4 w-4" />
-                    Documentation
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </TabsContent>
-        </Tabs>
+        <SimulationTabs 
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          feedTemperature={feedTemperature}
+          setFeedTemperature={setFeedTemperature}
+          feedPressure={feedPressure}
+          setFeedPressure={setFeedPressure}
+          feedFlowRate={feedFlowRate}
+          setFeedFlowRate={setFeedFlowRate}
+          thermodynamicModel={thermodynamicModel}
+          setThermodynamicModel={setThermodynamicModel}
+          isSimulating={isSimulating}
+          results={results}
+          customChemicalsList={customChemicalsList}
+          teaPackages={teaPackages}
+          cornReactions={cornReactions}
+          couscousUnits={couscousUnits}
+          handleRunSimulation={handleRunSimulation}
+          handleAddReaction={handleAddReaction}
+          setIsDialogOpen={setIsDialogOpen}
+        />
+        
+        <AddChemicalDialog 
+          isDialogOpen={isDialogOpen}
+          setIsDialogOpen={setIsDialogOpen}
+          customChemicalName={customChemicalName}
+          setCustomChemicalName={setCustomChemicalName}
+          customChemicalFormula={customChemicalFormula}
+          setCustomChemicalFormula={setCustomChemicalFormula}
+          customChemicalMw={customChemicalMw}
+          setCustomChemicalMw={setCustomChemicalMw}
+          customChemicalDensity={customChemicalDensity}
+          setCustomChemicalDensity={setCustomChemicalDensity}
+          handleAddCustomChemical={handleAddCustomChemical}
+        />
       </div>
     </BaseSoftwareInterface>
   );
