@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import LandingContent from "@/components/landing/LandingContent";
@@ -9,8 +9,8 @@ const LandingPage = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   
-  // Get started button handler - now takes user directly to process simulation
-  const handleGetStarted = () => {
+  // Simple navigate to process simulation
+  const handleStartSimulation = () => {
     navigate("/process-simulation");
   };
 
@@ -19,36 +19,16 @@ const LandingPage = () => {
       <main className="flex-grow">
         <LandingContent />
         
-        {/* Action Buttons */}
+        {/* Single Action Button */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="flex flex-col md:flex-row gap-6 justify-center items-center">
+          <div className="flex justify-center items-center">
             <Button 
               size="lg" 
-              onClick={handleGetStarted}
-              className="w-full md:w-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-lg"
+              onClick={handleStartSimulation}
+              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-lg px-8 py-6"
             >
-              Get Started with ChemFlow
+              Open COCO Simulator
             </Button>
-            
-            <Link to="/unit-converter">
-              <Button 
-                size="lg" 
-                variant="outline"
-                className="w-full md:w-auto border-blue-500 text-blue-600 hover:bg-blue-50 text-lg"
-              >
-                Engineering Unit Converter
-              </Button>
-            </Link>
-
-            <Link to="/process-simulation">
-              <Button 
-                size="lg" 
-                variant="outline"
-                className="w-full md:w-auto border-green-500 text-green-600 hover:bg-green-50 text-lg"
-              >
-                Process Simulation Environment
-              </Button>
-            </Link>
           </div>
         </div>
       </main>
@@ -57,7 +37,7 @@ const LandingPage = () => {
       <footer className="bg-gray-800 text-white p-6">
         <div className="max-w-7xl mx-auto">
           <div className="text-center">
-            <p>&copy; {new Date().getFullYear()} ChemFlow Learning. All rights reserved.</p>
+            <p>&copy; {new Date().getFullYear()} Chemical Process Simulation. All rights reserved.</p>
           </div>
         </div>
       </footer>
