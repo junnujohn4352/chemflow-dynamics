@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { Link } from "react-router-dom";
@@ -6,36 +7,19 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { 
   Beaker, 
-  Calculator, 
+  Calculator,
   ArrowRight, 
-  Maximize, 
-  Minimize,
-  Bot,
   FlaskConical
 } from "lucide-react";
-import ChemAssistant from "@/components/ai/ChemAssistant";
 
 const Dashboard: React.FC = () => {
   const { toast } = useToast();
-  const [showAssistant, setShowAssistant] = useState(false);
-  const [assistantMinimized, setAssistantMinimized] = useState(false);
 
   const handleNavigateToCreateSimulation = () => {
     toast({
-      title: "Opening simulation builder",
-      description: "Redirecting to the simulation creation page..."
+      title: "Opening simulation",
+      description: "Redirecting to the ChemFlow Simulator..."
     });
-  };
-
-  const toggleAssistant = () => {
-    setShowAssistant(!showAssistant);
-    if (!showAssistant) {
-      setAssistantMinimized(false);
-    }
-  };
-
-  const toggleMinimizeAssistant = () => {
-    setAssistantMinimized(!assistantMinimized);
   };
 
   return (
@@ -46,14 +30,6 @@ const Dashboard: React.FC = () => {
             <h1 className="text-3xl font-bold text-blue-900 dark:text-blue-100">ChemFlow Dashboard</h1>
             <p className="text-gray-600 dark:text-gray-400 mt-1">Your Chemical Engineering Companion</p>
           </div>
-          <Button 
-            variant="outline" 
-            className="flex items-center space-x-2 border-blue-300 dark:border-blue-700 text-blue-600 dark:text-blue-400"
-            onClick={toggleAssistant}
-          >
-            <Bot className="h-4 w-4" />
-            <span>{showAssistant ? 'Close AI Assistant' : 'AI Assistant'}</span>
-          </Button>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -64,11 +40,11 @@ const Dashboard: React.FC = () => {
                 <FlaskConical className="mr-2 h-5 w-5 text-blue-600 dark:text-blue-400" />
                 Process Simulation
               </CardTitle>
-              <CardDescription>Build and run chemical process simulations like Aspen HYSYS</CardDescription>
+              <CardDescription>ChemFlow CAPE-OPEN process simulation environment</CardDescription>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                Create flowsheets, simulate chemical processes, and analyze results with our powerful simulation engine.
+                Create flowsheets, simulate chemical processes, and analyze results with our powerful CAPE-OPEN compliant simulation engine.
               </p>
               <div className="flex justify-between">
                 <Link to="/process-simulation">
@@ -105,11 +81,6 @@ const Dashboard: React.FC = () => {
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </Link>
-                <Link to="/engineering-formulas">
-                  <Button variant="outline" className="border-teal-300 dark:border-teal-700">
-                    View Calculators
-                  </Button>
-                </Link>
               </div>
             </CardContent>
           </Card>
@@ -140,55 +111,6 @@ const Dashboard: React.FC = () => {
             </CardContent>
           </Card>
         </div>
-        
-        {/* AI Assistant Floating Widget */}
-        {showAssistant && (
-          <div 
-            className={`fixed bottom-4 right-4 transition-all duration-300 z-50 ${
-              assistantMinimized 
-                ? 'w-72 h-14 rounded-full' 
-                : 'w-96 h-[600px] max-h-[80vh] rounded-xl'
-            }`}
-          >
-            {assistantMinimized ? (
-              <div 
-                className="h-full w-full bg-blue-600 text-white flex items-center justify-between px-4 py-2 rounded-full cursor-pointer shadow-lg"
-                onClick={toggleMinimizeAssistant}
-              >
-                <div className="flex items-center">
-                  <Bot className="h-5 w-5 mr-2" />
-                  <span>ChemFlow AI Assistant</span>
-                </div>
-                <Maximize className="h-4 w-4" />
-              </div>
-            ) : (
-              <div className="h-full w-full flex flex-col bg-white dark:bg-gray-900 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-                <div className="absolute top-2 right-2 z-10 flex space-x-1">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="h-7 w-7 p-0 rounded-full" 
-                    onClick={toggleMinimizeAssistant}
-                  >
-                    <Minimize className="h-3.5 w-3.5" />
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="h-7 w-7 p-0 rounded-full" 
-                    onClick={toggleAssistant}
-                  >
-                    <span className="sr-only">Close</span>
-                    <span aria-hidden="true">×</span>
-                  </Button>
-                </div>
-                <div className="flex-grow overflow-hidden">
-                  <ChemAssistant />
-                </div>
-              </div>
-            )}
-          </div>
-        )}
       </div>
     </Layout>
   );

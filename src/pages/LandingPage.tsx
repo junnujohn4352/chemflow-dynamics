@@ -12,6 +12,10 @@ const LandingPage = () => {
   // Simple navigate to process simulation
   const handleStartSimulation = () => {
     navigate("/process-simulation");
+    toast({
+      title: "Opening ChemFlow Simulator",
+      description: "Loading the CAPE-OPEN compliant process simulation environment..."
+    });
   };
 
   return (
@@ -19,7 +23,7 @@ const LandingPage = () => {
       <main className="flex-grow">
         <LandingContent />
         
-        {/* Single Action Button */}
+        {/* Action Button */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="flex justify-center items-center">
             <Button 
@@ -27,7 +31,7 @@ const LandingPage = () => {
               onClick={handleStartSimulation}
               className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-lg px-8 py-6"
             >
-              Open COCO Simulator
+              Open ChemFlow Simulator
             </Button>
           </div>
         </div>
@@ -37,7 +41,7 @@ const LandingPage = () => {
       <footer className="bg-gray-800 text-white p-6">
         <div className="max-w-7xl mx-auto">
           <div className="text-center">
-            <p>&copy; {new Date().getFullYear()} Chemical Process Simulation. All rights reserved.</p>
+            <p>&copy; {new Date().getFullYear()} ChemFlow Process Simulation. All rights reserved.</p>
           </div>
         </div>
       </footer>

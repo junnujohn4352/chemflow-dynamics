@@ -23,7 +23,7 @@ const LandingContent: React.FC = () => {
       {/* Main title */}
       <h1 className="text-6xl md:text-7xl font-display font-bold leading-tight mb-8 
         bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent animate-fade-in-up">
-        COCO Simulator
+        ChemFlow Simulator
       </h1>
       
       <p className="text-2xl text-blue-700/90 mb-16 max-w-2xl mx-auto animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
@@ -56,9 +56,9 @@ const LandingContent: React.FC = () => {
       
       {/* Description of COCO capabilities */}
       <div className="bg-white/80 backdrop-blur-sm p-6 rounded-lg shadow-md border border-blue-100 mb-8">
-        <h2 className="text-2xl font-semibold text-blue-800 mb-3">About COCO Simulator</h2>
+        <h2 className="text-2xl font-semibold text-blue-800 mb-3">About ChemFlow Simulator</h2>
         <p className="text-gray-700 mb-4">
-          COCO is a free-of-charge CAPE-OPEN compliant steady-state simulation environment consisting of the following components:
+          ChemFlow is based on COCO, a free-of-charge CAPE-OPEN compliant steady-state simulation environment consisting of the following components:
         </p>
         <ul className="text-left text-gray-700 space-y-2 mb-4 max-w-2xl mx-auto">
           <li>• <strong>COFE</strong> - The CAPE-OPEN Flowsheet Environment</li>
@@ -72,7 +72,7 @@ const LandingContent: React.FC = () => {
       </div>
       
       <div className="text-gray-600 text-sm font-medium animate-fade-in" style={{ animationDelay: "0.6s" }}>
-        © {new Date().getFullYear()} COCO Simulator | Chemical Process Simulation Environment
+        © {new Date().getFullYear()} ChemFlow | Chemical Process Simulation Environment
       </div>
     </div>
   );
