@@ -12,6 +12,7 @@ import LandingPage from './pages/LandingPage';
 import { Layout } from './components/layout/Layout';
 import ProcessSimulation from './pages/ProcessSimulation';
 import { Toaster } from '@/components/ui/toaster';
+import CreateSimulation from './pages/CreateSimulation';
 
 function App() {
   return (
@@ -56,6 +57,11 @@ function App() {
         <Route path="/process-simulation" element={
           <Layout>
             <ProcessSimulation />
+          </Layout>
+        } />
+        <Route path="/create-simulation" element={
+          <Layout>
+            <CreateSimulation />
           </Layout>
         } />
         <Route path="*" element={<NotFound />} />
